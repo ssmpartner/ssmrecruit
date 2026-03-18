@@ -1,5 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { leads, agencies, employees, sourceConfig, statusConfig } from '@/lib/mock-data';
+import { useLeads } from '@/context/LeadsContext';
+import { agencies, employees, sourceConfig, statusConfig } from '@/lib/mock-data';
 
 const agencyData = agencies.map(a => ({
   name: a.name,
