@@ -71,6 +71,17 @@ export default function AppSidebar() {
             {label}
           </NavLink>
         ))}
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200"
+        >
+          <LogOut className="h-[18px] w-[18px]" />
+          Abmelden
+        </button>
+        <div className="mt-2 border-t border-sidebar-border pt-2 px-1">
+          <p className="text-xs text-sidebar-foreground/60 truncate">{profile?.display_name || user?.email}</p>
+          <p className="text-[10px] text-sidebar-foreground/40 truncate">{user?.email}</p>
+        </div>
       </div>
     </aside>
   );
