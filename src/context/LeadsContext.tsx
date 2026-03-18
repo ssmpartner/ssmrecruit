@@ -26,11 +26,14 @@ interface LeadsContextType {
   agencies: Agency[];
   activities: ActivityEntry[];
   appointments: Appointment[];
+  notificationMethod: NotificationMethod;
+  setNotificationMethod: (method: NotificationMethod) => void;
   updateLead: (id: string, updates: Partial<Lead>) => void;
   addLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => void;
   addActivity: (leadId: string, type: ActivityEntry['type'], description: string) => void;
-  addAppointment: (apt: Omit<Appointment, 'id' | 'createdAt'>) => void;
+  addAppointment: (apt: Omit<Appointment, 'id' | 'createdAt' | 'meetingLink'>) => void;
   removeAppointment: (id: string) => void;
+  sendAppointmentNotification: (appointmentId: string) => void;
   selectedLead: Lead | null;
   setSelectedLead: (lead: Lead | null) => void;
   addEmployee: (emp: Omit<Employee, 'id'>) => void;
