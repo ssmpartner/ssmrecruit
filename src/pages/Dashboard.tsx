@@ -47,11 +47,11 @@ export default function Dashboard() {
           <h3 className="text-base font-semibold mb-4">Leads nach Quelle</h3>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={sourceData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(220,10%,46%)" />
-              <YAxis tick={{ fontSize: 12 }} stroke="hsl(220,10%,46%)" />
-              <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid hsl(220,13%,91%)', fontSize: 13 }} />
-              <Bar dataKey="value" fill="hsl(166,72%,40%)" radius={[6, 6, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(150,10%,89%)" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(160,8%,45%)" />
+              <YAxis tick={{ fontSize: 12 }} stroke="hsl(160,8%,45%)" />
+              <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid hsl(150,10%,89%)', fontSize: 13 }} />
+              <Bar dataKey="value" fill="hsl(168,17%,23%)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
