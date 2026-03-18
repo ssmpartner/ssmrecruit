@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Mail, Plus } from 'lucide-react';
-import { useLeads } from '@/context/LeadsContext';
+import { useLeads } from '@/context/useLeads';
 import { type Employee } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 

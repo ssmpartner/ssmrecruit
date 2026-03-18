@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useLeads } from '@/context/LeadsContext';
+import { useLeads } from '@/context/useLeads';
 import { discQuestions, discDimensionConfig, type DiscDimension } from '@/lib/mock-data';
 import { Brain, CheckCircle2, Send, RotateCcw } from 'lucide-react';
 

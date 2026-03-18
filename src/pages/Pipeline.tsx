@@ -1,4 +1,4 @@
-import { useLeads } from '@/context/LeadsContext';
+import { useLeads } from '@/context/useLeads';
 import { statusConfig, statusFlow, getAllowedNextStatuses, type LeadStatus } from '@/lib/mock-data';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
