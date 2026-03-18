@@ -12,8 +12,10 @@ import {
   type AppointmentSettings,
   type DiscResult,
   type DiscDimension,
+  type InsightsSettings,
   discQuestions,
   defaultAppointmentSettings,
+  defaultInsightsSettings,
 } from '@/lib/mock-data';
 
 export interface ActivityEntry {
