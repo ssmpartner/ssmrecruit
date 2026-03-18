@@ -76,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         supabase.from('profiles').select('*').eq('id', session.user.id).single()
           .then(({ data }) => setProfile(data as Profile | null));
+        fetchRole(session.user.id);
       }
       setLoading(false);
     });
