@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import { FileText, Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2 } from 'lucide-react';
 
-const APP_VERSION = '2.8.0';
+const APP_VERSION = '2.9.0';
 
 const versionHistory = [
+  { version: '2.9.0', date: '18.03.2026', changes: [
+    'Datenbank bereinigt: Alle Test-/Mock-Leads entfernt für den Produktivbetrieb',
+    'Integrationen (TikTok, Meta, LinkedIn, Webhooks) mit DB-Persistenz – Konfigurationen werden dauerhaft gespeichert',
+    'Auth-Race-Condition behoben: getSession() vor onAuthStateChange, keine async-Blockaden mehr',
+    'Integrations-Einstellungen jederzeit editierbar (Webhook-URLs, API-Keys)',
+    'RLS für Integrationen: Nur Superadmins können Integrationen konfigurieren',
+  ]},
   { version: '2.8.0', date: '18.03.2026', changes: [
     'Lazy Loading & Code-Splitting für alle Seiten (schnellere Ladezeiten)',
     'QueryClient-Optimierung mit Stale-Time & Retry-Konfiguration',
