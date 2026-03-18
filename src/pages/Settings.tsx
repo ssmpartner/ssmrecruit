@@ -140,11 +140,183 @@ export default function Settings() {
     }
   };
 
+  // User management state
+  const [systemUsers, setSystemUsers] = useState<SystemUser[]>(initialSystemUsers);
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
+  const [userForm, setUserForm] = useState({ name: '', email: '', role: 'backoffice' as SystemRole });
+
+  const addSystemUser = () => {
+    if (!userForm.name.trim() || !userForm.email.trim()) {
+      toast({ title: 'Fehler', description: 'Bitte Name und E-Mail ausfüllen', variant: 'destructive' });
+      return;
+    }
+    setSystemUsers(prev => [...prev, {
+      id: `su${Date.now()}`,
+      name: userForm.name,
+      email: userForm.email,
+      role: userForm.role,
+      createdAt: new Date().toISOString(),
+    }]);
+    setUserForm({ name: '', email: '', role: 'backoffice' });
+    setUserDialogOpen(false);
+    toast({ title: 'Benutzer hinzugefügt', description: `${userForm.name} wurde als ${roleConfig[userForm.role].label} hinzugefügt.` });
+  };
+
+  const removeSystemUser = (id: string) => {
+    const user = systemUsers.find(u => u.id === id);
+    if (user?.role === 'superadmin' && systemUsers.filter(u => u.role === 'superadmin').length <= 1) {
+      toast({ title: 'Fehler', description: 'Es muss mindestens ein Superadmin existieren.', variant: 'destructive' });
+      return;
+    }
+    setSystemUsers(prev => prev.filter(u => u.id !== id));
+    toast({ title: 'Entfernt', description: 'Benutzer wurde entfernt.' });
+  };
+
+  const changeUserRole = (id: string, newRole: SystemRole) => {
+    const user = systemUsers.find(u => u.id === id);
+    if (user?.role === 'superadmin' && systemUsers.filter(u => u.role === 'superadmin').length <= 1) {
+      toast({ title: 'Fehler', description: 'Es muss mindestens ein Superadmin existieren.', variant: 'destructive' });
+      return;
+    }
+    setSystemUsers(prev => prev.map(u => u.id === id ? { ...u, role: newRole } : u));
+    toast({ title: 'Rolle geändert', description: `Rolle wurde zu ${roleConfig[newRole].label} geändert.` });
+  };
+
   return (
     <div className="space-y-8 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Configure lead source integrations</p>
+        <h1 className="text-2xl font-bold tracking-tight">Einstellungen</h1>
+        <p className="text-muted-foreground">Benutzer & Integrationen verwalten</p>
+      </div>
+
+      {/* ── User Management ── */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Benutzerverwaltung</h2>
+          <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
+            <DialogTrigger asChild>
+              <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                <UserPlus className="h-4 w-4" /> Benutzer hinzufügen
+              </button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Neuen Benutzer hinzufügen</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div>
+                  <label className="text-sm font-medium">Name</label>
+                  <input
+                    value={userForm.name}
+                    onChange={e => setUserForm(p => ({ ...p, name: e.target.value }))}
+                    placeholder="z.B. Max Mustermann"
+                    className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">E-Mail</label>
+                  <input
+                    value={userForm.email}
+                    onChange={e => setUserForm(p => ({ ...p, email: e.target.value }))}
+                    placeholder="z.B. max@firma.de"
+                    className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Rolle</label>
+                  <select
+                    value={userForm.role}
+                    onChange={e => setUserForm(p => ({ ...p, role: e.target.value as SystemRole }))}
+                    className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    {Object.entries(roleConfig).map(([key, cfg]) => (
+                      <option key={key} value={key}>{cfg.label}</option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-muted-foreground">{roleConfig[userForm.role].description}</p>
+                </div>
+                <button
+                  onClick={addSystemUser}
+                  disabled={!userForm.name.trim() || !userForm.email.trim()}
+                  className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+                >
+                  Benutzer erstellen
+                </button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Role legend */}
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(roleConfig).map(([key, cfg]) => (
+            <div key={key} className="flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5">
+              <span className={`inline-block h-2 w-2 rounded-full ${cfg.color}`} />
+              <span className="text-xs font-medium">{cfg.label}</span>
+              <span className="text-xs text-muted-foreground">– {cfg.description}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* User list */}
+        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-left text-muted-foreground">
+                <th className="px-5 py-3 font-medium">Benutzer</th>
+                <th className="px-5 py-3 font-medium">Rolle</th>
+                <th className="px-5 py-3 font-medium">Hinzugefügt</th>
+                <th className="px-5 py-3 font-medium w-20"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {systemUsers.map(user => {
+                const cfg = roleConfig[user.role];
+                const initials = user.name.split(' ').map(n => n[0]).join('');
+                return (
+                  <tr key={user.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground">
+                          {initials}
+                        </div>
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Mail className="h-3 w-3" /> {user.email}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3">
+                      <select
+                        value={user.role}
+                        onChange={e => changeUserRole(user.id, e.target.value as SystemRole)}
+                        className="h-8 rounded-lg border bg-background px-2 text-xs font-medium outline-none focus:ring-2 focus:ring-ring"
+                      >
+                        {Object.entries(roleConfig).map(([key, c]) => (
+                          <option key={key} value={key}>{c.label}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-5 py-3 text-muted-foreground text-xs">
+                      {new Date(user.createdAt).toLocaleDateString('de-DE')}
+                    </td>
+                    <td className="px-5 py-3">
+                      <button
+                        onClick={() => removeSystemUser(user.id)}
+                        className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        title="Benutzer entfernen"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Webhook endpoint info */}
