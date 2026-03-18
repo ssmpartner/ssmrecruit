@@ -19,10 +19,7 @@ export default function AppLayout() {
             />
           </div>
           <div className="flex items-center gap-4">
-            <button className="relative rounded-xl p-2 text-muted-foreground hover:bg-muted transition-colors">
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-secondary" />
-            </button>
+            <NotificationCenter />
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
                 SC
