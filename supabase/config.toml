@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.detect-duplicates]
 verify_jwt = false
+
+[functions.generate-guidelines]
+verify_jwt = false
