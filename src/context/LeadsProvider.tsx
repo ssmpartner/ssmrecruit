@@ -189,12 +189,14 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     };
 
     setDiscResults((prev) => [...prev, result]);
+    const lead = leads.find((e) => e.id === leadId);
     addActivity(
       leadId,
       'note',
       `DISC-Persönlichkeitstest abgeschlossen – Typ: ${dominantType} (D:${normalized.D}% I:${normalized.I}% S:${normalized.S}% C:${normalized.C}%)`,
     );
-  }, [addActivity]);
+    addNotification({ type: 'disc_completed', title: 'DISC-Test abgeschlossen', description: `${lead?.name ?? 'Lead'} – Typ: ${dominantType}`, leadId });
+  }, [addActivity, addNotification, leads]);
 
   const sendAppointmentNotification = useCallback((appointmentId: string) => {
     const appointment = appointments.find((entry) => entry.id === appointmentId);
