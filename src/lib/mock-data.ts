@@ -284,5 +284,6 @@ export const leads: Lead[] = swissNames.map((name, i) => {
     createdAt: new Date(2025, 2, 1 + i).toISOString(),
     updatedAt: new Date(2025, 2, 3 + i).toISOString(),
     notes: '',
+    lifecycle: 'active' as LeadLifecycle,
   };
 });
