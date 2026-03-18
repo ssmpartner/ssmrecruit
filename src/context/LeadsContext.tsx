@@ -31,6 +31,7 @@ interface LeadsContextType {
   agencies: Agency[];
   activities: ActivityEntry[];
   appointments: Appointment[];
+  discResults: DiscResult[];
   appointmentSettings: AppointmentSettings;
   updateAppointmentSettings: (updates: Partial<AppointmentSettings>) => void;
   updateLead: (id: string, updates: Partial<Lead>) => void;
@@ -39,6 +40,7 @@ interface LeadsContextType {
   addAppointment: (apt: Omit<Appointment, 'id' | 'createdAt' | 'meetingLink'>) => void;
   removeAppointment: (id: string) => void;
   sendAppointmentNotification: (appointmentId: string) => void;
+  submitDiscTest: (leadId: string, answers: number[]) => void;
   selectedLead: Lead | null;
   setSelectedLead: (lead: Lead | null) => void;
   addEmployee: (emp: Omit<Employee, 'id'>) => void;
