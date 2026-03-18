@@ -115,6 +115,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   function generateMeetingLink(): string {
     const chars = 'abcdefghijklmnopqrstuvwxyz';
     const seg = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    if (appointmentSettings.videoProvider === 'custom' && appointmentSettings.customVideoBaseUrl) {
+      return `${appointmentSettings.customVideoBaseUrl.replace(/\/$/, '')}/recruitflow-${seg()}-${seg()}-${seg()}`;
+    }
     return `https://meet.jit.si/recruitflow-${seg()}-${seg()}-${seg()}`;
   }
 
