@@ -18,6 +18,7 @@ export default function Analytics() {
   const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
   const [agencyFilter, setAgencyFilter] = useState('');
+  const [employeeFilter, setEmployeeFilter] = useState('');
 
   const filtered = useMemo(() => {
     return leads.filter(l => {
@@ -25,9 +26,10 @@ export default function Analytics() {
       if (sourceFilter && l.source !== sourceFilter) return false;
       if (statusFilter && l.status !== statusFilter) return false;
       if (agencyFilter && l.agencyId !== agencyFilter) return false;
+      if (employeeFilter && l.employeeId !== employeeFilter) return false;
       return true;
     });
-  }, [leads, cantonFilter, sourceFilter, statusFilter, agencyFilter]);
+  }, [leads, cantonFilter, sourceFilter, statusFilter, agencyFilter, employeeFilter]);
 
   // Canton data
   const cantonData = useMemo(() => {
