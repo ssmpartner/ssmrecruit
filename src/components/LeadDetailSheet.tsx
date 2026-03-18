@@ -207,6 +207,9 @@ export default function LeadDetailSheet() {
                 <TabsTrigger value="activity" className="gap-1.5">
                   <Activity className="h-3.5 w-3.5" /> Aktivität
                 </TabsTrigger>
+                <TabsTrigger value="insights" className="gap-1.5">
+                  <Brain className="h-3.5 w-3.5" /> Insights
+                </TabsTrigger>
               </TabsList>
 
               <div className="flex-1 overflow-y-auto px-6 pb-6">
