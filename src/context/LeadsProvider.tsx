@@ -387,6 +387,22 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const updateEmployee = useCallback(async (id: string, updates: Partial<Employee>) => {
+    setEmployees((prev) => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+    const dbUpdates: Record<string, any> = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.email !== undefined) dbUpdates.email = updates.email;
+    if (updates.role !== undefined) dbUpdates.role = updates.role;
+    if (updates.agencyId !== undefined) dbUpdates.agency_id = updates.agencyId;
+    if (updates.avatar !== undefined) dbUpdates.avatar = updates.avatar;
+    await supabase.from('employees').update(dbUpdates).eq('id', id);
+  }, []);
+
+  const deleteEmployee = useCallback(async (id: string) => {
+    setEmployees((prev) => prev.filter(e => e.id !== id));
+    await supabase.from('employees').delete().eq('id', id);
+  }, []);
+
   const addAgency = useCallback(async (agency: Omit<Agency, 'id'>) => {
     const id = `a${Date.now()}`;
     setAgencies((prev) => [...prev, { ...agency, id }]);
@@ -492,6 +508,8 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         selectedLead,
         setSelectedLead,
         addEmployee,
+        updateEmployee,
+        deleteEmployee,
         addAgency,
         updateAgency,
         loading,

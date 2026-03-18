@@ -43,6 +43,8 @@ export interface LeadsContextType {
   selectedLead: Lead | null;
   setSelectedLead: (lead: Lead | null) => void;
   addEmployee: (emp: Omit<Employee, 'id'>) => void;
+  updateEmployee: (id: string, updates: Partial<Employee>) => void;
+  deleteEmployee: (id: string) => void;
   addAgency: (ag: Omit<Agency, 'id'>) => void;
   updateAgency: (id: string, updates: Partial<Agency>) => void;
   loading: boolean;
