@@ -101,7 +101,7 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
 
 export default function Settings() {
   const { toast } = useToast();
-  const { appointmentSettings, updateAppointmentSettings } = useLeads();
+  const { appointmentSettings, updateAppointmentSettings, insightsSettings, updateInsightsSettings } = useLeads();
   const [integrations, setIntegrations] = useState<Integration[]>(defaultIntegrations);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
