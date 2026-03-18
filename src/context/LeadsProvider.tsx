@@ -37,6 +37,7 @@ function dbToLead(row: any): Lead {
     notes: row.notes,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    lifecycle: row.lead_lifecycle || 'active',
   };
 }
 

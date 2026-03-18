@@ -34,6 +34,8 @@ export const discQuestions: { text: string; dimension: DiscDimension }[] = [
 ];
 export type LeadSource = 'website' | 'tiktok' | 'meta' | 'linkedin' | 'csv_import';
 
+export type LeadLifecycle = 'active' | 'archived' | 'deleted';
+
 export interface Lead {
   id: string;
   name: string;
@@ -52,6 +54,7 @@ export interface Lead {
   createdAt: string;
   updatedAt: string;
   notes: string;
+  lifecycle: LeadLifecycle;
 }
 
 export interface Appointment {
