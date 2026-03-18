@@ -199,11 +199,14 @@ export default function Processes() {
     daysInStatus: 3, canton: '',
     action: 'change_status' as AutomationAction,
     targetStatus: '' as LeadStatus | '', targetEmployeeId: '', notificationMessage: '',
+    scope: 'global' as AutomationScope, scopeAgencyId: '', scopeEmployeeId: '',
   });
 
   // ── Automation handlers ──
   const addRule = () => {
     if (!form.name.trim()) { toast({ title: 'Fehler', description: 'Bitte Name eingeben.', variant: 'destructive' }); return; }
+    if (form.scope === 'agency' && !form.scopeAgencyId) { toast({ title: 'Fehler', description: 'Bitte Agentur auswählen.', variant: 'destructive' }); return; }
+    if (form.scope === 'employee' && !form.scopeEmployeeId) { toast({ title: 'Fehler', description: 'Bitte Mitarbeiter auswählen.', variant: 'destructive' }); return; }
     const rule: AutomationRule = {
       id: `rule-${Date.now()}`, name: form.name, enabled: true, trigger: form.trigger,
       triggerConfig: { fromStatus: form.fromStatus || undefined, toStatus: form.toStatus || undefined, daysInStatus: form.trigger === 'time_in_status' ? form.daysInStatus : undefined, canton: form.canton || undefined },
