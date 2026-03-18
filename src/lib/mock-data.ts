@@ -1,4 +1,37 @@
-export type LeadStatus = 'new' | 'contacted' | 'appointment' | 'interview_1' | 'interview_2' | 'hired' | 'rejected';
+export type LeadStatus = 'new' | 'contacted' | 'appointment' | 'interview_1' | 'insights' | 'interview_2' | 'hired' | 'rejected';
+
+export type DiscDimension = 'D' | 'I' | 'S' | 'C';
+
+export interface DiscResult {
+  id: string;
+  leadId: string;
+  scores: Record<DiscDimension, number>; // 0-100
+  dominantType: DiscDimension;
+  completedAt: string;
+  answers: number[]; // raw answers
+}
+
+export const discDimensionConfig: Record<DiscDimension, { label: string; fullLabel: string; color: string; description: string }> = {
+  D: { label: 'D', fullLabel: 'Dominant', color: 'bg-red-100 text-red-700 border-red-200', description: 'Ergebnisorientiert, entschlossen, direkt, wettbewerbsfähig' },
+  I: { label: 'I', fullLabel: 'Initiativ', color: 'bg-amber-100 text-amber-700 border-amber-200', description: 'Enthusiastisch, optimistisch, kooperativ, kontaktfreudig' },
+  S: { label: 'S', fullLabel: 'Stetig', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', description: 'Geduldig, zuverlässig, teamorientiert, ruhig' },
+  C: { label: 'C', fullLabel: 'Gewissenhaft', color: 'bg-blue-100 text-blue-700 border-blue-200', description: 'Analytisch, genau, systematisch, qualitätsbewusst' },
+};
+
+export const discQuestions: { text: string; dimension: DiscDimension }[] = [
+  { text: 'Ich treffe Entscheidungen schnell und entschlossen.', dimension: 'D' },
+  { text: 'Ich arbeite gerne mit anderen Menschen zusammen und bin gesellig.', dimension: 'I' },
+  { text: 'Ich bevorzuge ein stabiles und vorhersehbares Arbeitsumfeld.', dimension: 'S' },
+  { text: 'Ich achte auf Details und arbeite sehr genau.', dimension: 'C' },
+  { text: 'Ich übernehme gerne die Führung in Gruppen.', dimension: 'D' },
+  { text: 'Ich kann andere leicht begeistern und motivieren.', dimension: 'I' },
+  { text: 'Ich bin geduldig und höre anderen aufmerksam zu.', dimension: 'S' },
+  { text: 'Ich plane sorgfältig, bevor ich handle.', dimension: 'C' },
+  { text: 'Herausforderungen spornen mich an.', dimension: 'D' },
+  { text: 'Ich kommuniziere offen und ausdrucksstark.', dimension: 'I' },
+  { text: 'Konflikte versuche ich zu vermeiden und Harmonie zu bewahren.', dimension: 'S' },
+  { text: 'Ich hinterfrage Dinge kritisch und prüfe Fakten.', dimension: 'C' },
+];
 export type LeadSource = 'website' | 'tiktok' | 'meta' | 'linkedin' | 'csv_import';
 
 export interface Lead {
