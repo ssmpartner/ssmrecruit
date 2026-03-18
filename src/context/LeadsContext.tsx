@@ -208,7 +208,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   }, [appointments, leads, appointmentSettings.notificationMethod, addActivity]);
 
   return (
-    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, discResults, appointmentSettings, updateAppointmentSettings, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, submitDiscTest, selectedLead, setSelectedLead, addEmployee, addAgency }}>
+    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, discResults, appointmentSettings, insightsSettings, updateAppointmentSettings, updateInsightsSettings, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, submitDiscTest, selectedLead, setSelectedLead, addEmployee, addAgency }}>
       {children}
     </LeadsContext.Provider>
   );
