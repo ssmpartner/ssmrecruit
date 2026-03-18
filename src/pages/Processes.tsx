@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2 } from 'lucide-react';
+import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2, Building2, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLeads } from '@/context/useLeads';
