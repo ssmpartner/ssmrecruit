@@ -42,6 +42,7 @@ export default function LeadDetailSheet() {
   // Appointment form
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
+  const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
 
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
