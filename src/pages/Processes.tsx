@@ -13,6 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 export type AutomationTrigger = 'status_change' | 'lead_created' | 'disc_completed' | 'time_in_status';
 export type AutomationAction = 'change_status' | 'assign_employee' | 'send_notification';
 
+export type AutomationScope = 'global' | 'agency' | 'employee';
+
 export interface AutomationRule {
   id: string;
   name: string;
@@ -21,6 +23,9 @@ export interface AutomationRule {
   triggerConfig: { fromStatus?: LeadStatus; toStatus?: LeadStatus; daysInStatus?: number; canton?: string };
   action: AutomationAction;
   actionConfig: { targetStatus?: LeadStatus; targetEmployeeId?: string; notificationMessage?: string };
+  scope: AutomationScope;
+  scopeAgencyId?: string;
+  scopeEmployeeId?: string;
   createdAt: string;
 }
 
