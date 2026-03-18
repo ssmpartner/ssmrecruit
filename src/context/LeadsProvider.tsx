@@ -46,6 +46,7 @@ function seedActivities(leads: Lead[]): ActivityEntry[] {
 }
 
 export function LeadsProvider({ children }: { children: ReactNode }) {
+  const { addNotification } = useNotifications();
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
   const [agencies, setAgencies] = useState<Agency[]>(initialAgencies);
