@@ -11,6 +11,7 @@ import LeadsTable from "./pages/LeadsTable";
 import Agencies from "./pages/Agencies";
 import Employees from "./pages/Employees";
 import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
