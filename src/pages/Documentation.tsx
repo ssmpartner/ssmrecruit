@@ -40,11 +40,22 @@ const appFeatures = [
     { name: 'Analytics', desc: 'Detaillierte Auswertungen mit interaktiven Charts (Recharts).' },
     { name: 'DISC-Persönlichkeitstest', desc: 'Automatisierte Persönlichkeitsanalyse für Kandidaten.' },
   ]},
+  { category: 'Aufgaben & KI', icon: '🤖', features: [
+    { name: 'Phasen-Tasks', desc: 'Automatische Pflichtaufgaben basierend auf dem aktuellen Lead-Status.' },
+    { name: 'KI-Tasks', desc: 'Kontextbezogene Zusatzaufgaben per KI-Generierung (Gemini).' },
+    { name: 'Task-Management', desc: 'Aufgaben zuweisen, priorisieren und Status tracken (offen/in Bearbeitung/erledigt).' },
+  ]},
   { category: 'Integrationen & API', icon: '🔌', features: [
     { name: 'Meta / TikTok / LinkedIn', desc: 'Lead-Import aus Social-Media-Werbekampagnen.' },
     { name: 'Webhooks', desc: 'Eingehende Webhooks für automatisierten Lead-Import.' },
     { name: 'REST API', desc: 'Vollständige API mit Authentifizierung für externe Systeme.' },
     { name: 'API-Schlüssel', desc: 'Granulare API-Keys mit konfigurierbaren Berechtigungen.' },
+  ]},
+  { category: 'Backend & Datenbank', icon: '🗄️', features: [
+    { name: 'Lovable Cloud', desc: 'Vollständig persistente Datenbank für alle Module (Leads, Termine, Aufgaben, etc.).' },
+    { name: 'Row Level Security', desc: 'Sicherheitsrichtlinien auf Datenbankebene für alle Tabellen.' },
+    { name: 'Edge Functions', desc: 'Serverless Backend-Funktionen für KI-Aufgabengenerierung.' },
+    { name: 'Echtzeit-Sync', desc: 'Automatische Datensynchronisation zwischen Frontend und Datenbank.' },
   ]},
   { category: 'Administration', icon: '⚙️', features: [
     { name: 'Benutzerverwaltung', desc: 'Benutzer mit Rollen (Superadmin, Admin, Backoffice, Analyst) verwalten.' },
