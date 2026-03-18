@@ -222,7 +222,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const addLead = useCallback(async (leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
     const id = `l${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const now = new Date().toISOString();
-    const newLead: Lead = { ...leadData, id, createdAt: now, updatedAt: now };
+    const newLead: Lead = { ...leadData, id, createdAt: now, updatedAt: now, lifecycle: leadData.lifecycle || 'active' };
     setLeads((prev) => [newLead, ...prev]);
     addActivity(id, 'status_change', `Lead "${leadData.name}" manuell erfasst`);
     addNotification({ type: 'lead_new', title: 'Neuer Lead', description: `${leadData.name} wurde erfasst.`, leadId: id });
@@ -243,8 +243,39 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       employee_id: leadData.employeeId,
       position: leadData.position,
       notes: leadData.notes,
+      lead_lifecycle: leadData.lifecycle || 'active',
     });
   }, [addActivity, addNotification]);
+
+  const archiveLead = useCallback(async (id: string) => {
+    setLeads((prev) => prev.map(l => l.id === id ? { ...l, lifecycle: 'archived' as const } : l));
+    const lead = leads.find(l => l.id === id);
+    addActivity(id, 'status_change', `Lead "${lead?.name}" archiviert`);
+    await supabase.from('leads').update({ lead_lifecycle: 'archived' }).eq('id', id);
+  }, [addActivity, leads]);
+
+  const deleteLead = useCallback(async (id: string) => {
+    setLeads((prev) => prev.map(l => l.id === id ? { ...l, lifecycle: 'deleted' as const } : l));
+    const lead = leads.find(l => l.id === id);
+    addActivity(id, 'status_change', `Lead "${lead?.name}" gelöscht`);
+    await supabase.from('leads').update({ lead_lifecycle: 'deleted' }).eq('id', id);
+  }, [addActivity, leads]);
+
+  const restoreLead = useCallback(async (id: string) => {
+    setLeads((prev) => prev.map(l => l.id === id ? { ...l, lifecycle: 'active' as const } : l));
+    const lead = leads.find(l => l.id === id);
+    addActivity(id, 'status_change', `Lead "${lead?.name}" wiederhergestellt`);
+    await supabase.from('leads').update({ lead_lifecycle: 'active' }).eq('id', id);
+  }, [addActivity, leads]);
+
+  const mergeLead = useCallback(async (keepId: string, removeId: string, mergedData: Partial<Lead>) => {
+    // Update the kept lead with merged data
+    updateLead(keepId, mergedData);
+    // Mark the removed lead as deleted
+    setLeads((prev) => prev.map(l => l.id === removeId ? { ...l, lifecycle: 'deleted' as const } : l));
+    addActivity(keepId, 'edit', `Lead zusammengeführt (Duplikat ${removeId} entfernt)`);
+    await supabase.from('leads').update({ lead_lifecycle: 'deleted' }).eq('id', removeId);
+  }, [updateLead, addActivity]);
 
   function generateMeetingLink(): string {
     const chars = 'abcdefghijklmnopqrstuvwxyz';
