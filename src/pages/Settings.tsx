@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2 } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLeads } from '@/context/LeadsContext';
-import { type NotificationMethod } from '@/lib/mock-data';
+import { type NotificationMethod, discQuestions } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst';
@@ -101,7 +101,7 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
 
 export default function Settings() {
   const { toast } = useToast();
-  const { appointmentSettings, updateAppointmentSettings } = useLeads();
+  const { appointmentSettings, updateAppointmentSettings, insightsSettings, updateInsightsSettings } = useLeads();
   const [integrations, setIntegrations] = useState<Integration[]>(defaultIntegrations);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -518,6 +518,78 @@ export default function Settings() {
           <p className="text-xs text-muted-foreground">
             💡 Für tatsächlichen Versand wird Lovable Cloud benötigt (SMS via Twilio, E-Mail via SMTP). Derzeit wird die Aktion protokolliert.
           </p>
+        </div>
+      </div>
+
+      {/* ══════════ Insights / DISC-Test ══════════ */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2"><Brain className="h-5 w-5" /> Insights / DISC-Persönlichkeitstest</h2>
+          <p className="text-sm text-muted-foreground">Einstellungen für den DISC-Persönlichkeitstest im Recruiting-Prozess.</p>
+        </div>
+
+        {/* ── Allgemeine Insights-Einstellungen ── */}
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-semibold flex items-center gap-2"><Settings2 className="h-4 w-4 text-muted-foreground" /> Allgemein</h3>
+          <ToggleRow
+            label="Status automatisch auf «Insights» setzen"
+            description="Setzt den Lead-Status automatisch auf «Insights» wenn der DISC-Test abgeschlossen wird"
+            checked={insightsSettings.autoStatusAfterComplete}
+            onChange={v => { updateInsightsSettings({ autoStatusAfterComplete: v }); toast({ title: 'Gespeichert' }); }}
+          />
+          <ToggleRow
+            label="Pflicht vor Gespräch 2"
+            description="Der DISC-Test muss abgeschlossen sein, bevor der Status auf «Gespräch 2» gesetzt werden kann"
+            checked={insightsSettings.requiredBeforeInterview2}
+            onChange={v => { updateInsightsSettings({ requiredBeforeInterview2: v }); toast({ title: 'Gespeichert' }); }}
+            icon={<Lock className="h-4 w-4" />}
+          />
+          <ToggleRow
+            label="Detaillierte Ergebnisse anzeigen"
+            description="Zeigt Prozent-Werte und Interpretation für jede DISC-Dimension"
+            checked={insightsSettings.showDetailedResults}
+            onChange={v => { updateInsightsSettings({ showDetailedResults: v }); toast({ title: 'Gespeichert' }); }}
+            icon={<FileText className="h-4 w-4" />}
+          />
+          <ToggleRow
+            label="Wiederholung erlauben"
+            description="Kandidaten dürfen den DISC-Test erneut ausfüllen"
+            checked={insightsSettings.allowRetake}
+            onChange={v => { updateInsightsSettings({ allowRetake: v }); toast({ title: 'Gespeichert' }); }}
+            icon={<RefreshCw className="h-4 w-4" />}
+          />
+        </div>
+
+        {/* ── Einleitungstext ── */}
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-semibold flex items-center gap-2"><FileText className="h-4 w-4 text-muted-foreground" /> Einleitungstext</h3>
+          <p className="text-xs text-muted-foreground">Dieser Text wird dem Kandidaten vor Beginn des Tests angezeigt.</p>
+          <textarea
+            value={insightsSettings.introText}
+            onChange={e => updateInsightsSettings({ introText: e.target.value })}
+            rows={3}
+            className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none"
+          />
+        </div>
+
+        {/* ── Fragenübersicht ── */}
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-semibold flex items-center gap-2"><Brain className="h-4 w-4 text-muted-foreground" /> Fragenübersicht ({discQuestions.length} Fragen)</h3>
+          <p className="text-xs text-muted-foreground">Aktuelle DISC-Fragen im Test. Anpassung der Fragen wird in einer zukünftigen Version verfügbar sein.</p>
+          <div className="space-y-1">
+            {discQuestions.map((q, i) => (
+              <div key={i} className="flex items-center gap-3 rounded-lg border bg-muted/30 px-3 py-2">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">{i + 1}</span>
+                <span className="text-sm flex-1">{q.text}</span>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                  q.dimension === 'D' ? 'bg-red-100 text-red-700' :
+                  q.dimension === 'I' ? 'bg-amber-100 text-amber-700' :
+                  q.dimension === 'S' ? 'bg-emerald-100 text-emerald-700' :
+                  'bg-blue-100 text-blue-700'
+                }`}>{q.dimension}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

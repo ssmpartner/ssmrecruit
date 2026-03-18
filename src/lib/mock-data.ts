@@ -91,6 +91,22 @@ export interface AppointmentSettings {
   inviteMessageTemplate: string;
 }
 
+export interface InsightsSettings {
+  autoStatusAfterComplete: boolean;
+  introText: string;
+  showDetailedResults: boolean;
+  allowRetake: boolean;
+  requiredBeforeInterview2: boolean;
+}
+
+export const defaultInsightsSettings: InsightsSettings = {
+  autoStatusAfterComplete: true,
+  introText: 'Bitte beantworten Sie die folgenden Fragen ehrlich und spontan. Es gibt keine richtigen oder falschen Antworten.',
+  showDetailedResults: true,
+  allowRetake: false,
+  requiredBeforeInterview2: true,
+};
+
 export const defaultAppointmentSettings: AppointmentSettings = {
   defaultDuration: 30,
   defaultType: 'video',

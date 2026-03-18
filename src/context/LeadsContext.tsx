@@ -12,8 +12,10 @@ import {
   type AppointmentSettings,
   type DiscResult,
   type DiscDimension,
+  type InsightsSettings,
   discQuestions,
   defaultAppointmentSettings,
+  defaultInsightsSettings,
 } from '@/lib/mock-data';
 
 export interface ActivityEntry {
@@ -33,7 +35,9 @@ interface LeadsContextType {
   appointments: Appointment[];
   discResults: DiscResult[];
   appointmentSettings: AppointmentSettings;
+  insightsSettings: InsightsSettings;
   updateAppointmentSettings: (updates: Partial<AppointmentSettings>) => void;
+  updateInsightsSettings: (updates: Partial<InsightsSettings>) => void;
   updateLead: (id: string, updates: Partial<Lead>) => void;
   addLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => void;
   addActivity: (leadId: string, type: ActivityEntry['type'], description: string) => void;
@@ -88,10 +92,15 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [discResults, setDiscResults] = useState<DiscResult[]>([]);
   const [appointmentSettings, setAppointmentSettings] = useState<AppointmentSettings>(defaultAppointmentSettings);
+  const [insightsSettings, setInsightsSettings] = useState<InsightsSettings>(defaultInsightsSettings);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const updateAppointmentSettings = useCallback((updates: Partial<AppointmentSettings>) => {
     setAppointmentSettings(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const updateInsightsSettings = useCallback((updates: Partial<InsightsSettings>) => {
+    setInsightsSettings(prev => ({ ...prev, ...updates }));
   }, []);
 
   const addActivity = useCallback((leadId: string, type: ActivityEntry['type'], description: string) => {
@@ -199,7 +208,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   }, [appointments, leads, appointmentSettings.notificationMethod, addActivity]);
 
   return (
-    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, discResults, appointmentSettings, updateAppointmentSettings, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, submitDiscTest, selectedLead, setSelectedLead, addEmployee, addAgency }}>
+    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, discResults, appointmentSettings, insightsSettings, updateAppointmentSettings, updateInsightsSettings, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, submitDiscTest, selectedLead, setSelectedLead, addEmployee, addAgency }}>
       {children}
     </LeadsContext.Provider>
   );
