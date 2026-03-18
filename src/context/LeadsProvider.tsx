@@ -14,8 +14,10 @@ import {
   discQuestions,
   defaultAppointmentSettings,
   defaultInsightsSettings,
+  statusConfig,
 } from '@/lib/mock-data';
 import { LeadsContext, type ActivityEntry } from './leads-context';
+import { useNotifications } from './useNotifications';
 
 function seedActivities(leads: Lead[]): ActivityEntry[] {
   const entries: ActivityEntry[] = [];
