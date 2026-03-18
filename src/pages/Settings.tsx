@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut } from 'lucide-react';
+import ProfileSettings from '@/components/ProfileSettings';
 import { useToast } from '@/hooks/use-toast';
 import { useLeads } from '@/context/useLeads';
 import { useNotifications } from '@/context/useNotifications';
@@ -64,9 +65,10 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'notifications' | 'users' | 'appointments' | 'insights' | 'integrations' | 'api';
+type SettingsTab = 'profile' | 'notifications' | 'users' | 'appointments' | 'insights' | 'integrations' | 'api';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
+  { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name, E-Mail & Passwort' },
   { id: 'notifications', label: 'Benachrichtigungen', icon: Bell, desc: 'In-App Alerts konfigurieren' },
   { id: 'users', label: 'Benutzer', icon: Users, desc: 'Rollen & Zugriffsrechte' },
   { id: 'appointments', label: 'Termine & Video', icon: CalendarDays, desc: 'Terminplanung & Video-Calls' },
@@ -79,7 +81,7 @@ export default function Settings() {
   const { toast } = useToast();
   const { appointmentSettings, updateAppointmentSettings, insightsSettings, updateInsightsSettings } = useLeads();
   const { preferences: notifPrefs, updatePreferences: updateNotifPrefs } = useNotifications();
-  const [activeTab, setActiveTab] = useState<SettingsTab>('notifications');
+  const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const [integrations, setIntegrations] = useState<Integration[]>(defaultIntegrations);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -195,6 +197,7 @@ export default function Settings() {
 
         {/* Content */}
         <div className="flex-1 max-w-2xl space-y-6">
+          {activeTab === 'profile' && <ProfileSettings />}
           {activeTab === 'notifications' && <NotificationsTab notifPrefs={notifPrefs} updateNotifPrefs={updateNotifPrefs} toast={toast} />}
           {activeTab === 'users' && (
             <UsersTab
