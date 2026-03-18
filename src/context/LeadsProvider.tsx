@@ -319,6 +319,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       id,
       name: agency.name,
       contact_email: agency.contactEmail,
+      region: agency.region || '',
+      language: agency.language || 'de',
+      allowed_cantons: agency.allowedCantons || [],
     });
   }, []);
 

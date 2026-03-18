@@ -133,7 +133,33 @@ export interface Agency {
   id: string;
   name: string;
   contactEmail: string;
+  region: string;
+  language: string;
+  allowedCantons: string[];
 }
+
+export const SWISS_CANTONS = [
+  { code: 'AG', name: 'Aargau' }, { code: 'AI', name: 'Appenzell I.Rh.' }, { code: 'AR', name: 'Appenzell A.Rh.' },
+  { code: 'BE', name: 'Bern' }, { code: 'BL', name: 'Basel-Landschaft' }, { code: 'BS', name: 'Basel-Stadt' },
+  { code: 'FR', name: 'Freiburg' }, { code: 'GE', name: 'Genf' }, { code: 'GL', name: 'Glarus' },
+  { code: 'GR', name: 'Graubünden' }, { code: 'JU', name: 'Jura' }, { code: 'LU', name: 'Luzern' },
+  { code: 'NE', name: 'Neuenburg' }, { code: 'NW', name: 'Nidwalden' }, { code: 'OW', name: 'Obwalden' },
+  { code: 'SG', name: 'St. Gallen' }, { code: 'SH', name: 'Schaffhausen' }, { code: 'SO', name: 'Solothurn' },
+  { code: 'SZ', name: 'Schwyz' }, { code: 'TG', name: 'Thurgau' }, { code: 'TI', name: 'Tessin' },
+  { code: 'UR', name: 'Uri' }, { code: 'VD', name: 'Waadt' }, { code: 'VS', name: 'Wallis' },
+  { code: 'ZG', name: 'Zug' }, { code: 'ZH', name: 'Zürich' },
+] as const;
+
+export const AGENCY_LANGUAGES = [
+  { code: 'de', name: 'Deutsch' },
+  { code: 'fr', name: 'Französisch' },
+  { code: 'it', name: 'Italienisch' },
+  { code: 'en', name: 'Englisch' },
+] as const;
+
+export const AGENCY_REGIONS = [
+  'Deutschschweiz', 'Westschweiz', 'Tessin', 'Gesamtschweiz',
+] as const;
 
 export interface Employee {
   id: string;
