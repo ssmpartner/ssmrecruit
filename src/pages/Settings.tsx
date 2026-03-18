@@ -83,6 +83,7 @@ const defaultIntegrations: Integration[] = [
 
 export default function Settings() {
   const { toast } = useToast();
+  const { notificationMethod, setNotificationMethod } = useLeads();
   const [integrations, setIntegrations] = useState<Integration[]>(defaultIntegrations);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
