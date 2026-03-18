@@ -3,7 +3,7 @@ import { useLeads } from '@/context/LeadsContext';
 import { sourceConfig, statusConfig } from '@/lib/mock-data';
 
 export default function Analytics() {
-  const { leads } = useLeads();
+  const { leads, agencies, employees } = useLeads();
 
   const agencyData = agencies.map(a => ({
     name: a.name,

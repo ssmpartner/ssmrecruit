@@ -7,7 +7,7 @@ import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 
 export default function LeadsTable() {
-  const { leads, setSelectedLead } = useLeads();
+  const { leads, employees, agencies, setSelectedLead } = useLeads();
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
   const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
   const [agencyFilter, setAgencyFilter] = useState('');
