@@ -15,6 +15,7 @@ import Analytics from "./pages/Analytics";
 import CalendarPage from "./pages/CalendarPage";
 import Settings from "./pages/Settings";
 import Processes from "./pages/Processes";
+import Tasks from "./pages/Tasks";
 import ApiDocs from "./pages/ApiDocs";
 import Documentation from "./pages/Documentation";
 import NotFound from "./pages/NotFound";
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/processes" element={<Processes />} />
+              <Route path="/tasks" element={<Tasks />} />
               <Route path="/api-docs" element={<ApiDocs />} />
               <Route path="/documentation" element={<Documentation />} />
             </Route>
