@@ -209,7 +209,61 @@ export default function Settings() {
     <div className="space-y-8 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Einstellungen</h1>
-        <p className="text-muted-foreground">Benutzer & Integrationen verwalten</p>
+        <p className="text-muted-foreground">Benutzer, Benachrichtigungen & Integrationen verwalten</p>
+      </div>
+
+      {/* ══════════ Benachrichtigungen ══════════ */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2"><Bell className="h-5 w-5" /> Benachrichtigungen</h2>
+          <p className="text-sm text-muted-foreground">Konfigurieren Sie, welche Benachrichtigungen Sie erhalten möchten.</p>
+        </div>
+
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-semibold flex items-center gap-2"><Settings2 className="h-4 w-4 text-muted-foreground" /> Allgemein</h3>
+          <ToggleRow
+            label="Benachrichtigungen aktiviert"
+            description="Master-Schalter für alle In-App-Benachrichtigungen"
+            checked={notifPrefs.enabled}
+            onChange={v => { updateNotifPrefs({ enabled: v }); toast({ title: v ? 'Benachrichtigungen aktiviert' : 'Benachrichtigungen deaktiviert' }); }}
+            icon={<Bell className="h-4 w-4" />}
+          />
+          <ToggleRow
+            label="Benachrichtigungston"
+            description="Akustisches Signal bei neuen Benachrichtigungen"
+            checked={notifPrefs.sound}
+            onChange={v => { updateNotifPrefs({ sound: v }); toast({ title: 'Gespeichert' }); }}
+          />
+        </div>
+
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-semibold">Lead-Benachrichtigungen</h3>
+          <ToggleRow label="Neue Leads" description="Benachrichtigung bei neuen Lead-Eingängen"
+            checked={notifPrefs.leadNew} onChange={v => { updateNotifPrefs({ leadNew: v }); toast({ title: 'Gespeichert' }); }} />
+          <ToggleRow label="Status-Änderungen" description="Benachrichtigung bei Lead-Status-Wechseln"
+            checked={notifPrefs.leadStatusChange} onChange={v => { updateNotifPrefs({ leadStatusChange: v }); toast({ title: 'Gespeichert' }); }} />
+          <ToggleRow label="Lead-Zuweisungen" description="Benachrichtigung wenn Leads zugewiesen werden"
+            checked={notifPrefs.leadAssigned} onChange={v => { updateNotifPrefs({ leadAssigned: v }); toast({ title: 'Gespeichert' }); }} />
+        </div>
+
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-semibold">Termin-Benachrichtigungen</h3>
+          <ToggleRow label="Termin erstellt" description="Benachrichtigung bei neuen Terminen"
+            checked={notifPrefs.appointmentCreated} onChange={v => { updateNotifPrefs({ appointmentCreated: v }); toast({ title: 'Gespeichert' }); }} />
+          <ToggleRow label="Termin-Erinnerungen" description="Erinnerungen vor anstehenden Terminen"
+            checked={notifPrefs.appointmentReminder} onChange={v => { updateNotifPrefs({ appointmentReminder: v }); toast({ title: 'Gespeichert' }); }} />
+          <ToggleRow label="Termin gelöscht" description="Benachrichtigung wenn Termine entfernt werden"
+            checked={notifPrefs.appointmentCancelled} onChange={v => { updateNotifPrefs({ appointmentCancelled: v }); toast({ title: 'Gespeichert' }); }} />
+        </div>
+
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-semibold">Weitere Benachrichtigungen</h3>
+          <ToggleRow label="DISC-Test abgeschlossen" description="Benachrichtigung wenn ein Kandidat den Persönlichkeitstest abschliesst"
+            checked={notifPrefs.discCompleted} onChange={v => { updateNotifPrefs({ discCompleted: v }); toast({ title: 'Gespeichert' }); }}
+            icon={<Brain className="h-4 w-4" />} />
+          <ToggleRow label="Automatisierungen" description="Benachrichtigung wenn eine Automatisierung ausgelöst wird"
+            checked={notifPrefs.automationTriggered} onChange={v => { updateNotifPrefs({ automationTriggered: v }); toast({ title: 'Gespeichert' }); }} />
+        </div>
       </div>
 
       {/* ── User Management ── */}
