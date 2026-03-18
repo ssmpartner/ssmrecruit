@@ -170,7 +170,102 @@ export default function Processes() {
         </div>
       </div>
 
-      {/* ── Automations ── */}
+      {/* ── Prozess-Verzeichnis ── */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Settings2 className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold">Prozess-Verzeichnis</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">Jeder Schritt im Recruiting-Prozess mit Beschreibung und verfügbaren Funktionen.</p>
+
+        <div className="grid gap-4">
+          {([
+            {
+              status: 'new' as LeadStatus,
+              icon: '🆕',
+              title: 'Neuer Lead',
+              description: 'Ein Lead wird über eine der konfigurierten Quellen (Webseite, TikTok, Meta, LinkedIn, CSV) erfasst und landet im System.',
+              features: ['Automatische Erfassung via Webhook/API', 'Manuelle Erfassung über Lead-Formular', 'Quelle & Kanton werden automatisch zugeordnet', 'Auto-Zuweisung an Mitarbeiter möglich'],
+            },
+            {
+              status: 'contacted' as LeadStatus,
+              icon: '📞',
+              title: 'Kontaktiert',
+              description: 'Der zugewiesene Mitarbeiter nimmt den ersten Kontakt mit dem Kandidaten auf – per Telefon, E-Mail oder WhatsApp.',
+              features: ['Kontaktversuch wird in der Aktivität protokolliert', 'Notizen können hinterlegt werden', 'Lead kann einem anderen Mitarbeiter zugewiesen werden', 'Erinnerung bei Inaktivität konfigurierbar'],
+            },
+            {
+              status: 'appointment' as LeadStatus,
+              icon: '📅',
+              title: 'Terminiert',
+              description: 'Ein Termin wurde mit dem Kandidaten vereinbart. Das System unterstützt Telefon-, Video- und Vor-Ort-Termine.',
+              features: ['Termin erstellen mit Datum, Uhrzeit & Typ', 'Automatischer Video-Link (Jitsi) bei Video-Calls', 'Termineinladung per E-Mail/SMS/WhatsApp', 'Status wird automatisch auf "Terminiert" gesetzt'],
+            },
+            {
+              status: 'interview_1' as LeadStatus,
+              icon: '🎤',
+              title: 'Gespräch 1',
+              description: 'Das erste persönliche oder virtuelle Gespräch findet statt. Hier werden Eignung und Motivation des Kandidaten geprüft.',
+              features: ['Video-Call direkt aus dem System starten', 'Gesprächsnotizen protokollieren', 'Bewertung & Einschätzung hinterlegen', 'Ablehnung bei Nicht-Eignung möglich'],
+            },
+            {
+              status: 'insights' as LeadStatus,
+              icon: '🧠',
+              title: 'Insights (DISC-Test)',
+              description: 'Der Kandidat füllt einen DISC-Persönlichkeitstest aus. Die Ergebnisse geben Aufschluss über Verhaltenspräferenzen.',
+              features: ['12-Fragen DISC-Persönlichkeitstest', 'Automatische Auswertung der 4 Dimensionen (D/I/S/C)', 'Grafische Visualisierung der Ergebnisse', 'Dominanter Persönlichkeitstyp wird identifiziert', 'Konfigurierbar als Pflicht vor Gespräch 2'],
+            },
+            {
+              status: 'interview_2' as LeadStatus,
+              icon: '🤝',
+              title: 'Gespräch 2',
+              description: 'Das zweite, vertiefende Gespräch – oft mit Teamleitung oder Management. Basierend auf den Insights-Ergebnissen.',
+              features: ['DISC-Ergebnisse als Gesprächsgrundlage', 'Detaillierte Bewertung & Vergleich', 'Finale Entscheidungsgrundlage', 'Ablehnung oder Weiterschritt zu Einstellung'],
+            },
+            {
+              status: 'hired' as LeadStatus,
+              icon: '✅',
+              title: 'Eingestellt',
+              description: 'Der Kandidat hat den gesamten Prozess durchlaufen und wurde erfolgreich eingestellt.',
+              features: ['Vollständige Prozess-Historie verfügbar', 'Alle Gesprächsnotizen & DISC-Ergebnisse archiviert', 'Statistik-Auswertung (Konversionsrate)', 'Lead wird in der Pipeline als abgeschlossen markiert'],
+            },
+            {
+              status: 'rejected' as LeadStatus,
+              icon: '❌',
+              title: 'Abgelehnt',
+              description: 'Der Kandidat wurde in einer beliebigen Phase des Prozesses abgelehnt.',
+              features: ['Ablehnung mit Grund dokumentierbar', 'Ablehnungszeitpunkt wird protokolliert', 'Lead bleibt im System für spätere Referenz', 'Statistik: Ablehnungsquote pro Phase'],
+            },
+          ]).map(step => {
+            const config = statusConfig[step.status];
+            const count = leads.filter(l => l.status === step.status).length;
+            return (
+              <div key={step.status} className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <div className="flex items-start gap-4 p-5">
+                  <span className="text-2xl mt-0.5">{step.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-sm font-bold">{step.title}</h3>
+                      <span className={`rounded-md px-2 py-0.5 text-[10px] font-semibold ${config.color}`}>{config.label}</span>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">{count} Leads</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">{step.description}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {step.features.map((feature, i) => (
+                        <span key={i} className="inline-flex items-center gap-1 rounded-lg bg-muted/50 border px-2 py-1 text-[11px]">
+                          <Check className="h-3 w-3 text-primary shrink-0" />
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
