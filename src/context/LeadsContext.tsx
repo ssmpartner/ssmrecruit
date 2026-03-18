@@ -106,12 +106,21 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     addActivity(id, 'status_change', `Lead "${leadData.name}" manuell erfasst`);
   }, [addActivity]);
 
-  const addAppointment = useCallback((aptData: Omit<Appointment, 'id' | 'createdAt'>) => {
+  function generateMeetingLink(): string {
+    const chars = 'abcdefghijklmnopqrstuvwxyz';
+    const seg = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `https://meet.jit.si/recruitflow-${seg()}-${seg()}-${seg()}`;
+  }
+
+  const addAppointment = useCallback((aptData: Omit<Appointment, 'id' | 'createdAt' | 'meetingLink'>) => {
     const id = `apt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const apt: Appointment = { ...aptData, id, createdAt: new Date().toISOString() };
+    const meetingLink = aptData.type === 'video' ? generateMeetingLink() : undefined;
+    const apt: Appointment = { ...aptData, id, meetingLink, createdAt: new Date().toISOString() };
     setAppointments(prev => [apt, ...prev]);
     const typeLabel = aptData.type === 'phone' ? 'Telefon' : aptData.type === 'video' ? 'Video' : 'Vor Ort';
-    addActivity(aptData.leadId, 'appointment', `Termin erstellt: ${aptData.title} (${typeLabel}, ${aptData.date} ${aptData.time})`);
+    let desc = `Termin erstellt: ${aptData.title} (${typeLabel}, ${aptData.date} ${aptData.time})`;
+    if (meetingLink) desc += ` – Link: ${meetingLink}`;
+    addActivity(aptData.leadId, 'appointment', desc);
     // Auto-set status to appointment if still new/contacted
     const lead = leads.find(l => l.id === aptData.leadId);
     if (lead && (lead.status === 'new' || lead.status === 'contacted')) {
