@@ -5,12 +5,12 @@ import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 import { useLeads } from '@/context/LeadsContext';
-import { agencies, employees, statusConfig } from '@/lib/mock-data';
+import { statusConfig } from '@/lib/mock-data';
 
 const PIE_COLORS = ['hsl(217, 91%, 60%)', 'hsl(330, 80%, 55%)', 'hsl(166, 72%, 40%)', 'hsl(38, 92%, 50%)', 'hsl(270, 60%, 55%)'];
 
 export default function Dashboard() {
-  const { leads, setSelectedLead } = useLeads();
+  const { leads, employees, setSelectedLead } = useLeads();
 
   const sourceData = [
     { name: 'Website', value: leads.filter(l => l.source === 'website').length },

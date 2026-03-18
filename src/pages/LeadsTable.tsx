@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react';
 import { Download, Upload, Filter } from 'lucide-react';
-import { agencies, employees, type LeadStatus, type LeadSource, statusConfig, sourceConfig } from '@/lib/mock-data';
+import { type LeadStatus, type LeadSource, statusConfig, sourceConfig } from '@/lib/mock-data';
 import { useLeads } from '@/context/LeadsContext';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 
 export default function LeadsTable() {
-  const { leads, setSelectedLead } = useLeads();
+  const { leads, employees, agencies, setSelectedLead } = useLeads();
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
   const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
   const [agencyFilter, setAgencyFilter] = useState('');

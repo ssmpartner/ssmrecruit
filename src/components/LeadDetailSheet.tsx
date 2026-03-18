@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useLeads, type ActivityEntry } from '@/context/LeadsContext';
-import { employees, agencies, statusConfig, type LeadStatus } from '@/lib/mock-data';
+import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight } from 'lucide-react';
@@ -16,7 +16,7 @@ const activityIcon: Record<ActivityEntry['type'], typeof Clock> = {
 };
 
 export default function LeadDetailSheet() {
-  const { selectedLead, setSelectedLead, updateLead, addActivity, activities } = useLeads();
+  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies } = useLeads();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
 

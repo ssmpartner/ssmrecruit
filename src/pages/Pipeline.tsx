@@ -1,5 +1,5 @@
 import { useLeads } from '@/context/LeadsContext';
-import { statusConfig, employees, agencies, type LeadStatus } from '@/lib/mock-data';
+import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
@@ -7,7 +7,7 @@ import LeadDetailSheet from '@/components/LeadDetailSheet';
 const pipelineStatuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview', 'hired', 'rejected'];
 
 export default function Pipeline() {
-  const { leads, updateLead, addActivity, setSelectedLead } = useLeads();
+  const { leads, employees, updateLead, addActivity, setSelectedLead } = useLeads();
 
   const moveStatus = (leadId: string, newStatus: LeadStatus, e: React.MouseEvent) => {
     e.stopPropagation();
