@@ -100,7 +100,7 @@ export default function VideoCallDialog({ open, onOpenChange, meetingLink, title
     return () => {
       destroyApi();
     };
-  }, [open, room, title, destroyApi, onOpenChange]);
+  }, [open, room, title, destroyApi, onOpenChange, s]);
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) { destroyApi(); } onOpenChange(v); }}>
