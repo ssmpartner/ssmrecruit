@@ -21,6 +21,19 @@ export interface Lead {
   notes: string;
 }
 
+export interface Appointment {
+  id: string;
+  leadId: string;
+  title: string;
+  date: string; // ISO date
+  time: string; // HH:mm
+  duration: number; // minutes
+  type: 'phone' | 'video' | 'onsite';
+  notes: string;
+  createdBy: string;
+  createdAt: string;
+}
+
 export interface Agency {
   id: string;
   name: string;

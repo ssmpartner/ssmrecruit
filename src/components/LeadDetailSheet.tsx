@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import { useLeads, type ActivityEntry } from '@/context/LeadsContext';
 import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import { lookupPlz, searchPlz, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
-import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity } from 'lucide-react';
+import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus } from 'lucide-react';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview', 'hired', 'rejected'];
 
@@ -15,15 +19,31 @@ const activityIcon: Record<ActivityEntry['type'], typeof Clock> = {
   assignment: UserCog,
   edit: Edit3,
   note: MessageSquare,
+  appointment: CalendarIcon,
 };
 
+const appointmentTypeConfig = {
+  phone: { label: 'Telefon', icon: Phone },
+  video: { label: 'Video-Call', icon: Video },
+  onsite: { label: 'Vor Ort', icon: Building2 },
+} as const;
+
 export default function LeadDetailSheet() {
-  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies } = useLeads();
+  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment } = useLeads();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
   const [showPlzDropdown, setShowPlzDropdown] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '' });
+
+  // Appointment form
+  const [showAptForm, setShowAptForm] = useState(false);
+  const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
+
+  const leadAppointments = useMemo(() =>
+    selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
+    [selectedLead, appointments]
+  );
 
   const open = !!selectedLead;
 
@@ -144,8 +164,14 @@ export default function LeadDetailSheet() {
                 <TabsTrigger value="details" className="gap-1.5">
                   <User className="h-3.5 w-3.5" /> Details
                 </TabsTrigger>
+                <TabsTrigger value="appointments" className="gap-1.5">
+                  <CalendarIcon className="h-3.5 w-3.5" /> Termine
+                  {leadAppointments.length > 0 && (
+                    <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground leading-none">{leadAppointments.length}</span>
+                  )}
+                </TabsTrigger>
                 <TabsTrigger value="status" className="gap-1.5">
-                  <FileText className="h-3.5 w-3.5" /> Status & Zuweisung
+                  <FileText className="h-3.5 w-3.5" /> Status
                 </TabsTrigger>
                 <TabsTrigger value="activity" className="gap-1.5">
                   <Activity className="h-3.5 w-3.5" /> Aktivität
@@ -252,7 +278,132 @@ export default function LeadDetailSheet() {
                   )}
                 </TabsContent>
 
-                {/* Tab: Status & Assignment */}
+                {/* Tab: Appointments */}
+                <TabsContent value="appointments" className="mt-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold">Termine für {selectedLead.name}</h4>
+                    <button onClick={() => { setShowAptForm(!showAptForm); setAptForm({ title: '', date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' }); }}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                      <Plus className="h-3 w-3" /> Termin erstellen
+                    </button>
+                  </div>
+
+                  {showAptForm && (
+                    <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground">Titel *</label>
+                          <input value={aptForm.title} onChange={e => setAptForm(prev => ({ ...prev, title: e.target.value }))}
+                            placeholder="z.B. Erstgespräch" maxLength={100}
+                            className={inputCls} />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground">Art</label>
+                          <select value={aptForm.type} onChange={e => setAptForm(prev => ({ ...prev, type: e.target.value as 'phone' | 'video' | 'onsite' }))}
+                            className={inputCls}>
+                            {Object.entries(appointmentTypeConfig).map(([k, v]) => (
+                              <option key={k} value={k}>{v.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground">Datum *</label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className={cn(inputCls, 'flex items-center gap-2 text-left', !aptForm.date && 'text-muted-foreground')}>
+                                <CalendarIcon className="h-3.5 w-3.5" />
+                                {aptForm.date ? format(aptForm.date, 'dd.MM.yyyy') : 'Datum wählen'}
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar mode="single" selected={aptForm.date} onSelect={(d) => setAptForm(prev => ({ ...prev, date: d }))}
+                                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                initialFocus className={cn("p-3 pointer-events-auto")} />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground">Uhrzeit *</label>
+                          <input type="time" value={aptForm.time} onChange={e => setAptForm(prev => ({ ...prev, time: e.target.value }))}
+                            className={inputCls} />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground">Dauer (Min.)</label>
+                          <select value={aptForm.duration} onChange={e => setAptForm(prev => ({ ...prev, duration: Number(e.target.value) }))}
+                            className={inputCls}>
+                            <option value={15}>15 Min.</option>
+                            <option value={30}>30 Min.</option>
+                            <option value={45}>45 Min.</option>
+                            <option value={60}>60 Min.</option>
+                            <option value={90}>90 Min.</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Notizen</label>
+                        <textarea value={aptForm.notes} onChange={e => setAptForm(prev => ({ ...prev, notes: e.target.value }))}
+                          rows={2} maxLength={500} placeholder="Zusätzliche Infos..."
+                          className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => setShowAptForm(false)}
+                          className="rounded-lg border bg-card px-3 py-1.5 text-xs font-medium hover:bg-secondary transition-colors">Abbrechen</button>
+                        <button disabled={!aptForm.title.trim() || !aptForm.date}
+                          onClick={() => {
+                            if (!aptForm.title.trim() || !aptForm.date || !selectedLead) return;
+                            addAppointment({
+                              leadId: selectedLead.id,
+                              title: aptForm.title.trim(),
+                              date: format(aptForm.date, 'yyyy-MM-dd'),
+                              time: aptForm.time,
+                              duration: aptForm.duration,
+                              type: aptForm.type,
+                              notes: aptForm.notes.trim(),
+                              createdBy: 'Sarah Chen',
+                            });
+                            setShowAptForm(false);
+                            setAptForm({ title: '', date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' });
+                          }}
+                          className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                          Termin speichern
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Appointment list */}
+                  {leadAppointments.length === 0 && !showAptForm && (
+                    <p className="text-sm text-muted-foreground py-8 text-center">Noch keine Termine für diesen Lead</p>
+                  )}
+                  <div className="space-y-2">
+                    {leadAppointments.map(apt => {
+                      const TypeIcon = appointmentTypeConfig[apt.type].icon;
+                      const isPast = new Date(`${apt.date}T${apt.time}`) < new Date();
+                      return (
+                        <div key={apt.id} className={cn("rounded-lg border p-3 flex items-start gap-3 transition-colors", isPast ? 'opacity-60 bg-muted/30' : 'bg-card hover:bg-muted/30')}>
+                          <div className={cn("mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full", isPast ? 'bg-muted' : 'bg-primary/10')}>
+                            <TypeIcon className={cn("h-4 w-4", isPast ? 'text-muted-foreground' : 'text-primary')} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium">{apt.title}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {new Date(apt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} • {apt.time} Uhr • {apt.duration} Min. • {appointmentTypeConfig[apt.type].label}
+                            </p>
+                            {apt.notes && <p className="text-xs mt-1 text-muted-foreground">{apt.notes}</p>}
+                          </div>
+                          <button onClick={() => removeAppointment(apt.id)}
+                            className="shrink-0 rounded-md p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+
+
                 <TabsContent value="status" className="mt-4 space-y-6">
                   <section>
                     <h4 className="text-sm font-semibold mb-3">Status ändern</h4>
