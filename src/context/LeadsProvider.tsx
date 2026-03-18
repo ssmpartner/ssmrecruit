@@ -328,6 +328,17 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const updateAgency = useCallback(async (id: string, updates: Partial<Agency>) => {
+    setAgencies((prev) => prev.map(a => a.id === id ? { ...a, ...updates } : a));
+    const dbUpdates: Record<string, any> = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.contactEmail !== undefined) dbUpdates.contact_email = updates.contactEmail;
+    if (updates.region !== undefined) dbUpdates.region = updates.region;
+    if (updates.language !== undefined) dbUpdates.language = updates.language;
+    if (updates.allowedCantons !== undefined) dbUpdates.allowed_cantons = updates.allowedCantons;
+    await supabase.from('agencies').update(dbUpdates).eq('id', id);
+  }, []);
+
   const submitDiscTest = useCallback(async (leadId: string, answers: number[]) => {
     const scores: Record<DiscDimension, number> = { D: 0, I: 0, S: 0, C: 0 };
     const counts: Record<DiscDimension, number> = { D: 0, I: 0, S: 0, C: 0 };
