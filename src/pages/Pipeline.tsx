@@ -1,5 +1,5 @@
 import { useLeads } from '@/context/LeadsContext';
-import { statusConfig, employees, agencies, type LeadStatus } from '@/lib/mock-data';
+import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
