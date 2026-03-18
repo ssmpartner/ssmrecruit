@@ -8,6 +8,7 @@ import {
   type Employee,
   type Agency,
   type Appointment,
+  type NotificationMethod,
 } from '@/lib/mock-data';
 
 export interface ActivityEntry {
