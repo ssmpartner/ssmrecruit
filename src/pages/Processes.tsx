@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3 } from 'lucide-react';
+import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLeads } from '@/context/useLeads';
@@ -7,6 +7,7 @@ import { statusConfig, statusFlow, type LeadStatus } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
 import { useToast } from '@/hooks/use-toast';
 import ProcessStepper from '@/components/ProcessStepper';
+import { supabase } from '@/integrations/supabase/client';
 
 // ── Types ──
 export type AutomationTrigger = 'status_change' | 'lead_created' | 'disc_completed' | 'time_in_status';
