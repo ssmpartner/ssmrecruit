@@ -40,7 +40,7 @@ const defaultIntegrations: Integration[] = [
   {
     id: 'meta',
     name: 'Meta (Facebook / Instagram)',
-    description: 'Collect leads from Facebook & Instagram Lead Ads',
+    description: 'Leads aus Facebook & Instagram Lead Ads sammeln',
     icon: '📘',
     method: 'none',
     zapierWebhook: '',
@@ -50,7 +50,7 @@ const defaultIntegrations: Integration[] = [
   {
     id: 'tiktok',
     name: 'TikTok Ads',
-    description: 'Collect leads from TikTok Lead Generation campaigns',
+    description: 'Leads aus TikTok Lead-Generierungskampagnen sammeln',
     icon: '🎵',
     method: 'none',
     zapierWebhook: '',
@@ -60,7 +60,7 @@ const defaultIntegrations: Integration[] = [
   {
     id: 'linkedin',
     name: 'LinkedIn Lead Forms',
-    description: 'Collect leads from LinkedIn Lead Gen Forms (coming soon)',
+    description: 'Leads aus LinkedIn Lead Gen Forms sammeln (demnächst)',
     icon: '💼',
     method: 'none',
     zapierWebhook: '',
@@ -69,8 +69,8 @@ const defaultIntegrations: Integration[] = [
   },
   {
     id: 'website',
-    name: 'Website Forms',
-    description: 'Collect leads from your website contact forms via webhook',
+    name: 'Webseiten-Formulare',
+    description: 'Leads aus Ihren Website-Kontaktformularen per Webhook sammeln',
     icon: '🌐',
     method: 'none',
     zapierWebhook: '',
