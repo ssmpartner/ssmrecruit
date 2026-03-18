@@ -28,6 +28,7 @@ export default function LeadsTable() {
       if (statusFilter && l.status !== statusFilter) return false;
       if (sourceFilter && l.source !== sourceFilter) return false;
       if (agencyFilter && l.agencyId !== agencyFilter) return false;
+      if (employeeFilter && l.employeeId !== employeeFilter) return false;
       if (cantonFilter && l.cantonCode !== cantonFilter) return false;
       if (dateFrom) {
         const created = new Date(l.createdAt);
