@@ -180,12 +180,60 @@ export default function Analytics() {
               <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke={AXIS_STROKE} />
               <YAxis tick={{ fontSize: 12 }} stroke={AXIS_STROKE} />
-              <Tooltip contentStyle={CHART_STYLE} />
+              <Tooltip contentStyle={CHART_STYLE} formatter={(value: number, name: string) => [value, name]} />
               <Bar dataKey="total" fill="hsl(217,91%,60%)" radius={[4, 4, 0, 0]} name="Total" />
               <Bar dataKey="hired" fill="hsl(142,71%,45%)" radius={[4, 4, 0, 0]} name="Eingestellt" />
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* Agency overview table */}
+      <div className="rounded-xl border bg-card shadow-sm">
+        <div className="p-6 pb-3">
+          <h3 className="text-base font-semibold">Agentur-Übersicht</h3>
+          <p className="text-sm text-muted-foreground">Detaillierte Aufschlüsselung pro Agentur</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-t text-left text-muted-foreground">
+                <th className="px-6 py-3 font-medium">Agentur</th>
+                <th className="px-6 py-3 font-medium text-right">Total</th>
+                <th className="px-6 py-3 font-medium text-right">Kontaktiert</th>
+                <th className="px-6 py-3 font-medium text-right">Interview</th>
+                <th className="px-6 py-3 font-medium text-right">Eingestellt</th>
+                <th className="px-6 py-3 font-medium text-right">Abgelehnt</th>
+                <th className="px-6 py-3 font-medium text-right">Konversion</th>
+                <th className="px-6 py-3 font-medium">Verteilung</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agencyData.map(a => (
+                <tr key={a.id} className="border-t hover:bg-muted/50 transition-colors">
+                  <td className="px-6 py-3 font-medium">{a.fullName}</td>
+                  <td className="px-6 py-3 text-right font-semibold">{a.total}</td>
+                  <td className="px-6 py-3 text-right">{a.contacted}</td>
+                  <td className="px-6 py-3 text-right">{a.interview}</td>
+                  <td className="px-6 py-3 text-right text-emerald-600 font-medium">{a.hired}</td>
+                  <td className="px-6 py-3 text-right text-red-500">{a.rejected}</td>
+                  <td className="px-6 py-3 text-right">{a.conversion}%</td>
+                  <td className="px-6 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden">
+                        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${filtered.length > 0 ? (a.total / filtered.length) * 100 : 0}%` }} />
+                      </div>
+                      <span className="text-xs text-muted-foreground w-10 text-right">{filtered.length > 0 ? ((a.total / filtered.length) * 100).toFixed(0) : 0}%</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
 
         {/* Employee performance */}
         <div className="rounded-xl border bg-card p-6 shadow-sm lg:col-span-2">
