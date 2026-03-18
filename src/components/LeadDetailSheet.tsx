@@ -145,22 +145,47 @@ export default function LeadDetailSheet() {
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col p-0">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
         {selectedLead && (
           <>
             {/* Header */}
             <div className="border-b bg-card px-6 pt-6 pb-4">
               <DialogHeader>
                 <DialogTitle className="text-xl">{selectedLead.name}</DialogTitle>
-                <DialogDescription>{selectedLead.position}</DialogDescription>
+                <DialogDescription className="text-sm text-muted-foreground">{selectedLead.position}</DialogDescription>
               </DialogHeader>
               <div className="mt-3 flex items-center gap-2 flex-wrap">
                 <LeadStatusBadge status={selectedLead.status} />
                 <SourceBadge source={selectedLead.source} />
-                <span className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
+                <span className="inline-flex items-center gap-1 rounded-md bg-gray-50 border border-gray-200 px-2 py-1 text-xs font-medium text-gray-600">
                   <MapPin className="h-3 w-3" /> {selectedLead.plz} {selectedLead.city} ({selectedLead.cantonCode})
                 </span>
               </div>
+
+              {/* Prominent Video Call CTA when upcoming appointment exists */}
+              {(() => {
+                const nextVideoApt = leadAppointments.find(a => a.type === 'video' && a.meetingLink && new Date(`${a.date}T${a.time}`) >= new Date());
+                if (!nextVideoApt) return null;
+                return (
+                  <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 shadow-sm">
+                      <Video className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-emerald-900">{nextVideoApt.title}</p>
+                      <p className="text-xs text-emerald-700">
+                        {new Date(nextVideoApt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short' })} • {nextVideoApt.time} Uhr
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setActiveCallAptId(nextVideoApt.id)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-colors"
+                    >
+                      <Video className="h-4 w-4" /> Jetzt starten
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Tabs */}
@@ -418,8 +443,8 @@ export default function LeadDetailSheet() {
                               </div>
                               <div className="flex items-center gap-2">
                                 <button onClick={() => setActiveCallAptId(apt.id)}
-                                  className="inline-flex items-center gap-1.5 rounded-md bg-success/15 text-success px-2.5 py-1 text-[11px] font-semibold hover:bg-success/25 transition-colors">
-                                  <Video className="h-3 w-3" /> Jetzt starten
+                                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-emerald-700 shadow-sm transition-colors">
+                                  <Video className="h-3.5 w-3.5" /> Jetzt starten
                                 </button>
                                 <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Einladung gesendet', description: `Link per ${methodLabels[appointmentSettings.notificationMethod]} an ${selectedLead?.name} gesendet` }); }}
                                   className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-medium hover:bg-primary/20 transition-colors">

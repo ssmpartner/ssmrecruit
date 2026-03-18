@@ -6,23 +6,23 @@
 
 @layer base {
   :root {
-    --background: 150 8% 97%;
-    --foreground: 168 17% 12%;
+    --background: 0 0% 97.5%;
+    --foreground: 0 0% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 168 17% 12%;
+    --card-foreground: 0 0% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 168 17% 12%;
+    --popover-foreground: 0 0% 12%;
 
     --primary: 168 17% 23%;
     --primary-foreground: 60 10% 95%;
 
-    --secondary: 162 17% 50%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 30%;
 
-    --muted: 150 10% 94%;
-    --muted-foreground: 160 8% 45%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 45%;
 
     --accent: 67 16% 66%;
     --accent-foreground: 168 17% 15%;
@@ -30,8 +30,8 @@
     --destructive: 0 65% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 150 10% 89%;
-    --input: 150 10% 89%;
+    --border: 0 0% 89%;
+    --input: 0 0% 89%;
     --ring: 162 17% 50%;
 
     --radius: 0.75rem;
@@ -47,12 +47,16 @@
     --sidebar-ring: 162 17% 50%;
 
     /* Semantic */
-    --success: 162 40% 42%;
+    --success: 152 55% 40%;
     --success-foreground: 0 0% 100%;
     --warning: 38 80% 50%;
     --warning-foreground: 0 0% 100%;
-    --info: 200 70% 50%;
+    --info: 210 60% 52%;
     --info-foreground: 0 0% 100%;
+
+    /* Brand secondary for accents */
+    --brand-secondary: 162 17% 50%;
+    --brand-tertiary: 67 16% 66%;
 
     /* Tertiary token */
     --tertiary: 67 16% 66%;
