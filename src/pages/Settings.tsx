@@ -224,8 +224,6 @@ export default function Settings() {
             />
           )}
           {activeTab === 'api' && <ApiKeysTab toast={toast} />}
-          {activeTab === 'api-docs' && <ApiDocsContent />}
-          {activeTab === 'documentation' && <DocumentationTab />}
         </div>
       </div>
     </div>
