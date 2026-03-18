@@ -1,9 +1,20 @@
+import { memo } from 'react';
 import { Outlet } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
 import { Search } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
+import { useAuth } from '@/context/AuthContext';
 
-export default function AppLayout() {
+function AppLayout() {
+  const { profile, user } = useAuth();
+
+  const initials = (profile?.display_name || user?.email || 'U')
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
     <div className="min-h-screen bg-background">
       <AppSidebar />
@@ -14,7 +25,7 @@ export default function AppLayout() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search leads, agencies..."
+              placeholder="Leads, Agenturen suchen..."
               className="h-9 w-full rounded-xl border bg-muted/50 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-ring focus:bg-background transition-all"
             />
           </div>
@@ -22,11 +33,11 @@ export default function AppLayout() {
             <NotificationCenter />
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
-                SC
+                {initials}
               </div>
               <div className="text-sm">
-                <p className="font-medium leading-none">Sarah Chen</p>
-                <p className="text-xs text-muted-foreground">Admin</p>
+                <p className="font-medium leading-none">{profile?.display_name || 'Benutzer'}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
             </div>
           </div>
@@ -38,3 +49,5 @@ export default function AppLayout() {
     </div>
   );
 }
+
+export default memo(AppLayout);

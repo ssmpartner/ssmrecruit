@@ -1,9 +1,18 @@
 import { useState } from 'react';
 import { FileText, Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2 } from 'lucide-react';
 
-const APP_VERSION = '2.7.0';
+const APP_VERSION = '2.8.0';
 
 const versionHistory = [
+  { version: '2.8.0', date: '18.03.2026', changes: [
+    'Lazy Loading & Code-Splitting für alle Seiten (schnellere Ladezeiten)',
+    'QueryClient-Optimierung mit Stale-Time & Retry-Konfiguration',
+    'RLS-Sicherheitsrichtlinien verschärft: Nur authentifizierte Benutzer haben Zugriff',
+    'App-Einstellungen nur noch durch Superadmins änderbar',
+    'AppLayout zeigt dynamisch den angemeldeten Benutzer (Name & Initialen)',
+    'Superadmin-Konto mit vollständiger Benutzerverwaltung (Erstellen, Rollen, Löschen)',
+    'Authentifizierung mit E-Mail-Auto-Confirm für internes System',
+  ]},
   { version: '2.7.0', date: '18.03.2026', changes: ['Lead-Lifecycle: Archivieren, Löschen und Wiederherstellen mit Bestätigungsdialogen', 'KI-Duplikaterkennung mit Vergleichs- und Zusammenführungsfunktion', 'Untermenüs Aktiv/Archiviert/Gelöscht/Doppelte Leads in der Lead-Tabelle', 'KI-generierte Richtlinien & Regeln im Prozess-Verzeichnis', 'Geltungsbereich für Automatisierungen (Global, Agentur, Mitarbeiter)'] },
   { version: '2.6.0', date: '18.03.2026', changes: ['Agentur-Detailansicht mit bearbeitbaren Einstellungen (Name, E-Mail, Region, Sprache, Kantone)', 'Regionale Agentur-Einstellungen (Region, Sprache, erlaubte Kantone)', 'Kontextmenü updateAgency für persistente Agentur-Änderungen'] },
   { version: '2.5.0', date: '18.03.2026', changes: ['Vollständiges Backend mit Lovable Cloud (Datenbank-Persistenz)', 'KI-gestützte Aufgabengenerierung pro Lead-Phase', 'Aufgaben-Management mit System- & KI-Tasks', 'Echtzeit-Datensynchronisation über alle Module'] },
@@ -59,13 +68,16 @@ const appFeatures = [
   ]},
   { category: 'Backend & Datenbank', icon: '🗄️', features: [
     { name: 'Lovable Cloud', desc: 'Vollständig persistente Datenbank für alle Module (Leads, Termine, Aufgaben, etc.).' },
-    { name: 'Row Level Security', desc: 'Sicherheitsrichtlinien auf Datenbankebene für alle Tabellen.' },
-    { name: 'Edge Functions', desc: 'Serverless Backend-Funktionen für KI-Aufgabengenerierung.' },
+    { name: 'Row Level Security', desc: 'Verschärfte Sicherheitsrichtlinien – nur authentifizierte Benutzer haben Datenbankzugriff.' },
+    { name: 'Edge Functions', desc: 'Serverless Backend-Funktionen für KI-Aufgabengenerierung und Benutzerverwaltung.' },
     { name: 'Echtzeit-Sync', desc: 'Automatische Datensynchronisation zwischen Frontend und Datenbank.' },
+    { name: 'Code-Splitting', desc: 'Lazy Loading aller Seiten für optimierte Ladezeiten und kleinere Bundle-Grössen.' },
   ]},
   { category: 'Administration', icon: '⚙️', features: [
-    { name: 'Benutzerverwaltung', desc: 'Benutzer mit Rollen (Superadmin, Admin, Backoffice, Analyst) verwalten.' },
+    { name: 'Benutzerverwaltung', desc: 'Superadmins können Benutzer erstellen, Rollen zuweisen und Konten löschen.' },
+    { name: 'Rollensystem', desc: 'Vier Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Backoffice, Analyst.' },
     { name: 'Einstellungen', desc: 'Zentrale Konfiguration für Benachrichtigungen, Termine, Integrationen und API.' },
+    { name: 'Profilverwaltung', desc: 'Benutzer können Name, E-Mail und Passwort in den Profileinstellungen ändern.' },
   ]},
 ];
 
