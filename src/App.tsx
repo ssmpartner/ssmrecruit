@@ -31,7 +31,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
       retry: 1,
       refetchOnWindowFocus: false,
     },
@@ -75,35 +75,39 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <NotificationsProvider>
-            <LeadsProvider>
-              <Suspense fallback={<FullScreenLoader />}>
-                <Routes>
-                  {/* Public auth routes */}
-                  <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-                  <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
+          <Suspense fallback={<FullScreenLoader />}>
+            <Routes>
+              {/* Public auth routes */}
+              <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+              <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-                  {/* Protected routes */}
-                  <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-                    <Route path="/" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
-                    <Route path="/pipeline" element={<Suspense fallback={<PageLoader />}><Pipeline /></Suspense>} />
-                    <Route path="/leads" element={<Suspense fallback={<PageLoader />}><LeadsTable /></Suspense>} />
-                    <Route path="/agencies" element={<Suspense fallback={<PageLoader />}><Agencies /></Suspense>} />
-                    <Route path="/employees" element={<Suspense fallback={<PageLoader />}><Employees /></Suspense>} />
-                    <Route path="/calendar" element={<Suspense fallback={<PageLoader />}><CalendarPage /></Suspense>} />
-                    <Route path="/analytics" element={<Suspense fallback={<PageLoader />}><Analytics /></Suspense>} />
-                    <Route path="/settings" element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
-                    <Route path="/processes" element={<Suspense fallback={<PageLoader />}><Processes /></Suspense>} />
-                    <Route path="/tasks" element={<Suspense fallback={<PageLoader />}><Tasks /></Suspense>} />
-                    <Route path="/api-docs" element={<Suspense fallback={<PageLoader />}><ApiDocs /></Suspense>} />
-                    <Route path="/documentation" element={<Suspense fallback={<PageLoader />}><Documentation /></Suspense>} />
-                  </Route>
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </LeadsProvider>
-          </NotificationsProvider>
+              {/* Protected routes – providers inside so DB queries only run when authenticated */}
+              <Route element={
+                <ProtectedRoute>
+                  <NotificationsProvider>
+                    <LeadsProvider>
+                      <AppLayout />
+                    </LeadsProvider>
+                  </NotificationsProvider>
+                </ProtectedRoute>
+              }>
+                <Route path="/" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+                <Route path="/pipeline" element={<Suspense fallback={<PageLoader />}><Pipeline /></Suspense>} />
+                <Route path="/leads" element={<Suspense fallback={<PageLoader />}><LeadsTable /></Suspense>} />
+                <Route path="/agencies" element={<Suspense fallback={<PageLoader />}><Agencies /></Suspense>} />
+                <Route path="/employees" element={<Suspense fallback={<PageLoader />}><Employees /></Suspense>} />
+                <Route path="/calendar" element={<Suspense fallback={<PageLoader />}><CalendarPage /></Suspense>} />
+                <Route path="/analytics" element={<Suspense fallback={<PageLoader />}><Analytics /></Suspense>} />
+                <Route path="/settings" element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
+                <Route path="/processes" element={<Suspense fallback={<PageLoader />}><Processes /></Suspense>} />
+                <Route path="/tasks" element={<Suspense fallback={<PageLoader />}><Tasks /></Suspense>} />
+                <Route path="/api-docs" element={<Suspense fallback={<PageLoader />}><ApiDocs /></Suspense>} />
+                <Route path="/documentation" element={<Suspense fallback={<PageLoader />}><Documentation /></Suspense>} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

@@ -1,11 +1,10 @@
-import { memo } from 'react';
 import { Outlet } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
 import { Search } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
 import { useAuth } from '@/context/AuthContext';
 
-function AppLayout() {
+export default function AppLayout() {
   const { profile, user } = useAuth();
 
   const initials = (profile?.display_name || user?.email || 'U')
@@ -19,7 +18,6 @@ function AppLayout() {
     <div className="min-h-screen bg-background">
       <AppSidebar />
       <div className="pl-64">
-        {/* Top bar */}
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-card/90 backdrop-blur-md px-8">
           <div className="relative w-80">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -49,5 +47,3 @@ function AppLayout() {
     </div>
   );
 }
-
-export default memo(AppLayout);
