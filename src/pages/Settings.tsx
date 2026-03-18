@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLeads } from '@/context/LeadsContext';
+import { type NotificationMethod } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst';
