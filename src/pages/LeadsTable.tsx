@@ -108,6 +108,10 @@ export default function LeadsTable() {
           <option value="">Alle Agenturen</option>
           {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
+        <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
+          <option value="">Alle Mitarbeiter</option>
+          {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+        </select>
         <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>
           <option value="">Alle Kantone</option>
           {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
