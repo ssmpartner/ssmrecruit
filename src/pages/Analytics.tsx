@@ -108,9 +108,13 @@ export default function Analytics() {
           <option value="">Alle Agenturen</option>
           {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
-        {(cantonFilter || sourceFilter || statusFilter || agencyFilter) && (
+        <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className="h-9 rounded-lg border bg-background px-3 text-sm outline-none">
+          <option value="">Alle Mitarbeiter</option>
+          {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+        </select>
+        {(cantonFilter || sourceFilter || statusFilter || agencyFilter || employeeFilter) && (
           <button
-            onClick={() => { setCantonFilter(''); setSourceFilter(''); setStatusFilter(''); setAgencyFilter(''); }}
+            onClick={() => { setCantonFilter(''); setSourceFilter(''); setStatusFilter(''); setAgencyFilter(''); setEmployeeFilter(''); }}
             className="rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
           >
             Filter zurücksetzen
