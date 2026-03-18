@@ -13,8 +13,9 @@ import SourceBadge from './SourceBadge';
 import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus, Link2, Send, Copy, ExternalLink, Brain } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import VideoCallDialog from './VideoCallDialog';
+import InsightsTab from './InsightsTab';
 
-const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'interview_2', 'hired', 'rejected'];
+const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'insights', 'interview_2', 'hired', 'rejected'];
 
 const activityIcon: Record<ActivityEntry['type'], typeof Clock> = {
   status_change: ArrowRight,
