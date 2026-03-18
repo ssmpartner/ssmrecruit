@@ -50,6 +50,7 @@ export default function Pipeline() {
                     >
                       <p className="font-medium text-sm">{lead.name}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{lead.position}</p>
+                      <p className="text-xs text-muted-foreground">{lead.plz} {lead.city} ({lead.cantonCode})</p>
                       <div className="mt-2 flex items-center gap-2">
                         <SourceBadge source={lead.source} />
                       </div>
