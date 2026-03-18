@@ -8,22 +8,22 @@ export default function AppLayout() {
       <AppSidebar />
       <div className="pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-card/80 backdrop-blur-sm px-8">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-card/90 backdrop-blur-md px-8">
           <div className="relative w-80">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search leads, agencies..."
-              className="h-9 w-full rounded-lg border bg-secondary pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-ring transition-shadow"
+              className="h-9 w-full rounded-xl border bg-muted/50 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-ring focus:bg-background transition-all"
             />
           </div>
           <div className="flex items-center gap-4">
-            <button className="relative rounded-lg p-2 text-muted-foreground hover:bg-secondary transition-colors">
+            <button className="relative rounded-xl p-2 text-muted-foreground hover:bg-muted transition-colors">
               <Bell className="h-5 w-5" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-secondary" />
             </button>
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
+              <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
                 SC
               </div>
               <div className="text-sm">

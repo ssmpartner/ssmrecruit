@@ -7,7 +7,7 @@ import LeadDetailSheet from '@/components/LeadDetailSheet';
 import { useLeads } from '@/context/LeadsContext';
 import { statusConfig } from '@/lib/mock-data';
 
-const PIE_COLORS = ['hsl(217, 91%, 60%)', 'hsl(330, 80%, 55%)', 'hsl(166, 72%, 40%)', 'hsl(38, 92%, 50%)', 'hsl(270, 60%, 55%)', 'hsl(142, 71%, 45%)', 'hsl(0, 72%, 51%)'];
+const PIE_COLORS = ['hsl(168, 17%, 23%)', 'hsl(162, 17%, 50%)', 'hsl(67, 16%, 66%)', 'hsl(38, 80%, 50%)', 'hsl(200, 70%, 50%)', 'hsl(162, 40%, 42%)', 'hsl(0, 65%, 51%)'];
 
 export default function Dashboard() {
   const { leads, employees, setSelectedLead } = useLeads();
@@ -47,11 +47,11 @@ export default function Dashboard() {
           <h3 className="text-base font-semibold mb-4">Leads nach Quelle</h3>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={sourceData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(220,10%,46%)" />
-              <YAxis tick={{ fontSize: 12 }} stroke="hsl(220,10%,46%)" />
-              <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid hsl(220,13%,91%)', fontSize: 13 }} />
-              <Bar dataKey="value" fill="hsl(166,72%,40%)" radius={[6, 6, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(150,10%,89%)" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(160,8%,45%)" />
+              <YAxis tick={{ fontSize: 12 }} stroke="hsl(160,8%,45%)" />
+              <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid hsl(150,10%,89%)', fontSize: 13 }} />
+              <Bar dataKey="value" fill="hsl(168,17%,23%)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -65,7 +65,7 @@ export default function Dashboard() {
                   <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid hsl(220,13%,91%)', fontSize: 13 }} />
+              <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid hsl(150,10%,89%)', fontSize: 13 }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
