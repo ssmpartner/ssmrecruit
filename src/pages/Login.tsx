@@ -84,12 +84,6 @@ export default function Login() {
             {loading ? 'Wird angemeldet...' : 'Anmelden'}
           </button>
 
-          <p className="text-center text-sm text-muted-foreground">
-            Noch kein Konto?{' '}
-            <Link to="/signup" className="font-medium text-primary hover:underline">
-              Registrieren
-            </Link>
-          </p>
         </form>
       </div>
     </div>
