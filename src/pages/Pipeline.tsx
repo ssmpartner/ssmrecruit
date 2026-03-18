@@ -7,7 +7,7 @@ import LeadDetailSheet from '@/components/LeadDetailSheet';
 const pipelineStatuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview', 'hired', 'rejected'];
 
 export default function Pipeline() {
-  const { leads, updateLead, addActivity, setSelectedLead } = useLeads();
+  const { leads, employees, updateLead, addActivity, setSelectedLead } = useLeads();
 
   const moveStatus = (leadId: string, newStatus: LeadStatus, e: React.MouseEvent) => {
     e.stopPropagation();
