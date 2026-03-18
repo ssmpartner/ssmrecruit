@@ -417,6 +417,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         setSelectedLead,
         addEmployee,
         addAgency,
+        updateAgency,
         loading,
       }}
     >
