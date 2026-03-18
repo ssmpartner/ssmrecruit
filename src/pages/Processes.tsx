@@ -212,11 +212,14 @@ export default function Processes() {
       triggerConfig: { fromStatus: form.fromStatus || undefined, toStatus: form.toStatus || undefined, daysInStatus: form.trigger === 'time_in_status' ? form.daysInStatus : undefined, canton: form.canton || undefined },
       action: form.action,
       actionConfig: { targetStatus: form.action === 'change_status' ? (form.targetStatus as LeadStatus) : undefined, targetEmployeeId: form.action === 'assign_employee' ? form.targetEmployeeId : undefined, notificationMessage: form.action === 'send_notification' ? form.notificationMessage : undefined },
+      scope: form.scope,
+      scopeAgencyId: form.scope === 'agency' ? form.scopeAgencyId : undefined,
+      scopeEmployeeId: form.scope === 'employee' ? form.scopeEmployeeId : undefined,
       createdAt: new Date().toISOString(),
     };
     setRules(prev => [...prev, rule]);
     setDialogOpen(false);
-    setForm({ name: '', trigger: 'status_change', fromStatus: '', toStatus: '', daysInStatus: 3, canton: '', action: 'change_status', targetStatus: '', targetEmployeeId: '', notificationMessage: '' });
+    setForm({ name: '', trigger: 'status_change', fromStatus: '', toStatus: '', daysInStatus: 3, canton: '', action: 'change_status', targetStatus: '', targetEmployeeId: '', notificationMessage: '', scope: 'global', scopeAgencyId: '', scopeEmployeeId: '' });
     toast({ title: 'Regel erstellt', description: `"${rule.name}" hinzugefügt.` });
   };
 
