@@ -32,7 +32,8 @@ const appFeatures = [
     { name: 'Video-Integration', desc: 'Video-Call-Links automatisch zu Terminen hinzufügen.' },
   ]},
   { category: 'Organisation', icon: '🏢', features: [
-    { name: 'Agenturen', desc: 'Partneragenturen verwalten und deren Leads nachverfolgen.' },
+    { name: 'Agenturen', desc: 'Partneragenturen verwalten mit Detail-Panel für Name, E-Mail, Region, Sprache und Kantone.' },
+    { name: 'Agentur-Einstellungen', desc: 'Regionale Zuweisung, Sprache und erlaubte Kantone pro Agentur konfigurieren.' },
     { name: 'Mitarbeiter', desc: 'Mitarbeiterprofile und Zuweisungen verwalten.' },
     { name: 'Prozesse', desc: 'Mehrstufige Recruiting-Prozesse mit Stepper-Ansicht definieren und verfolgen.' },
   ]},
