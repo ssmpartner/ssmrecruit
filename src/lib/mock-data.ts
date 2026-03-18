@@ -208,13 +208,13 @@ export const sourceConfig: Record<LeadSource, { label: string; icon: string }> =
 };
 
 export const agencies: Agency[] = [
-  { id: 'a1', name: 'Agentur Unteren-Schönbühl', contactEmail: 'info@agentur-schoenbuehl.ch' },
-  { id: 'a2', name: 'Agentur Rothenburg', contactEmail: 'info@agentur-rothenburg.ch' },
-  { id: 'a3', name: 'Agentur Regensdorf', contactEmail: 'info@agentur-regensdorf.ch' },
-  { id: 'a4', name: 'Agentur Spreitenbach', contactEmail: 'info@agentur-spreitenbach.ch' },
-  { id: 'a5', name: 'Agentur Adliswil', contactEmail: 'info@agentur-adliswil.ch' },
-  { id: 'a6', name: 'Agentur Olten', contactEmail: 'info@agentur-olten.ch' },
-  { id: 'a7', name: 'Agentur Lugano', contactEmail: 'info@agentur-lugano.ch' },
+  { id: 'a1', name: 'Agentur Unteren-Schönbühl', contactEmail: 'info@agentur-schoenbuehl.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['BE', 'SO'] },
+  { id: 'a2', name: 'Agentur Rothenburg', contactEmail: 'info@agentur-rothenburg.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['LU', 'NW', 'OW'] },
+  { id: 'a3', name: 'Agentur Regensdorf', contactEmail: 'info@agentur-regensdorf.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['ZH', 'AG'] },
+  { id: 'a4', name: 'Agentur Spreitenbach', contactEmail: 'info@agentur-spreitenbach.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['AG', 'ZH'] },
+  { id: 'a5', name: 'Agentur Adliswil', contactEmail: 'info@agentur-adliswil.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['ZH', 'ZG', 'SZ'] },
+  { id: 'a6', name: 'Agentur Olten', contactEmail: 'info@agentur-olten.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['SO', 'BE', 'AG'] },
+  { id: 'a7', name: 'Agentur Lugano', contactEmail: 'info@agentur-lugano.ch', region: 'Tessin', language: 'it', allowedCantons: ['TI'] },
 ];
 
 export const employees: Employee[] = [

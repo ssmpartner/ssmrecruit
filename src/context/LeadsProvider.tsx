@@ -56,6 +56,9 @@ function dbToAgency(row: any): Agency {
     id: row.id,
     name: row.name,
     contactEmail: row.contact_email,
+    region: row.region || '',
+    language: row.language || 'de',
+    allowedCantons: row.allowed_cantons || [],
   };
 }
 
