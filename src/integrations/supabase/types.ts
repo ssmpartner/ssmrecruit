@@ -244,6 +244,7 @@ export type Database = {
           email: string
           employee_id: string
           id: string
+          lead_lifecycle: string
           name: string
           notes: string
           phone: string
@@ -263,6 +264,7 @@ export type Database = {
           email: string
           employee_id: string
           id: string
+          lead_lifecycle?: string
           name: string
           notes?: string
           phone?: string
@@ -282,6 +284,7 @@ export type Database = {
           email?: string
           employee_id?: string
           id?: string
+          lead_lifecycle?: string
           name?: string
           notes?: string
           phone?: string
