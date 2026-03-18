@@ -16,7 +16,7 @@ const activityIcon: Record<ActivityEntry['type'], typeof Clock> = {
 };
 
 export default function LeadDetailSheet() {
-  const { selectedLead, setSelectedLead, updateLead, addActivity, activities } = useLeads();
+  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies } = useLeads();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
 
