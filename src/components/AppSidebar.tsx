@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2 } from 'lucide-react';
+import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow } from 'lucide-react';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -10,7 +10,6 @@ const navItems = [
   { to: '/employees', icon: UserCog, label: 'Mitarbeiter' },
   { to: '/analytics', icon: BarChart3, label: 'Statistik' },
   { to: '/processes', icon: Workflow, label: 'Prozesse' },
-  { to: '/api', icon: Code2, label: 'API' },
 ];
 
 export default function AppSidebar() {

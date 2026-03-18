@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2 } from 'lucide-react';
+import { ApiDocsContent } from '@/pages/ApiDocs';
 import { useToast } from '@/hooks/use-toast';
 import { useLeads } from '@/context/useLeads';
 import { useNotifications } from '@/context/useNotifications';
@@ -64,7 +65,7 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'notifications' | 'users' | 'appointments' | 'insights' | 'integrations' | 'api';
+type SettingsTab = 'notifications' | 'users' | 'appointments' | 'insights' | 'integrations' | 'api' | 'api-docs';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
   { id: 'notifications', label: 'Benachrichtigungen', icon: Bell, desc: 'In-App Alerts konfigurieren' },
@@ -73,6 +74,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[
   { id: 'insights', label: 'Insights / DISC', icon: Brain, desc: 'Persönlichkeitstest-Einstellungen' },
   { id: 'integrations', label: 'Integrationen', icon: Plug, desc: 'Lead-Quellen & Webhooks' },
   { id: 'api', label: 'API-Schlüssel', icon: Key, desc: 'API-Keys generieren & verwalten' },
+  { id: 'api-docs', label: 'API-Dokumentation', icon: Code2, desc: 'REST API Referenz & Endpunkte' },
 ];
 
 export default function Settings() {
@@ -223,6 +225,7 @@ export default function Settings() {
             />
           )}
           {activeTab === 'api' && <ApiKeysTab toast={toast} />}
+          {activeTab === 'api-docs' && <ApiDocsContent />}
         </div>
       </div>
     </div>
@@ -867,10 +870,7 @@ function ApiKeysTab({ toast }: any) {
         <div className="rounded-lg bg-accent p-2 shrink-0"><Globe className="h-4 w-4 text-accent-foreground" /></div>
         <div>
           <p className="text-sm font-medium">API-Dokumentation</p>
-          <p className="text-xs text-muted-foreground mb-2">Vollständige REST API Referenz mit allen Endpunkten, Parametern und Code-Beispielen.</p>
-          <a href="/api" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
-            Zur API-Dokumentation <ExternalLink className="h-3 w-3" />
-          </a>
+          <p className="text-xs text-muted-foreground">Vollständige REST API Referenz – wechseln Sie zum Tab „API-Dokumentation" in der linken Navigation.</p>
         </div>
       </div>
 

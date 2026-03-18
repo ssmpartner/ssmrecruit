@@ -353,7 +353,7 @@ function EndpointCard({ endpoint }: { endpoint: ApiEndpoint }) {
   );
 }
 
-export default function ApiDocs() {
+export function ApiDocsContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
@@ -500,4 +500,8 @@ export default function ApiDocs() {
       </div>
     </div>
   );
+}
+
+export default function ApiDocs() {
+  return <ApiDocsContent />;
 }
