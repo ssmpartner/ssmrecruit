@@ -79,6 +79,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const [agencies, setAgencies] = useState<Agency[]>(initialAgencies);
   const [activities, setActivities] = useState<ActivityEntry[]>(() => seedActivities(initialLeads));
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [notificationMethod, setNotificationMethod] = useState<NotificationMethod>('email');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const addActivity = useCallback((leadId: string, type: ActivityEntry['type'], description: string) => {
