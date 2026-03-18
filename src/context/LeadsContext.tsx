@@ -10,6 +10,9 @@ import {
   type Appointment,
   type NotificationMethod,
   type AppointmentSettings,
+  type DiscResult,
+  type DiscDimension,
+  discQuestions,
   defaultAppointmentSettings,
 } from '@/lib/mock-data';
 
