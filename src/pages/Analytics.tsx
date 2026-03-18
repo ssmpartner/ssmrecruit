@@ -1,16 +1,20 @@
 import { useState, useMemo } from 'react';
-import { Filter } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { Filter, CalendarIcon, X } from 'lucide-react';
+import { format } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useLeads } from '@/context/LeadsContext';
 import { sourceConfig, statusConfig, type LeadSource, type LeadStatus } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
 import StatCard from '@/components/StatCard';
 import { Users, UserCheck, MapPin, Target } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
-const CHART_STYLE = { borderRadius: 8, border: '1px solid hsl(220,13%,91%)', fontSize: 13 };
-const AXIS_STROKE = 'hsl(220,10%,46%)';
-const GRID_STROKE = 'hsl(220,13%,91%)';
-const PIE_COLORS = ['hsl(166,72%,40%)', 'hsl(217,91%,60%)', 'hsl(38,92%,50%)', 'hsl(330,80%,55%)', 'hsl(142,71%,45%)', 'hsl(270,60%,55%)', 'hsl(0,72%,51%)', 'hsl(190,80%,45%)'];
+const CHART_STYLE = { borderRadius: 8, border: '1px solid hsl(0,0%,89%)', fontSize: 13 };
+const AXIS_STROKE = 'hsl(0,0%,45%)';
+const GRID_STROKE = 'hsl(0,0%,89%)';
+const PIE_COLORS = ['hsl(168,17%,23%)', 'hsl(162,17%,50%)', 'hsl(67,16%,66%)', 'hsl(38,80%,50%)', 'hsl(210,60%,52%)', 'hsl(152,55%,40%)', 'hsl(0,65%,51%)', 'hsl(270,40%,50%)'];
 
 export default function Analytics() {
   const { leads, agencies, employees } = useLeads();
@@ -19,6 +23,8 @@ export default function Analytics() {
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
   const [agencyFilter, setAgencyFilter] = useState('');
   const [employeeFilter, setEmployeeFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
 
   const filtered = useMemo(() => {
     return leads.filter(l => {
@@ -27,11 +33,26 @@ export default function Analytics() {
       if (statusFilter && l.status !== statusFilter) return false;
       if (agencyFilter && l.agencyId !== agencyFilter) return false;
       if (employeeFilter && l.employeeId !== employeeFilter) return false;
+      if (dateFrom) {
+        const created = new Date(l.createdAt);
+        if (created < new Date(dateFrom.setHours(0, 0, 0, 0))) return false;
+      }
+      if (dateTo) {
+        const created = new Date(l.createdAt);
+        const end = new Date(dateTo);
+        end.setHours(23, 59, 59, 999);
+        if (created > end) return false;
+      }
       return true;
     });
-  }, [leads, cantonFilter, sourceFilter, statusFilter, agencyFilter, employeeFilter]);
+  }, [leads, cantonFilter, sourceFilter, statusFilter, agencyFilter, employeeFilter, dateFrom, dateTo]);
 
-  // Canton data
+  const hasFilters = cantonFilter || sourceFilter || statusFilter || agencyFilter || employeeFilter || dateFrom || dateTo;
+
+  const clearFilters = () => {
+    setCantonFilter(''); setSourceFilter(''); setStatusFilter(''); setAgencyFilter(''); setEmployeeFilter(''); setDateFrom(undefined); setDateTo(undefined);
+  };
+
   const cantonData = useMemo(() => {
     const map = new Map<string, { code: string; name: string; total: number; hired: number }>();
     filtered.forEach(l => {
@@ -57,10 +78,7 @@ export default function Analytics() {
       name: a.name.length > 14 ? a.name.slice(0, 12) + '…' : a.name,
       fullName: a.name,
       total: agencyLeads.length,
-      hired,
-      contacted,
-      interview,
-      rejected,
+      hired, contacted, interview, rejected,
       conversion: agencyLeads.length > 0 ? ((hired / agencyLeads.length) * 100).toFixed(0) : '0',
     };
   }).sort((a, b) => b.total - a.total);
@@ -80,6 +98,8 @@ export default function Analytics() {
   const conversionRate = filtered.length > 0 ? ((hiredCount / filtered.length) * 100).toFixed(1) : '0';
   const uniqueCantons = new Set(filtered.map(l => l.cantonCode)).size;
 
+  const selectCls = "h-9 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -92,32 +112,56 @@ export default function Analytics() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4 shadow-sm">
         <Filter className="h-4 w-4 text-muted-foreground" />
-        <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className="h-9 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+        <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>
           <option value="">Alle Kantone</option>
           {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
         </select>
-        <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value as LeadSource | '')} className="h-9 rounded-lg border bg-background px-3 text-sm outline-none">
+        <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value as LeadSource | '')} className={selectCls}>
           <option value="">Alle Quellen</option>
           {Object.entries(sourceConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
         </select>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | '')} className="h-9 rounded-lg border bg-background px-3 text-sm outline-none">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | '')} className={selectCls}>
           <option value="">Alle Status</option>
           {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
         </select>
-        <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className="h-9 rounded-lg border bg-background px-3 text-sm outline-none">
+        <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className={selectCls}>
           <option value="">Alle Agenturen</option>
           {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
-        <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className="h-9 rounded-lg border bg-background px-3 text-sm outline-none">
+        <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
           <option value="">Alle Mitarbeiter</option>
           {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
         </select>
-        {(cantonFilter || sourceFilter || statusFilter || agencyFilter || employeeFilter) && (
-          <button
-            onClick={() => { setCantonFilter(''); setSourceFilter(''); setStatusFilter(''); setAgencyFilter(''); setEmployeeFilter(''); }}
-            className="rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
-          >
-            Filter zurücksetzen
+
+        {/* Date From */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn(selectCls, 'inline-flex items-center gap-2', !dateFrom && 'text-muted-foreground')}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {dateFrom ? format(dateFrom, 'dd.MM.yyyy') : 'Von'}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+          </PopoverContent>
+        </Popover>
+
+        {/* Date To */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn(selectCls, 'inline-flex items-center gap-2', !dateTo && 'text-muted-foreground')}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {dateTo ? format(dateTo, 'dd.MM.yyyy') : 'Bis'}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+          </PopoverContent>
+        </Popover>
+
+        {hasFilters && (
+          <button onClick={clearFilters} className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
+            <X className="h-3 w-3" /> Zurücksetzen
           </button>
         )}
       </div>
@@ -147,8 +191,8 @@ export default function Analytics() {
                   return c ? `${c.name} (${c.code})` : label;
                 }}
               />
-              <Bar dataKey="total" fill="hsl(217,91%,60%)" radius={[0, 4, 4, 0]} name="total" />
-              <Bar dataKey="hired" fill="hsl(142,71%,45%)" radius={[0, 4, 4, 0]} name="hired" />
+              <Bar dataKey="total" fill="hsl(168,17%,23%)" radius={[0, 4, 4, 0]} name="total" />
+              <Bar dataKey="hired" fill="hsl(152,55%,40%)" radius={[0, 4, 4, 0]} name="hired" />
             </BarChart>
           </ResponsiveContainer>
         ) : (
@@ -181,8 +225,8 @@ export default function Analytics() {
               <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke={AXIS_STROKE} />
               <YAxis tick={{ fontSize: 12 }} stroke={AXIS_STROKE} />
               <Tooltip contentStyle={CHART_STYLE} formatter={(value: number, name: string) => [value, name]} />
-              <Bar dataKey="total" fill="hsl(217,91%,60%)" radius={[4, 4, 0, 0]} name="Total" />
-              <Bar dataKey="hired" fill="hsl(142,71%,45%)" radius={[4, 4, 0, 0]} name="Eingestellt" />
+              <Bar dataKey="total" fill="hsl(168,17%,23%)" radius={[4, 4, 0, 0]} name="Total" />
+              <Bar dataKey="hired" fill="hsl(152,55%,40%)" radius={[4, 4, 0, 0]} name="Eingestellt" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -234,7 +278,6 @@ export default function Analytics() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-
         {/* Employee performance */}
         <div className="rounded-xl border bg-card p-6 shadow-sm lg:col-span-2">
           <h3 className="text-base font-semibold mb-4">Mitarbeiter-Performance</h3>
@@ -244,8 +287,8 @@ export default function Analytics() {
               <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke={AXIS_STROKE} />
               <YAxis tick={{ fontSize: 12 }} stroke={AXIS_STROKE} />
               <Tooltip contentStyle={CHART_STYLE} />
-              <Bar dataKey="leads" fill="hsl(166,72%,40%)" radius={[4, 4, 0, 0]} name="Zugewiesen" />
-              <Bar dataKey="hired" fill="hsl(38,92%,50%)" radius={[4, 4, 0, 0]} name="Eingestellt" />
+              <Bar dataKey="leads" fill="hsl(168,17%,23%)" radius={[4, 4, 0, 0]} name="Zugewiesen" />
+              <Bar dataKey="hired" fill="hsl(67,16%,66%)" radius={[4, 4, 0, 0]} name="Eingestellt" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -277,10 +320,7 @@ export default function Analytics() {
                   <td className="px-6 py-3">
                     <div className="flex items-center gap-2">
                       <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-primary transition-all"
-                          style={{ width: `${filtered.length > 0 ? (c.total / filtered.length) * 100 : 0}%` }}
-                        />
+                        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${filtered.length > 0 ? (c.total / filtered.length) * 100 : 0}%` }} />
                       </div>
                       <span className="text-xs text-muted-foreground w-10 text-right">
                         {filtered.length > 0 ? ((c.total / filtered.length) * 100).toFixed(0) : 0}%
