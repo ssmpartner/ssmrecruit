@@ -15,6 +15,7 @@ import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, F
 import { useToast } from '@/hooks/use-toast';
 import VideoCallDialog from './VideoCallDialog';
 import InsightsTab from './InsightsTab';
+import ProcessStepper from './ProcessStepper';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'insights', 'interview_2', 'hired', 'rejected'];
 
@@ -162,6 +163,11 @@ export default function LeadDetailSheet() {
                 <span className="inline-flex items-center gap-1 rounded-md bg-gray-50 border border-gray-200 px-2 py-1 text-xs font-medium text-gray-600">
                   <MapPin className="h-3 w-3" /> {selectedLead.plz} {selectedLead.city} ({selectedLead.cantonCode})
                 </span>
+              </div>
+
+              {/* Process Stepper */}
+              <div className="mt-4 rounded-xl border bg-muted/20 px-4 py-3">
+                <ProcessStepper currentStatus={selectedLead.status} compact />
               </div>
 
               {/* Prominent Video Call CTA when upcoming appointment exists */}
