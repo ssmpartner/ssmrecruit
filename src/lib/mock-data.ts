@@ -132,9 +132,13 @@ export const sourceConfig: Record<LeadSource, { label: string; icon: string }> =
 };
 
 export const agencies: Agency[] = [
-  { id: 'a1', name: 'TechTalent Pro', contactEmail: 'info@techtalent.ch' },
-  { id: 'a2', name: 'Digital Hire', contactEmail: 'hello@digitalhire.ch' },
-  { id: 'a3', name: 'SwiftRecruit', contactEmail: 'team@swiftrecruit.ch' },
+  { id: 'a1', name: 'Agentur Unteren-Schönbühl', contactEmail: 'info@agentur-schoenbuehl.ch' },
+  { id: 'a2', name: 'Agentur Rothenburg', contactEmail: 'info@agentur-rothenburg.ch' },
+  { id: 'a3', name: 'Agentur Regensdorf', contactEmail: 'info@agentur-regensdorf.ch' },
+  { id: 'a4', name: 'Agentur Spreitenbach', contactEmail: 'info@agentur-spreitenbach.ch' },
+  { id: 'a5', name: 'Agentur Adliswil', contactEmail: 'info@agentur-adliswil.ch' },
+  { id: 'a6', name: 'Agentur Olten', contactEmail: 'info@agentur-olten.ch' },
+  { id: 'a7', name: 'Agentur Lugano', contactEmail: 'info@agentur-lugano.ch' },
 ];
 
 export const employees: Employee[] = [
