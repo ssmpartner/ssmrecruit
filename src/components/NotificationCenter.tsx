@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Check, CheckCheck, Trash2, UserPlus, CalendarDays, ArrowRightLeft, Brain, Zap, Info, X } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2, UserPlus, CalendarDays, ArrowRightLeft, Brain, Zap, Info, X, Copy } from 'lucide-react';
 import { useNotifications } from '@/context/useNotifications';
 import { type NotificationType } from '@/context/notifications-context';
 import { formatDistanceToNow } from 'date-fns';
