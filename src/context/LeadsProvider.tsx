@@ -146,6 +146,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       const appointment = prev.find((entry) => entry.id === id);
       if (appointment) {
         addActivity(appointment.leadId, 'appointment', `Termin "${appointment.title}" gelöscht`);
+        addNotification({ type: 'appointment_cancelled', title: 'Termin gelöscht', description: `"${appointment.title}" wurde entfernt.`, leadId: appointment.leadId });
       }
       return prev.filter((entry) => entry.id !== id);
     });
