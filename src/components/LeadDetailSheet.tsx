@@ -571,6 +571,11 @@ export default function LeadDetailSheet() {
                     </div>
                   </div>
                 </TabsContent>
+
+                {/* Tab: Insights */}
+                <TabsContent value="insights" className="mt-4">
+                  <InsightsTab leadId={selectedLead.id} leadName={selectedLead.name} />
+                </TabsContent>
               </div>
             </Tabs>
           </>
