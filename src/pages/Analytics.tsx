@@ -18,6 +18,7 @@ export default function Analytics() {
   const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
   const [agencyFilter, setAgencyFilter] = useState('');
+  const [employeeFilter, setEmployeeFilter] = useState('');
 
   const filtered = useMemo(() => {
     return leads.filter(l => {
@@ -25,9 +26,10 @@ export default function Analytics() {
       if (sourceFilter && l.source !== sourceFilter) return false;
       if (statusFilter && l.status !== statusFilter) return false;
       if (agencyFilter && l.agencyId !== agencyFilter) return false;
+      if (employeeFilter && l.employeeId !== employeeFilter) return false;
       return true;
     });
-  }, [leads, cantonFilter, sourceFilter, statusFilter, agencyFilter]);
+  }, [leads, cantonFilter, sourceFilter, statusFilter, agencyFilter, employeeFilter]);
 
   // Canton data
   const cantonData = useMemo(() => {
@@ -44,11 +46,24 @@ export default function Analytics() {
     return [...map.values()].sort((a, b) => b.total - a.total);
   }, [filtered]);
 
-  const agencyData = agencies.map(a => ({
-    name: a.name.length > 14 ? a.name.slice(0, 12) + '…' : a.name,
-    total: filtered.filter(l => l.agencyId === a.id).length,
-    hired: filtered.filter(l => l.agencyId === a.id && l.status === 'hired').length,
-  }));
+  const agencyData = agencies.map(a => {
+    const agencyLeads = filtered.filter(l => l.agencyId === a.id);
+    const hired = agencyLeads.filter(l => l.status === 'hired').length;
+    const contacted = agencyLeads.filter(l => l.status === 'contacted').length;
+    const interview = agencyLeads.filter(l => l.status === 'interview').length;
+    const rejected = agencyLeads.filter(l => l.status === 'rejected').length;
+    return {
+      id: a.id,
+      name: a.name.length > 14 ? a.name.slice(0, 12) + '…' : a.name,
+      fullName: a.name,
+      total: agencyLeads.length,
+      hired,
+      contacted,
+      interview,
+      rejected,
+      conversion: agencyLeads.length > 0 ? ((hired / agencyLeads.length) * 100).toFixed(0) : '0',
+    };
+  }).sort((a, b) => b.total - a.total);
 
   const employeeData = employees.map(e => ({
     name: e.name.split(' ')[0],
@@ -93,9 +108,13 @@ export default function Analytics() {
           <option value="">Alle Agenturen</option>
           {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
-        {(cantonFilter || sourceFilter || statusFilter || agencyFilter) && (
+        <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className="h-9 rounded-lg border bg-background px-3 text-sm outline-none">
+          <option value="">Alle Mitarbeiter</option>
+          {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+        </select>
+        {(cantonFilter || sourceFilter || statusFilter || agencyFilter || employeeFilter) && (
           <button
-            onClick={() => { setCantonFilter(''); setSourceFilter(''); setStatusFilter(''); setAgencyFilter(''); }}
+            onClick={() => { setCantonFilter(''); setSourceFilter(''); setStatusFilter(''); setAgencyFilter(''); setEmployeeFilter(''); }}
             className="rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
           >
             Filter zurücksetzen
@@ -161,12 +180,60 @@ export default function Analytics() {
               <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke={AXIS_STROKE} />
               <YAxis tick={{ fontSize: 12 }} stroke={AXIS_STROKE} />
-              <Tooltip contentStyle={CHART_STYLE} />
+              <Tooltip contentStyle={CHART_STYLE} formatter={(value: number, name: string) => [value, name]} />
               <Bar dataKey="total" fill="hsl(217,91%,60%)" radius={[4, 4, 0, 0]} name="Total" />
               <Bar dataKey="hired" fill="hsl(142,71%,45%)" radius={[4, 4, 0, 0]} name="Eingestellt" />
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* Agency overview table */}
+      <div className="rounded-xl border bg-card shadow-sm">
+        <div className="p-6 pb-3">
+          <h3 className="text-base font-semibold">Agentur-Übersicht</h3>
+          <p className="text-sm text-muted-foreground">Detaillierte Aufschlüsselung pro Agentur</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-t text-left text-muted-foreground">
+                <th className="px-6 py-3 font-medium">Agentur</th>
+                <th className="px-6 py-3 font-medium text-right">Total</th>
+                <th className="px-6 py-3 font-medium text-right">Kontaktiert</th>
+                <th className="px-6 py-3 font-medium text-right">Interview</th>
+                <th className="px-6 py-3 font-medium text-right">Eingestellt</th>
+                <th className="px-6 py-3 font-medium text-right">Abgelehnt</th>
+                <th className="px-6 py-3 font-medium text-right">Konversion</th>
+                <th className="px-6 py-3 font-medium">Verteilung</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agencyData.map(a => (
+                <tr key={a.id} className="border-t hover:bg-muted/50 transition-colors">
+                  <td className="px-6 py-3 font-medium">{a.fullName}</td>
+                  <td className="px-6 py-3 text-right font-semibold">{a.total}</td>
+                  <td className="px-6 py-3 text-right">{a.contacted}</td>
+                  <td className="px-6 py-3 text-right">{a.interview}</td>
+                  <td className="px-6 py-3 text-right text-success font-medium">{a.hired}</td>
+                  <td className="px-6 py-3 text-right text-destructive">{a.rejected}</td>
+                  <td className="px-6 py-3 text-right">{a.conversion}%</td>
+                  <td className="px-6 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden">
+                        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${filtered.length > 0 ? (a.total / filtered.length) * 100 : 0}%` }} />
+                      </div>
+                      <span className="text-xs text-muted-foreground w-10 text-right">{filtered.length > 0 ? ((a.total / filtered.length) * 100).toFixed(0) : 0}%</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
 
         {/* Employee performance */}
         <div className="rounded-xl border bg-card p-6 shadow-sm lg:col-span-2">
