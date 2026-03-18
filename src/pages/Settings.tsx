@@ -222,6 +222,7 @@ export default function Settings() {
               toast={toast}
             />
           )}
+          {activeTab === 'api' && <ApiKeysTab toast={toast} />}
         </div>
       </div>
     </div>
