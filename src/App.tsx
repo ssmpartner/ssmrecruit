@@ -15,6 +15,7 @@ import Analytics from "./pages/Analytics";
 import CalendarPage from "./pages/CalendarPage";
 import Settings from "./pages/Settings";
 import Processes from "./pages/Processes";
+import Tasks from "./pages/Tasks";
 import ApiDocs from "./pages/ApiDocs";
 import Documentation from "./pages/Documentation";
 import NotFound from "./pages/NotFound";
