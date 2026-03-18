@@ -219,11 +219,51 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     await supabase.from('leads').update(dbUpdates).eq('id', id);
   }, [addNotification]);
 
+  const checkForDuplicates = useCallback(async (newLead: Lead, allLeads: Lead[]) => {
+    try {
+      const activeLeads = allLeads.filter(l => l.lifecycle === 'active');
+      if (activeLeads.length < 2) return;
+
+      const leadsForScan = activeLeads.map(l => ({
+        id: l.id, name: l.name, email: l.email, phone: l.phone,
+        plz: l.plz, city: l.city, position: l.position,
+      }));
+
+      const { data, error } = await supabase.functions.invoke('detect-duplicates', {
+        body: { leads: leadsForScan },
+      });
+
+      if (error || !data?.duplicates?.length) return;
+
+      const relevantDups = data.duplicates.filter(
+        (d: any) => d.leadId1 === newLead.id || d.leadId2 === newLead.id
+      );
+
+      for (const dup of relevantDups) {
+        const otherId = dup.leadId1 === newLead.id ? dup.leadId2 : dup.leadId1;
+        const otherLead = allLeads.find(l => l.id === otherId);
+        addNotification({
+          type: 'duplicate_detected',
+          title: 'Mögliches Duplikat erkannt',
+          description: `"${newLead.name}" und "${otherLead?.name || otherId}" (${dup.confidence}% Übereinstimmung): ${dup.reason}`,
+          leadId: newLead.id,
+        });
+      }
+    } catch (e) {
+      console.error('Auto duplicate check failed:', e);
+    }
+  }, [addNotification]);
+
   const addLead = useCallback(async (leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
     const id = `l${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const now = new Date().toISOString();
     const newLead: Lead = { ...leadData, id, createdAt: now, updatedAt: now, lifecycle: leadData.lifecycle || 'active' };
-    setLeads((prev) => [newLead, ...prev]);
+    setLeads((prev) => {
+      const updated = [newLead, ...prev];
+      // Run duplicate check asynchronously after state update
+      setTimeout(() => checkForDuplicates(newLead, updated), 100);
+      return updated;
+    });
     addActivity(id, 'status_change', `Lead "${leadData.name}" manuell erfasst`);
     addNotification({ type: 'lead_new', title: 'Neuer Lead', description: `${leadData.name} wurde erfasst.`, leadId: id });
 
@@ -245,7 +285,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       notes: leadData.notes,
       lead_lifecycle: leadData.lifecycle || 'active',
     });
-  }, [addActivity, addNotification]);
+  }, [addActivity, addNotification, checkForDuplicates]);
 
   const archiveLead = useCallback(async (id: string) => {
     setLeads((prev) => prev.map(l => l.id === id ? { ...l, lifecycle: 'archived' as const } : l));
