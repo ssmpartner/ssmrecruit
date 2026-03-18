@@ -6,6 +6,7 @@ import { useLeads } from '@/context/LeadsContext';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
+import AddLeadDialog from '@/components/AddLeadDialog';
 
 export default function LeadsTable() {
   const { leads, employees, agencies, setSelectedLead } = useLeads();
