@@ -29,12 +29,6 @@ interface Integration {
   connected: boolean;
 }
 
-const defaultIntegrations: Integration[] = [
-  { id: 'meta', name: 'Meta (Facebook / Instagram)', description: 'Leads aus Facebook & Instagram Lead Ads sammeln', icon: '📘', method: 'none', zapierWebhook: '', apiKey: '', connected: false },
-  { id: 'tiktok', name: 'TikTok Ads', description: 'Leads aus TikTok Lead-Generierungskampagnen sammeln', icon: '🎵', method: 'none', zapierWebhook: '', apiKey: '', connected: false },
-  { id: 'linkedin', name: 'LinkedIn Lead Forms', description: 'Leads aus LinkedIn Lead Gen Forms sammeln (demnächst)', icon: '💼', method: 'none', zapierWebhook: '', apiKey: '', connected: false },
-  { id: 'website', name: 'Webseiten-Formulare', description: 'Leads aus Ihren Website-Kontaktformularen per Webhook sammeln', icon: '🌐', method: 'none', zapierWebhook: '', apiKey: '', connected: false },
-];
 
 function ToggleRow({ label, description, checked, onChange, icon }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void; icon?: React.ReactNode }) {
   return (
