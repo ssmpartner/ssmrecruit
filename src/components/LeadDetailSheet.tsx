@@ -31,7 +31,7 @@ const appointmentTypeConfig = {
 } as const;
 
 export default function LeadDetailSheet() {
-  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, notificationMethod } = useLeads();
+  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings } = useLeads();
   const { toast } = useToast();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');

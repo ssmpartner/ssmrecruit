@@ -165,11 +165,11 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     const lead = leads.find(l => l.id === apt.leadId);
     if (!lead) return;
     const methodLabels: Record<NotificationMethod, string> = { email: 'E-Mail', sms: 'SMS', whatsapp: 'WhatsApp' };
-    addActivity(apt.leadId, 'note', `Termineinladung per ${methodLabels[notificationMethod]} an ${lead.name} gesendet (${apt.meetingLink ? 'mit Video-Link' : 'ohne Link'})`);
-  }, [appointments, leads, notificationMethod, addActivity]);
+    addActivity(apt.leadId, 'note', `Termineinladung per ${methodLabels[appointmentSettings.notificationMethod]} an ${lead.name} gesendet (${apt.meetingLink ? 'mit Video-Link' : 'ohne Link'})`);
+  }, [appointments, leads, appointmentSettings.notificationMethod, addActivity]);
 
   return (
-    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, notificationMethod, setNotificationMethod, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, selectedLead, setSelectedLead, addEmployee, addAgency }}>
+    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, appointmentSettings, updateAppointmentSettings, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, selectedLead, setSelectedLead, addEmployee, addAgency }}>
       {children}
     </LeadsContext.Provider>
   );
