@@ -86,6 +86,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const [agencies, setAgencies] = useState<Agency[]>(initialAgencies);
   const [activities, setActivities] = useState<ActivityEntry[]>(() => seedActivities(initialLeads));
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [discResults, setDiscResults] = useState<DiscResult[]>([]);
   const [appointmentSettings, setAppointmentSettings] = useState<AppointmentSettings>(defaultAppointmentSettings);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
