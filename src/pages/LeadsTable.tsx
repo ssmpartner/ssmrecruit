@@ -46,7 +46,7 @@ export default function LeadsTable() {
       }
       return true;
     });
-  }, [leads, statusFilter, sourceFilter, agencyFilter, cantonFilter, search, dateFrom, dateTo]);
+  }, [leads, statusFilter, sourceFilter, agencyFilter, employeeFilter, cantonFilter, search, dateFrom, dateTo]);
 
   const hasFilters = statusFilter || sourceFilter || agencyFilter || cantonFilter || search || dateFrom || dateTo;
 
