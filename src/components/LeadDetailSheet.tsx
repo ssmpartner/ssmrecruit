@@ -547,5 +547,21 @@ export default function LeadDetailSheet() {
         )}
       </DialogContent>
     </Dialog>
+
+    {/* Video Call Dialog */}
+    {(() => {
+      const activeApt = appointments.find(a => a.id === activeCallAptId);
+      if (!activeApt?.meetingLink) return null;
+      return (
+        <VideoCallDialog
+          open={!!activeCallAptId}
+          onOpenChange={(v) => { if (!v) setActiveCallAptId(null); }}
+          meetingLink={activeApt.meetingLink}
+          title={activeApt.title}
+          leadName={selectedLead?.name ?? ''}
+        />
+      );
+    })()}
+    </>
   );
 }
