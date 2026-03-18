@@ -1,9 +1,18 @@
 import { useState } from 'react';
 import { FileText, Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2 } from 'lucide-react';
 
-const APP_VERSION = '2.7.0';
+const APP_VERSION = '2.8.0';
 
 const versionHistory = [
+  { version: '2.8.0', date: '18.03.2026', changes: [
+    'Lazy Loading & Code-Splitting für alle Seiten (schnellere Ladezeiten)',
+    'QueryClient-Optimierung mit Stale-Time & Retry-Konfiguration',
+    'RLS-Sicherheitsrichtlinien verschärft: Nur authentifizierte Benutzer haben Zugriff',
+    'App-Einstellungen nur noch durch Superadmins änderbar',
+    'AppLayout zeigt dynamisch den angemeldeten Benutzer (Name & Initialen)',
+    'Superadmin-Konto mit vollständiger Benutzerverwaltung (Erstellen, Rollen, Löschen)',
+    'Authentifizierung mit E-Mail-Auto-Confirm für internes System',
+  ]},
   { version: '2.7.0', date: '18.03.2026', changes: ['Lead-Lifecycle: Archivieren, Löschen und Wiederherstellen mit Bestätigungsdialogen', 'KI-Duplikaterkennung mit Vergleichs- und Zusammenführungsfunktion', 'Untermenüs Aktiv/Archiviert/Gelöscht/Doppelte Leads in der Lead-Tabelle', 'KI-generierte Richtlinien & Regeln im Prozess-Verzeichnis', 'Geltungsbereich für Automatisierungen (Global, Agentur, Mitarbeiter)'] },
   { version: '2.6.0', date: '18.03.2026', changes: ['Agentur-Detailansicht mit bearbeitbaren Einstellungen (Name, E-Mail, Region, Sprache, Kantone)', 'Regionale Agentur-Einstellungen (Region, Sprache, erlaubte Kantone)', 'Kontextmenü updateAgency für persistente Agentur-Änderungen'] },
   { version: '2.5.0', date: '18.03.2026', changes: ['Vollständiges Backend mit Lovable Cloud (Datenbank-Persistenz)', 'KI-gestützte Aufgabengenerierung pro Lead-Phase', 'Aufgaben-Management mit System- & KI-Tasks', 'Echtzeit-Datensynchronisation über alle Module'] },
