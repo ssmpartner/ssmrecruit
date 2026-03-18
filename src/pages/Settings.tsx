@@ -93,16 +93,16 @@ export default function Settings() {
     if (!integration) return;
 
     if (integration.method === 'zapier' && !integration.zapierWebhook.trim()) {
-      toast({ title: 'Error', description: 'Please enter a Zapier webhook URL', variant: 'destructive' });
+      toast({ title: 'Fehler', description: 'Bitte Zapier Webhook-URL eingeben', variant: 'destructive' });
       return;
     }
     if (integration.method === 'api' && !integration.apiKey.trim()) {
-      toast({ title: 'Error', description: 'Please enter an API key', variant: 'destructive' });
+      toast({ title: 'Fehler', description: 'Bitte API-Schlüssel eingeben', variant: 'destructive' });
       return;
     }
 
     updateIntegration(id, { connected: true });
-    toast({ title: 'Integration saved', description: `${integration.name} has been connected successfully.` });
+    toast({ title: 'Integration gespeichert', description: `${integration.name} wurde erfolgreich verbunden.` });
   };
 
   const disconnectIntegration = (id: string) => {
