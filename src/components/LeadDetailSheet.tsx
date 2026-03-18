@@ -164,8 +164,14 @@ export default function LeadDetailSheet() {
                 <TabsTrigger value="details" className="gap-1.5">
                   <User className="h-3.5 w-3.5" /> Details
                 </TabsTrigger>
+                <TabsTrigger value="appointments" className="gap-1.5">
+                  <CalendarIcon className="h-3.5 w-3.5" /> Termine
+                  {leadAppointments.length > 0 && (
+                    <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground leading-none">{leadAppointments.length}</span>
+                  )}
+                </TabsTrigger>
                 <TabsTrigger value="status" className="gap-1.5">
-                  <FileText className="h-3.5 w-3.5" /> Status & Zuweisung
+                  <FileText className="h-3.5 w-3.5" /> Status
                 </TabsTrigger>
                 <TabsTrigger value="activity" className="gap-1.5">
                   <Activity className="h-3.5 w-3.5" /> Aktivität
