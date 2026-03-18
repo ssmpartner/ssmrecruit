@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { FileText, Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2 } from 'lucide-react';
 
-const APP_VERSION = '2.6.0';
+const APP_VERSION = '2.7.0';
 
 const versionHistory = [
+  { version: '2.7.0', date: '18.03.2026', changes: ['Lead-Lifecycle: Archivieren, Löschen und Wiederherstellen mit Bestätigungsdialogen', 'KI-Duplikaterkennung mit Vergleichs- und Zusammenführungsfunktion', 'Untermenüs Aktiv/Archiviert/Gelöscht/Doppelte Leads in der Lead-Tabelle', 'KI-generierte Richtlinien & Regeln im Prozess-Verzeichnis', 'Geltungsbereich für Automatisierungen (Global, Agentur, Mitarbeiter)'] },
   { version: '2.6.0', date: '18.03.2026', changes: ['Agentur-Detailansicht mit bearbeitbaren Einstellungen (Name, E-Mail, Region, Sprache, Kantone)', 'Regionale Agentur-Einstellungen (Region, Sprache, erlaubte Kantone)', 'Kontextmenü updateAgency für persistente Agentur-Änderungen'] },
   { version: '2.5.0', date: '18.03.2026', changes: ['Vollständiges Backend mit Lovable Cloud (Datenbank-Persistenz)', 'KI-gestützte Aufgabengenerierung pro Lead-Phase', 'Aufgaben-Management mit System- & KI-Tasks', 'Echtzeit-Datensynchronisation über alle Module'] },
   { version: '2.4.0', date: '18.03.2026', changes: ['API-Modul mit Schlüsselverwaltung & Dokumentation', 'Dokumentationsbereich als eigene Seite', 'Erweiterte Berechtigungsscopes für API-Keys'] },
@@ -16,10 +17,12 @@ const versionHistory = [
 
 const appFeatures = [
   { category: 'Lead-Management', icon: '👥', features: [
-    { name: 'Lead-Tabelle', desc: 'Alle Leads in einer filterbaren, sortierbaren Tabelle anzeigen und verwalten.' },
+    { name: 'Lead-Tabelle', desc: 'Alle Leads in einer filterbaren, sortierbaren Tabelle mit Tabs für Aktiv, Archiviert, Gelöscht und Doppelte Leads.' },
     { name: 'Pipeline-Board', desc: 'Kanban-Board zur visuellen Verwaltung des Lead-Status mit Drag & Drop.' },
     { name: 'Lead-Detail-Ansicht', desc: 'Detaillierte Ansicht mit Kontaktdaten, Notizen, Status-Historie und Dokumenten.' },
     { name: 'Lead hinzufügen', desc: 'Neue Leads manuell erfassen mit PLZ-Validierung (Schweizer Format).' },
+    { name: 'Archivieren & Löschen', desc: 'Leads archivieren oder löschen (Superadmin) mit Bestätigungsdialog und Wiederherstellung.' },
+    { name: 'KI-Duplikaterkennung', desc: 'Automatische Erkennung doppelter Leads per KI mit Konfidenz-Score, Vergleich und Zusammenführung.' },
   ]},
   { category: 'Kommunikation', icon: '📞', features: [
     { name: 'Video-Calls', desc: 'Integrierte Video-Anrufe direkt aus der Anwendung starten.' },
@@ -35,7 +38,7 @@ const appFeatures = [
     { name: 'Agenturen', desc: 'Partneragenturen verwalten mit Detail-Panel für Name, E-Mail, Region, Sprache und Kantone.' },
     { name: 'Agentur-Einstellungen', desc: 'Regionale Zuweisung, Sprache und erlaubte Kantone pro Agentur konfigurieren.' },
     { name: 'Mitarbeiter', desc: 'Mitarbeiterprofile und Zuweisungen verwalten.' },
-    { name: 'Prozesse', desc: 'Mehrstufige Recruiting-Prozesse mit Stepper-Ansicht definieren und verfolgen.' },
+    { name: 'Prozesse', desc: 'Mehrstufige Recruiting-Prozesse mit Stepper-Ansicht, KI-generierten Richtlinien und Geltungsbereichen für Automatisierungen (Global/Agentur/Mitarbeiter).' },
   ]},
   { category: 'Analyse & Insights', icon: '📊', features: [
     { name: 'Dashboard', desc: 'Übersicht mit KPIs, Lead-Statistiken und Performance-Metriken.' },
@@ -45,6 +48,7 @@ const appFeatures = [
   { category: 'Aufgaben & KI', icon: '🤖', features: [
     { name: 'Phasen-Tasks', desc: 'Automatische Pflichtaufgaben basierend auf dem aktuellen Lead-Status.' },
     { name: 'KI-Tasks', desc: 'Kontextbezogene Zusatzaufgaben per KI-Generierung (Gemini).' },
+    { name: 'KI-Richtlinien', desc: 'Automatische Generierung von Prozess-Richtlinien und Regeln per KI für jeden Prozessschritt.' },
     { name: 'Task-Management', desc: 'Aufgaben zuweisen, priorisieren und Status tracken (offen/in Bearbeitung/erledigt).' },
   ]},
   { category: 'Integrationen & API', icon: '🔌', features: [
