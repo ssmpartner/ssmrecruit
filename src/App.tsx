@@ -36,6 +36,7 @@ const App = () => (
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/processes" element={<Processes />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

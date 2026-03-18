@@ -165,6 +165,11 @@ export default function LeadDetailSheet() {
                 </span>
               </div>
 
+              {/* Process Stepper */}
+              <div className="mt-4 rounded-xl border bg-muted/20 px-4 py-3">
+                <ProcessStepper currentStatus={selectedLead.status} compact />
+              </div>
+
               {/* Prominent Video Call CTA when upcoming appointment exists */}
               {(() => {
                 const nextVideoApt = leadAppointments.find(a => a.type === 'video' && a.meetingLink && new Date(`${a.date}T${a.time}`) >= new Date());

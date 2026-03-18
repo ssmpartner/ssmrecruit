@@ -9,6 +9,7 @@ const navItems = [
   { to: '/agencies', icon: Building2, label: 'Agenturen' },
   { to: '/employees', icon: UserCog, label: 'Mitarbeiter' },
   { to: '/analytics', icon: BarChart3, label: 'Statistik' },
+  { to: '/processes', icon: Workflow, label: 'Prozesse' },
 ];
 
 export default function AppSidebar() {
