@@ -16,7 +16,13 @@ const navItems = [
 
 export default function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut, profile, user } = useAuth();
 
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-64 flex-col bg-sidebar border-r border-sidebar-border">
       <div className="flex h-16 items-center gap-3 px-6 border-b border-sidebar-border">
