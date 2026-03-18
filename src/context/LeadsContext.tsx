@@ -35,7 +35,9 @@ interface LeadsContextType {
   appointments: Appointment[];
   discResults: DiscResult[];
   appointmentSettings: AppointmentSettings;
+  insightsSettings: InsightsSettings;
   updateAppointmentSettings: (updates: Partial<AppointmentSettings>) => void;
+  updateInsightsSettings: (updates: Partial<InsightsSettings>) => void;
   updateLead: (id: string, updates: Partial<Lead>) => void;
   addLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => void;
   addActivity: (leadId: string, type: ActivityEntry['type'], description: string) => void;
