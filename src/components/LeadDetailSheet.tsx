@@ -409,16 +409,22 @@ export default function LeadDetailSheet() {
                             <div className="ml-11 space-y-1.5">
                               <div className="flex items-center gap-2">
                                 <Link2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                                <a href={apt.meetingLink} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline truncate">{apt.meetingLink}</a>
+                                <span className="text-xs text-primary truncate">{apt.meetingLink}</span>
                                 <button onClick={() => { navigator.clipboard.writeText(apt.meetingLink!); toast({ title: 'Kopiert', description: 'Link in die Zwischenablage kopiert' }); }}
                                   className="shrink-0 rounded p-1 hover:bg-muted transition-colors" title="Link kopieren">
                                   <Copy className="h-3 w-3 text-muted-foreground" />
                                 </button>
                               </div>
-                              <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Einladung gesendet', description: `Link per ${methodLabels[notificationMethod]} an ${selectedLead?.name} gesendet` }); }}
-                                className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-medium hover:bg-primary/20 transition-colors">
-                                <Send className="h-3 w-3" /> Per {methodLabels[notificationMethod]} senden
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button onClick={() => setActiveCallAptId(apt.id)}
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-success/15 text-success px-2.5 py-1 text-[11px] font-semibold hover:bg-success/25 transition-colors">
+                                  <Video className="h-3 w-3" /> Jetzt starten
+                                </button>
+                                <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Einladung gesendet', description: `Link per ${methodLabels[notificationMethod]} an ${selectedLead?.name} gesendet` }); }}
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-medium hover:bg-primary/20 transition-colors">
+                                  <Send className="h-3 w-3" /> Per {methodLabels[notificationMethod]} senden
+                                </button>
+                              </div>
                             </div>
                           )}
                         </div>
