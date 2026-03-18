@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
-import { Bell, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
+import NotificationCenter from './NotificationCenter';
 
 export default function AppLayout() {
   return (
