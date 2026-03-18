@@ -116,40 +116,7 @@ export default function Settings() {
     }
   };
 
-  const [systemUsers, setSystemUsers] = useState<SystemUser[]>(initialSystemUsers);
-  const [userDialogOpen, setUserDialogOpen] = useState(false);
-  const [userForm, setUserForm] = useState({ name: '', email: '', role: 'backoffice' as SystemRole });
-
-  const addSystemUser = () => {
-    if (!userForm.name.trim() || !userForm.email.trim()) {
-      toast({ title: 'Fehler', description: 'Bitte Name und E-Mail ausfüllen', variant: 'destructive' });
-      return;
-    }
-    setSystemUsers(prev => [...prev, { id: `su${Date.now()}`, name: userForm.name, email: userForm.email, role: userForm.role, createdAt: new Date().toISOString() }]);
-    setUserForm({ name: '', email: '', role: 'backoffice' });
-    setUserDialogOpen(false);
-    toast({ title: 'Benutzer hinzugefügt', description: `${userForm.name} wurde als ${roleConfig[userForm.role].label} hinzugefügt.` });
-  };
-
-  const removeSystemUser = (id: string) => {
-    const user = systemUsers.find(u => u.id === id);
-    if (user?.role === 'superadmin' && systemUsers.filter(u => u.role === 'superadmin').length <= 1) {
-      toast({ title: 'Fehler', description: 'Es muss mindestens ein Superadmin existieren.', variant: 'destructive' });
-      return;
-    }
-    setSystemUsers(prev => prev.filter(u => u.id !== id));
-    toast({ title: 'Entfernt', description: 'Benutzer wurde entfernt.' });
-  };
-
-  const changeUserRole = (id: string, newRole: SystemRole) => {
-    const user = systemUsers.find(u => u.id === id);
-    if (user?.role === 'superadmin' && systemUsers.filter(u => u.role === 'superadmin').length <= 1) {
-      toast({ title: 'Fehler', description: 'Es muss mindestens ein Superadmin existieren.', variant: 'destructive' });
-      return;
-    }
-    setSystemUsers(prev => prev.map(u => u.id === id ? { ...u, role: newRole } : u));
-    toast({ title: 'Rolle geändert', description: `Rolle wurde zu ${roleConfig[newRole].label} geändert.` });
-  };
+  const { isSuperadmin } = useAuth();
 
   return (
     <div>
