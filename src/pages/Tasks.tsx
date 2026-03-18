@@ -1,167 +1,192 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLeads } from '@/context/useLeads';
 import { statusConfig } from '@/lib/mock-data';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import {
-  CheckSquare, Plus, Clock, User, Building2, Filter, AlertCircle,
-  ChevronDown, X, CalendarDays, ArrowRight, CheckCircle2,
+  CheckSquare, Clock, User, Filter, AlertCircle,
+  X, CalendarDays, ArrowRight, CheckCircle2, Sparkles, RefreshCw, Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import type { Tables } from '@/integrations/supabase/types';
 
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type TaskStatus = 'open' | 'in_progress' | 'done';
+type Task = Tables<'tasks'>;
+type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+type TaskStatus = 'open' | 'in_progress' | 'done';
 
-export interface Task {
-  id: string;
-  title: string;
-  description: string;
-  leadId: string;
-  assignedTo: string; // employeeId
-  createdBy: string;  // employeeId
-  agencyId: string;
-  priority: TaskPriority;
-  status: TaskStatus;
-  dueDate?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-const priorityConfig: Record<TaskPriority, { label: string; color: string; icon: string }> = {
+const priorityConfig: Record<string, { label: string; color: string; icon: string }> = {
   low: { label: 'Niedrig', color: 'bg-muted text-muted-foreground', icon: '○' },
   medium: { label: 'Mittel', color: 'bg-blue-50 text-blue-700 border-blue-200', icon: '◐' },
   high: { label: 'Hoch', color: 'bg-amber-50 text-amber-700 border-amber-200', icon: '●' },
   urgent: { label: 'Dringend', color: 'bg-red-50 text-red-700 border-red-200', icon: '🔴' },
 };
 
-const taskStatusConfig: Record<TaskStatus, { label: string; color: string }> = {
+const taskStatusConfig: Record<string, { label: string; color: string }> = {
   open: { label: 'Offen', color: 'bg-amber-50 text-amber-700 border-amber-200' },
   in_progress: { label: 'In Bearbeitung', color: 'bg-blue-50 text-blue-700 border-blue-200' },
   done: { label: 'Erledigt', color: 'bg-green-50 text-green-700 border-green-200' },
 };
 
-function generateMockTasks(leads: any[], employees: any[]): Task[] {
-  const taskTemplates = [
-    { title: 'Erstgespräch vorbereiten', description: 'Unterlagen und Fragen für das Erstgespräch zusammenstellen' },
-    { title: 'Follow-up anrufen', description: 'Kandidat nach dem Gespräch kontaktieren' },
-    { title: 'Referenzen prüfen', description: 'Referenzen des Kandidaten einholen und verifizieren' },
-    { title: 'Vertrag vorbereiten', description: 'Arbeitsvertrag erstellen und zur Prüfung freigeben' },
-    { title: 'Onboarding planen', description: 'Einarbeitungsplan erstellen und Team informieren' },
-    { title: 'DISC-Test auswerten', description: 'Ergebnisse des Persönlichkeitstests analysieren' },
-    { title: 'Gehaltsverhandlung führen', description: 'Gehaltsgespräch mit dem Kandidaten terminieren' },
-    { title: 'Bewerbungsunterlagen sichten', description: 'Lebenslauf und Zeugnisse prüfen' },
-  ];
-
-  const priorities: TaskPriority[] = ['low', 'medium', 'high', 'urgent'];
-  const statuses: TaskStatus[] = ['open', 'open', 'open', 'in_progress', 'done'];
-
-  return leads.slice(0, 15).map((lead, i) => {
-    const template = taskTemplates[i % taskTemplates.length];
-    const emp = employees[i % employees.length];
-    const creator = employees[(i + 1) % employees.length];
-    const status = statuses[i % statuses.length];
-    const daysAgo = Math.floor(Math.random() * 7);
-    const dueDays = Math.floor(Math.random() * 10) - 2;
-
-    return {
-      id: `task-${i + 1}`,
-      title: template.title,
-      description: `${template.description} – ${lead.name}`,
-      leadId: lead.id,
-      assignedTo: emp.id,
-      createdBy: creator.id,
-      agencyId: emp.agencyId,
-      priority: priorities[i % priorities.length],
-      status,
-      dueDate: new Date(Date.now() + dueDays * 86400000).toISOString().split('T')[0],
-      createdAt: new Date(Date.now() - daysAgo * 86400000).toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-  });
-}
-
 export default function Tasks() {
   const { leads, employees, agencies } = useLeads();
-
-  const [tasks, setTasks] = useState<Task[]>(() => generateMockTasks(leads, employees));
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState<string | null>(null); // leadId being generated
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const [employeeFilter, setEmployeeFilter] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState<TaskPriority | 'all'>('all');
-  const [showCreate, setShowCreate] = useState(false);
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
 
   // Simulate current user as "Sarah Chen" (e1, admin/backoffice, agency a1)
   const currentUser = employees.find(e => e.id === 'e1')!;
-  const isBackoffice = currentUser.role === 'admin' || currentUser.role === 'agency_manager';
+  const isBackoffice = currentUser?.role === 'admin' || currentUser?.role === 'agency_manager';
 
-  // Backoffice sees all tasks from same agency, employees see only their own
-  const visibleTasks = useMemo(() => {
-    let result = tasks;
-    if (!isBackoffice) {
-      result = result.filter(t => t.assignedTo === currentUser.id);
+  // Load tasks from DB
+  const fetchTasks = useCallback(async () => {
+    const { data, error } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
+    if (error) {
+      console.error('Error fetching tasks:', error);
+      toast.error('Fehler beim Laden der Aufgaben');
     } else {
-      result = result.filter(t => t.agencyId === currentUser.agencyId || t.assignedTo === currentUser.id);
+      setTasks(data || []);
     }
-    if (statusFilter !== 'all') result = result.filter(t => t.status === statusFilter);
-    if (employeeFilter) result = result.filter(t => t.assignedTo === employeeFilter);
-    if (priorityFilter !== 'all') result = result.filter(t => t.priority === priorityFilter);
-    return result.sort((a, b) => {
-      const statusOrder = { open: 0, in_progress: 1, done: 2 };
-      const prioOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
-      if (statusOrder[a.status] !== statusOrder[b.status]) return statusOrder[a.status] - statusOrder[b.status];
-      return prioOrder[a.priority] - prioOrder[b.priority];
-    });
-  }, [tasks, statusFilter, employeeFilter, priorityFilter, currentUser, isBackoffice]);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchTasks(); }, [fetchTasks]);
+
+  // Generate tasks for a specific lead via edge function
+  const generateTasksForLead = useCallback(async (leadId: string) => {
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+
+    setGenerating(leadId);
+    try {
+      const existingForLead = tasks.filter(t => t.lead_id === leadId);
+
+      const { data, error } = await supabase.functions.invoke('generate-tasks', {
+        body: {
+          leadId: lead.id,
+          leadName: lead.name,
+          leadStatus: lead.status,
+          leadPosition: lead.position,
+          assignedTo: lead.employeeId,
+          agencyId: lead.agencyId,
+          existingTasks: existingForLead.map(t => ({ title: t.title })),
+        },
+      });
+
+      if (error) throw error;
+
+      const newTasks = data?.tasks || [];
+      if (newTasks.length === 0) {
+        toast.info(`Keine neuen Aufgaben für ${lead.name}`);
+        return;
+      }
+
+      // Insert into DB
+      const { error: insertError } = await supabase.from('tasks').insert(
+        newTasks.map((t: any) => ({
+          title: t.title,
+          description: t.description,
+          lead_id: t.lead_id,
+          assigned_to: t.assigned_to,
+          agency_id: t.agency_id,
+          priority: t.priority,
+          source: t.source,
+          lead_status: t.lead_status,
+          status: 'open',
+        }))
+      );
+
+      if (insertError) throw insertError;
+
+      toast.success(`${newTasks.length} Aufgaben für ${lead.name} generiert`, {
+        description: `${newTasks.filter((t: any) => t.source === 'system').length} Pflicht + ${newTasks.filter((t: any) => t.source === 'ai').length} KI-Aufgaben`,
+      });
+
+      await fetchTasks();
+    } catch (err) {
+      console.error('Error generating tasks:', err);
+      toast.error('Fehler bei der Task-Generierung');
+    } finally {
+      setGenerating(null);
+    }
+  }, [leads, tasks, fetchTasks]);
+
+  // Generate tasks for ALL leads that have no tasks yet
+  const generateAllTasks = useCallback(async () => {
+    const leadsWithoutTasks = leads.filter(l => !tasks.some(t => t.lead_id === l.id));
+    if (leadsWithoutTasks.length === 0) {
+      toast.info('Alle Leads haben bereits Aufgaben');
+      return;
+    }
+    for (const lead of leadsWithoutTasks.slice(0, 5)) {
+      await generateTasksForLead(lead.id);
+    }
+  }, [leads, tasks, generateTasksForLead]);
+
+  // Update task status in DB
+  const updateTaskStatus = useCallback(async (taskId: string, newStatus: string) => {
+    const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
+    if (error) {
+      toast.error('Fehler beim Aktualisieren');
+      return;
+    }
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+
+    // Check if all tasks for this lead are done → generate new ones
+    const task = tasks.find(t => t.id === taskId);
+    if (task && newStatus === 'done') {
+      const leadTasks = tasks.filter(t => t.lead_id === task.lead_id && t.id !== taskId);
+      const allDone = leadTasks.every(t => t.status === 'done');
+      if (allDone && leadTasks.length > 0) {
+        toast.info('Alle Aufgaben erledigt! Generiere neue...', { duration: 2000 });
+        setTimeout(() => generateTasksForLead(task.lead_id), 1000);
+      }
+    }
+  }, [tasks, generateTasksForLead]);
+
+  // Reassign task
+  const reassignTask = useCallback(async (taskId: string, newEmployeeId: string) => {
+    const { error } = await supabase.from('tasks').update({ assigned_to: newEmployeeId }).eq('id', taskId);
+    if (error) {
+      toast.error('Fehler beim Zuweisen');
+      return;
+    }
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, assigned_to: newEmployeeId } : t));
+    toast.success('Aufgabe neu zugewiesen');
+  }, []);
 
   const agencyColleagues = useMemo(() =>
-    employees.filter(e => e.agencyId === currentUser.agencyId),
+    employees.filter(e => e.agencyId === currentUser?.agencyId),
     [employees, currentUser]
   );
 
-  const updateTaskStatus = useCallback((taskId: string, newStatus: TaskStatus) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus, updatedAt: new Date().toISOString() } : t));
-  }, []);
+  // Filter tasks
+  const visibleTasks = useMemo(() => {
+    let result = tasks;
+    if (!isBackoffice) {
+      result = result.filter(t => t.assigned_to === currentUser?.id);
+    } else {
+      result = result.filter(t => t.agency_id === currentUser?.agencyId || t.assigned_to === currentUser?.id);
+    }
+    if (statusFilter !== 'all') result = result.filter(t => t.status === statusFilter);
+    if (employeeFilter) result = result.filter(t => t.assigned_to === employeeFilter);
+    if (priorityFilter !== 'all') result = result.filter(t => t.priority === priorityFilter);
+    return result.sort((a, b) => {
+      const so: Record<string, number> = { open: 0, in_progress: 1, done: 2 };
+      const po: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+      if ((so[a.status] ?? 2) !== (so[b.status] ?? 2)) return (so[a.status] ?? 2) - (so[b.status] ?? 2);
+      return (po[a.priority] ?? 3) - (po[b.priority] ?? 3);
+    });
+  }, [tasks, statusFilter, employeeFilter, priorityFilter, currentUser, isBackoffice]);
 
-  const reassignTask = useCallback((taskId: string, newEmployeeId: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, assignedTo: newEmployeeId, updatedAt: new Date().toISOString() } : t));
-  }, []);
-
-  const openCount = tasks.filter(t => t.status === 'open' && (isBackoffice ? t.agencyId === currentUser.agencyId : t.assignedTo === currentUser.id)).length;
-  const inProgressCount = tasks.filter(t => t.status === 'in_progress' && (isBackoffice ? t.agencyId === currentUser.agencyId : t.assignedTo === currentUser.id)).length;
-  const doneCount = tasks.filter(t => t.status === 'done' && (isBackoffice ? t.agencyId === currentUser.agencyId : t.assignedTo === currentUser.id)).length;
-
+  const openCount = visibleTasks.filter(t => t.status === 'open').length;
+  const inProgressCount = visibleTasks.filter(t => t.status === 'in_progress').length;
+  const doneCount = visibleTasks.filter(t => t.status === 'done').length;
   const hasFilters = statusFilter !== 'all' || employeeFilter || priorityFilter !== 'all';
-
-  // New Task dialog state
-  const [newTitle, setNewTitle] = useState('');
-  const [newDesc, setNewDesc] = useState('');
-  const [newLeadId, setNewLeadId] = useState('');
-  const [newAssignee, setNewAssignee] = useState('');
-  const [newPriority, setNewPriority] = useState<TaskPriority>('medium');
-  const [newDueDate, setNewDueDate] = useState('');
-
-  const handleCreateTask = () => {
-    if (!newTitle || !newLeadId || !newAssignee) return;
-    const assignee = employees.find(e => e.id === newAssignee);
-    const task: Task = {
-      id: `task-${Date.now()}`,
-      title: newTitle,
-      description: newDesc,
-      leadId: newLeadId,
-      assignedTo: newAssignee,
-      createdBy: currentUser.id,
-      agencyId: assignee?.agencyId || currentUser.agencyId,
-      priority: newPriority,
-      status: 'open',
-      dueDate: newDueDate || undefined,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setTasks(prev => [task, ...prev]);
-    setShowCreate(false);
-    setNewTitle(''); setNewDesc(''); setNewLeadId(''); setNewAssignee(''); setNewPriority('medium'); setNewDueDate('');
-  };
 
   const getLeadName = (leadId: string) => leads.find(l => l.id === leadId)?.name ?? '–';
   const getEmployeeName = (empId: string) => employees.find(e => e.id === empId)?.name ?? '–';
@@ -170,10 +195,23 @@ export default function Tasks() {
     return lead ? statusConfig[lead.status] : null;
   };
 
-  const isOverdue = (dueDate?: string) => {
+  const isOverdue = (dueDate: string | null) => {
     if (!dueDate) return false;
     return new Date(dueDate) < new Date(new Date().toISOString().split('T')[0]);
   };
+
+  // Group tasks by lead
+  const tasksByLead = useMemo(() => {
+    const map = new Map<string, Task[]>();
+    visibleTasks.forEach(t => {
+      const arr = map.get(t.lead_id) || [];
+      arr.push(t);
+      map.set(t.lead_id, arr);
+    });
+    return map;
+  }, [visibleTasks]);
+
+  if (!currentUser) return null;
 
   return (
     <div className="space-y-6">
@@ -187,15 +225,17 @@ export default function Tasks() {
             <h1 className="text-2xl font-bold tracking-tight">Aufgaben</h1>
           </div>
           <p className="text-sm text-muted-foreground ml-[52px]">
-            {isBackoffice ? 'Alle Aufgaben deiner Agentur' : 'Deine offenen Aufgaben'}
+            Systemgenerierte Aufgaben mit KI-Unterstützung
             {' · '} Angemeldet als <span className="font-medium text-foreground">{currentUser.name}</span>
           </p>
         </div>
-        {isBackoffice && (
-          <Button onClick={() => setShowCreate(true)} className="gap-2">
-            <Plus className="h-4 w-4" /> Neue Aufgabe
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {isBackoffice && (
+            <Button onClick={generateAllTasks} variant="outline" className="gap-2" disabled={!!generating}>
+              <Sparkles className="h-4 w-4" /> Tasks generieren
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -236,7 +276,7 @@ export default function Tasks() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as any)}>
+          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
             <SelectTrigger className="h-9 w-[160px]"><SelectValue placeholder="Priorität" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Alle Prioritäten</SelectItem>
@@ -264,167 +304,149 @@ export default function Tasks() {
         </div>
       </div>
 
-      {/* Task List */}
-      <div className="space-y-3">
-        {visibleTasks.length === 0 ? (
-          <div className="rounded-2xl border bg-card p-12 text-center shadow-sm">
-            <CheckCircle2 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">Keine Aufgaben gefunden</p>
-          </div>
-        ) : (
-          visibleTasks.map(task => {
-            const leadStatus = getLeadStatus(task.leadId);
-            const overdue = task.status !== 'done' && isOverdue(task.dueDate);
-            return (
-              <div key={task.id} className={cn(
-                'group rounded-2xl border bg-card p-5 shadow-sm hover:shadow-md transition-all',
-                task.status === 'done' && 'opacity-60',
-                overdue && 'border-destructive/30'
-              )}>
-                <div className="flex items-start gap-4">
-                  {/* Status toggle */}
-                  <button
-                    onClick={() => updateTaskStatus(task.id, task.status === 'done' ? 'open' : task.status === 'open' ? 'in_progress' : 'done')}
-                    className={cn(
-                      'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
-                      task.status === 'done' ? 'border-[hsl(152,55%,40%)] bg-[hsl(152,55%,40%)] text-white' : 'border-muted-foreground/30 hover:border-primary'
+      {/* Loading state */}
+      {loading && (
+        <div className="rounded-2xl border bg-card p-12 text-center shadow-sm">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">Lade Aufgaben...</p>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && visibleTasks.length === 0 && (
+        <div className="rounded-2xl border bg-card p-12 text-center shadow-sm">
+          <Sparkles className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+          <p className="text-sm font-medium mb-1">Keine Aufgaben vorhanden</p>
+          <p className="text-xs text-muted-foreground mb-4">
+            Klicke auf "Tasks generieren" um Aufgaben für deine Leads zu erstellen
+          </p>
+          {isBackoffice && (
+            <Button onClick={generateAllTasks} className="gap-2" disabled={!!generating}>
+              <Sparkles className="h-4 w-4" /> Jetzt generieren
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Tasks grouped by Lead */}
+      {!loading && Array.from(tasksByLead.entries()).map(([leadId, leadTasks]) => {
+        const lead = leads.find(l => l.id === leadId);
+        const leadStatus = lead ? statusConfig[lead.status] : null;
+        const allDone = leadTasks.every(t => t.status === 'done');
+        const openTasks = leadTasks.filter(t => t.status !== 'done').length;
+
+        return (
+          <div key={leadId} className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+            {/* Lead header */}
+            <div className="flex items-center justify-between px-6 py-4 bg-muted/20 border-b">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                  {(lead?.name || '?')[0]}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm">{lead?.name || leadId}</span>
+                    {leadStatus && (
+                      <span className={cn('rounded-full border px-2 py-px text-[10px] font-semibold', leadStatus.color)}>{leadStatus.label}</span>
                     )}
-                  >
-                    {task.status === 'done' && <CheckCircle2 className="h-3.5 w-3.5" />}
-                  </button>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className={cn('font-semibold text-sm', task.status === 'done' && 'line-through text-muted-foreground')}>{task.title}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">{task.description}</p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold', priorityConfig[task.priority].color)}>
-                          {priorityConfig[task.priority].icon} {priorityConfig[task.priority].label}
-                        </span>
-                        <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold', taskStatusConfig[task.status].color)}>
-                          {taskStatusConfig[task.status].label}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-muted-foreground">
-                      <span className="inline-flex items-center gap-1.5">
-                        <User className="h-3 w-3" />
-                        <span className="font-medium text-foreground">{getEmployeeName(task.assignedTo)}</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <ArrowRight className="h-3 w-3" />
-                        <span className="font-medium text-foreground">{getLeadName(task.leadId)}</span>
-                        {leadStatus && (
-                          <span className={cn('rounded-full border px-1.5 py-px text-[9px] font-semibold', leadStatus.color)}>{leadStatus.label}</span>
-                        )}
-                      </span>
-                      {task.dueDate && (
-                        <span className={cn('inline-flex items-center gap-1.5', overdue && 'text-destructive font-semibold')}>
-                          <CalendarDays className="h-3 w-3" />
-                          {overdue && '⚠ '}Fällig: {new Date(task.dueDate).toLocaleDateString('de-CH')}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Backoffice actions */}
-                    {isBackoffice && task.status !== 'done' && (
-                      <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Select value={task.assignedTo} onValueChange={(v) => reassignTask(task.id, v)}>
-                          <SelectTrigger className="h-7 text-xs w-[160px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {agencyColleagues.map(e => (
-                              <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Select value={task.status} onValueChange={(v) => updateTaskStatus(task.id, v as TaskStatus)}>
-                          <SelectTrigger className="h-7 text-xs w-[140px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.entries(taskStatusConfig).map(([k, v]) => (
-                              <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+                    {lead?.position && <span className="text-xs text-muted-foreground">· {lead.position}</span>}
                   </div>
+                  <p className="text-xs text-muted-foreground">{openTasks} offen · {leadTasks.length} gesamt</p>
                 </div>
               </div>
-            );
-          })
-        )}
-      </div>
+              <div className="flex items-center gap-2">
+                {allDone && isBackoffice && (
+                  <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => generateTasksForLead(leadId)} disabled={generating === leadId}>
+                    {generating === leadId ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                    Neue Tasks
+                  </Button>
+                )}
+              </div>
+            </div>
 
-      {/* Create Task Dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Neue Aufgabe erstellen</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">Titel *</label>
-              <input value={newTitle} onChange={e => setNewTitle(e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="z.B. Follow-up anrufen" />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">Beschreibung</label>
-              <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Lead *</label>
-                <Select value={newLeadId} onValueChange={setNewLeadId}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Lead wählen" /></SelectTrigger>
-                  <SelectContent>
-                    {leads.slice(0, 20).map(l => (
-                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Zuweisen an *</label>
-                <Select value={newAssignee} onValueChange={setNewAssignee}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Mitarbeiter" /></SelectTrigger>
-                  <SelectContent>
-                    {agencyColleagues.map(e => (
-                      <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Priorität</label>
-                <Select value={newPriority} onValueChange={(v) => setNewPriority(v as TaskPriority)}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(priorityConfig).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Fälligkeitsdatum</label>
-                <input type="date" value={newDueDate} onChange={e => setNewDueDate(e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
-              </div>
+            {/* Task items */}
+            <div className="divide-y">
+              {leadTasks.map(task => {
+                const overdue = task.status !== 'done' && isOverdue(task.due_date);
+                return (
+                  <div key={task.id} className={cn(
+                    'group flex items-start gap-4 px-6 py-4 hover:bg-muted/30 transition-colors',
+                    task.status === 'done' && 'opacity-50',
+                    overdue && 'bg-destructive/5'
+                  )}>
+                    {/* Status toggle */}
+                    <button
+                      onClick={() => updateTaskStatus(task.id, task.status === 'done' ? 'open' : task.status === 'open' ? 'in_progress' : 'done')}
+                      className={cn(
+                        'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
+                        task.status === 'done' ? 'border-[hsl(152,55%,40%)] bg-[hsl(152,55%,40%)] text-white' : 'border-muted-foreground/30 hover:border-primary'
+                      )}
+                    >
+                      {task.status === 'done' && <CheckCircle2 className="h-3 w-3" />}
+                    </button>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className={cn('font-medium text-sm', task.status === 'done' && 'line-through text-muted-foreground')}>{task.title}</h3>
+                            {task.source === 'ai' && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 border border-violet-200 px-1.5 py-px text-[9px] font-semibold text-violet-700">
+                                <Sparkles className="h-2.5 w-2.5" /> KI
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">{task.description}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold', priorityConfig[task.priority]?.color)}>
+                            {priorityConfig[task.priority]?.icon} {priorityConfig[task.priority]?.label}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1.5">
+                          <User className="h-3 w-3" />
+                          <span className="font-medium text-foreground">{getEmployeeName(task.assigned_to)}</span>
+                        </span>
+                        {task.due_date && (
+                          <span className={cn('inline-flex items-center gap-1.5', overdue && 'text-destructive font-semibold')}>
+                            <CalendarDays className="h-3 w-3" />
+                            {overdue && '⚠ '}Fällig: {new Date(task.due_date).toLocaleDateString('de-CH')}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Backoffice reassign */}
+                      {isBackoffice && task.status !== 'done' && (
+                        <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Select value={task.assigned_to} onValueChange={(v) => reassignTask(task.id, v)}>
+                            <SelectTrigger className="h-7 text-xs w-[160px]"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {agencyColleagues.map(e => (
+                                <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select value={task.status} onValueChange={(v) => updateTaskStatus(task.id, v)}>
+                            <SelectTrigger className="h-7 text-xs w-[130px]"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(taskStatusConfig).map(([k, v]) => (
+                                <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>Abbrechen</Button>
-            <Button onClick={handleCreateTask} disabled={!newTitle || !newLeadId || !newAssignee}>Erstellen</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        );
+      })}
     </div>
   );
 }
