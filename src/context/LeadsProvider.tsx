@@ -129,6 +129,8 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     let description = `Termin erstellt: ${aptData.title} (${typeLabel}, ${aptData.date} ${aptData.time})`;
     if (meetingLink) description += ` – Link: ${meetingLink}`;
     addActivity(aptData.leadId, 'appointment', description);
+    const lead2 = leads.find((e) => e.id === aptData.leadId);
+    addNotification({ type: 'appointment_created', title: 'Termin erstellt', description: `${typeLabel}-Termin mit ${lead2?.name ?? 'Lead'} am ${aptData.date} um ${aptData.time}`, leadId: aptData.leadId });
 
     if (appointmentSettings.autoStatusChange) {
       const lead = leads.find((entry) => entry.id === aptData.leadId);
