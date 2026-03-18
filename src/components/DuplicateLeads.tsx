@@ -33,6 +33,13 @@ export default function DuplicateLeads() {
 
   const activeLeads = leads.filter(l => l.lifecycle === 'active');
 
+  // Auto-scan on mount
+  useEffect(() => {
+    if (activeLeads.length >= 2 && !scanned && !loading) {
+      scanForDuplicates();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const scanForDuplicates = async () => {
     setLoading(true);
     try {
