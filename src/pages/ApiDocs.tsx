@@ -353,7 +353,7 @@ function EndpointCard({ endpoint }: { endpoint: ApiEndpoint }) {
   );
 }
 
-export default function ApiDocs() {
+export function ApiDocsContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
