@@ -18,6 +18,7 @@ export default function LeadsTable() {
   const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
   const [agencyFilter, setAgencyFilter] = useState('');
   const [cantonFilter, setCantonFilter] = useState('');
+  const [employeeFilter, setEmployeeFilter] = useState('');
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
@@ -27,6 +28,7 @@ export default function LeadsTable() {
       if (statusFilter && l.status !== statusFilter) return false;
       if (sourceFilter && l.source !== sourceFilter) return false;
       if (agencyFilter && l.agencyId !== agencyFilter) return false;
+      if (employeeFilter && l.employeeId !== employeeFilter) return false;
       if (cantonFilter && l.cantonCode !== cantonFilter) return false;
       if (dateFrom) {
         const created = new Date(l.createdAt);
@@ -44,12 +46,12 @@ export default function LeadsTable() {
       }
       return true;
     });
-  }, [leads, statusFilter, sourceFilter, agencyFilter, cantonFilter, search, dateFrom, dateTo]);
+  }, [leads, statusFilter, sourceFilter, agencyFilter, employeeFilter, cantonFilter, search, dateFrom, dateTo]);
 
-  const hasFilters = statusFilter || sourceFilter || agencyFilter || cantonFilter || search || dateFrom || dateTo;
+  const hasFilters = statusFilter || sourceFilter || agencyFilter || employeeFilter || cantonFilter || search || dateFrom || dateTo;
 
   const clearFilters = () => {
-    setStatusFilter(''); setSourceFilter(''); setAgencyFilter(''); setCantonFilter(''); setSearch(''); setDateFrom(undefined); setDateTo(undefined);
+    setStatusFilter(''); setSourceFilter(''); setAgencyFilter(''); setEmployeeFilter(''); setCantonFilter(''); setSearch(''); setDateFrom(undefined); setDateTo(undefined);
   };
 
   const exportCSV = () => {
@@ -105,6 +107,10 @@ export default function LeadsTable() {
         <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className={selectCls}>
           <option value="">Alle Agenturen</option>
           {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+        </select>
+        <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
+          <option value="">Alle Mitarbeiter</option>
+          {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
         </select>
         <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>
           <option value="">Alle Kantone</option>

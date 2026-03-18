@@ -228,6 +228,25 @@ export default function LeadDetailSheet() {
                     )}
                   </div>
 
+                  {/* Zuweisung – prominent im Details-Tab */}
+                  <section className="rounded-lg border bg-muted/30 p-4 space-y-3">
+                    <h4 className="text-sm font-semibold flex items-center gap-1.5"><UserCog className="h-3.5 w-3.5" /> Zuweisung</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Agentur</label>
+                        <select value={selectedLead.agencyId} onChange={e => changeAgency(e.target.value)} className={inputCls + ' mt-1'}>
+                          {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Mitarbeiter</label>
+                        <select value={selectedLead.employeeId} onChange={e => changeEmployee(e.target.value)} className={inputCls + ' mt-1'}>
+                          {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </section>
+
                   {editing ? (
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-3">
@@ -507,23 +526,7 @@ export default function LeadDetailSheet() {
                     </div>
                   </section>
 
-                  <section>
-                    <h4 className="text-sm font-semibold mb-3">Zuweisung</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground">Agentur</label>
-                        <select value={selectedLead.agencyId} onChange={e => changeAgency(e.target.value)} className={inputCls + ' mt-1'}>
-                          {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground">Mitarbeiter</label>
-                        <select value={selectedLead.employeeId} onChange={e => changeEmployee(e.target.value)} className={inputCls + ' mt-1'}>
-                          {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                  </section>
+                  {/* Zuweisung wurde in Details-Tab verschoben */}
                 </TabsContent>
 
                 {/* Tab: Activity */}
