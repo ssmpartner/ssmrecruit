@@ -78,9 +78,20 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
 
   const updateLead = useCallback((id: string, updates: Partial<Lead>) => {
     const updatedAt = new Date().toISOString();
-    setLeads((prev) => prev.map((lead) => lead.id === id ? { ...lead, ...updates, updatedAt } : lead));
+    setLeads((prev) => {
+      const old = prev.find((l) => l.id === id);
+      if (old && updates.status && updates.status !== old.status) {
+        addNotification({
+          type: 'lead_status_change',
+          title: 'Status geändert',
+          description: `${old.name}: "${statusConfig[old.status].label}" → "${statusConfig[updates.status].label}"`,
+          leadId: id,
+        });
+      }
+      return prev.map((lead) => lead.id === id ? { ...lead, ...updates, updatedAt } : lead);
+    });
     setSelectedLead((prev) => prev && prev.id === id ? { ...prev, ...updates, updatedAt } : prev);
-  }, []);
+  }, [addNotification]);
 
   const addLead = useCallback((leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
     const id = `l${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
