@@ -215,8 +215,8 @@ export default function Analytics() {
                   <td className="px-6 py-3 text-right font-semibold">{a.total}</td>
                   <td className="px-6 py-3 text-right">{a.contacted}</td>
                   <td className="px-6 py-3 text-right">{a.interview}</td>
-                  <td className="px-6 py-3 text-right text-emerald-600 font-medium">{a.hired}</td>
-                  <td className="px-6 py-3 text-right text-red-500">{a.rejected}</td>
+                  <td className="px-6 py-3 text-right text-success font-medium">{a.hired}</td>
+                  <td className="px-6 py-3 text-right text-destructive">{a.rejected}</td>
                   <td className="px-6 py-3 text-right">{a.conversion}%</td>
                   <td className="px-6 py-3">
                     <div className="flex items-center gap-2">
