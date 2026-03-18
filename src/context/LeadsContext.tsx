@@ -92,6 +92,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [discResults, setDiscResults] = useState<DiscResult[]>([]);
   const [appointmentSettings, setAppointmentSettings] = useState<AppointmentSettings>(defaultAppointmentSettings);
+  const [insightsSettings, setInsightsSettings] = useState<InsightsSettings>(defaultInsightsSettings);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const updateAppointmentSettings = useCallback((updates: Partial<AppointmentSettings>) => {
