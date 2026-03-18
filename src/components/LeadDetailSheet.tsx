@@ -12,7 +12,7 @@ import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus } from 'lucide-react';
 
-const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview', 'hired', 'rejected'];
+const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'interview_2', 'hired', 'rejected'];
 
 const activityIcon: Record<ActivityEntry['type'], typeof Clock> = {
   status_change: ArrowRight,
