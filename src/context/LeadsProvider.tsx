@@ -508,6 +508,8 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         selectedLead,
         setSelectedLead,
         addEmployee,
+        updateEmployee,
+        deleteEmployee,
         addAgency,
         updateAgency,
         loading,
