@@ -55,9 +55,10 @@ export default function LeadsTable() {
           <button className="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors">
             <Upload className="h-4 w-4" /> CSV Import
           </button>
-          <button onClick={exportCSV} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+          <button onClick={exportCSV} className="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors">
             <Download className="h-4 w-4" /> Export
           </button>
+          <AddLeadDialog />
         </div>
       </div>
 
