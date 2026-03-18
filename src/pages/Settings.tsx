@@ -155,18 +155,7 @@ export default function Settings() {
         <div className="flex-1 max-w-2xl space-y-6">
           {activeTab === 'profile' && <ProfileSettings />}
           {activeTab === 'notifications' && <NotificationsTab notifPrefs={notifPrefs} updateNotifPrefs={updateNotifPrefs} toast={toast} />}
-          {activeTab === 'users' && (
-            <UsersTab
-              systemUsers={systemUsers}
-              userDialogOpen={userDialogOpen}
-              setUserDialogOpen={setUserDialogOpen}
-              userForm={userForm}
-              setUserForm={setUserForm}
-              addSystemUser={addSystemUser}
-              removeSystemUser={removeSystemUser}
-              changeUserRole={changeUserRole}
-            />
-          )}
+          {activeTab === 'users' && <UsersTab isSuperadmin={isSuperadmin} />}
           {activeTab === 'appointments' && <AppointmentsTab appointmentSettings={appointmentSettings} updateAppointmentSettings={updateAppointmentSettings} toast={toast} />}
           {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}
           {activeTab === 'integrations' && (
