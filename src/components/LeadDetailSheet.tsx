@@ -443,8 +443,8 @@ export default function LeadDetailSheet() {
                               </div>
                               <div className="flex items-center gap-2">
                                 <button onClick={() => setActiveCallAptId(apt.id)}
-                                  className="inline-flex items-center gap-1.5 rounded-md bg-success/15 text-success px-2.5 py-1 text-[11px] font-semibold hover:bg-success/25 transition-colors">
-                                  <Video className="h-3 w-3" /> Jetzt starten
+                                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-emerald-700 shadow-sm transition-colors">
+                                  <Video className="h-3.5 w-3.5" /> Jetzt starten
                                 </button>
                                 <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Einladung gesendet', description: `Link per ${methodLabels[appointmentSettings.notificationMethod]} an ${selectedLead?.name} gesendet` }); }}
                                   className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-medium hover:bg-primary/20 transition-colors">
