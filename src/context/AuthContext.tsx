@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
+type AppRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst';
+
 interface Profile {
   id: string;
   display_name: string;
@@ -12,6 +14,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
+  role: AppRole | null;
   loading: boolean;
   signUp: (email: string, password: string, displayName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -20,6 +23,7 @@ interface AuthContextType {
   updateEmail: (newEmail: string) => Promise<{ error: any }>;
   updatePassword: (newPassword: string) => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
+  isSuperadmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -34,7 +38,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchRole = async (userId: string) => {
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .single();
+    setRole((data?.role as AppRole) ?? null);
+  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -48,8 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .eq('id', session.user.id)
           .single();
         setProfile(data as Profile | null);
+        await fetchRole(session.user.id);
       } else {
         setProfile(null);
+        setRole(null);
       }
       setLoading(false);
     });
@@ -60,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         supabase.from('profiles').select('*').eq('id', session.user.id).single()
           .then(({ data }) => setProfile(data as Profile | null));
+        fetchRole(session.user.id);
       }
       setLoading(false);
     });
@@ -89,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     setProfile(null);
+    setRole(null);
   };
 
   const updateProfile = async (updates: Partial<Profile>) => {
@@ -122,7 +140,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      user, session, profile, loading,
+      user, session, profile, role, loading,
+      isSuperadmin: role === 'superadmin',
       signUp, signIn, signOut,
       updateProfile, updateEmail, updatePassword, resetPassword,
     }}>

@@ -1,0 +1,148 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) throw new Error("Nicht autorisiert");
+
+    // Verify the requesting user is a superadmin
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: { user: caller } } = await supabaseClient.auth.getUser();
+    if (!caller) throw new Error("Nicht autorisiert");
+
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Check caller is superadmin
+    const { data: callerRole } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", caller.id)
+      .single();
+
+    if (callerRole?.role !== "superadmin") {
+      throw new Error("Nur Superadmins können Benutzer verwalten");
+    }
+
+    const { action, ...payload } = await req.json();
+
+    if (action === "create") {
+      const { email, password, display_name, role } = payload;
+
+      // Create auth user
+      const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { display_name },
+      });
+      if (createError) throw createError;
+
+      // Assign role
+      const { error: roleError } = await supabaseAdmin
+        .from("user_roles")
+        .insert({ user_id: userData.user.id, role });
+      if (roleError) throw roleError;
+
+      return new Response(JSON.stringify({ success: true, user_id: userData.user.id }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "update_role") {
+      const { user_id, role } = payload;
+
+      // Prevent removing the last superadmin
+      if (role !== "superadmin") {
+        const { data: superadmins } = await supabaseAdmin
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "superadmin");
+        const isLastSuperadmin = superadmins?.length === 1 && superadmins[0].user_id === user_id;
+        if (isLastSuperadmin) throw new Error("Es muss mindestens ein Superadmin existieren");
+      }
+
+      const { error } = await supabaseAdmin
+        .from("user_roles")
+        .update({ role })
+        .eq("user_id", user_id);
+      if (error) throw error;
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "delete") {
+      const { user_id } = payload;
+
+      // Prevent deleting self
+      if (user_id === caller.id) throw new Error("Sie können sich nicht selbst löschen");
+
+      // Prevent removing the last superadmin
+      const { data: superadmins } = await supabaseAdmin
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "superadmin");
+      const { data: targetRole } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user_id)
+        .single();
+      if (targetRole?.role === "superadmin" && superadmins?.length === 1) {
+        throw new Error("Es muss mindestens ein Superadmin existieren");
+      }
+
+      // Delete auth user (cascades to user_roles and profiles)
+      const { error } = await supabaseAdmin.auth.admin.deleteUser(user_id);
+      if (error) throw error;
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "list") {
+      // Get all users with their roles and profiles
+      const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers();
+      if (error) throw error;
+
+      const { data: roles } = await supabaseAdmin.from("user_roles").select("*");
+      const { data: profiles } = await supabaseAdmin.from("profiles").select("*");
+
+      const enriched = users.map((u: any) => ({
+        id: u.id,
+        email: u.email,
+        display_name: profiles?.find((p: any) => p.id === u.id)?.display_name || u.email,
+        role: roles?.find((r: any) => r.user_id === u.id)?.role || null,
+        created_at: u.created_at,
+      }));
+
+      return new Response(JSON.stringify({ users: enriched }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    throw new Error("Unbekannte Aktion");
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
