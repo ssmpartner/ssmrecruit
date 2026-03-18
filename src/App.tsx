@@ -15,6 +15,7 @@ import Analytics from "./pages/Analytics";
 import CalendarPage from "./pages/CalendarPage";
 import Settings from "./pages/Settings";
 import Processes from "./pages/Processes";
+import ApiDocs from "./pages/ApiDocs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/processes" element={<Processes />} />
+              <Route path="/api" element={<ApiDocs />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
