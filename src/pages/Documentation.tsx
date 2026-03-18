@@ -151,6 +151,8 @@ export default function Documentation() {
               { name: 'TypeScript', desc: 'Typsicherheit' },
               { name: 'Vite', desc: 'Build-Tool' },
               { name: 'Tailwind CSS', desc: 'Styling' },
+              { name: 'Lovable Cloud', desc: 'Backend & DB' },
+              { name: 'Edge Functions', desc: 'Serverless' },
               { name: 'Recharts', desc: 'Diagramme' },
               { name: 'React Router', desc: 'Navigation' },
               { name: 'Radix UI', desc: 'Komponenten' },
