@@ -15,7 +15,7 @@ import Analytics from "./pages/Analytics";
 import CalendarPage from "./pages/CalendarPage";
 import Settings from "./pages/Settings";
 import Processes from "./pages/Processes";
-import ApiDocs from "./pages/ApiDocs";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
