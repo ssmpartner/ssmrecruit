@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2 } from 'lucide-react';
+import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2, Building2, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLeads } from '@/context/useLeads';
@@ -13,6 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 export type AutomationTrigger = 'status_change' | 'lead_created' | 'disc_completed' | 'time_in_status';
 export type AutomationAction = 'change_status' | 'assign_employee' | 'send_notification';
 
+export type AutomationScope = 'global' | 'agency' | 'employee';
+
 export interface AutomationRule {
   id: string;
   name: string;
@@ -21,6 +23,9 @@ export interface AutomationRule {
   triggerConfig: { fromStatus?: LeadStatus; toStatus?: LeadStatus; daysInStatus?: number; canton?: string };
   action: AutomationAction;
   actionConfig: { targetStatus?: LeadStatus; targetEmployeeId?: string; notificationMessage?: string };
+  scope: AutomationScope;
+  scopeAgencyId?: string;
+  scopeEmployeeId?: string;
   createdAt: string;
 }
 
@@ -128,15 +133,15 @@ const initialSteps: ProcessStep[] = [
 ];
 
 const defaultRules: AutomationRule[] = [
-  { id: 'rule-1', name: 'DISC-Test → Gespräch 2', enabled: true, trigger: 'disc_completed', triggerConfig: {}, action: 'change_status', actionConfig: { targetStatus: 'interview_2' }, createdAt: new Date().toISOString() },
-  { id: 'rule-2', name: 'Erinnerung bei Inaktivität', enabled: false, trigger: 'time_in_status', triggerConfig: { toStatus: 'contacted', daysInStatus: 3 }, action: 'send_notification', actionConfig: { notificationMessage: 'Lead seit 3 Tagen im Status "Kontaktiert" – bitte nachfassen!' }, createdAt: new Date().toISOString() },
+  { id: 'rule-1', name: 'DISC-Test → Gespräch 2', enabled: true, trigger: 'disc_completed', triggerConfig: {}, action: 'change_status', actionConfig: { targetStatus: 'interview_2' }, scope: 'global', createdAt: new Date().toISOString() },
+  { id: 'rule-2', name: 'Erinnerung bei Inaktivität', enabled: false, trigger: 'time_in_status', triggerConfig: { toStatus: 'contacted', daysInStatus: 3 }, action: 'send_notification', actionConfig: { notificationMessage: 'Lead seit 3 Tagen im Status "Kontaktiert" – bitte nachfassen!' }, scope: 'global', createdAt: new Date().toISOString() },
 ];
 
 const mainFlow: LeadStatus[] = statusFlow.filter(s => s !== 'rejected');
 const inputCls = "h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
 
 export default function Processes() {
-  const { leads, employees } = useLeads();
+  const { leads, employees, agencies } = useLeads();
   const { toast } = useToast();
 
   const [rules, setRules] = useState<AutomationRule[]>(defaultRules);
@@ -194,21 +199,27 @@ export default function Processes() {
     daysInStatus: 3, canton: '',
     action: 'change_status' as AutomationAction,
     targetStatus: '' as LeadStatus | '', targetEmployeeId: '', notificationMessage: '',
+    scope: 'global' as AutomationScope, scopeAgencyId: '', scopeEmployeeId: '',
   });
 
   // ── Automation handlers ──
   const addRule = () => {
     if (!form.name.trim()) { toast({ title: 'Fehler', description: 'Bitte Name eingeben.', variant: 'destructive' }); return; }
+    if (form.scope === 'agency' && !form.scopeAgencyId) { toast({ title: 'Fehler', description: 'Bitte Agentur auswählen.', variant: 'destructive' }); return; }
+    if (form.scope === 'employee' && !form.scopeEmployeeId) { toast({ title: 'Fehler', description: 'Bitte Mitarbeiter auswählen.', variant: 'destructive' }); return; }
     const rule: AutomationRule = {
       id: `rule-${Date.now()}`, name: form.name, enabled: true, trigger: form.trigger,
       triggerConfig: { fromStatus: form.fromStatus || undefined, toStatus: form.toStatus || undefined, daysInStatus: form.trigger === 'time_in_status' ? form.daysInStatus : undefined, canton: form.canton || undefined },
       action: form.action,
       actionConfig: { targetStatus: form.action === 'change_status' ? (form.targetStatus as LeadStatus) : undefined, targetEmployeeId: form.action === 'assign_employee' ? form.targetEmployeeId : undefined, notificationMessage: form.action === 'send_notification' ? form.notificationMessage : undefined },
+      scope: form.scope,
+      scopeAgencyId: form.scope === 'agency' ? form.scopeAgencyId : undefined,
+      scopeEmployeeId: form.scope === 'employee' ? form.scopeEmployeeId : undefined,
       createdAt: new Date().toISOString(),
     };
     setRules(prev => [...prev, rule]);
     setDialogOpen(false);
-    setForm({ name: '', trigger: 'status_change', fromStatus: '', toStatus: '', daysInStatus: 3, canton: '', action: 'change_status', targetStatus: '', targetEmployeeId: '', notificationMessage: '' });
+    setForm({ name: '', trigger: 'status_change', fromStatus: '', toStatus: '', daysInStatus: 3, canton: '', action: 'change_status', targetStatus: '', targetEmployeeId: '', notificationMessage: '', scope: 'global', scopeAgencyId: '', scopeEmployeeId: '' });
     toast({ title: 'Regel erstellt', description: `"${rule.name}" hinzugefügt.` });
   };
 
@@ -476,6 +487,38 @@ export default function Processes() {
                     <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="z.B. Auto-Zuweisung ZH Leads" className={inputCls + ' mt-1'} />
                   </div>
 
+                  {/* Scope selector */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Geltungsbereich</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { key: 'global' as AutomationScope, label: 'Global', icon: Workflow, desc: 'Für alle' },
+                        { key: 'agency' as AutomationScope, label: 'Agentur', icon: Building2, desc: 'Nur eine Agentur' },
+                        { key: 'employee' as AutomationScope, label: 'Mitarbeiter', icon: User, desc: 'Nur ein Mitarbeiter' },
+                      ]).map(({ key, label, icon: Icon, desc }) => {
+                        const isActive = form.scope === key;
+                        return (
+                          <button key={key} onClick={() => setForm(p => ({ ...p, scope: key, scopeAgencyId: '', scopeEmployeeId: '' }))}
+                            className={`rounded-xl border p-3 text-left transition-colors ${isActive ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
+                            <Icon className={`h-3.5 w-3.5 mb-1 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <span className="text-xs font-semibold block">{label}</span>
+                            <p className="text-[10px] text-muted-foreground">{desc}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {form.scope === 'agency' && (
+                      <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Agentur</label>
+                        <select value={form.scopeAgencyId} onChange={e => setForm(p => ({ ...p, scopeAgencyId: e.target.value }))} className={inputCls + ' mt-1'}>
+                          <option value="">Wählen</option>{agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+                    )}
+                    {form.scope === 'employee' && (
+                      <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Mitarbeiter</label>
+                        <select value={form.scopeEmployeeId} onChange={e => setForm(p => ({ ...p, scopeEmployeeId: e.target.value }))} className={inputCls + ' mt-1'}>
+                          <option value="">Wählen</option>{employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
+                    )}
+                  </div>
+
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Auslöser</label>
                     <div className="grid grid-cols-2 gap-2">
@@ -581,6 +624,21 @@ export default function Processes() {
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${rule.enabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                           {rule.enabled ? 'Aktiv' : 'Inaktiv'}
                         </span>
+                        {rule.scope === 'global' && (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                            <Workflow className="h-2.5 w-2.5" /> Global
+                          </span>
+                        )}
+                        {rule.scope === 'agency' && (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
+                            <Building2 className="h-2.5 w-2.5" /> {agencies.find(a => a.id === rule.scopeAgencyId)?.name || 'Agentur'}
+                          </span>
+                        )}
+                        {rule.scope === 'employee' && (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
+                            <User className="h-2.5 w-2.5" /> {employees.find(e => e.id === rule.scopeEmployeeId)?.name || 'Mitarbeiter'}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 text-xs">
                         <div className="inline-flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1">
