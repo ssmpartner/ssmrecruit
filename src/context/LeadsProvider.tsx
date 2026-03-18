@@ -99,7 +99,8 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     const newLead: Lead = { ...leadData, id, createdAt: now, updatedAt: now };
     setLeads((prev) => [newLead, ...prev]);
     addActivity(id, 'status_change', `Lead "${leadData.name}" manuell erfasst`);
-  }, [addActivity]);
+    addNotification({ type: 'lead_new', title: 'Neuer Lead', description: `${leadData.name} wurde erfasst.`, leadId: id });
+  }, [addActivity, addNotification]);
 
   function generateMeetingLink(): string {
     const chars = 'abcdefghijklmnopqrstuvwxyz';
