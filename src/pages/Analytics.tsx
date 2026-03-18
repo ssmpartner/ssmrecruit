@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Filter, CalendarIcon, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { useLeads } from '@/context/LeadsContext';
+import { useLeads } from '@/context/useLeads';
 import { sourceConfig, statusConfig, type LeadSource, type LeadStatus } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
 import StatCard from '@/components/StatCard';

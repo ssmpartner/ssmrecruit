@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Video, Maximize2, Minimize2, PhoneOff } from 'lucide-react';
-import { useLeads } from '@/context/LeadsContext';
+import { useLeads } from '@/context/useLeads';
 
 interface VideoCallDialogProps {
   open: boolean;

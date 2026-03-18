@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useLeads } from '@/context/LeadsContext';
+import { useLeads } from '@/context/useLeads';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 import { ChevronLeft, ChevronRight, Phone, Video, Building2, CalendarIcon } from 'lucide-react';
 

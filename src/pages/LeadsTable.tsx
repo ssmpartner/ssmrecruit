@@ -3,7 +3,7 @@ import { Download, Upload, Filter, MapPin, CalendarIcon, X } from 'lucide-react'
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadSource, statusConfig, sourceConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
-import { useLeads } from '@/context/LeadsContext';
+import { useLeads } from '@/context/useLeads';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';

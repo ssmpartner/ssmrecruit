@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Building2, Plus } from 'lucide-react';
-import { useLeads } from '@/context/LeadsContext';
+import { useLeads } from '@/context/useLeads';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export default function Agencies() {
