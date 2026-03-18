@@ -12,6 +12,7 @@ import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus, Link2, Send, Copy, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import VideoCallDialog from './VideoCallDialog';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'interview_2', 'hired', 'rejected'];
 
@@ -41,6 +42,7 @@ export default function LeadDetailSheet() {
   // Appointment form
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
+  const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
 
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
@@ -141,6 +143,7 @@ export default function LeadDetailSheet() {
   const inputCls = "h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col p-0">
         {selectedLead && (
@@ -407,16 +410,22 @@ export default function LeadDetailSheet() {
                             <div className="ml-11 space-y-1.5">
                               <div className="flex items-center gap-2">
                                 <Link2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                                <a href={apt.meetingLink} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline truncate">{apt.meetingLink}</a>
+                                <span className="text-xs text-primary truncate">{apt.meetingLink}</span>
                                 <button onClick={() => { navigator.clipboard.writeText(apt.meetingLink!); toast({ title: 'Kopiert', description: 'Link in die Zwischenablage kopiert' }); }}
                                   className="shrink-0 rounded p-1 hover:bg-muted transition-colors" title="Link kopieren">
                                   <Copy className="h-3 w-3 text-muted-foreground" />
                                 </button>
                               </div>
-                              <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Einladung gesendet', description: `Link per ${methodLabels[notificationMethod]} an ${selectedLead?.name} gesendet` }); }}
-                                className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-medium hover:bg-primary/20 transition-colors">
-                                <Send className="h-3 w-3" /> Per {methodLabels[notificationMethod]} senden
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button onClick={() => setActiveCallAptId(apt.id)}
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-success/15 text-success px-2.5 py-1 text-[11px] font-semibold hover:bg-success/25 transition-colors">
+                                  <Video className="h-3 w-3" /> Jetzt starten
+                                </button>
+                                <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Einladung gesendet', description: `Link per ${methodLabels[notificationMethod]} an ${selectedLead?.name} gesendet` }); }}
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-medium hover:bg-primary/20 transition-colors">
+                                  <Send className="h-3 w-3" /> Per {methodLabels[notificationMethod]} senden
+                                </button>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -539,5 +548,21 @@ export default function LeadDetailSheet() {
         )}
       </DialogContent>
     </Dialog>
+
+    {/* Video Call Dialog */}
+    {(() => {
+      const activeApt = appointments.find(a => a.id === activeCallAptId);
+      if (!activeApt?.meetingLink) return null;
+      return (
+        <VideoCallDialog
+          open={!!activeCallAptId}
+          onOpenChange={(v) => { if (!v) setActiveCallAptId(null); }}
+          meetingLink={activeApt.meetingLink}
+          title={activeApt.title}
+          leadName={selectedLead?.name ?? ''}
+        />
+      );
+    })()}
+    </>
   );
 }
