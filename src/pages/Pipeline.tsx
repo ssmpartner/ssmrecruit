@@ -1,28 +1,34 @@
-import { useState } from 'react';
-import { leads as initialLeads, statusConfig, employees, agencies, type Lead, type LeadStatus } from '@/lib/mock-data';
+import { useLeads } from '@/context/LeadsContext';
+import { statusConfig, employees, agencies, type LeadStatus } from '@/lib/mock-data';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
+import LeadDetailSheet from '@/components/LeadDetailSheet';
 
 const pipelineStatuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview', 'hired', 'rejected'];
 
 export default function Pipeline() {
-  const [allLeads, setAllLeads] = useState<Lead[]>(initialLeads);
+  const { leads, updateLead, addActivity, setSelectedLead } = useLeads();
 
-  const moveStatus = (leadId: string, newStatus: LeadStatus) => {
-    setAllLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus, updatedAt: new Date().toISOString() } : l));
+  const moveStatus = (leadId: string, newStatus: LeadStatus, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+    const oldLabel = statusConfig[lead.status].label;
+    const newLabel = statusConfig[newStatus].label;
+    updateLead(leadId, { status: newStatus });
+    addActivity(leadId, 'status_change', `Status changed from "${oldLabel}" to "${newLabel}"`);
   };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Pipeline</h1>
-        <p className="text-muted-foreground">Drag-free Kanban view — click arrows to move leads</p>
+        <p className="text-muted-foreground">Click a lead to view details and edit</p>
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
         {pipelineStatuses.map(status => {
-          const config = statusConfig[status];
-          const columnLeads = allLeads.filter(l => l.status === status);
+          const columnLeads = leads.filter(l => l.status === status);
           const idx = pipelineStatuses.indexOf(status);
 
           return (
@@ -36,9 +42,12 @@ export default function Pipeline() {
               <div className="flex-1 space-y-2 p-3 pt-1 overflow-y-auto max-h-[calc(100vh-260px)] scrollbar-thin">
                 {columnLeads.map(lead => {
                   const emp = employees.find(e => e.id === lead.employeeId);
-                  const agency = agencies.find(a => a.id === lead.agencyId);
                   return (
-                    <div key={lead.id} className="rounded-lg border bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
+                    <div
+                      key={lead.id}
+                      onClick={() => setSelectedLead(lead)}
+                      className="cursor-pointer rounded-lg border bg-card p-3 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
+                    >
                       <p className="font-medium text-sm">{lead.name}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{lead.position}</p>
                       <div className="mt-2 flex items-center gap-2">
@@ -49,7 +58,7 @@ export default function Pipeline() {
                         <div className="flex gap-1">
                           {idx > 0 && (
                             <button
-                              onClick={() => moveStatus(lead.id, pipelineStatuses[idx - 1])}
+                              onClick={(e) => moveStatus(lead.id, pipelineStatuses[idx - 1], e)}
                               className="rounded px-1.5 py-0.5 text-xs bg-secondary hover:bg-muted text-muted-foreground transition-colors"
                             >
                               ←
@@ -57,7 +66,7 @@ export default function Pipeline() {
                           )}
                           {idx < pipelineStatuses.length - 1 && (
                             <button
-                              onClick={() => moveStatus(lead.id, pipelineStatuses[idx + 1])}
+                              onClick={(e) => moveStatus(lead.id, pipelineStatuses[idx + 1], e)}
                               className="rounded px-1.5 py-0.5 text-xs bg-secondary hover:bg-muted text-muted-foreground transition-colors"
                             >
                               →
@@ -76,6 +85,8 @@ export default function Pipeline() {
           );
         })}
       </div>
+
+      <LeadDetailSheet />
     </div>
   );
 }
