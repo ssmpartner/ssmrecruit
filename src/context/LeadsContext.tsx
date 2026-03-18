@@ -130,11 +130,12 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     let desc = `Termin erstellt: ${aptData.title} (${typeLabel}, ${aptData.date} ${aptData.time})`;
     if (meetingLink) desc += ` – Link: ${meetingLink}`;
     addActivity(aptData.leadId, 'appointment', desc);
-    // Auto-set status to appointment if still new/contacted
-    const lead = leads.find(l => l.id === aptData.leadId);
-    if (lead && (lead.status === 'new' || lead.status === 'contacted')) {
-      updateLead(aptData.leadId, { status: 'appointment' });
-      addActivity(aptData.leadId, 'status_change', `Status automatisch auf "Termin" gesetzt`);
+    if (appointmentSettings.autoStatusChange) {
+      const lead = leads.find(l => l.id === aptData.leadId);
+      if (lead && (lead.status === 'new' || lead.status === 'contacted')) {
+        updateLead(aptData.leadId, { status: 'appointment' });
+        addActivity(aptData.leadId, 'status_change', `Status automatisch auf "Termin" gesetzt`);
+      }
     }
   }, [addActivity, leads, updateLead]);
 

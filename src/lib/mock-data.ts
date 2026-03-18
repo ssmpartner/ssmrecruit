@@ -37,6 +37,48 @@ export interface Appointment {
 
 export type NotificationMethod = 'email' | 'sms' | 'whatsapp';
 
+export interface AppointmentSettings {
+  defaultDuration: number;
+  defaultType: 'phone' | 'video' | 'onsite';
+  autoStatusChange: boolean;
+  videoProvider: 'jitsi' | 'custom';
+  customVideoBaseUrl: string;
+  displayName: string;
+  prejoinEnabled: boolean;
+  startWithAudioMuted: boolean;
+  startWithVideoMuted: boolean;
+  enableRecording: boolean;
+  enableScreensharing: boolean;
+  enableChat: boolean;
+  enableTileView: boolean;
+  reminderEnabled: boolean;
+  reminderMinutesBefore: number;
+  autoSendInvite: boolean;
+  notificationMethod: NotificationMethod;
+  inviteMessageTemplate: string;
+}
+
+export const defaultAppointmentSettings: AppointmentSettings = {
+  defaultDuration: 30,
+  defaultType: 'video',
+  autoStatusChange: true,
+  videoProvider: 'jitsi',
+  customVideoBaseUrl: '',
+  displayName: 'Mitarbeiter',
+  prejoinEnabled: false,
+  startWithAudioMuted: false,
+  startWithVideoMuted: false,
+  enableRecording: true,
+  enableScreensharing: true,
+  enableChat: true,
+  enableTileView: true,
+  reminderEnabled: true,
+  reminderMinutesBefore: 15,
+  autoSendInvite: false,
+  notificationMethod: 'email',
+  inviteMessageTemplate: 'Guten Tag {name},\n\nSie haben einen Termin am {date} um {time} Uhr.\n\n{link}\n\nFreundliche Grüsse\n{company}',
+};
+
 
 export interface Agency {
   id: string;
