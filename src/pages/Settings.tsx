@@ -65,7 +65,7 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'notifications' | 'users' | 'appointments' | 'insights' | 'integrations' | 'api' | 'api-docs';
+type SettingsTab = 'notifications' | 'users' | 'appointments' | 'insights' | 'integrations' | 'api' | 'api-docs' | 'documentation';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
   { id: 'notifications', label: 'Benachrichtigungen', icon: Bell, desc: 'In-App Alerts konfigurieren' },
@@ -75,6 +75,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[
   { id: 'integrations', label: 'Integrationen', icon: Plug, desc: 'Lead-Quellen & Webhooks' },
   { id: 'api', label: 'API-Schlüssel', icon: Key, desc: 'API-Keys generieren & verwalten' },
   { id: 'api-docs', label: 'API-Dokumentation', icon: Code2, desc: 'REST API Referenz & Endpunkte' },
+  { id: 'documentation', label: 'Dokumentation', icon: FileText, desc: 'Versionen, Updates & Funktionen' },
 ];
 
 export default function Settings() {
