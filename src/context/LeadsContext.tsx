@@ -96,6 +96,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   }, [addActivity]);
 
 
+  const addEmployee = useCallback((emp: Omit<Employee, 'id'>) => {
     const id = `e${Date.now()}`;
     setEmployees(prev => [...prev, { ...emp, id }]);
   }, []);
@@ -106,7 +107,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <LeadsContext.Provider value={{ leads, employees, agencies, activities, updateLead, addActivity, selectedLead, setSelectedLead, addEmployee, addAgency }}>
+    <LeadsContext.Provider value={{ leads, employees, agencies, activities, updateLead, addLead, addActivity, selectedLead, setSelectedLead, addEmployee, addAgency }}>
       {children}
     </LeadsContext.Provider>
   );
