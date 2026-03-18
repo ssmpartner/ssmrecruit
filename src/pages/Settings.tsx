@@ -64,9 +64,10 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'notifications' | 'users' | 'appointments' | 'insights' | 'integrations' | 'api';
+type SettingsTab = 'profile' | 'notifications' | 'users' | 'appointments' | 'insights' | 'integrations' | 'api';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
+  { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name, E-Mail & Passwort' },
   { id: 'notifications', label: 'Benachrichtigungen', icon: Bell, desc: 'In-App Alerts konfigurieren' },
   { id: 'users', label: 'Benutzer', icon: Users, desc: 'Rollen & Zugriffsrechte' },
   { id: 'appointments', label: 'Termine & Video', icon: CalendarDays, desc: 'Terminplanung & Video-Calls' },
