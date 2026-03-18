@@ -107,7 +107,7 @@ export default function Settings() {
 
   const disconnectIntegration = (id: string) => {
     updateIntegration(id, { connected: false, method: 'none', zapierWebhook: '', apiKey: '' });
-    toast({ title: 'Disconnected', description: 'Integration has been removed.' });
+    toast({ title: 'Getrennt', description: 'Integration wurde entfernt.' });
   };
 
   const testWebhook = async (integration: Integration) => {
