@@ -326,9 +326,9 @@ export default function Settings() {
             <Globe className="h-4 w-4 text-accent-foreground" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-sm">Your Incoming Webhook Endpoint</h3>
+         <h3 className="font-semibold text-sm">Ihr Eingangs-Webhook-Endpunkt</h3>
             <p className="text-xs text-muted-foreground mt-1">
-              Use this URL in Zapier or your ad platform to send leads to RecruitFlow. Leads will automatically appear in your pipeline.
+              Verwenden Sie diese URL in Zapier oder Ihrer Werbeplattform, um Leads an RecruitFlow zu senden. Leads erscheinen automatisch in Ihrer Pipeline.
             </p>
             <div className="mt-3 flex items-center gap-2">
               <code className="flex-1 rounded-lg bg-secondary px-3 py-2 text-xs font-mono text-secondary-foreground break-all">
@@ -337,11 +337,11 @@ export default function Settings() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(`${window.location.origin}/api/webhook/leads`);
-                  toast({ title: 'Copied', description: 'Webhook URL copied to clipboard' });
+                  toast({ title: 'Kopiert', description: 'Webhook-URL in die Zwischenablage kopiert' });
                 }}
                 className="shrink-0 rounded-lg bg-secondary px-3 py-2 text-xs font-medium hover:bg-muted transition-colors"
               >
-                Copy
+                Kopieren
               </button>
             </div>
           </div>
@@ -350,7 +350,7 @@ export default function Settings() {
 
       {/* Integrations */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Lead Source Integrations</h2>
+        <h2 className="text-lg font-semibold">Lead-Quellen Integrationen</h2>
 
         {integrations.map(integration => {
           const isExpanded = expandedId === integration.id;
