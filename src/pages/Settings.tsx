@@ -736,3 +736,195 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
     </>
   );
 }
+
+interface ApiKey {
+  id: string;
+  name: string;
+  key: string;
+  createdAt: string;
+  lastUsed: string | null;
+  permissions: string[];
+}
+
+function ApiKeysTab({ toast }: any) {
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([
+    { id: 'ak1', name: 'Produktions-Schlüssel', key: 'rf_live_sk_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6', createdAt: '2026-01-15T10:00:00Z', lastUsed: '2026-03-17T14:22:00Z', permissions: ['leads:read', 'leads:write', 'appointments:read', 'appointments:write'] },
+    { id: 'ak2', name: 'Webhook-Schlüssel', key: 'rf_live_sk_z9y8x7w6v5u4t3s2r1q0p9o8n7m6l5k4', createdAt: '2026-02-20T08:00:00Z', lastUsed: '2026-03-18T09:15:00Z', permissions: ['leads:write'] },
+  ]);
+  const [showKey, setShowKey] = useState<string | null>(null);
+  const [newKeyDialog, setNewKeyDialog] = useState(false);
+  const [newKeyForm, setNewKeyForm] = useState({ name: '', permissions: ['leads:read'] as string[] });
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+
+  const allPermissions = [
+    { value: 'leads:read', label: 'Leads lesen' },
+    { value: 'leads:write', label: 'Leads schreiben' },
+    { value: 'appointments:read', label: 'Termine lesen' },
+    { value: 'appointments:write', label: 'Termine schreiben' },
+    { value: 'employees:read', label: 'Mitarbeiter lesen' },
+    { value: 'agencies:read', label: 'Agenturen lesen' },
+    { value: 'disc:read', label: 'DISC-Ergebnisse lesen' },
+    { value: 'webhooks:write', label: 'Webhooks senden' },
+  ];
+
+  const generateApiKey = () => {
+    if (!newKeyForm.name.trim()) {
+      toast({ title: 'Fehler', description: 'Bitte einen Namen eingeben', variant: 'destructive' });
+      return;
+    }
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const randomKey = 'rf_live_sk_' + Array.from({ length: 32 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const newKey: ApiKey = {
+      id: `ak-${Date.now()}`,
+      name: newKeyForm.name,
+      key: randomKey,
+      createdAt: new Date().toISOString(),
+      lastUsed: null,
+      permissions: newKeyForm.permissions,
+    };
+    setApiKeys(prev => [newKey, ...prev]);
+    setGeneratedKey(randomKey);
+    toast({ title: 'API-Schlüssel erstellt', description: 'Kopieren Sie den Schlüssel jetzt – er wird nur einmal angezeigt.' });
+  };
+
+  const revokeKey = (id: string) => {
+    setApiKeys(prev => prev.filter(k => k.id !== id));
+    toast({ title: 'Widerrufen', description: 'API-Schlüssel wurde dauerhaft deaktiviert.' });
+  };
+
+  const maskKey = (key: string) => key.slice(0, 14) + '•'.repeat(20) + key.slice(-4);
+
+  const togglePermission = (perm: string) => {
+    setNewKeyForm(prev => ({
+      ...prev,
+      permissions: prev.permissions.includes(perm)
+        ? prev.permissions.filter(p => p !== perm)
+        : [...prev.permissions, perm],
+    }));
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2"><Key className="h-5 w-5" /> API-Schlüssel</h2>
+          <p className="text-sm text-muted-foreground">Erstellen und verwalten Sie API-Schlüssel für den Zugriff auf die RecruitFlow REST API.</p>
+        </div>
+        <Dialog open={newKeyDialog} onOpenChange={(open) => { setNewKeyDialog(open); if (!open) { setGeneratedKey(null); setNewKeyForm({ name: '', permissions: ['leads:read'] }); } }}>
+          <DialogTrigger asChild>
+            <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+              <Key className="h-4 w-4" /> Neuen Schlüssel erstellen
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader><DialogTitle>Neuen API-Schlüssel erstellen</DialogTitle></DialogHeader>
+            {!generatedKey ? (
+              <div className="space-y-4 pt-2">
+                <div>
+                  <label className="text-sm font-medium">Name</label>
+                  <input value={newKeyForm.name} onChange={(e) => setNewKeyForm(p => ({ ...p, name: e.target.value }))}
+                    placeholder="z.B. Produktions-Key, Zapier-Key"
+                    className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Berechtigungen</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {allPermissions.map(p => (
+                      <button key={p.value} onClick={() => togglePermission(p.value)}
+                        className={`rounded-lg border px-3 py-2 text-xs text-left transition-colors ${newKeyForm.permissions.includes(p.value) ? 'border-primary bg-primary/5 text-foreground font-medium' : 'text-muted-foreground hover:bg-muted'}`}>
+                        <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${newKeyForm.permissions.includes(p.value) ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button onClick={generateApiKey} disabled={!newKeyForm.name.trim() || newKeyForm.permissions.length === 0}
+                  className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                  Schlüssel generieren
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4 pt-2">
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                  <p className="text-sm font-semibold text-amber-800 mb-1">⚠️ Wichtig</p>
+                  <p className="text-xs text-amber-700">Kopieren Sie diesen Schlüssel jetzt. Er wird aus Sicherheitsgründen nicht erneut angezeigt.</p>
+                </div>
+                <div className="rounded-lg bg-muted p-3">
+                  <code className="text-xs font-mono break-all">{generatedKey}</code>
+                </div>
+                <button onClick={() => { navigator.clipboard.writeText(generatedKey); toast({ title: 'Kopiert!', description: 'API-Schlüssel in die Zwischenablage kopiert.' }); }}
+                  className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                  <Copy className="h-4 w-4" /> Schlüssel kopieren
+                </button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Info Banner */}
+      <div className="rounded-xl border bg-card p-4 shadow-sm flex items-start gap-3">
+        <div className="rounded-lg bg-accent p-2 shrink-0"><Globe className="h-4 w-4 text-accent-foreground" /></div>
+        <div>
+          <p className="text-sm font-medium">API-Dokumentation</p>
+          <p className="text-xs text-muted-foreground mb-2">Vollständige REST API Referenz mit allen Endpunkten, Parametern und Code-Beispielen.</p>
+          <a href="/api" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+            Zur API-Dokumentation <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
+      </div>
+
+      {/* Keys List */}
+      <div className="space-y-3">
+        {apiKeys.map(apiKey => (
+          <div key={apiKey.id} className="rounded-xl border bg-card p-5 shadow-sm">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h3 className="text-sm font-semibold">{apiKey.name}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Erstellt: {new Date(apiKey.createdAt).toLocaleDateString('de-DE')}
+                  {apiKey.lastUsed && <> · Zuletzt verwendet: {new Date(apiKey.lastUsed).toLocaleDateString('de-DE')}</>}
+                </p>
+              </div>
+              <button onClick={() => revokeKey(apiKey.id)}
+                className="rounded-lg px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors">
+                Widerrufen
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 mb-3">
+              <code className="flex-1 rounded-lg bg-muted px-3 py-2 text-xs font-mono">
+                {showKey === apiKey.id ? apiKey.key : maskKey(apiKey.key)}
+              </code>
+              <button onClick={() => setShowKey(showKey === apiKey.id ? null : apiKey.id)}
+                className="rounded-lg bg-secondary px-3 py-2 text-xs font-medium hover:bg-muted transition-colors">
+                {showKey === apiKey.id ? 'Verbergen' : 'Anzeigen'}
+              </button>
+              <button onClick={() => { navigator.clipboard.writeText(apiKey.key); toast({ title: 'Kopiert!' }); }}
+                className="rounded-lg bg-secondary px-3 py-2 text-xs font-medium hover:bg-muted transition-colors">
+                <Copy className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {apiKey.permissions.map(p => (
+                <span key={p} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{p}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Usage Info */}
+      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+        <h3 className="text-sm font-semibold">Verwendung</h3>
+        <p className="text-xs text-muted-foreground">Fügen Sie den API-Schlüssel als Bearer Token im Authorization-Header hinzu:</p>
+        <pre className="rounded-lg bg-[hsl(var(--sidebar-background))] p-4 text-xs font-mono text-sidebar-foreground overflow-x-auto">{`curl -X GET "${window.location.origin}/api/v1/leads" \\
+  -H "Authorization: Bearer rf_live_sk_..." \\
+  -H "Content-Type: application/json"`}</pre>
+        <p className="text-xs text-muted-foreground">💡 Für die produktive Nutzung wird Lovable Cloud benötigt. Die API-Endpunkte werden dann automatisch bereitgestellt.</p>
+      </div>
+    </>
+  );
+}
+
