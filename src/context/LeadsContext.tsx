@@ -9,6 +9,8 @@ import {
   type Agency,
   type Appointment,
   type NotificationMethod,
+  type AppointmentSettings,
+  defaultAppointmentSettings,
 } from '@/lib/mock-data';
 
 export interface ActivityEntry {
