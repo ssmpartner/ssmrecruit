@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLeads } from '@/context/LeadsContext';
 import { type NotificationMethod } from '@/lib/mock-data';
