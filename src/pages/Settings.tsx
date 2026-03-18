@@ -372,16 +372,16 @@ export default function Settings() {
                 </div>
                 <div className="flex items-center gap-2">
                   {isLinkedIn && (
-                    <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Coming Soon</span>
+                    <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Demnächst</span>
                   )}
                   {integration.connected && (
                     <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success">
-                      <CheckCircle2 className="h-3 w-3" /> Connected
+                      <CheckCircle2 className="h-3 w-3" /> Verbunden
                     </span>
                   )}
                   {!integration.connected && !isLinkedIn && (
                     <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                      <XCircle className="h-3 w-3" /> Not connected
+                      <XCircle className="h-3 w-3" /> Nicht verbunden
                     </span>
                   )}
                 </div>
@@ -389,9 +389,8 @@ export default function Settings() {
 
               {isExpanded && !isLinkedIn && (
                 <div className="border-t px-5 py-5 space-y-5">
-                  {/* Connection method */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Connection Method</label>
+                    <label className="text-sm font-medium mb-2 block">Verbindungsmethode</label>
                     <div className="flex gap-2">
                       <button
                         onClick={() => updateIntegration(integration.id, { method: 'zapier' })}
@@ -411,28 +410,25 @@ export default function Settings() {
                             : 'hover:bg-secondary'
                         }`}
                       >
-                        <Key className="h-4 w-4" /> Direct API Key
+                        <Key className="h-4 w-4" /> Direkter API-Schlüssel
                       </button>
                     </div>
                   </div>
 
-                  {/* Zapier config */}
                   {integration.method === 'zapier' && (
                     <div className="space-y-4">
                       <div className="rounded-lg bg-secondary/50 p-4">
-                        <h4 className="text-sm font-medium mb-2">How to set up with Zapier:</h4>
+                        <h4 className="text-sm font-medium mb-2">Einrichtung mit Zapier:</h4>
                         <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
-                          <li>Create a new Zap in <a href="https://zapier.com" target="_blank" rel="noreferrer" className="text-primary underline">Zapier</a></li>
-                          <li>
-                            Set trigger to <strong>"{integration.name} → New Lead"</strong>
-                          </li>
-                          <li>Add action <strong>"Webhooks by Zapier → POST"</strong></li>
-                          <li>Paste your incoming webhook URL (above) as the POST URL</li>
-                          <li>Copy the Zapier webhook URL below to receive catch hooks</li>
+                          <li>Erstellen Sie einen neuen Zap in <a href="https://zapier.com" target="_blank" rel="noreferrer" className="text-primary underline">Zapier</a></li>
+                          <li>Setzen Sie den Trigger auf <strong>"{integration.name} → Neuer Lead"</strong></li>
+                          <li>Fügen Sie die Aktion <strong>"Webhooks by Zapier → POST"</strong> hinzu</li>
+                          <li>Fügen Sie Ihre Eingangs-Webhook-URL (oben) als POST-URL ein</li>
+                          <li>Kopieren Sie die Zapier Webhook-URL unten</li>
                         </ol>
                       </div>
                       <div>
-                        <label className="text-sm font-medium">Zapier Webhook URL</label>
+                        <label className="text-sm font-medium">Zapier Webhook-URL</label>
                         <input
                           value={integration.zapierWebhook}
                           onChange={e => updateIntegration(integration.id, { zapierWebhook: e.target.value })}
@@ -445,63 +441,62 @@ export default function Settings() {
                           onClick={() => saveIntegration(integration.id)}
                           className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
                         >
-                          <Save className="h-4 w-4" /> Save
+                          <Save className="h-4 w-4" /> Speichern
                         </button>
                         <button
                           onClick={() => testWebhook(integration)}
                           className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
                         >
-                          <Zap className="h-4 w-4" /> Send Test
+                          <Zap className="h-4 w-4" /> Test senden
                         </button>
                         {integration.connected && (
                           <button
                             onClick={() => disconnectIntegration(integration.id)}
                             className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
                           >
-                            Disconnect
+                            Trennen
                           </button>
                         )}
                       </div>
                     </div>
                   )}
 
-                  {/* API Key config */}
                   {integration.method === 'api' && (
                     <div className="space-y-4">
                       <div className="rounded-lg bg-secondary/50 p-4">
-                        <h4 className="text-sm font-medium mb-2">How to get your API credentials:</h4>
+                        <h4 className="text-sm font-medium mb-2">API-Zugangsdaten erhalten:</h4>
                         {integration.id === 'meta' && (
                           <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
-                            <li>Go to <a href="https://developers.facebook.com" target="_blank" rel="noreferrer" className="text-primary underline">Meta for Developers</a></li>
-                            <li>Create or select your app</li>
-                            <li>Navigate to <strong>Settings → Basic</strong> and copy your Access Token</li>
-                            <li>Ensure <strong>leads_retrieval</strong> permission is enabled</li>
+                            <li>Gehen Sie zu <a href="https://developers.facebook.com" target="_blank" rel="noreferrer" className="text-primary underline">Meta for Developers</a></li>
+                            <li>Erstellen oder wählen Sie Ihre App</li>
+                            <li>Navigieren Sie zu <strong>Einstellungen → Basis</strong> und kopieren Sie Ihren Access Token</li>
+                            <li>Stellen Sie sicher, dass die <strong>leads_retrieval</strong>-Berechtigung aktiviert ist</li>
                           </ol>
                         )}
                         {integration.id === 'tiktok' && (
                           <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
-                            <li>Go to <a href="https://ads.tiktok.com/marketing_api" target="_blank" rel="noreferrer" className="text-primary underline">TikTok Marketing API</a></li>
-                            <li>Create a developer app</li>
-                            <li>Generate a long-lived access token</li>
-                            <li>Copy the token below</li>
+                            <li>Gehen Sie zur <a href="https://ads.tiktok.com/marketing_api" target="_blank" rel="noreferrer" className="text-primary underline">TikTok Marketing API</a></li>
+                            <li>Erstellen Sie eine Entwickler-App</li>
+                            <li>Generieren Sie einen langlebigen Access Token</li>
+                            <li>Kopieren Sie den Token unten</li>
                           </ol>
                         )}
                         {integration.id === 'website' && (
                           <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
-                            <li>Generate an API key for your website integration</li>
-                            <li>Use it to authenticate requests to the incoming webhook</li>
+                            <li>Generieren Sie einen API-Schlüssel für Ihre Webseiten-Integration</li>
+                            <li>Verwenden Sie ihn zur Authentifizierung von Anfragen an den Eingangs-Webhook</li>
                           </ol>
                         )}
                       </div>
                       <div>
                         <label className="text-sm font-medium">
-                          {integration.id === 'meta' ? 'Meta Access Token' : integration.id === 'tiktok' ? 'TikTok Access Token' : 'API Key'}
+                          {integration.id === 'meta' ? 'Meta Access Token' : integration.id === 'tiktok' ? 'TikTok Access Token' : 'API-Schlüssel'}
                         </label>
                         <input
                           type="password"
                           value={integration.apiKey}
                           onChange={e => updateIntegration(integration.id, { apiKey: e.target.value })}
-                          placeholder="Paste your token here..."
+                          placeholder="Token hier einfügen..."
                           className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm font-mono outline-none focus:ring-2 focus:ring-ring"
                         />
                       </div>
@@ -510,14 +505,14 @@ export default function Settings() {
                           onClick={() => saveIntegration(integration.id)}
                           className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
                         >
-                          <Save className="h-4 w-4" /> Save
+                          <Save className="h-4 w-4" /> Speichern
                         </button>
                         {integration.connected && (
                           <button
                             onClick={() => disconnectIntegration(integration.id)}
                             className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
                           >
-                            Disconnect
+                            Trennen
                           </button>
                         )}
                       </div>
