@@ -21,7 +21,7 @@ import ApiDocs from "./pages/ApiDocs";
 import Documentation from "./pages/Documentation";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+// Signup removed – internal system only
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import { Loader2 } from "lucide-react";
