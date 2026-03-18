@@ -1,6 +1,29 @@
 import { useState } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
+type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst';
+
+interface SystemUser {
+  id: string;
+  name: string;
+  email: string;
+  role: SystemRole;
+  createdAt: string;
+}
+
+const roleConfig: Record<SystemRole, { label: string; color: string; description: string }> = {
+  superadmin: { label: 'Superadmin', color: 'bg-destructive text-destructive-foreground', description: 'Vollzugriff – kann alles verwalten inkl. Benutzer & Einstellungen' },
+  admin: { label: 'Admin', color: 'bg-primary text-primary-foreground', description: 'Kann Leads, Mitarbeiter & Agenturen verwalten' },
+  backoffice: { label: 'Backoffice', color: 'bg-warning text-warning-foreground', description: 'Kann Leads bearbeiten, zuweisen und Status ändern' },
+  analyst: { label: 'Analyst', color: 'bg-info text-info-foreground', description: 'Nur Lesezugriff auf Dashboard & Analytics' },
+};
+
+const initialSystemUsers: SystemUser[] = [
+  { id: 'su1', name: 'Sarah Chen', email: 'sarah@company.com', role: 'superadmin', createdAt: '2025-01-15T10:00:00Z' },
+  { id: 'su2', name: 'Marcus Johnson', email: 'marcus@company.com', role: 'admin', createdAt: '2025-02-01T10:00:00Z' },
+];
 
 interface Integration {
   id: string;
