@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Video, X, Maximize2, Minimize2, PhoneOff } from 'lucide-react';
+import { Video, Maximize2, Minimize2, PhoneOff } from 'lucide-react';
 
 interface VideoCallDialogProps {
   open: boolean;
@@ -11,7 +11,6 @@ interface VideoCallDialogProps {
 }
 
 function extractJitsiRoom(link: string): string {
-  // https://meet.jit.si/recruitflow-abc-def-ghi → recruitflow-abc-def-ghi
   try {
     const url = new URL(link);
     return url.pathname.replace(/^\//, '');
@@ -22,14 +21,80 @@ function extractJitsiRoom(link: string): string {
 
 export default function VideoCallDialog({ open, onOpenChange, meetingLink, title, leadName }: VideoCallDialogProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const apiRef = useRef<any>(null);
   const room = extractJitsiRoom(meetingLink);
-  const iframeSrc = `https://meet.jit.si/${room}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false&interfaceConfig.TOOLBAR_BUTTONS=["microphone","camera","desktop","chat","raisehand","tileview","hangup"]`;
+
+  const destroyApi = useCallback(() => {
+    if (apiRef.current) {
+      try { apiRef.current.dispose(); } catch {}
+      apiRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!open || !containerRef.current) return;
+
+    // Load JitsiMeetExternalAPI script if not already loaded
+    const initJitsi = () => {
+      if (!containerRef.current) return;
+      destroyApi();
+
+      const api = new (window as any).JitsiMeetExternalAPI('meet.jit.si', {
+        roomName: room,
+        parentNode: containerRef.current,
+        width: '100%',
+        height: '100%',
+        configOverwrite: {
+          prejoinPageEnabled: false,
+          startWithAudioMuted: false,
+          startWithVideoMuted: false,
+          disableDeepLinking: true,
+          hideConferenceSubject: true,
+          subject: title,
+        },
+        interfaceConfigOverwrite: {
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_WATERMARK_FOR_GUESTS: false,
+          SHOW_BRAND_WATERMARK: false,
+          TOOLBAR_BUTTONS: [
+            'microphone', 'camera', 'desktop', 'chat',
+            'raisehand', 'tileview', 'hangup', 'fullscreen',
+          ],
+          DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+        },
+        userInfo: {
+          displayName: 'Mitarbeiter',
+        },
+      });
+
+      api.addEventListener('readyToClose', () => {
+        onOpenChange(false);
+      });
+
+      apiRef.current = api;
+    };
+
+    if ((window as any).JitsiMeetExternalAPI) {
+      initJitsi();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://meet.jit.si/external_api.js';
+      script.async = true;
+      script.onload = initJitsi;
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      destroyApi();
+    };
+  }, [open, room, title, destroyApi, onOpenChange]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { destroyApi(); } onOpenChange(v); }}>
       <DialogContent
         className={`p-0 gap-0 overflow-hidden border-0 ${
-          isFullscreen ? 'max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh]' : 'max-w-4xl max-h-[85vh] w-full'
+          isFullscreen ? 'max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh]' : 'max-w-5xl max-h-[90vh] w-full'
         }`}
       >
         {/* Header bar */}
@@ -65,15 +130,11 @@ export default function VideoCallDialog({ open, onOpenChange, meetingLink, title
           </div>
         </div>
 
-        {/* Jitsi iframe */}
-        <div className={`bg-black ${isFullscreen ? 'h-[calc(98vh-52px)]' : 'h-[560px]'}`}>
-          <iframe
-            src={iframeSrc}
-            allow="camera; microphone; display-capture; autoplay; clipboard-write"
-            className="w-full h-full border-0"
-            title="Video-Call"
-          />
-        </div>
+        {/* Jitsi container */}
+        <div
+          ref={containerRef}
+          className={`bg-black ${isFullscreen ? 'h-[calc(98vh-52px)]' : 'h-[600px]'}`}
+        />
       </DialogContent>
     </Dialog>
   );
