@@ -147,6 +147,46 @@ export default function Processes() {
   const [newGuidelineText, setNewGuidelineText] = useState('');
   const [newGuidelineType, setNewGuidelineType] = useState<'rule' | 'guideline'>('rule');
   const [addingGuidelineFor, setAddingGuidelineFor] = useState<LeadStatus | null>(null);
+  const [aiLoadingFor, setAiLoadingFor] = useState<LeadStatus | null>(null);
+
+  // ── AI guideline generation ──
+  const generateAiGuidelines = async (step: ProcessStep) => {
+    setAiLoadingFor(step.status);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-guidelines', {
+        body: {
+          stepStatus: step.status,
+          stepTitle: step.title,
+          stepDescription: step.description,
+          existingGuidelines: step.guidelines,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        toast({ title: 'KI-Fehler', description: data.error, variant: 'destructive' });
+        return;
+      }
+
+      const newGuidelines = data?.guidelines || [];
+      if (newGuidelines.length === 0) {
+        toast({ title: 'Keine neuen Vorschläge', description: 'Die KI konnte keine weiteren Richtlinien vorschlagen.' });
+        return;
+      }
+
+      setSteps(prev => prev.map(s => s.status === step.status ? {
+        ...s, guidelines: [...s.guidelines, ...newGuidelines]
+      } : s));
+
+      toast({ title: `${newGuidelines.length} Richtlinien generiert`, description: `KI-Vorschläge für "${step.title}" hinzugefügt.` });
+    } catch (err) {
+      console.error('AI guidelines error:', err);
+      toast({ title: 'Fehler', description: 'KI-Richtlinien konnten nicht generiert werden.', variant: 'destructive' });
+    } finally {
+      setAiLoadingFor(null);
+    }
+  };
 
   const [form, setForm] = useState({
     name: '', trigger: 'status_change' as AutomationTrigger,
