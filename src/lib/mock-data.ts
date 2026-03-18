@@ -129,9 +129,9 @@ const swissLeadData = [
   { plz: '8610', city: 'Uster', canton: 'Zürich', cantonCode: 'ZH', address: 'Bankstrasse 16' },
 ];
 
-const positions = ['Frontend Developer', 'Backend Engineer', 'Product Manager', 'UX Designer', 'Data Analyst', 'DevOps Engineer', 'QA Engineer', 'Full Stack Developer', 'Marketing Manager', 'Sales Representative'];
+const positions = ['Frontend Entwickler', 'Backend Ingenieur', 'Projektleiter', 'UX Designer', 'Datenanalyst', 'DevOps Ingenieur', 'QA Ingenieur', 'Fullstack Entwickler', 'Marketing Manager', 'Verkaufsberater'];
 
-const statuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview', 'hired', 'rejected'];
+const statuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'interview_2', 'hired', 'rejected'];
 const sources: LeadSource[] = ['website', 'tiktok', 'meta', 'linkedin', 'csv_import'];
 
 export const leads: Lead[] = swissNames.map((name, i) => {
