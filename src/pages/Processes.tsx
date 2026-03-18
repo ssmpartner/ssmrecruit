@@ -487,7 +487,38 @@ export default function Processes() {
                     <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="z.B. Auto-Zuweisung ZH Leads" className={inputCls + ' mt-1'} />
                   </div>
 
+                  {/* Scope selector */}
                   <div className="space-y-2">
+                    <label className="text-sm font-medium">Geltungsbereich</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { key: 'global' as AutomationScope, label: 'Global', icon: Workflow, desc: 'Für alle' },
+                        { key: 'agency' as AutomationScope, label: 'Agentur', icon: Building2, desc: 'Nur eine Agentur' },
+                        { key: 'employee' as AutomationScope, label: 'Mitarbeiter', icon: User, desc: 'Nur ein Mitarbeiter' },
+                      ]).map(({ key, label, icon: Icon, desc }) => {
+                        const isActive = form.scope === key;
+                        return (
+                          <button key={key} onClick={() => setForm(p => ({ ...p, scope: key, scopeAgencyId: '', scopeEmployeeId: '' }))}
+                            className={`rounded-xl border p-3 text-left transition-colors ${isActive ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
+                            <Icon className={`h-3.5 w-3.5 mb-1 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <span className="text-xs font-semibold block">{label}</span>
+                            <p className="text-[10px] text-muted-foreground">{desc}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {form.scope === 'agency' && (
+                      <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Agentur</label>
+                        <select value={form.scopeAgencyId} onChange={e => setForm(p => ({ ...p, scopeAgencyId: e.target.value }))} className={inputCls + ' mt-1'}>
+                          <option value="">Wählen</option>{agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+                    )}
+                    {form.scope === 'employee' && (
+                      <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Mitarbeiter</label>
+                        <select value={form.scopeEmployeeId} onChange={e => setForm(p => ({ ...p, scopeEmployeeId: e.target.value }))} className={inputCls + ' mt-1'}>
+                          <option value="">Wählen</option>{employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
+                    )}
+                  </div>
+
                     <label className="text-sm font-medium">Auslöser</label>
                     <div className="grid grid-cols-2 gap-2">
                       {(Object.entries(triggerOptions) as [AutomationTrigger, typeof triggerOptions[AutomationTrigger]][]).map(([key, cfg]) => {
