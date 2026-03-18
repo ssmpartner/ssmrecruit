@@ -233,6 +233,45 @@ export type Database = {
           },
         ]
       }
+      integrations: {
+        Row: {
+          api_key: string
+          connected: boolean
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          method: string
+          name: string
+          updated_at: string
+          zapier_webhook: string
+        }
+        Insert: {
+          api_key?: string
+          connected?: boolean
+          created_at?: string
+          description?: string
+          icon?: string
+          id: string
+          method?: string
+          name: string
+          updated_at?: string
+          zapier_webhook?: string
+        }
+        Update: {
+          api_key?: string
+          connected?: boolean
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          method?: string
+          name?: string
+          updated_at?: string
+          zapier_webhook?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           address: string
