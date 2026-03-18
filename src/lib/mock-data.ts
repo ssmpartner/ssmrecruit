@@ -133,7 +133,33 @@ export interface Agency {
   id: string;
   name: string;
   contactEmail: string;
+  region: string;
+  language: string;
+  allowedCantons: string[];
 }
+
+export const SWISS_CANTONS = [
+  { code: 'AG', name: 'Aargau' }, { code: 'AI', name: 'Appenzell I.Rh.' }, { code: 'AR', name: 'Appenzell A.Rh.' },
+  { code: 'BE', name: 'Bern' }, { code: 'BL', name: 'Basel-Landschaft' }, { code: 'BS', name: 'Basel-Stadt' },
+  { code: 'FR', name: 'Freiburg' }, { code: 'GE', name: 'Genf' }, { code: 'GL', name: 'Glarus' },
+  { code: 'GR', name: 'Graubünden' }, { code: 'JU', name: 'Jura' }, { code: 'LU', name: 'Luzern' },
+  { code: 'NE', name: 'Neuenburg' }, { code: 'NW', name: 'Nidwalden' }, { code: 'OW', name: 'Obwalden' },
+  { code: 'SG', name: 'St. Gallen' }, { code: 'SH', name: 'Schaffhausen' }, { code: 'SO', name: 'Solothurn' },
+  { code: 'SZ', name: 'Schwyz' }, { code: 'TG', name: 'Thurgau' }, { code: 'TI', name: 'Tessin' },
+  { code: 'UR', name: 'Uri' }, { code: 'VD', name: 'Waadt' }, { code: 'VS', name: 'Wallis' },
+  { code: 'ZG', name: 'Zug' }, { code: 'ZH', name: 'Zürich' },
+] as const;
+
+export const AGENCY_LANGUAGES = [
+  { code: 'de', name: 'Deutsch' },
+  { code: 'fr', name: 'Französisch' },
+  { code: 'it', name: 'Italienisch' },
+  { code: 'en', name: 'Englisch' },
+] as const;
+
+export const AGENCY_REGIONS = [
+  'Deutschschweiz', 'Westschweiz', 'Tessin', 'Gesamtschweiz',
+] as const;
 
 export interface Employee {
   id: string;
@@ -182,13 +208,13 @@ export const sourceConfig: Record<LeadSource, { label: string; icon: string }> =
 };
 
 export const agencies: Agency[] = [
-  { id: 'a1', name: 'Agentur Unteren-Schönbühl', contactEmail: 'info@agentur-schoenbuehl.ch' },
-  { id: 'a2', name: 'Agentur Rothenburg', contactEmail: 'info@agentur-rothenburg.ch' },
-  { id: 'a3', name: 'Agentur Regensdorf', contactEmail: 'info@agentur-regensdorf.ch' },
-  { id: 'a4', name: 'Agentur Spreitenbach', contactEmail: 'info@agentur-spreitenbach.ch' },
-  { id: 'a5', name: 'Agentur Adliswil', contactEmail: 'info@agentur-adliswil.ch' },
-  { id: 'a6', name: 'Agentur Olten', contactEmail: 'info@agentur-olten.ch' },
-  { id: 'a7', name: 'Agentur Lugano', contactEmail: 'info@agentur-lugano.ch' },
+  { id: 'a1', name: 'Agentur Unteren-Schönbühl', contactEmail: 'info@agentur-schoenbuehl.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['BE', 'SO'] },
+  { id: 'a2', name: 'Agentur Rothenburg', contactEmail: 'info@agentur-rothenburg.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['LU', 'NW', 'OW'] },
+  { id: 'a3', name: 'Agentur Regensdorf', contactEmail: 'info@agentur-regensdorf.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['ZH', 'AG'] },
+  { id: 'a4', name: 'Agentur Spreitenbach', contactEmail: 'info@agentur-spreitenbach.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['AG', 'ZH'] },
+  { id: 'a5', name: 'Agentur Adliswil', contactEmail: 'info@agentur-adliswil.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['ZH', 'ZG', 'SZ'] },
+  { id: 'a6', name: 'Agentur Olten', contactEmail: 'info@agentur-olten.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['SO', 'BE', 'AG'] },
+  { id: 'a7', name: 'Agentur Lugano', contactEmail: 'info@agentur-lugano.ch', region: 'Tessin', language: 'it', allowedCantons: ['TI'] },
 ];
 
 export const employees: Employee[] = [

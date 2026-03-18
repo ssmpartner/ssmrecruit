@@ -56,6 +56,9 @@ function dbToAgency(row: any): Agency {
     id: row.id,
     name: row.name,
     contactEmail: row.contact_email,
+    region: row.region || '',
+    language: row.language || 'de',
+    allowedCantons: row.allowed_cantons || [],
   };
 }
 
@@ -319,6 +322,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       id,
       name: agency.name,
       contact_email: agency.contactEmail,
+      region: agency.region || '',
+      language: agency.language || 'de',
+      allowed_cantons: agency.allowedCantons || [],
     });
   }, []);
 

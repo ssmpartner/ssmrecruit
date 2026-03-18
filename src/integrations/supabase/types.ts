@@ -51,24 +51,33 @@ export type Database = {
       }
       agencies: {
         Row: {
+          allowed_cantons: string[]
           contact_email: string
           created_at: string
           id: string
+          language: string
           name: string
+          region: string
           updated_at: string
         }
         Insert: {
+          allowed_cantons?: string[]
           contact_email: string
           created_at?: string
           id: string
+          language?: string
           name: string
+          region?: string
           updated_at?: string
         }
         Update: {
+          allowed_cantons?: string[]
           contact_email?: string
           created_at?: string
           id?: string
+          language?: string
           name?: string
+          region?: string
           updated_at?: string
         }
         Relationships: []
