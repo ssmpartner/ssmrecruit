@@ -519,6 +519,7 @@ export default function Processes() {
                     )}
                   </div>
 
+                  <div className="space-y-2">
                     <label className="text-sm font-medium">Auslöser</label>
                     <div className="grid grid-cols-2 gap-2">
                       {(Object.entries(triggerOptions) as [AutomationTrigger, typeof triggerOptions[AutomationTrigger]][]).map(([key, cfg]) => {
