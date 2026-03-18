@@ -52,6 +52,14 @@ export default function VideoCallDialog({ open, onOpenChange, meetingLink, title
           disableDeepLinking: true,
           hideConferenceSubject: true,
           subject: title,
+          fileRecordingsEnabled: true,
+          localRecording: { enabled: true, format: 'webm' },
+          toolbarButtons: [
+            'microphone', 'camera', 'desktop', 'chat',
+            'raisehand', 'tileview', 'hangup', 'fullscreen',
+            'recording', 'shareaudio', 'sharedvideo',
+            'select-background', 'participants-pane',
+          ],
         },
         interfaceConfigOverwrite: {
           SHOW_JITSI_WATERMARK: false,
@@ -60,6 +68,8 @@ export default function VideoCallDialog({ open, onOpenChange, meetingLink, title
           TOOLBAR_BUTTONS: [
             'microphone', 'camera', 'desktop', 'chat',
             'raisehand', 'tileview', 'hangup', 'fullscreen',
+            'recording', 'shareaudio', 'sharedvideo',
+            'select-background', 'participants-pane',
           ],
           DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
         },
