@@ -10,7 +10,8 @@ import { statusConfig, getAllowedNextStatuses, type LeadStatus } from '@/lib/moc
 import { lookupPlz, searchPlz, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
-import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus } from 'lucide-react';
+import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus, Link2, Send, Copy, ExternalLink } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'interview_2', 'hired', 'rejected'];
 
@@ -29,7 +30,8 @@ const appointmentTypeConfig = {
 } as const;
 
 export default function LeadDetailSheet() {
-  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment } = useLeads();
+  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, notificationMethod } = useLeads();
+  const { toast } = useToast();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
@@ -381,22 +383,42 @@ export default function LeadDetailSheet() {
                     {leadAppointments.map(apt => {
                       const TypeIcon = appointmentTypeConfig[apt.type].icon;
                       const isPast = new Date(`${apt.date}T${apt.time}`) < new Date();
+                      const methodLabels: Record<string, string> = { email: 'E-Mail', sms: 'SMS', whatsapp: 'WhatsApp' };
                       return (
-                        <div key={apt.id} className={cn("rounded-lg border p-3 flex items-start gap-3 transition-colors", isPast ? 'opacity-60 bg-muted/30' : 'bg-card hover:bg-muted/30')}>
-                          <div className={cn("mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full", isPast ? 'bg-muted' : 'bg-primary/10')}>
-                            <TypeIcon className={cn("h-4 w-4", isPast ? 'text-muted-foreground' : 'text-primary')} />
+                        <div key={apt.id} className={cn("rounded-lg border p-3 space-y-2 transition-colors", isPast ? 'opacity-60 bg-muted/30' : 'bg-card hover:bg-muted/30')}>
+                          <div className="flex items-start gap-3">
+                            <div className={cn("mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full", isPast ? 'bg-muted' : 'bg-primary/10')}>
+                              <TypeIcon className={cn("h-4 w-4", isPast ? 'text-muted-foreground' : 'text-primary')} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium">{apt.title}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {new Date(apt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} • {apt.time} Uhr • {apt.duration} Min. • {appointmentTypeConfig[apt.type].label}
+                              </p>
+                              {apt.notes && <p className="text-xs mt-1 text-muted-foreground">{apt.notes}</p>}
+                            </div>
+                            <button onClick={() => removeAppointment(apt.id)}
+                              className="shrink-0 rounded-md p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">{apt.title}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {new Date(apt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} • {apt.time} Uhr • {apt.duration} Min. • {appointmentTypeConfig[apt.type].label}
-                            </p>
-                            {apt.notes && <p className="text-xs mt-1 text-muted-foreground">{apt.notes}</p>}
-                          </div>
-                          <button onClick={() => removeAppointment(apt.id)}
-                            className="shrink-0 rounded-md p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          {/* Video link + send */}
+                          {apt.meetingLink && (
+                            <div className="ml-11 space-y-1.5">
+                              <div className="flex items-center gap-2">
+                                <Link2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                                <a href={apt.meetingLink} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline truncate">{apt.meetingLink}</a>
+                                <button onClick={() => { navigator.clipboard.writeText(apt.meetingLink!); toast({ title: 'Kopiert', description: 'Link in die Zwischenablage kopiert' }); }}
+                                  className="shrink-0 rounded p-1 hover:bg-muted transition-colors" title="Link kopieren">
+                                  <Copy className="h-3 w-3 text-muted-foreground" />
+                                </button>
+                              </div>
+                              <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Einladung gesendet', description: `Link per ${methodLabels[notificationMethod]} an ${selectedLead?.name} gesendet` }); }}
+                                className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-medium hover:bg-primary/20 transition-colors">
+                                <Send className="h-3 w-3" /> Per {methodLabels[notificationMethod]} senden
+                              </button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLeads } from '@/context/LeadsContext';
+import { type NotificationMethod } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst';
@@ -81,6 +83,7 @@ const defaultIntegrations: Integration[] = [
 
 export default function Settings() {
   const { toast } = useToast();
+  const { notificationMethod, setNotificationMethod } = useLeads();
   const [integrations, setIntegrations] = useState<Integration[]>(defaultIntegrations);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -317,6 +320,46 @@ export default function Settings() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* ── Notification Settings ── */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">Terminbenachrichtigung</h2>
+        <p className="text-sm text-muted-foreground">Wählen Sie, wie Leads ihre Termineinladung (inkl. Video-Link) erhalten sollen.</p>
+        <div className="grid grid-cols-3 gap-3">
+          {([
+            { method: 'email' as NotificationMethod, label: 'E-Mail', icon: Mail, desc: 'Einladung per E-Mail senden' },
+            { method: 'sms' as NotificationMethod, label: 'SMS', icon: Phone, desc: 'Einladung per SMS senden' },
+            { method: 'whatsapp' as NotificationMethod, label: 'WhatsApp', icon: MessageSquare, desc: 'Einladung per WhatsApp senden' },
+          ]).map(opt => {
+            const isActive = notificationMethod === opt.method;
+            const Icon = opt.icon;
+            return (
+              <button
+                key={opt.method}
+                onClick={() => {
+                  setNotificationMethod(opt.method);
+                  toast({ title: 'Gespeichert', description: `Benachrichtigung per ${opt.label} aktiviert` });
+                }}
+                className={`rounded-xl border p-4 text-left transition-colors ${
+                  isActive ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <span className="text-sm font-semibold">{opt.label}</span>
+                  {isActive && (
+                    <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">Aktiv</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">{opt.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          💡 Für tatsächlichen Versand wird Lovable Cloud benötigt (SMS via Twilio, E-Mail via SMTP). Derzeit wird die Aktion protokolliert.
+        </p>
       </div>
 
       {/* Webhook endpoint info */}

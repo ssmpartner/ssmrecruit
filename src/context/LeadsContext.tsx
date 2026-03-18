@@ -8,6 +8,7 @@ import {
   type Employee,
   type Agency,
   type Appointment,
+  type NotificationMethod,
 } from '@/lib/mock-data';
 
 export interface ActivityEntry {
@@ -25,11 +26,14 @@ interface LeadsContextType {
   agencies: Agency[];
   activities: ActivityEntry[];
   appointments: Appointment[];
+  notificationMethod: NotificationMethod;
+  setNotificationMethod: (method: NotificationMethod) => void;
   updateLead: (id: string, updates: Partial<Lead>) => void;
   addLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => void;
   addActivity: (leadId: string, type: ActivityEntry['type'], description: string) => void;
-  addAppointment: (apt: Omit<Appointment, 'id' | 'createdAt'>) => void;
+  addAppointment: (apt: Omit<Appointment, 'id' | 'createdAt' | 'meetingLink'>) => void;
   removeAppointment: (id: string) => void;
+  sendAppointmentNotification: (appointmentId: string) => void;
   selectedLead: Lead | null;
   setSelectedLead: (lead: Lead | null) => void;
   addEmployee: (emp: Omit<Employee, 'id'>) => void;
@@ -75,6 +79,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const [agencies, setAgencies] = useState<Agency[]>(initialAgencies);
   const [activities, setActivities] = useState<ActivityEntry[]>(() => seedActivities(initialLeads));
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [notificationMethod, setNotificationMethod] = useState<NotificationMethod>('email');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const addActivity = useCallback((leadId: string, type: ActivityEntry['type'], description: string) => {
@@ -101,12 +106,21 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     addActivity(id, 'status_change', `Lead "${leadData.name}" manuell erfasst`);
   }, [addActivity]);
 
-  const addAppointment = useCallback((aptData: Omit<Appointment, 'id' | 'createdAt'>) => {
+  function generateMeetingLink(): string {
+    const chars = 'abcdefghijklmnopqrstuvwxyz';
+    const seg = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `https://meet.jit.si/recruitflow-${seg()}-${seg()}-${seg()}`;
+  }
+
+  const addAppointment = useCallback((aptData: Omit<Appointment, 'id' | 'createdAt' | 'meetingLink'>) => {
     const id = `apt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const apt: Appointment = { ...aptData, id, createdAt: new Date().toISOString() };
+    const meetingLink = aptData.type === 'video' ? generateMeetingLink() : undefined;
+    const apt: Appointment = { ...aptData, id, meetingLink, createdAt: new Date().toISOString() };
     setAppointments(prev => [apt, ...prev]);
     const typeLabel = aptData.type === 'phone' ? 'Telefon' : aptData.type === 'video' ? 'Video' : 'Vor Ort';
-    addActivity(aptData.leadId, 'appointment', `Termin erstellt: ${aptData.title} (${typeLabel}, ${aptData.date} ${aptData.time})`);
+    let desc = `Termin erstellt: ${aptData.title} (${typeLabel}, ${aptData.date} ${aptData.time})`;
+    if (meetingLink) desc += ` – Link: ${meetingLink}`;
+    addActivity(aptData.leadId, 'appointment', desc);
     // Auto-set status to appointment if still new/contacted
     const lead = leads.find(l => l.id === aptData.leadId);
     if (lead && (lead.status === 'new' || lead.status === 'contacted')) {
@@ -135,8 +149,17 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     setAgencies(prev => [...prev, { ...ag, id }]);
   }, []);
 
+  const sendAppointmentNotification = useCallback((appointmentId: string) => {
+    const apt = appointments.find(a => a.id === appointmentId);
+    if (!apt) return;
+    const lead = leads.find(l => l.id === apt.leadId);
+    if (!lead) return;
+    const methodLabels: Record<NotificationMethod, string> = { email: 'E-Mail', sms: 'SMS', whatsapp: 'WhatsApp' };
+    addActivity(apt.leadId, 'note', `Termineinladung per ${methodLabels[notificationMethod]} an ${lead.name} gesendet (${apt.meetingLink ? 'mit Video-Link' : 'ohne Link'})`);
+  }, [appointments, leads, notificationMethod, addActivity]);
+
   return (
-    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, updateLead, addLead, addActivity, addAppointment, removeAppointment, selectedLead, setSelectedLead, addEmployee, addAgency }}>
+    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, notificationMethod, setNotificationMethod, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, selectedLead, setSelectedLead, addEmployee, addAgency }}>
       {children}
     </LeadsContext.Provider>
   );

@@ -29,10 +29,14 @@ export interface Appointment {
   time: string;
   duration: number;
   type: 'phone' | 'video' | 'onsite';
+  meetingLink?: string;
   notes: string;
   createdBy: string;
   createdAt: string;
 }
+
+export type NotificationMethod = 'email' | 'sms' | 'whatsapp';
+
 
 export interface Agency {
   id: string;
