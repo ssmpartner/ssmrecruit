@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Download, Upload, Filter, MapPin } from 'lucide-react';
+import { Download, Upload, Filter, MapPin, CalendarIcon, X } from 'lucide-react';
+import { format } from 'date-fns';
 import { type LeadStatus, type LeadSource, statusConfig, sourceConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
 import { useLeads } from '@/context/LeadsContext';
@@ -7,6 +8,9 @@ import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 import AddLeadDialog from '@/components/AddLeadDialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 export default function LeadsTable() {
   const { leads, employees, agencies, setSelectedLead } = useLeads();
@@ -15,6 +19,8 @@ export default function LeadsTable() {
   const [agencyFilter, setAgencyFilter] = useState('');
   const [cantonFilter, setCantonFilter] = useState('');
   const [search, setSearch] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
 
   const filtered = useMemo(() => {
     return leads.filter(l => {
@@ -22,13 +28,29 @@ export default function LeadsTable() {
       if (sourceFilter && l.source !== sourceFilter) return false;
       if (agencyFilter && l.agencyId !== agencyFilter) return false;
       if (cantonFilter && l.cantonCode !== cantonFilter) return false;
+      if (dateFrom) {
+        const created = new Date(l.createdAt);
+        if (created < new Date(dateFrom.setHours(0, 0, 0, 0))) return false;
+      }
+      if (dateTo) {
+        const created = new Date(l.createdAt);
+        const end = new Date(dateTo);
+        end.setHours(23, 59, 59, 999);
+        if (created > end) return false;
+      }
       if (search) {
         const q = search.toLowerCase();
         if (!l.name.toLowerCase().includes(q) && !l.email.toLowerCase().includes(q) && !l.city.toLowerCase().includes(q) && !l.plz.includes(q)) return false;
       }
       return true;
     });
-  }, [leads, statusFilter, sourceFilter, agencyFilter, cantonFilter, search]);
+  }, [leads, statusFilter, sourceFilter, agencyFilter, cantonFilter, search, dateFrom, dateTo]);
+
+  const hasFilters = statusFilter || sourceFilter || agencyFilter || cantonFilter || search || dateFrom || dateTo;
+
+  const clearFilters = () => {
+    setStatusFilter(''); setSourceFilter(''); setAgencyFilter(''); setCantonFilter(''); setSearch(''); setDateFrom(undefined); setDateTo(undefined);
+  };
 
   const exportCSV = () => {
     const header = 'Name,Email,Telefon,Adresse,PLZ,Ort,Kanton,Position,Quelle,Status,Agentur,Mitarbeiter,Datum\n';
@@ -43,6 +65,8 @@ export default function LeadsTable() {
     a.href = url; a.download = 'leads_export.csv'; a.click();
     URL.revokeObjectURL(url);
   };
+
+  const selectCls = "h-9 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
 
   return (
     <div className="space-y-6">
@@ -70,22 +94,54 @@ export default function LeadsTable() {
           placeholder="Name, E-Mail, Ort oder PLZ..."
           className="h-9 w-56 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
         />
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | '')} className="h-9 rounded-lg border bg-background px-3 text-sm outline-none">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | '')} className={selectCls}>
           <option value="">Alle Status</option>
           {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
         </select>
-        <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value as LeadSource | '')} className="h-9 rounded-lg border bg-background px-3 text-sm outline-none">
+        <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value as LeadSource | '')} className={selectCls}>
           <option value="">Alle Quellen</option>
           {Object.entries(sourceConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
         </select>
-        <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className="h-9 rounded-lg border bg-background px-3 text-sm outline-none">
+        <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className={selectCls}>
           <option value="">Alle Agenturen</option>
           {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
-        <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className="h-9 rounded-lg border bg-background px-3 text-sm outline-none">
+        <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>
           <option value="">Alle Kantone</option>
           {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
         </select>
+
+        {/* Date From */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn(selectCls, 'inline-flex items-center gap-2', !dateFrom && 'text-muted-foreground')}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {dateFrom ? format(dateFrom, 'dd.MM.yyyy') : 'Von'}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+          </PopoverContent>
+        </Popover>
+
+        {/* Date To */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn(selectCls, 'inline-flex items-center gap-2', !dateTo && 'text-muted-foreground')}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {dateTo ? format(dateTo, 'dd.MM.yyyy') : 'Bis'}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+          </PopoverContent>
+        </Popover>
+
+        {hasFilters && (
+          <button onClick={clearFilters} className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
+            <X className="h-3 w-3" /> Zurücksetzen
+          </button>
+        )}
       </div>
 
       <div className="rounded-xl border bg-card shadow-sm overflow-x-auto">
