@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Check, CheckCheck, Trash2, UserPlus, CalendarDays, ArrowRightLeft, Brain, Zap, Info, X } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2, UserPlus, CalendarDays, ArrowRightLeft, Brain, Zap, Info, X, Copy } from 'lucide-react';
 import { useNotifications } from '@/context/useNotifications';
 import { type NotificationType } from '@/context/notifications-context';
 import { formatDistanceToNow } from 'date-fns';
@@ -14,6 +14,7 @@ const typeConfig: Record<NotificationType, { icon: typeof Bell; color: string }>
   appointment_cancelled: { icon: X, color: 'text-red-500 bg-red-500/10' },
   disc_completed: { icon: Brain, color: 'text-pink-500 bg-pink-500/10' },
   automation_triggered: { icon: Zap, color: 'text-yellow-500 bg-yellow-500/10' },
+  duplicate_detected: { icon: Copy, color: 'text-red-500 bg-red-500/10' },
   system: { icon: Info, color: 'text-muted-foreground bg-muted' },
 };
 

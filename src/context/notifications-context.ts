@@ -9,6 +9,7 @@ export type NotificationType =
   | 'appointment_cancelled'
   | 'disc_completed'
   | 'automation_triggered'
+  | 'duplicate_detected'
   | 'system';
 
 export interface AppNotification {

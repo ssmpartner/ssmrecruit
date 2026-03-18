@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Loader2, GitMerge, Eye } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,6 +32,13 @@ export default function DuplicateLeads() {
   const [mergeDialog, setMergeDialog] = useState<{ pair: DuplicatePair; keepId: string } | null>(null);
 
   const activeLeads = leads.filter(l => l.lifecycle === 'active');
+
+  // Auto-scan on mount
+  useEffect(() => {
+    if (activeLeads.length >= 2 && !scanned && !loading) {
+      scanForDuplicates();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const scanForDuplicates = async () => {
     setLoading(true);
