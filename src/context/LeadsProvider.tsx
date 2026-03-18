@@ -14,8 +14,10 @@ import {
   discQuestions,
   defaultAppointmentSettings,
   defaultInsightsSettings,
+  statusConfig,
 } from '@/lib/mock-data';
 import { LeadsContext, type ActivityEntry } from './leads-context';
+import { useNotifications } from './useNotifications';
 
 function seedActivities(leads: Lead[]): ActivityEntry[] {
   const entries: ActivityEntry[] = [];
@@ -44,6 +46,7 @@ function seedActivities(leads: Lead[]): ActivityEntry[] {
 }
 
 export function LeadsProvider({ children }: { children: ReactNode }) {
+  const { addNotification } = useNotifications();
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
   const [agencies, setAgencies] = useState<Agency[]>(initialAgencies);
@@ -75,9 +78,20 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
 
   const updateLead = useCallback((id: string, updates: Partial<Lead>) => {
     const updatedAt = new Date().toISOString();
-    setLeads((prev) => prev.map((lead) => lead.id === id ? { ...lead, ...updates, updatedAt } : lead));
+    setLeads((prev) => {
+      const old = prev.find((l) => l.id === id);
+      if (old && updates.status && updates.status !== old.status) {
+        addNotification({
+          type: 'lead_status_change',
+          title: 'Status geändert',
+          description: `${old.name}: "${statusConfig[old.status].label}" → "${statusConfig[updates.status].label}"`,
+          leadId: id,
+        });
+      }
+      return prev.map((lead) => lead.id === id ? { ...lead, ...updates, updatedAt } : lead);
+    });
     setSelectedLead((prev) => prev && prev.id === id ? { ...prev, ...updates, updatedAt } : prev);
-  }, []);
+  }, [addNotification]);
 
   const addLead = useCallback((leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
     const id = `l${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -85,7 +99,8 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     const newLead: Lead = { ...leadData, id, createdAt: now, updatedAt: now };
     setLeads((prev) => [newLead, ...prev]);
     addActivity(id, 'status_change', `Lead "${leadData.name}" manuell erfasst`);
-  }, [addActivity]);
+    addNotification({ type: 'lead_new', title: 'Neuer Lead', description: `${leadData.name} wurde erfasst.`, leadId: id });
+  }, [addActivity, addNotification]);
 
   function generateMeetingLink(): string {
     const chars = 'abcdefghijklmnopqrstuvwxyz';
@@ -114,6 +129,8 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     let description = `Termin erstellt: ${aptData.title} (${typeLabel}, ${aptData.date} ${aptData.time})`;
     if (meetingLink) description += ` – Link: ${meetingLink}`;
     addActivity(aptData.leadId, 'appointment', description);
+    const lead2 = leads.find((e) => e.id === aptData.leadId);
+    addNotification({ type: 'appointment_created', title: 'Termin erstellt', description: `${typeLabel}-Termin mit ${lead2?.name ?? 'Lead'} am ${aptData.date} um ${aptData.time}`, leadId: aptData.leadId });
 
     if (appointmentSettings.autoStatusChange) {
       const lead = leads.find((entry) => entry.id === aptData.leadId);
@@ -129,6 +146,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       const appointment = prev.find((entry) => entry.id === id);
       if (appointment) {
         addActivity(appointment.leadId, 'appointment', `Termin "${appointment.title}" gelöscht`);
+        addNotification({ type: 'appointment_cancelled', title: 'Termin gelöscht', description: `"${appointment.title}" wurde entfernt.`, leadId: appointment.leadId });
       }
       return prev.filter((entry) => entry.id !== id);
     });
@@ -171,12 +189,14 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     };
 
     setDiscResults((prev) => [...prev, result]);
+    const lead = leads.find((e) => e.id === leadId);
     addActivity(
       leadId,
       'note',
       `DISC-Persönlichkeitstest abgeschlossen – Typ: ${dominantType} (D:${normalized.D}% I:${normalized.I}% S:${normalized.S}% C:${normalized.C}%)`,
     );
-  }, [addActivity]);
+    addNotification({ type: 'disc_completed', title: 'DISC-Test abgeschlossen', description: `${lead?.name ?? 'Lead'} – Typ: ${dominantType}`, leadId });
+  }, [addActivity, addNotification, leads]);
 
   const sendAppointmentNotification = useCallback((appointmentId: string) => {
     const appointment = appointments.find((entry) => entry.id === appointmentId);
