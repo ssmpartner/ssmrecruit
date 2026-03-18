@@ -106,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     setProfile(null);
+    setRole(null);
   };
 
   const updateProfile = async (updates: Partial<Profile>) => {
