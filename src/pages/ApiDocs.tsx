@@ -501,3 +501,7 @@ export function ApiDocsContent() {
     </div>
   );
 }
+
+export default function ApiDocs() {
+  return <ApiDocsContent />;
+}
