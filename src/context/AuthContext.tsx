@@ -41,44 +41,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchRole = async (userId: string) => {
-    const { data } = await supabase
+  const loadUserData = (userId: string) => {
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+      .then(({ data }) => setProfile(data as Profile | null));
+
+    supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
-      .single();
-    setRole((data?.role as AppRole) ?? null);
+      .single()
+      .then(({ data }) => setRole((data?.role as AppRole) ?? null));
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        setProfile(data as Profile | null);
-        await fetchRole(session.user.id);
-      } else {
-        setProfile(null);
-        setRole(null);
-      }
-      setLoading(false);
-    });
-
+    // 1. Restore session from storage first
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        supabase.from('profiles').select('*').eq('id', session.user.id).single()
-          .then(({ data }) => setProfile(data as Profile | null));
-        fetchRole(session.user.id);
+        loadUserData(session.user.id);
       }
       setLoading(false);
+    });
+
+    // 2. Listen for subsequent auth changes (sign in/out) — no await inside!
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        loadUserData(session.user.id);
+      } else {
+        setProfile(null);
+        setRole(null);
+      }
     });
 
     return () => subscription.unsubscribe();
