@@ -48,6 +48,7 @@ const appFeatures = [
   { category: 'Aufgaben & KI', icon: '🤖', features: [
     { name: 'Phasen-Tasks', desc: 'Automatische Pflichtaufgaben basierend auf dem aktuellen Lead-Status.' },
     { name: 'KI-Tasks', desc: 'Kontextbezogene Zusatzaufgaben per KI-Generierung (Gemini).' },
+    { name: 'KI-Richtlinien', desc: 'Automatische Generierung von Prozess-Richtlinien und Regeln per KI für jeden Prozessschritt.' },
     { name: 'Task-Management', desc: 'Aufgaben zuweisen, priorisieren und Status tracken (offen/in Bearbeitung/erledigt).' },
   ]},
   { category: 'Integrationen & API', icon: '🔌', features: [
