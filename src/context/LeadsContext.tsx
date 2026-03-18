@@ -24,6 +24,7 @@ interface LeadsContextType {
   agencies: Agency[];
   activities: ActivityEntry[];
   updateLead: (id: string, updates: Partial<Lead>) => void;
+  addLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => void;
   addActivity: (leadId: string, type: ActivityEntry['type'], description: string) => void;
   selectedLead: Lead | null;
   setSelectedLead: (lead: Lead | null) => void;
@@ -86,6 +87,14 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     setLeads(prev => prev.map(l => l.id === id ? { ...l, ...updates, updatedAt: new Date().toISOString() } : l));
     setSelectedLead(prev => prev && prev.id === id ? { ...prev, ...updates, updatedAt: new Date().toISOString() } : prev);
   }, []);
+  const addLead = useCallback((leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const id = `l${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const now = new Date().toISOString();
+    const newLead: Lead = { ...leadData, id, createdAt: now, updatedAt: now };
+    setLeads(prev => [newLead, ...prev]);
+    addActivity(id, 'status_change', `Lead "${leadData.name}" manuell erfasst`);
+  }, [addActivity]);
+
 
   const addEmployee = useCallback((emp: Omit<Employee, 'id'>) => {
     const id = `e${Date.now()}`;
@@ -98,7 +107,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <LeadsContext.Provider value={{ leads, employees, agencies, activities, updateLead, addActivity, selectedLead, setSelectedLead, addEmployee, addAgency }}>
+    <LeadsContext.Provider value={{ leads, employees, agencies, activities, updateLead, addLead, addActivity, selectedLead, setSelectedLead, addEmployee, addAgency }}>
       {children}
     </LeadsContext.Provider>
   );
