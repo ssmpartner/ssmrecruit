@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Download, Upload, Filter } from 'lucide-react';
-import { agencies, employees, type LeadStatus, type LeadSource, statusConfig, sourceConfig } from '@/lib/mock-data';
+import { type LeadStatus, type LeadSource, statusConfig, sourceConfig } from '@/lib/mock-data';
 import { useLeads } from '@/context/LeadsContext';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
