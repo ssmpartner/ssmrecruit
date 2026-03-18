@@ -149,8 +149,17 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     setAgencies(prev => [...prev, { ...ag, id }]);
   }, []);
 
+  const sendAppointmentNotification = useCallback((appointmentId: string) => {
+    const apt = appointments.find(a => a.id === appointmentId);
+    if (!apt) return;
+    const lead = leads.find(l => l.id === apt.leadId);
+    if (!lead) return;
+    const methodLabels: Record<NotificationMethod, string> = { email: 'E-Mail', sms: 'SMS', whatsapp: 'WhatsApp' };
+    addActivity(apt.leadId, 'note', `Termineinladung per ${methodLabels[notificationMethod]} an ${lead.name} gesendet (${apt.meetingLink ? 'mit Video-Link' : 'ohne Link'})`);
+  }, [appointments, leads, notificationMethod, addActivity]);
+
   return (
-    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, updateLead, addLead, addActivity, addAppointment, removeAppointment, selectedLead, setSelectedLead, addEmployee, addAgency }}>
+    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, notificationMethod, setNotificationMethod, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, selectedLead, setSelectedLead, addEmployee, addAgency }}>
       {children}
     </LeadsContext.Provider>
   );
