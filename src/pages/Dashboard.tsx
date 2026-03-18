@@ -7,7 +7,7 @@ import LeadDetailSheet from '@/components/LeadDetailSheet';
 import { useLeads } from '@/context/LeadsContext';
 import { statusConfig } from '@/lib/mock-data';
 
-const PIE_COLORS = ['hsl(217, 91%, 60%)', 'hsl(330, 80%, 55%)', 'hsl(166, 72%, 40%)', 'hsl(38, 92%, 50%)', 'hsl(270, 60%, 55%)', 'hsl(142, 71%, 45%)', 'hsl(0, 72%, 51%)'];
+const PIE_COLORS = ['hsl(168, 17%, 23%)', 'hsl(162, 17%, 50%)', 'hsl(67, 16%, 66%)', 'hsl(38, 80%, 50%)', 'hsl(200, 70%, 50%)', 'hsl(162, 40%, 42%)', 'hsl(0, 65%, 51%)'];
 
 export default function Dashboard() {
   const { leads, employees, setSelectedLead } = useLeads();
