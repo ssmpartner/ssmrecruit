@@ -133,8 +133,8 @@ const initialSteps: ProcessStep[] = [
 ];
 
 const defaultRules: AutomationRule[] = [
-  { id: 'rule-1', name: 'DISC-Test → Gespräch 2', enabled: true, trigger: 'disc_completed', triggerConfig: {}, action: 'change_status', actionConfig: { targetStatus: 'interview_2' }, createdAt: new Date().toISOString() },
-  { id: 'rule-2', name: 'Erinnerung bei Inaktivität', enabled: false, trigger: 'time_in_status', triggerConfig: { toStatus: 'contacted', daysInStatus: 3 }, action: 'send_notification', actionConfig: { notificationMessage: 'Lead seit 3 Tagen im Status "Kontaktiert" – bitte nachfassen!' }, createdAt: new Date().toISOString() },
+  { id: 'rule-1', name: 'DISC-Test → Gespräch 2', enabled: true, trigger: 'disc_completed', triggerConfig: {}, action: 'change_status', actionConfig: { targetStatus: 'interview_2' }, scope: 'global', createdAt: new Date().toISOString() },
+  { id: 'rule-2', name: 'Erinnerung bei Inaktivität', enabled: false, trigger: 'time_in_status', triggerConfig: { toStatus: 'contacted', daysInStatus: 3 }, action: 'send_notification', actionConfig: { notificationMessage: 'Lead seit 3 Tagen im Status "Kontaktiert" – bitte nachfassen!' }, scope: 'global', createdAt: new Date().toISOString() },
 ];
 
 const mainFlow: LeadStatus[] = statusFlow.filter(s => s !== 'rejected');
