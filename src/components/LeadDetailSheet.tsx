@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils';
 import { useLeads, type ActivityEntry } from '@/context/LeadsContext';
 import { statusConfig, getAllowedNextStatuses, type LeadStatus } from '@/lib/mock-data';
 import { lookupPlz, searchPlz, type SwissLocation } from '@/lib/swiss-plz';
+import LeadStatusBadge from './LeadStatusBadge';
+import SourceBadge from './SourceBadge';
 import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus, Link2, Send, Copy, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
