@@ -364,12 +364,22 @@ export default function Processes() {
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Richtlinien & Regeln</h4>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setAddingGuidelineFor(step.status); setNewGuidelineText(''); setNewGuidelineType('rule'); }}
-                            className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-[11px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
-                          >
-                            <Plus className="h-3 w-3" /> Hinzufügen
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); generateAiGuidelines(step); }}
+                              disabled={aiLoadingFor === step.status}
+                              className="inline-flex items-center gap-1 rounded-lg bg-accent px-2.5 py-1 text-[11px] font-medium text-accent-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+                            >
+                              {aiLoadingFor === step.status ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                              KI generieren
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setAddingGuidelineFor(step.status); setNewGuidelineText(''); setNewGuidelineType('rule'); }}
+                              className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-[11px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+                            >
+                              <Plus className="h-3 w-3" /> Hinzufügen
+                            </button>
+                          </div>
                         </div>
 
                         {step.guidelines.length === 0 && addingGuidelineFor !== step.status && (
