@@ -230,7 +230,85 @@ function NotificationsTab({ notifPrefs, updateNotifPrefs, toast }: any) {
   );
 }
 
-function UsersTab({ systemUsers, userDialogOpen, setUserDialogOpen, userForm, setUserForm, addSystemUser, removeSystemUser, changeUserRole }: any) {
+function UsersTab({ isSuperadmin }: { isSuperadmin: boolean }) {
+  const { toast } = useToast();
+  const { user: currentUser } = useAuth();
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'backoffice' as SystemRole });
+
+  const loadUsers = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase.functions.invoke('manage-users', {
+      body: { action: 'list' },
+    });
+    if (error) {
+      toast({ title: 'Fehler', description: 'Benutzer konnten nicht geladen werden', variant: 'destructive' });
+    } else {
+      setUsers(data.users || []);
+    }
+    setLoading(false);
+  }, [toast]);
+
+  useEffect(() => { loadUsers(); }, [loadUsers]);
+
+  const handleCreate = async () => {
+    if (!form.name.trim() || !form.email.trim() || !form.password) {
+      toast({ title: 'Fehler', description: 'Bitte alle Felder ausfüllen', variant: 'destructive' });
+      return;
+    }
+    setSaving(true);
+    const { data, error } = await supabase.functions.invoke('manage-users', {
+      body: { action: 'create', email: form.email.trim(), password: form.password, display_name: form.name.trim(), role: form.role },
+    });
+    setSaving(false);
+    if (error || data?.error) {
+      toast({ title: 'Fehler', description: data?.error || 'Benutzer konnte nicht erstellt werden', variant: 'destructive' });
+    } else {
+      toast({ title: 'Benutzer erstellt', description: `${form.name} wurde als ${roleConfig[form.role].label} hinzugefügt.` });
+      setForm({ name: '', email: '', password: '', role: 'backoffice' });
+      setDialogOpen(false);
+      loadUsers();
+    }
+  };
+
+  const handleChangeRole = async (userId: string, newRole: SystemRole) => {
+    const { data, error } = await supabase.functions.invoke('manage-users', {
+      body: { action: 'update_role', user_id: userId, role: newRole },
+    });
+    if (error || data?.error) {
+      toast({ title: 'Fehler', description: data?.error || 'Rolle konnte nicht geändert werden', variant: 'destructive' });
+      loadUsers();
+    } else {
+      toast({ title: 'Rolle geändert', description: `Rolle wurde zu ${roleConfig[newRole].label} geändert.` });
+      loadUsers();
+    }
+  };
+
+  const handleDelete = async (userId: string) => {
+    const { data, error } = await supabase.functions.invoke('manage-users', {
+      body: { action: 'delete', user_id: userId },
+    });
+    if (error || data?.error) {
+      toast({ title: 'Fehler', description: data?.error || 'Benutzer konnte nicht gelöscht werden', variant: 'destructive' });
+    } else {
+      toast({ title: 'Entfernt', description: 'Benutzer wurde entfernt.' });
+      loadUsers();
+    }
+  };
+
+  if (!isSuperadmin) {
+    return (
+      <div className="rounded-xl border bg-card p-8 text-center">
+        <Shield className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+        <h2 className="text-lg font-semibold">Zugriff verweigert</h2>
+        <p className="text-sm text-muted-foreground mt-1">Nur Superadmins können Benutzer verwalten.</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -238,7 +316,7 @@ function UsersTab({ systemUsers, userDialogOpen, setUserDialogOpen, userForm, se
           <h2 className="text-lg font-semibold">Benutzerverwaltung</h2>
           <p className="text-sm text-muted-foreground">Benutzer und Rollen verwalten</p>
         </div>
-        <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
               <UserPlus className="h-4 w-4" /> Hinzufügen
@@ -249,26 +327,32 @@ function UsersTab({ systemUsers, userDialogOpen, setUserDialogOpen, userForm, se
             <div className="space-y-4 pt-2">
               <div>
                 <label className="text-sm font-medium">Name</label>
-                <input value={userForm.name} onChange={(e: any) => setUserForm((p: any) => ({ ...p, name: e.target.value }))}
+                <input value={form.name} onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))}
                   placeholder="z.B. Max Mustermann" className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <div>
                 <label className="text-sm font-medium">E-Mail</label>
-                <input value={userForm.email} onChange={(e: any) => setUserForm((p: any) => ({ ...p, email: e.target.value }))}
-                  placeholder="z.B. max@firma.de" className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                <input type="email" value={form.email} onChange={(e) => setForm(p => ({ ...p, email: e.target.value }))}
+                  placeholder="z.B. max@firma.ch" className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Passwort</label>
+                <input type="password" value={form.password} onChange={(e) => setForm(p => ({ ...p, password: e.target.value }))}
+                  placeholder="Mindestens 8 Zeichen" className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <div>
                 <label className="text-sm font-medium">Rolle</label>
-                <select value={userForm.role} onChange={(e: any) => setUserForm((p: any) => ({ ...p, role: e.target.value }))}
+                <select value={form.role} onChange={(e) => setForm(p => ({ ...p, role: e.target.value as SystemRole }))}
                   className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
                   {Object.entries(roleConfig).map(([key, cfg]) => (
                     <option key={key} value={key}>{cfg.label}</option>
                   ))}
                 </select>
-                <p className="mt-1 text-xs text-muted-foreground">{roleConfig[userForm.role as SystemRole].description}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{roleConfig[form.role].description}</p>
               </div>
-              <button onClick={addSystemUser} disabled={!userForm.name.trim() || !userForm.email.trim()}
-                className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+              <button onClick={handleCreate} disabled={saving || !form.name.trim() || !form.email.trim() || !form.password}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 Benutzer erstellen
               </button>
             </div>
@@ -287,50 +371,61 @@ function UsersTab({ systemUsers, userDialogOpen, setUserDialogOpen, userForm, se
       </div>
 
       <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b text-left text-muted-foreground">
-              <th className="px-5 py-3 font-medium">Benutzer</th>
-              <th className="px-5 py-3 font-medium">Rolle</th>
-              <th className="px-5 py-3 font-medium">Hinzugefügt</th>
-              <th className="px-5 py-3 font-medium w-20"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {systemUsers.map((user: any) => {
-              const cfg = roleConfig[user.role as SystemRole];
-              const initials = user.name.split(' ').map((n: string) => n[0]).join('');
-              return (
-                <tr key={user.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground">{initials}</div>
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="h-3 w-3" /> {user.email}</p>
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-left text-muted-foreground">
+                <th className="px-5 py-3 font-medium">Benutzer</th>
+                <th className="px-5 py-3 font-medium">Rolle</th>
+                <th className="px-5 py-3 font-medium">Hinzugefügt</th>
+                <th className="px-5 py-3 font-medium w-20"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u: any) => {
+                const role = (u.role || 'analyst') as SystemRole;
+                const cfg = roleConfig[role];
+                const initials = (u.display_name || u.email || '?').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+                const isSelf = u.id === currentUser?.id;
+                return (
+                  <tr key={u.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground">{initials}</div>
+                        <div>
+                          <p className="font-medium">{u.display_name}{isSelf && <span className="ml-1.5 text-xs text-muted-foreground">(Sie)</span>}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="h-3 w-3" /> {u.email}</p>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3">
-                    <select value={user.role} onChange={(e: any) => changeUserRole(user.id, e.target.value)}
-                      className="h-8 rounded-lg border bg-background px-2 text-xs font-medium outline-none focus:ring-2 focus:ring-ring">
-                      {Object.entries(roleConfig).map(([key, c]) => (
-                        <option key={key} value={key}>{c.label}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-5 py-3 text-muted-foreground text-xs">{new Date(user.createdAt).toLocaleDateString('de-DE')}</td>
-                  <td className="px-5 py-3">
-                    <button onClick={() => removeSystemUser(user.id)}
-                      className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Benutzer entfernen">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="px-5 py-3">
+                      <select value={role} onChange={(e) => handleChangeRole(u.id, e.target.value as SystemRole)}
+                        disabled={isSelf}
+                        className="h-8 rounded-lg border bg-background px-2 text-xs font-medium outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
+                        {Object.entries(roleConfig).map(([key, c]) => (
+                          <option key={key} value={key}>{c.label}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-5 py-3 text-muted-foreground text-xs">{new Date(u.created_at).toLocaleDateString('de-DE')}</td>
+                    <td className="px-5 py-3">
+                      {!isSelf && (
+                        <button onClick={() => handleDelete(u.id)}
+                          className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Benutzer entfernen">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     </>
   );
