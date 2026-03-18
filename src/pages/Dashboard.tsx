@@ -65,7 +65,7 @@ export default function Dashboard() {
                   <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid hsl(220,13%,91%)', fontSize: 13 }} />
+              <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid hsl(150,10%,89%)', fontSize: 13 }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
