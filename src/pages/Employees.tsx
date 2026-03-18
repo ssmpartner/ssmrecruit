@@ -12,8 +12,8 @@ const roleBadge: Record<string, string> = {
 
 const roleLabels: Record<string, string> = {
   admin: 'Admin',
-  agency_manager: 'Agency Manager',
-  employee: 'Employee',
+  agency_manager: 'Agenturleiter',
+  employee: 'Mitarbeiter',
 };
 
 export default function Employees() {
@@ -32,58 +32,58 @@ export default function Employees() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Employees</h1>
-          <p className="text-muted-foreground">Manage your team members</p>
+          <h1 className="text-2xl font-bold tracking-tight">Mitarbeiter</h1>
+          <p className="text-muted-foreground">Teammitglieder verwalten</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-              <Plus className="h-4 w-4" /> Add Employee
+              <Plus className="h-4 w-4" /> Mitarbeiter hinzufügen
             </button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Employee</DialogTitle>
+              <DialogTitle>Neuen Mitarbeiter hinzufügen</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-2">
               <div>
-                <label className="text-sm font-medium">Full Name</label>
+                <label className="text-sm font-medium">Vollständiger Name</label>
                 <input
                   value={form.name}
                   onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                  placeholder="e.g. John Smith"
+                  placeholder="z.B. Max Müller"
                   className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Email</label>
+                <label className="text-sm font-medium">E-Mail</label>
                 <input
                   value={form.email}
                   onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                  placeholder="e.g. john@company.com"
+                  placeholder="z.B. max@firma.ch"
                   className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Role</label>
+                <label className="text-sm font-medium">Rolle</label>
                 <select
                   value={form.role}
                   onChange={e => setForm(p => ({ ...p, role: e.target.value as Employee['role'] }))}
                   className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 >
-                  <option value="employee">Employee</option>
-                  <option value="agency_manager">Agency Manager</option>
+                  <option value="employee">Mitarbeiter</option>
+                  <option value="agency_manager">Agenturleiter</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium">Agency</label>
+                <label className="text-sm font-medium">Agentur</label>
                 <select
                   value={form.agencyId}
                   onChange={e => setForm(p => ({ ...p, agencyId: e.target.value }))}
                   className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 >
-                  <option value="">Select agency...</option>
+                  <option value="">Agentur wählen…</option>
                   {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
               </div>
@@ -92,7 +92,7 @@ export default function Employees() {
                 disabled={!form.name.trim() || !form.email.trim() || !form.agencyId}
                 className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
               >
-                Create Employee
+                Mitarbeiter erstellen
               </button>
             </div>
           </DialogContent>
@@ -125,9 +125,9 @@ export default function Employees() {
                 <span className="text-xs text-muted-foreground">• {agency?.name}</span>
               </div>
               <div className="rounded-lg bg-secondary p-3">
-                <p className="text-sm font-medium">{empLeads.length} assigned leads</p>
+                <p className="text-sm font-medium">{empLeads.length} zugewiesene Leads</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {empLeads.filter(l => l.status === 'hired').length} hired
+                  {empLeads.filter(l => l.status === 'hired').length} eingestellt
                 </p>
               </div>
             </div>

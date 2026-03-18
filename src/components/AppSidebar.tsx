@@ -4,10 +4,10 @@ import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, S
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/pipeline', icon: Kanban, label: 'Pipeline' },
-  { to: '/leads', icon: Table, label: 'Leads Table' },
-  { to: '/agencies', icon: Building2, label: 'Agencies' },
-  { to: '/employees', icon: UserCog, label: 'Employees' },
-  { to: '/analytics', icon: BarChart3, label: 'Analytics' },
+  { to: '/leads', icon: Table, label: 'Leads' },
+  { to: '/agencies', icon: Building2, label: 'Agenturen' },
+  { to: '/employees', icon: UserCog, label: 'Mitarbeiter' },
+  { to: '/analytics', icon: BarChart3, label: 'Statistik' },
 ];
 
 export default function AppSidebar() {
@@ -15,7 +15,6 @@ export default function AppSidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-64 flex-col bg-sidebar border-r border-sidebar-border">
-      {/* Logo */}
       <div className="flex h-16 items-center gap-2.5 px-6 border-b border-sidebar-border">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
           <Users className="h-4 w-4 text-primary-foreground" />
@@ -23,7 +22,6 @@ export default function AppSidebar() {
         <span className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">RecruitFlow</span>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 space-y-1 p-3 overflow-y-auto scrollbar-thin">
         {navItems.map(({ to, icon: Icon, label }) => {
           const isActive = location.pathname === to;
@@ -44,14 +42,13 @@ export default function AppSidebar() {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="border-t border-sidebar-border p-3">
         <NavLink
           to="/settings"
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-primary-foreground transition-colors"
         >
           <Settings className="h-4.5 w-4.5" />
-          Settings
+          Einstellungen
         </NavLink>
       </div>
     </aside>
