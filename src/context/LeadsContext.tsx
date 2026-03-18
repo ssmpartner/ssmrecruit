@@ -28,8 +28,8 @@ interface LeadsContextType {
   agencies: Agency[];
   activities: ActivityEntry[];
   appointments: Appointment[];
-  notificationMethod: NotificationMethod;
-  setNotificationMethod: (method: NotificationMethod) => void;
+  appointmentSettings: AppointmentSettings;
+  updateAppointmentSettings: (updates: Partial<AppointmentSettings>) => void;
   updateLead: (id: string, updates: Partial<Lead>) => void;
   addLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => void;
   addActivity: (leadId: string, type: ActivityEntry['type'], description: string) => void;
