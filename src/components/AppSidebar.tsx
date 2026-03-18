@@ -44,18 +44,25 @@ export default function AppSidebar() {
         })}
       </nav>
 
-      <div className="border-t border-sidebar-border p-3">
-        <NavLink
-          to="/settings"
-          className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-            location.pathname === '/settings'
-              ? 'bg-sidebar-accent text-sidebar-primary shadow-sm'
-              : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
-          }`}
-        >
-          <Settings className="h-[18px] w-[18px]" />
-          Einstellungen
-        </NavLink>
+      <div className="border-t border-sidebar-border p-3 space-y-0.5">
+        {[
+          { to: '/settings', icon: Settings, label: 'Einstellungen' },
+          { to: '/api-docs', icon: Code2, label: 'API-Dokumentation' },
+          { to: '/documentation', icon: FileText, label: 'Dokumentation' },
+        ].map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+              location.pathname === to
+                ? 'bg-sidebar-accent text-sidebar-primary shadow-sm'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
+            }`}
+          >
+            <Icon className="h-[18px] w-[18px]" />
+            {label}
+          </NavLink>
+        ))}
       </div>
     </aside>
   );
