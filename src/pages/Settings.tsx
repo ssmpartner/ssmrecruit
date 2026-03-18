@@ -65,14 +65,40 @@ export default function Settings() {
   const { appointmentSettings, updateAppointmentSettings, insightsSettings, updateInsightsSettings } = useLeads();
   const { preferences: notifPrefs, updatePreferences: updateNotifPrefs } = useNotifications();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
-  const [integrations, setIntegrations] = useState<Integration[]>(defaultIntegrations);
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [integrationsLoading, setIntegrationsLoading] = useState(false);
+
+  // Load integrations from DB
+  const loadIntegrations = useCallback(async () => {
+    setIntegrationsLoading(true);
+    const { data, error } = await supabase.from('integrations').select('*');
+    if (!error && data) {
+      setIntegrations(data.map((row: any) => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        icon: row.icon,
+        method: row.method as 'zapier' | 'api' | 'none',
+        zapierWebhook: row.zapier_webhook,
+        apiKey: row.api_key,
+        connected: row.connected,
+      })));
+    }
+    setIntegrationsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'integrations') {
+      loadIntegrations();
+    }
+  }, [activeTab, loadIntegrations]);
 
   const updateIntegration = (id: string, updates: Partial<Integration>) => {
     setIntegrations(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
   };
 
-  const saveIntegration = (id: string) => {
+  const saveIntegration = async (id: string) => {
     const integration = integrations.find(i => i.id === id);
     if (!integration) return;
     if (integration.method === 'zapier' && !integration.zapierWebhook.trim()) {
@@ -83,11 +109,33 @@ export default function Settings() {
       toast({ title: 'Fehler', description: 'Bitte API-Schlüssel eingeben', variant: 'destructive' });
       return;
     }
+    const { error } = await supabase.from('integrations').update({
+      method: integration.method,
+      zapier_webhook: integration.zapierWebhook,
+      api_key: integration.apiKey,
+      connected: true,
+      updated_at: new Date().toISOString(),
+    }).eq('id', id);
+    if (error) {
+      toast({ title: 'Fehler', description: 'Konnte nicht gespeichert werden', variant: 'destructive' });
+      return;
+    }
     updateIntegration(id, { connected: true });
     toast({ title: 'Integration gespeichert', description: `${integration.name} wurde erfolgreich verbunden.` });
   };
 
-  const disconnectIntegration = (id: string) => {
+  const disconnectIntegration = async (id: string) => {
+    const { error } = await supabase.from('integrations').update({
+      connected: false,
+      method: 'none',
+      zapier_webhook: '',
+      api_key: '',
+      updated_at: new Date().toISOString(),
+    }).eq('id', id);
+    if (error) {
+      toast({ title: 'Fehler', description: 'Konnte nicht getrennt werden', variant: 'destructive' });
+      return;
+    }
     updateIntegration(id, { connected: false, method: 'none', zapierWebhook: '', apiKey: '' });
     toast({ title: 'Getrennt', description: 'Integration wurde entfernt.' });
   };
