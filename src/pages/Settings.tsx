@@ -197,6 +197,7 @@ export default function Settings() {
 
         {/* Content */}
         <div className="flex-1 max-w-2xl space-y-6">
+          {activeTab === 'profile' && <ProfileSettings />}
           {activeTab === 'notifications' && <NotificationsTab notifPrefs={notifPrefs} updateNotifPrefs={updateNotifPrefs} toast={toast} />}
           {activeTab === 'users' && (
             <UsersTab
