@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Video, Maximize2, Minimize2, PhoneOff } from 'lucide-react';
+import { useLeads } from '@/context/LeadsContext';
 
 interface VideoCallDialogProps {
   open: boolean;
@@ -21,6 +22,7 @@ function extractJitsiRoom(link: string): string {
 
 export default function VideoCallDialog({ open, onOpenChange, meetingLink, title, leadName }: VideoCallDialogProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const { appointmentSettings: s } = useLeads();
   const containerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<any>(null);
   const room = extractJitsiRoom(meetingLink);
@@ -35,46 +37,46 @@ export default function VideoCallDialog({ open, onOpenChange, meetingLink, title
   useEffect(() => {
     if (!open || !containerRef.current) return;
 
-    // Load JitsiMeetExternalAPI script if not already loaded
+    const domain = s.videoProvider === 'custom' && s.customVideoBaseUrl
+      ? new URL(s.customVideoBaseUrl).host
+      : 'meet.jit.si';
+
+    const toolbarButtons: string[] = ['microphone', 'camera', 'hangup', 'fullscreen', 'raisehand', 'select-background', 'participants-pane'];
+    if (s.enableScreensharing) toolbarButtons.push('desktop', 'shareaudio');
+    if (s.enableChat) toolbarButtons.push('chat');
+    if (s.enableRecording) toolbarButtons.push('recording');
+    if (s.enableTileView) toolbarButtons.push('tileview');
+    toolbarButtons.push('sharedvideo');
+
     const initJitsi = () => {
       if (!containerRef.current) return;
       destroyApi();
 
-      const api = new (window as any).JitsiMeetExternalAPI('meet.jit.si', {
+      const api = new (window as any).JitsiMeetExternalAPI(domain, {
         roomName: room,
         parentNode: containerRef.current,
         width: '100%',
         height: '100%',
         configOverwrite: {
-          prejoinPageEnabled: false,
-          startWithAudioMuted: false,
-          startWithVideoMuted: false,
+          prejoinPageEnabled: s.prejoinEnabled,
+          startWithAudioMuted: s.startWithAudioMuted,
+          startWithVideoMuted: s.startWithVideoMuted,
           disableDeepLinking: true,
           hideConferenceSubject: true,
           subject: title,
-          fileRecordingsEnabled: true,
-          localRecording: { enabled: true, format: 'webm' },
-          toolbarButtons: [
-            'microphone', 'camera', 'desktop', 'chat',
-            'raisehand', 'tileview', 'hangup', 'fullscreen',
-            'recording', 'shareaudio', 'sharedvideo',
-            'select-background', 'participants-pane',
-          ],
+          fileRecordingsEnabled: s.enableRecording,
+          localRecording: { enabled: s.enableRecording, format: 'webm' },
+          toolbarButtons,
         },
         interfaceConfigOverwrite: {
           SHOW_JITSI_WATERMARK: false,
           SHOW_WATERMARK_FOR_GUESTS: false,
           SHOW_BRAND_WATERMARK: false,
-          TOOLBAR_BUTTONS: [
-            'microphone', 'camera', 'desktop', 'chat',
-            'raisehand', 'tileview', 'hangup', 'fullscreen',
-            'recording', 'shareaudio', 'sharedvideo',
-            'select-background', 'participants-pane',
-          ],
+          TOOLBAR_BUTTONS: toolbarButtons,
           DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
         },
         userInfo: {
-          displayName: 'Mitarbeiter',
+          displayName: s.displayName || 'Mitarbeiter',
         },
       });
 
@@ -98,7 +100,7 @@ export default function VideoCallDialog({ open, onOpenChange, meetingLink, title
     return () => {
       destroyApi();
     };
-  }, [open, room, title, destroyApi, onOpenChange]);
+  }, [open, room, title, destroyApi, onOpenChange, s]);
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) { destroyApi(); } onOpenChange(v); }}>

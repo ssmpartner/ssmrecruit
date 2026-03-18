@@ -9,6 +9,8 @@ import {
   type Agency,
   type Appointment,
   type NotificationMethod,
+  type AppointmentSettings,
+  defaultAppointmentSettings,
 } from '@/lib/mock-data';
 
 export interface ActivityEntry {
@@ -26,8 +28,8 @@ interface LeadsContextType {
   agencies: Agency[];
   activities: ActivityEntry[];
   appointments: Appointment[];
-  notificationMethod: NotificationMethod;
-  setNotificationMethod: (method: NotificationMethod) => void;
+  appointmentSettings: AppointmentSettings;
+  updateAppointmentSettings: (updates: Partial<AppointmentSettings>) => void;
   updateLead: (id: string, updates: Partial<Lead>) => void;
   addLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => void;
   addActivity: (leadId: string, type: ActivityEntry['type'], description: string) => void;
@@ -79,8 +81,12 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const [agencies, setAgencies] = useState<Agency[]>(initialAgencies);
   const [activities, setActivities] = useState<ActivityEntry[]>(() => seedActivities(initialLeads));
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [notificationMethod, setNotificationMethod] = useState<NotificationMethod>('email');
+  const [appointmentSettings, setAppointmentSettings] = useState<AppointmentSettings>(defaultAppointmentSettings);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+
+  const updateAppointmentSettings = useCallback((updates: Partial<AppointmentSettings>) => {
+    setAppointmentSettings(prev => ({ ...prev, ...updates }));
+  }, []);
 
   const addActivity = useCallback((leadId: string, type: ActivityEntry['type'], description: string) => {
     setActivities(prev => [{
@@ -109,6 +115,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   function generateMeetingLink(): string {
     const chars = 'abcdefghijklmnopqrstuvwxyz';
     const seg = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    if (appointmentSettings.videoProvider === 'custom' && appointmentSettings.customVideoBaseUrl) {
+      return `${appointmentSettings.customVideoBaseUrl.replace(/\/$/, '')}/recruitflow-${seg()}-${seg()}-${seg()}`;
+    }
     return `https://meet.jit.si/recruitflow-${seg()}-${seg()}-${seg()}`;
   }
 
@@ -121,11 +130,12 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     let desc = `Termin erstellt: ${aptData.title} (${typeLabel}, ${aptData.date} ${aptData.time})`;
     if (meetingLink) desc += ` – Link: ${meetingLink}`;
     addActivity(aptData.leadId, 'appointment', desc);
-    // Auto-set status to appointment if still new/contacted
-    const lead = leads.find(l => l.id === aptData.leadId);
-    if (lead && (lead.status === 'new' || lead.status === 'contacted')) {
-      updateLead(aptData.leadId, { status: 'appointment' });
-      addActivity(aptData.leadId, 'status_change', `Status automatisch auf "Termin" gesetzt`);
+    if (appointmentSettings.autoStatusChange) {
+      const lead = leads.find(l => l.id === aptData.leadId);
+      if (lead && (lead.status === 'new' || lead.status === 'contacted')) {
+        updateLead(aptData.leadId, { status: 'appointment' });
+        addActivity(aptData.leadId, 'status_change', `Status automatisch auf "Termin" gesetzt`);
+      }
     }
   }, [addActivity, leads, updateLead]);
 
@@ -155,11 +165,11 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     const lead = leads.find(l => l.id === apt.leadId);
     if (!lead) return;
     const methodLabels: Record<NotificationMethod, string> = { email: 'E-Mail', sms: 'SMS', whatsapp: 'WhatsApp' };
-    addActivity(apt.leadId, 'note', `Termineinladung per ${methodLabels[notificationMethod]} an ${lead.name} gesendet (${apt.meetingLink ? 'mit Video-Link' : 'ohne Link'})`);
-  }, [appointments, leads, notificationMethod, addActivity]);
+    addActivity(apt.leadId, 'note', `Termineinladung per ${methodLabels[appointmentSettings.notificationMethod]} an ${lead.name} gesendet (${apt.meetingLink ? 'mit Video-Link' : 'ohne Link'})`);
+  }, [appointments, leads, appointmentSettings.notificationMethod, addActivity]);
 
   return (
-    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, notificationMethod, setNotificationMethod, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, selectedLead, setSelectedLead, addEmployee, addAgency }}>
+    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, appointmentSettings, updateAppointmentSettings, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, selectedLead, setSelectedLead, addEmployee, addAgency }}>
       {children}
     </LeadsContext.Provider>
   );

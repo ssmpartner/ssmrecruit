@@ -31,7 +31,7 @@ const appointmentTypeConfig = {
 } as const;
 
 export default function LeadDetailSheet() {
-  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, notificationMethod } = useLeads();
+  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings } = useLeads();
   const { toast } = useToast();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
@@ -421,9 +421,9 @@ export default function LeadDetailSheet() {
                                   className="inline-flex items-center gap-1.5 rounded-md bg-success/15 text-success px-2.5 py-1 text-[11px] font-semibold hover:bg-success/25 transition-colors">
                                   <Video className="h-3 w-3" /> Jetzt starten
                                 </button>
-                                <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Einladung gesendet', description: `Link per ${methodLabels[notificationMethod]} an ${selectedLead?.name} gesendet` }); }}
+                                <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Einladung gesendet', description: `Link per ${methodLabels[appointmentSettings.notificationMethod]} an ${selectedLead?.name} gesendet` }); }}
                                   className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-medium hover:bg-primary/20 transition-colors">
-                                  <Send className="h-3 w-3" /> Per {methodLabels[notificationMethod]} senden
+                                  <Send className="h-3 w-3" /> Per {methodLabels[appointmentSettings.notificationMethod]} senden
                                 </button>
                               </div>
                             </div>

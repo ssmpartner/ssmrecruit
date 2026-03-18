@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLeads } from '@/context/LeadsContext';
 import { type NotificationMethod } from '@/lib/mock-data';
@@ -81,9 +81,27 @@ const defaultIntegrations: Integration[] = [
   },
 ];
 
+function ToggleRow({ label, description, checked, onChange, icon }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void; icon?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b last:border-0">
+      <div className="flex items-center gap-2.5">
+        {icon && <span className="text-muted-foreground">{icon}</span>}
+        <div>
+          <p className="text-sm font-medium">{label}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      <button onClick={() => onChange(!checked)}
+        className={`relative h-6 w-11 rounded-full transition-colors ${checked ? 'bg-primary' : 'bg-muted'}`}>
+        <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5' : ''}`} />
+      </button>
+    </div>
+  );
+}
+
 export default function Settings() {
   const { toast } = useToast();
-  const { notificationMethod, setNotificationMethod } = useLeads();
+  const { appointmentSettings, updateAppointmentSettings } = useLeads();
   const [integrations, setIntegrations] = useState<Integration[]>(defaultIntegrations);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -322,44 +340,185 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* ── Notification Settings ── */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Terminbenachrichtigung</h2>
-        <p className="text-sm text-muted-foreground">Wählen Sie, wie Leads ihre Termineinladung (inkl. Video-Link) erhalten sollen.</p>
-        <div className="grid grid-cols-3 gap-3">
-          {([
-            { method: 'email' as NotificationMethod, label: 'E-Mail', icon: Mail, desc: 'Einladung per E-Mail senden' },
-            { method: 'sms' as NotificationMethod, label: 'SMS', icon: Phone, desc: 'Einladung per SMS senden' },
-            { method: 'whatsapp' as NotificationMethod, label: 'WhatsApp', icon: MessageSquare, desc: 'Einladung per WhatsApp senden' },
-          ]).map(opt => {
-            const isActive = notificationMethod === opt.method;
-            const Icon = opt.icon;
-            return (
-              <button
-                key={opt.method}
-                onClick={() => {
-                  setNotificationMethod(opt.method);
-                  toast({ title: 'Gespeichert', description: `Benachrichtigung per ${opt.label} aktiviert` });
-                }}
-                className={`rounded-xl border p-4 text-left transition-colors ${
-                  isActive ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <span className="text-sm font-semibold">{opt.label}</span>
-                  {isActive && (
-                    <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">Aktiv</span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">{opt.desc}</p>
-              </button>
-            );
-          })}
+      {/* ══════════ Termine & Video-Telefonie ══════════ */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2"><Settings2 className="h-5 w-5" /> Termine & Video-Telefonie</h2>
+          <p className="text-sm text-muted-foreground">Alle Einstellungen rund um Terminplanung und Video-Calls.</p>
         </div>
-        <p className="text-xs text-muted-foreground">
-          💡 Für tatsächlichen Versand wird Lovable Cloud benötigt (SMS via Twilio, E-Mail via SMTP). Derzeit wird die Aktion protokolliert.
-        </p>
+
+        {/* ── Standard-Termineinstellungen ── */}
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
+          <h3 className="text-sm font-semibold flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" /> Standard-Termineinstellungen</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Standard-Dauer</label>
+              <select value={appointmentSettings.defaultDuration}
+                onChange={e => { updateAppointmentSettings({ defaultDuration: Number(e.target.value) }); toast({ title: 'Gespeichert' }); }}
+                className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                <option value={15}>15 Minuten</option>
+                <option value={30}>30 Minuten</option>
+                <option value={45}>45 Minuten</option>
+                <option value={60}>60 Minuten</option>
+                <option value={90}>90 Minuten</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Standard-Art</label>
+              <select value={appointmentSettings.defaultType}
+                onChange={e => { updateAppointmentSettings({ defaultType: e.target.value as 'phone' | 'video' | 'onsite' }); toast({ title: 'Gespeichert' }); }}
+                className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                <option value="phone">Telefon</option>
+                <option value="video">Video-Call</option>
+                <option value="onsite">Vor Ort</option>
+              </select>
+            </div>
+          </div>
+          <ToggleRow
+            label="Status automatisch auf «Terminiert» setzen"
+            description="Setzt den Lead-Status automatisch auf «Terminiert» wenn ein Termin erstellt wird"
+            checked={appointmentSettings.autoStatusChange}
+            onChange={v => updateAppointmentSettings({ autoStatusChange: v })}
+          />
+        </div>
+
+        {/* ── Video-Anbieter ── */}
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
+          <h3 className="text-sm font-semibold flex items-center gap-2"><Video className="h-4 w-4 text-muted-foreground" /> Video-Anbieter</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {([
+              { value: 'jitsi' as const, label: 'Jitsi Meet (Kostenlos)', desc: 'Kein Account nötig, Open Source' },
+              { value: 'custom' as const, label: 'Eigener Server', desc: 'Eigene Jitsi-Instanz verwenden' },
+            ]).map(opt => (
+              <button key={opt.value}
+                onClick={() => { updateAppointmentSettings({ videoProvider: opt.value }); toast({ title: 'Gespeichert' }); }}
+                className={`rounded-xl border p-4 text-left transition-colors ${
+                  appointmentSettings.videoProvider === opt.value ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'
+                }`}>
+                <span className="text-sm font-semibold">{opt.label}</span>
+                {appointmentSettings.videoProvider === opt.value && (
+                  <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">Aktiv</span>
+                )}
+                <p className="text-xs text-muted-foreground mt-0.5">{opt.desc}</p>
+              </button>
+            ))}
+          </div>
+          {appointmentSettings.videoProvider === 'custom' && (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Server-URL</label>
+              <div className="flex gap-2 mt-1">
+                <input value={appointmentSettings.customVideoBaseUrl}
+                  onChange={e => updateAppointmentSettings({ customVideoBaseUrl: e.target.value })}
+                  placeholder="https://meet.ihr-server.ch"
+                  className="h-9 flex-1 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                <button onClick={() => toast({ title: 'Gespeichert', description: 'Server-URL aktualisiert' })}
+                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                  <Save className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">Anzeigename im Call</label>
+            <input value={appointmentSettings.displayName}
+              onChange={e => updateAppointmentSettings({ displayName: e.target.value })}
+              placeholder="z.B. Firma AG – Recruiting"
+              className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+          </div>
+        </div>
+
+        {/* ── Video-Call Verhalten ── */}
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-semibold flex items-center gap-2"><Monitor className="h-4 w-4 text-muted-foreground" /> Video-Call Verhalten</h3>
+          <ToggleRow label="Vorraum (Prejoin) anzeigen" description="Zeigt eine Vorschau bevor man dem Call beitritt"
+            checked={appointmentSettings.prejoinEnabled} onChange={v => updateAppointmentSettings({ prejoinEnabled: v })} />
+          <ToggleRow label="Mikrofon stumm starten" description="Mikrofon beim Beitritt standardmässig stumm"
+            checked={appointmentSettings.startWithAudioMuted} onChange={v => updateAppointmentSettings({ startWithAudioMuted: v })} />
+          <ToggleRow label="Kamera aus starten" description="Kamera beim Beitritt standardmässig deaktiviert"
+            checked={appointmentSettings.startWithVideoMuted} onChange={v => updateAppointmentSettings({ startWithVideoMuted: v })} />
+        </div>
+
+        {/* ── Video-Call Funktionen ── */}
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-semibold flex items-center gap-2"><ScreenShare className="h-4 w-4 text-muted-foreground" /> Video-Call Funktionen</h3>
+          <ToggleRow label="Aufnahme erlauben" description="Teilnehmer können den Call aufnehmen"
+            checked={appointmentSettings.enableRecording} onChange={v => updateAppointmentSettings({ enableRecording: v })} icon={<Camera className="h-4 w-4" />} />
+          <ToggleRow label="Bildschirmfreigabe erlauben" description="Teilnehmer können ihren Bildschirm teilen"
+            checked={appointmentSettings.enableScreensharing} onChange={v => updateAppointmentSettings({ enableScreensharing: v })} icon={<ScreenShare className="h-4 w-4" />} />
+          <ToggleRow label="Chat aktivieren" description="In-Call Textnachrichten erlauben"
+            checked={appointmentSettings.enableChat} onChange={v => updateAppointmentSettings({ enableChat: v })} icon={<MessageCircle className="h-4 w-4" />} />
+          <ToggleRow label="Kachelansicht erlauben" description="Mehrere Teilnehmer gleichzeitig sehen"
+            checked={appointmentSettings.enableTileView} onChange={v => updateAppointmentSettings({ enableTileView: v })} icon={<LayoutGrid className="h-4 w-4" />} />
+        </div>
+
+        {/* ── Erinnerungen ── */}
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
+          <h3 className="text-sm font-semibold flex items-center gap-2"><Bell className="h-4 w-4 text-muted-foreground" /> Erinnerungen</h3>
+          <ToggleRow label="Erinnerung vor Termin senden" description="Lead wird vor dem Termin automatisch erinnert"
+            checked={appointmentSettings.reminderEnabled} onChange={v => updateAppointmentSettings({ reminderEnabled: v })} />
+          {appointmentSettings.reminderEnabled && (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Erinnerung senden vor</label>
+              <select value={appointmentSettings.reminderMinutesBefore}
+                onChange={e => { updateAppointmentSettings({ reminderMinutesBefore: Number(e.target.value) }); toast({ title: 'Gespeichert' }); }}
+                className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                <option value={5}>5 Minuten</option>
+                <option value={10}>10 Minuten</option>
+                <option value={15}>15 Minuten</option>
+                <option value={30}>30 Minuten</option>
+                <option value={60}>1 Stunde</option>
+                <option value={120}>2 Stunden</option>
+                <option value={1440}>1 Tag</option>
+              </select>
+            </div>
+          )}
+        </div>
+
+        {/* ── Benachrichtigung & Versand ── */}
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
+          <h3 className="text-sm font-semibold flex items-center gap-2"><Send className="h-4 w-4 text-muted-foreground" /> Benachrichtigung & Versand</h3>
+          <p className="text-xs text-muted-foreground">Kanal für Termineinladungen und Erinnerungen wählen.</p>
+          <div className="grid grid-cols-3 gap-3">
+            {([
+              { method: 'email' as NotificationMethod, label: 'E-Mail', icon: Mail, desc: 'Einladung per E-Mail' },
+              { method: 'sms' as NotificationMethod, label: 'SMS', icon: Phone, desc: 'Einladung per SMS' },
+              { method: 'whatsapp' as NotificationMethod, label: 'WhatsApp', icon: MessageSquare, desc: 'Einladung per WhatsApp' },
+            ]).map(opt => {
+              const isActive = appointmentSettings.notificationMethod === opt.method;
+              const Icon = opt.icon;
+              return (
+                <button key={opt.method}
+                  onClick={() => { updateAppointmentSettings({ notificationMethod: opt.method }); toast({ title: 'Gespeichert', description: `Benachrichtigung per ${opt.label} aktiviert` }); }}
+                  className={`rounded-xl border p-4 text-left transition-colors ${isActive ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <span className="text-sm font-semibold">{opt.label}</span>
+                    {isActive && <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">Aktiv</span>}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+
+          <ToggleRow label="Einladung automatisch senden" description="Sendet die Einladung sofort nach Terminerstellung"
+            checked={appointmentSettings.autoSendInvite} onChange={v => updateAppointmentSettings({ autoSendInvite: v })} />
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">Nachrichtenvorlage</label>
+            <textarea value={appointmentSettings.inviteMessageTemplate}
+              onChange={e => updateAppointmentSettings({ inviteMessageTemplate: e.target.value })}
+              rows={5}
+              className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-ring resize-none" />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Platzhalter: <code className="bg-secondary px-1 rounded">{'{name}'}</code> <code className="bg-secondary px-1 rounded">{'{date}'}</code> <code className="bg-secondary px-1 rounded">{'{time}'}</code> <code className="bg-secondary px-1 rounded">{'{link}'}</code> <code className="bg-secondary px-1 rounded">{'{company}'}</code>
+            </p>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            💡 Für tatsächlichen Versand wird Lovable Cloud benötigt (SMS via Twilio, E-Mail via SMTP). Derzeit wird die Aktion protokolliert.
+          </p>
+        </div>
       </div>
 
       {/* Webhook endpoint info */}
