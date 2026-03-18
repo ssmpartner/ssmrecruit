@@ -99,6 +99,10 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     setAppointmentSettings(prev => ({ ...prev, ...updates }));
   }, []);
 
+  const updateInsightsSettings = useCallback((updates: Partial<InsightsSettings>) => {
+    setInsightsSettings(prev => ({ ...prev, ...updates }));
+  }, []);
+
   const addActivity = useCallback((leadId: string, type: ActivityEntry['type'], description: string) => {
     setActivities(prev => [{
       id: `act-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
