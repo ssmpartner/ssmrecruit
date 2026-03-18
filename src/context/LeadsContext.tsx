@@ -24,6 +24,7 @@ interface LeadsContextType {
   agencies: Agency[];
   activities: ActivityEntry[];
   updateLead: (id: string, updates: Partial<Lead>) => void;
+  addLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => void;
   addActivity: (leadId: string, type: ActivityEntry['type'], description: string) => void;
   selectedLead: Lead | null;
   setSelectedLead: (lead: Lead | null) => void;
