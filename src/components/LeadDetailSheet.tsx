@@ -15,6 +15,7 @@ import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, F
 import { useToast } from '@/hooks/use-toast';
 import VideoCallDialog from './VideoCallDialog';
 import InsightsTab from './InsightsTab';
+import ProcessStepper from './ProcessStepper';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'insights', 'interview_2', 'hired', 'rejected'];
 
