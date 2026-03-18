@@ -46,11 +46,24 @@ export default function Analytics() {
     return [...map.values()].sort((a, b) => b.total - a.total);
   }, [filtered]);
 
-  const agencyData = agencies.map(a => ({
-    name: a.name.length > 14 ? a.name.slice(0, 12) + '…' : a.name,
-    total: filtered.filter(l => l.agencyId === a.id).length,
-    hired: filtered.filter(l => l.agencyId === a.id && l.status === 'hired').length,
-  }));
+  const agencyData = agencies.map(a => {
+    const agencyLeads = filtered.filter(l => l.agencyId === a.id);
+    const hired = agencyLeads.filter(l => l.status === 'hired').length;
+    const contacted = agencyLeads.filter(l => l.status === 'contacted').length;
+    const interview = agencyLeads.filter(l => l.status === 'interview').length;
+    const rejected = agencyLeads.filter(l => l.status === 'rejected').length;
+    return {
+      id: a.id,
+      name: a.name.length > 14 ? a.name.slice(0, 12) + '…' : a.name,
+      fullName: a.name,
+      total: agencyLeads.length,
+      hired,
+      contacted,
+      interview,
+      rejected,
+      conversion: agencyLeads.length > 0 ? ((hired / agencyLeads.length) * 100).toFixed(0) : '0',
+    };
+  }).sort((a, b) => b.total - a.total);
 
   const employeeData = employees.map(e => ({
     name: e.name.split(' ')[0],
