@@ -81,7 +81,24 @@ const defaultIntegrations: Integration[] = [
   },
 ];
 
-export default function Settings() {
+function ToggleRow({ label, description, checked, onChange, icon }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void; icon?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b last:border-0">
+      <div className="flex items-center gap-2.5">
+        {icon && <span className="text-muted-foreground">{icon}</span>}
+        <div>
+          <p className="text-sm font-medium">{label}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      <button onClick={() => onChange(!checked)}
+        className={`relative h-6 w-11 rounded-full transition-colors ${checked ? 'bg-primary' : 'bg-muted'}`}>
+        <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5' : ''}`} />
+      </button>
+    </div>
+  );
+}
+
   const { toast } = useToast();
   const { appointmentSettings, updateAppointmentSettings } = useLeads();
   const [integrations, setIntegrations] = useState<Integration[]>(defaultIntegrations);
