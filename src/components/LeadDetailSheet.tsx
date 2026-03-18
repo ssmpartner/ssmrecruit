@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import { useLeads, type ActivityEntry } from '@/context/LeadsContext';
 import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import { lookupPlz, searchPlz, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
-import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity } from 'lucide-react';
+import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus } from 'lucide-react';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview', 'hired', 'rejected'];
 
@@ -15,15 +19,31 @@ const activityIcon: Record<ActivityEntry['type'], typeof Clock> = {
   assignment: UserCog,
   edit: Edit3,
   note: MessageSquare,
+  appointment: CalendarIcon,
 };
 
+const appointmentTypeConfig = {
+  phone: { label: 'Telefon', icon: Phone },
+  video: { label: 'Video-Call', icon: Video },
+  onsite: { label: 'Vor Ort', icon: Building2 },
+} as const;
+
 export default function LeadDetailSheet() {
-  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies } = useLeads();
+  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment } = useLeads();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
   const [showPlzDropdown, setShowPlzDropdown] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '' });
+
+  // Appointment form
+  const [showAptForm, setShowAptForm] = useState(false);
+  const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
+
+  const leadAppointments = useMemo(() =>
+    selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
+    [selectedLead, appointments]
+  );
 
   const open = !!selectedLead;
 
