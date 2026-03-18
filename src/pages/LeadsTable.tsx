@@ -1,10 +1,13 @@
 import { useState, useMemo } from 'react';
 import { Download, Upload, Filter } from 'lucide-react';
-import { leads, agencies, employees, type LeadStatus, type LeadSource, statusConfig, sourceConfig } from '@/lib/mock-data';
+import { agencies, employees, type LeadStatus, type LeadSource, statusConfig, sourceConfig } from '@/lib/mock-data';
+import { useLeads } from '@/context/LeadsContext';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
+import LeadDetailSheet from '@/components/LeadDetailSheet';
 
 export default function LeadsTable() {
+  const { leads, setSelectedLead } = useLeads();
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
   const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
   const [agencyFilter, setAgencyFilter] = useState('');
@@ -18,7 +21,7 @@ export default function LeadsTable() {
       if (search && !l.name.toLowerCase().includes(search.toLowerCase()) && !l.email.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [statusFilter, sourceFilter, agencyFilter, search]);
+  }, [leads, statusFilter, sourceFilter, agencyFilter, search]);
 
   const exportCSV = () => {
     const header = 'Name,Email,Phone,Position,Source,Status,Agency,Employee,Date\n';
@@ -51,7 +54,6 @@ export default function LeadsTable() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4 shadow-sm">
         <Filter className="h-4 w-4 text-muted-foreground" />
         <input
@@ -74,7 +76,6 @@ export default function LeadsTable() {
         </select>
       </div>
 
-      {/* Table */}
       <div className="rounded-xl border bg-card shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -94,7 +95,11 @@ export default function LeadsTable() {
               const emp = employees.find(e => e.id === lead.employeeId);
               const agency = agencies.find(a => a.id === lead.agencyId);
               return (
-                <tr key={lead.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                <tr
+                  key={lead.id}
+                  onClick={() => setSelectedLead(lead)}
+                  className="cursor-pointer border-b last:border-0 hover:bg-muted/50 transition-colors"
+                >
                   <td className="px-6 py-3 font-medium">{lead.name}</td>
                   <td className="px-6 py-3 text-muted-foreground">{lead.email}</td>
                   <td className="px-6 py-3 text-muted-foreground">{lead.position}</td>
@@ -109,6 +114,8 @@ export default function LeadsTable() {
           </tbody>
         </table>
       </div>
+
+      <LeadDetailSheet />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { LeadsProvider } from "./context/LeadsContext";
 import AppLayout from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Pipeline from "./pages/Pipeline";
@@ -19,19 +20,21 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/pipeline" element={<Pipeline />} />
-            <Route path="/leads" element={<LeadsTable />} />
-            <Route path="/agencies" element={<Agencies />} />
-            <Route path="/employees" element={<Employees />} />
-            <Route path="/analytics" element={<Analytics />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <LeadsProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/pipeline" element={<Pipeline />} />
+              <Route path="/leads" element={<LeadsTable />} />
+              <Route path="/agencies" element={<Agencies />} />
+              <Route path="/employees" element={<Employees />} />
+              <Route path="/analytics" element={<Analytics />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </LeadsProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

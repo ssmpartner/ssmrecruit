@@ -1,25 +1,27 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { leads, agencies, employees, sourceConfig, statusConfig } from '@/lib/mock-data';
-
-const agencyData = agencies.map(a => ({
-  name: a.name,
-  total: leads.filter(l => l.agencyId === a.id).length,
-  hired: leads.filter(l => l.agencyId === a.id && l.status === 'hired').length,
-}));
-
-const employeeData = employees.map(e => ({
-  name: e.name.split(' ')[0],
-  leads: leads.filter(l => l.employeeId === e.id).length,
-  hired: leads.filter(l => l.employeeId === e.id && l.status === 'hired').length,
-}));
-
-const weeklyData = Array.from({ length: 8 }, (_, i) => ({
-  week: `W${i + 1}`,
-  leads: Math.floor(Math.random() * 10) + 5,
-  hired: Math.floor(Math.random() * 4) + 1,
-}));
+import { useLeads } from '@/context/LeadsContext';
+import { agencies, employees, sourceConfig, statusConfig } from '@/lib/mock-data';
 
 export default function Analytics() {
+  const { leads } = useLeads();
+
+  const agencyData = agencies.map(a => ({
+    name: a.name,
+    total: leads.filter(l => l.agencyId === a.id).length,
+    hired: leads.filter(l => l.agencyId === a.id && l.status === 'hired').length,
+  }));
+
+  const employeeData = employees.map(e => ({
+    name: e.name.split(' ')[0],
+    leads: leads.filter(l => l.employeeId === e.id).length,
+    hired: leads.filter(l => l.employeeId === e.id && l.status === 'hired').length,
+  }));
+
+  const weeklyData = Array.from({ length: 8 }, (_, i) => ({
+    week: `W${i + 1}`,
+    leads: Math.floor(Math.random() * 10) + 5,
+    hired: Math.floor(Math.random() * 4) + 1,
+  }));
   return (
     <div className="space-y-6">
       <div>
