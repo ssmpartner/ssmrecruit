@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Loader2, GitMerge, Eye } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
 import { supabase } from '@/integrations/supabase/client';
