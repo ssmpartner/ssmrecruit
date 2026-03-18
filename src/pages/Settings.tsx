@@ -870,10 +870,7 @@ function ApiKeysTab({ toast }: any) {
         <div className="rounded-lg bg-accent p-2 shrink-0"><Globe className="h-4 w-4 text-accent-foreground" /></div>
         <div>
           <p className="text-sm font-medium">API-Dokumentation</p>
-          <p className="text-xs text-muted-foreground mb-2">Vollständige REST API Referenz mit allen Endpunkten, Parametern und Code-Beispielen.</p>
-          <a href="/api" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
-            Zur API-Dokumentation <ExternalLink className="h-3 w-3" />
-          </a>
+          <p className="text-xs text-muted-foreground">Vollständige REST API Referenz – wechseln Sie zum Tab „API-Dokumentation" in der linken Navigation.</p>
         </div>
       </div>
 
