@@ -18,6 +18,7 @@ export default function LeadsTable() {
   const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
   const [agencyFilter, setAgencyFilter] = useState('');
   const [cantonFilter, setCantonFilter] = useState('');
+  const [employeeFilter, setEmployeeFilter] = useState('');
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
