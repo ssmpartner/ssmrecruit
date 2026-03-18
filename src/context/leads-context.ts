@@ -30,6 +30,10 @@ export interface LeadsContextType {
   updateAppointmentSettings: (updates: Partial<AppointmentSettings>) => void;
   updateInsightsSettings: (updates: Partial<InsightsSettings>) => void;
   updateLead: (id: string, updates: Partial<Lead>) => void;
+  archiveLead: (id: string) => void;
+  deleteLead: (id: string) => void;
+  restoreLead: (id: string) => void;
+  mergeLead: (keepId: string, removeId: string, mergedData: Partial<Lead>) => void;
   addLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => void;
   addActivity: (leadId: string, type: ActivityEntry['type'], description: string) => void;
   addAppointment: (apt: Omit<Appointment, 'id' | 'createdAt' | 'meetingLink'>) => void;

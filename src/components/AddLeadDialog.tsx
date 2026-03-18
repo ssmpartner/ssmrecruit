@@ -100,6 +100,7 @@ export default function AddLeadDialog() {
       agencyId: form.agencyId,
       employeeId: form.employeeId,
       notes: form.notes.trim(),
+      lifecycle: 'active',
     });
     // Find the newly created lead ID (latest one)
     setTimeout(() => {
