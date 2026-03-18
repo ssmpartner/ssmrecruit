@@ -112,7 +112,7 @@ export default function Settings() {
 
   const testWebhook = async (integration: Integration) => {
     if (!integration.zapierWebhook.trim()) {
-      toast({ title: 'Error', description: 'No webhook URL configured', variant: 'destructive' });
+      toast({ title: 'Fehler', description: 'Keine Webhook-URL konfiguriert', variant: 'destructive' });
       return;
     }
 
@@ -129,14 +129,14 @@ export default function Settings() {
           lead: {
             name: 'Test Lead',
             email: 'test@example.com',
-            phone: '+1 555-0000',
+            phone: '+41 44 000 00 00',
             source: integration.id,
           },
         }),
       });
-      toast({ title: 'Test sent', description: 'Check your Zap history to confirm it was triggered.' });
+      toast({ title: 'Test gesendet', description: 'Prüfen Sie Ihren Zap-Verlauf, ob er ausgelöst wurde.' });
     } catch {
-      toast({ title: 'Error', description: 'Failed to send test. Check the webhook URL.', variant: 'destructive' });
+      toast({ title: 'Fehler', description: 'Test fehlgeschlagen. Prüfen Sie die Webhook-URL.', variant: 'destructive' });
     }
   };
 
