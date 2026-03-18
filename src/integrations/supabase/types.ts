@@ -14,6 +14,321 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          lead_id: string
+          type: string
+          user: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id: string
+          lead_id: string
+          type: string
+          user?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          lead_id?: string
+          type?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agencies: {
+        Row: {
+          contact_email: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          contact_email: string
+          created_at?: string
+          id: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      appointments: {
+        Row: {
+          created_at: string
+          created_by: string
+          date: string
+          duration: number
+          id: string
+          lead_id: string
+          meeting_link: string | null
+          notes: string
+          time: string
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          date: string
+          duration?: number
+          id: string
+          lead_id: string
+          meeting_link?: string | null
+          notes?: string
+          time: string
+          title: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          date?: string
+          duration?: number
+          id?: string
+          lead_id?: string
+          meeting_link?: string | null
+          notes?: string
+          time?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disc_results: {
+        Row: {
+          answers: Json
+          completed_at: string
+          dominant_type: string
+          id: string
+          lead_id: string
+          scores: Json
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string
+          dominant_type: string
+          id: string
+          lead_id: string
+          scores?: Json
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string
+          dominant_type?: string
+          id?: string
+          lead_id?: string
+          scores?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disc_results_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          agency_id: string
+          avatar: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          agency_id: string
+          avatar?: string | null
+          created_at?: string
+          email: string
+          id: string
+          name: string
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string
+          avatar?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          address: string
+          agency_id: string
+          canton: string
+          canton_code: string
+          city: string
+          created_at: string
+          email: string
+          employee_id: string
+          id: string
+          name: string
+          notes: string
+          phone: string
+          plz: string
+          position: string
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string
+          agency_id: string
+          canton?: string
+          canton_code?: string
+          city?: string
+          created_at?: string
+          email: string
+          employee_id: string
+          id: string
+          name: string
+          notes?: string
+          phone?: string
+          plz?: string
+          position?: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          agency_id?: string
+          canton?: string
+          canton_code?: string
+          city?: string
+          created_at?: string
+          email?: string
+          employee_id?: string
+          id?: string
+          name?: string
+          notes?: string
+          phone?: string
+          plz?: string
+          position?: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          lead_id: string | null
+          read: boolean
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          lead_id?: string | null
+          read?: boolean
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          lead_id?: string | null
+          read?: boolean
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           agency_id: string

@@ -1,8 +1,5 @@
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useState, useEffect, type ReactNode } from 'react';
 import {
-  leads as initialLeads,
-  employees as initialEmployees,
-  agencies as initialAgencies,
   type Lead,
   type Employee,
   type Agency,
@@ -18,66 +15,172 @@ import {
 } from '@/lib/mock-data';
 import { LeadsContext, type ActivityEntry } from './leads-context';
 import { useNotifications } from './useNotifications';
+import { supabase } from '@/integrations/supabase/client';
 
-function seedActivities(leads: Lead[]): ActivityEntry[] {
-  const entries: ActivityEntry[] = [];
-  leads.forEach((lead) => {
-    entries.push({
-      id: `act-${lead.id}-1`,
-      leadId: lead.id,
-      type: 'status_change',
-      description: 'Lead erstellt mit Status "Neuer Lead"',
-      user: 'System',
-      timestamp: lead.createdAt,
-    });
+// Map DB row to app Lead type
+function dbToLead(row: any): Lead {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    address: row.address,
+    plz: row.plz,
+    city: row.city,
+    canton: row.canton,
+    cantonCode: row.canton_code,
+    source: row.source,
+    status: row.status,
+    agencyId: row.agency_id,
+    employeeId: row.employee_id,
+    position: row.position,
+    notes: row.notes,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
 
-    if (lead.status !== 'new') {
-      entries.push({
-        id: `act-${lead.id}-2`,
-        leadId: lead.id,
-        type: 'status_change',
-        description: `Status geändert zu "${lead.status}"`,
-        user: 'Sarah Chen',
-        timestamp: lead.updatedAt,
-      });
-    }
-  });
-  return entries;
+function dbToEmployee(row: any): Employee {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    role: row.role,
+    agencyId: row.agency_id,
+    avatar: row.avatar ?? undefined,
+  };
+}
+
+function dbToAgency(row: any): Agency {
+  return {
+    id: row.id,
+    name: row.name,
+    contactEmail: row.contact_email,
+  };
+}
+
+function dbToActivity(row: any): ActivityEntry {
+  return {
+    id: row.id,
+    leadId: row.lead_id,
+    type: row.type,
+    description: row.description,
+    user: row.user,
+    timestamp: row.created_at,
+  };
+}
+
+function dbToAppointment(row: any): Appointment {
+  return {
+    id: row.id,
+    leadId: row.lead_id,
+    title: row.title,
+    date: row.date,
+    time: row.time,
+    duration: row.duration,
+    type: row.type,
+    meetingLink: row.meeting_link ?? undefined,
+    notes: row.notes,
+    createdBy: row.created_by,
+    createdAt: row.created_at,
+  };
+}
+
+function dbToDiscResult(row: any): DiscResult {
+  return {
+    id: row.id,
+    leadId: row.lead_id,
+    scores: row.scores,
+    dominantType: row.dominant_type,
+    completedAt: row.completed_at,
+    answers: row.answers,
+  };
 }
 
 export function LeadsProvider({ children }: { children: ReactNode }) {
   const { addNotification } = useNotifications();
-  const [leads, setLeads] = useState<Lead[]>(initialLeads);
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
-  const [agencies, setAgencies] = useState<Agency[]>(initialAgencies);
-  const [activities, setActivities] = useState<ActivityEntry[]>(() => seedActivities(initialLeads));
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [agencies, setAgencies] = useState<Agency[]>([]);
+  const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [discResults, setDiscResults] = useState<DiscResult[]>([]);
   const [appointmentSettings, setAppointmentSettings] = useState<AppointmentSettings>(defaultAppointmentSettings);
   const [insightsSettings, setInsightsSettings] = useState<InsightsSettings>(defaultInsightsSettings);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const updateAppointmentSettings = useCallback((updates: Partial<AppointmentSettings>) => {
-    setAppointmentSettings((prev) => ({ ...prev, ...updates }));
+  // Load all data from Supabase on mount
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [leadsRes, employeesRes, agenciesRes, activitiesRes, appointmentsRes, discRes, settingsRes] = await Promise.all([
+          supabase.from('leads').select('*').order('created_at', { ascending: false }),
+          supabase.from('employees').select('*'),
+          supabase.from('agencies').select('*'),
+          supabase.from('activities').select('*').order('created_at', { ascending: false }),
+          supabase.from('appointments').select('*').order('created_at', { ascending: false }),
+          supabase.from('disc_results').select('*'),
+          supabase.from('app_settings').select('*'),
+        ]);
+
+        if (leadsRes.data) setLeads(leadsRes.data.map(dbToLead));
+        if (employeesRes.data) setEmployees(employeesRes.data.map(dbToEmployee));
+        if (agenciesRes.data) setAgencies(agenciesRes.data.map(dbToAgency));
+        if (activitiesRes.data) setActivities(activitiesRes.data.map(dbToActivity));
+        if (appointmentsRes.data) setAppointments(appointmentsRes.data.map(dbToAppointment));
+        if (discRes.data) setDiscResults(discRes.data.map(dbToDiscResult));
+
+        if (settingsRes.data) {
+          const aptSetting = settingsRes.data.find(s => s.key === 'appointment');
+          const insSetting = settingsRes.data.find(s => s.key === 'insights');
+          if (aptSetting?.value) setAppointmentSettings({ ...defaultAppointmentSettings, ...(aptSetting.value as any) });
+          if (insSetting?.value) setInsightsSettings({ ...defaultInsightsSettings, ...(insSetting.value as any) });
+        }
+      } catch (err) {
+        console.error('Error loading data:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
   }, []);
 
-  const updateInsightsSettings = useCallback((updates: Partial<InsightsSettings>) => {
-    setInsightsSettings((prev) => ({ ...prev, ...updates }));
-  }, []);
+  const updateAppointmentSettings = useCallback(async (updates: Partial<AppointmentSettings>) => {
+    const newSettings = { ...appointmentSettings, ...updates };
+    setAppointmentSettings(newSettings);
+    await supabase.from('app_settings').update({ value: newSettings as any }).eq('key', 'appointment');
+  }, [appointmentSettings]);
 
-  const addActivity = useCallback((leadId: string, type: ActivityEntry['type'], description: string) => {
-    setActivities((prev) => [{
-      id: `act-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+  const updateInsightsSettings = useCallback(async (updates: Partial<InsightsSettings>) => {
+    const newSettings = { ...insightsSettings, ...updates };
+    setInsightsSettings(newSettings);
+    await supabase.from('app_settings').update({ value: newSettings as any }).eq('key', 'insights');
+  }, [insightsSettings]);
+
+  const addActivity = useCallback(async (leadId: string, type: ActivityEntry['type'], description: string) => {
+    const id = `act-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const entry: ActivityEntry = {
+      id,
       leadId,
       type,
       description,
       user: 'Sarah Chen',
       timestamp: new Date().toISOString(),
-    }, ...prev]);
+    };
+    setActivities((prev) => [entry, ...prev]);
+    await supabase.from('activities').insert({
+      id,
+      lead_id: leadId,
+      type,
+      description,
+      user: 'Sarah Chen',
+    });
   }, []);
 
-  const updateLead = useCallback((id: string, updates: Partial<Lead>) => {
+  const updateLead = useCallback(async (id: string, updates: Partial<Lead>) => {
     const updatedAt = new Date().toISOString();
+
     setLeads((prev) => {
       const old = prev.find((l) => l.id === id);
       if (old && updates.status && updates.status !== old.status) {
@@ -91,37 +194,67 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       return prev.map((lead) => lead.id === id ? { ...lead, ...updates, updatedAt } : lead);
     });
     setSelectedLead((prev) => prev && prev.id === id ? { ...prev, ...updates, updatedAt } : prev);
+
+    // Map to DB columns
+    const dbUpdates: any = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.email !== undefined) dbUpdates.email = updates.email;
+    if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
+    if (updates.address !== undefined) dbUpdates.address = updates.address;
+    if (updates.plz !== undefined) dbUpdates.plz = updates.plz;
+    if (updates.city !== undefined) dbUpdates.city = updates.city;
+    if (updates.canton !== undefined) dbUpdates.canton = updates.canton;
+    if (updates.cantonCode !== undefined) dbUpdates.canton_code = updates.cantonCode;
+    if (updates.source !== undefined) dbUpdates.source = updates.source;
+    if (updates.status !== undefined) dbUpdates.status = updates.status;
+    if (updates.agencyId !== undefined) dbUpdates.agency_id = updates.agencyId;
+    if (updates.employeeId !== undefined) dbUpdates.employee_id = updates.employeeId;
+    if (updates.position !== undefined) dbUpdates.position = updates.position;
+    if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
+
+    await supabase.from('leads').update(dbUpdates).eq('id', id);
   }, [addNotification]);
 
-  const addLead = useCallback((leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addLead = useCallback(async (leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
     const id = `l${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const now = new Date().toISOString();
     const newLead: Lead = { ...leadData, id, createdAt: now, updatedAt: now };
     setLeads((prev) => [newLead, ...prev]);
     addActivity(id, 'status_change', `Lead "${leadData.name}" manuell erfasst`);
     addNotification({ type: 'lead_new', title: 'Neuer Lead', description: `${leadData.name} wurde erfasst.`, leadId: id });
+
+    await supabase.from('leads').insert({
+      id,
+      name: leadData.name,
+      email: leadData.email,
+      phone: leadData.phone,
+      address: leadData.address,
+      plz: leadData.plz,
+      city: leadData.city,
+      canton: leadData.canton,
+      canton_code: leadData.cantonCode,
+      source: leadData.source,
+      status: leadData.status,
+      agency_id: leadData.agencyId,
+      employee_id: leadData.employeeId,
+      position: leadData.position,
+      notes: leadData.notes,
+    });
   }, [addActivity, addNotification]);
 
   function generateMeetingLink(): string {
     const chars = 'abcdefghijklmnopqrstuvwxyz';
     const seg = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-
     if (appointmentSettings.videoProvider === 'custom' && appointmentSettings.customVideoBaseUrl) {
       return `${appointmentSettings.customVideoBaseUrl.replace(/\/$/, '')}/recruitflow-${seg()}-${seg()}-${seg()}`;
     }
-
     return `https://meet.jit.si/recruitflow-${seg()}-${seg()}-${seg()}`;
   }
 
-  const addAppointment = useCallback((aptData: Omit<Appointment, 'id' | 'createdAt' | 'meetingLink'>) => {
+  const addAppointment = useCallback(async (aptData: Omit<Appointment, 'id' | 'createdAt' | 'meetingLink'>) => {
     const id = `apt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const meetingLink = aptData.type === 'video' ? generateMeetingLink() : undefined;
-    const appointment: Appointment = {
-      ...aptData,
-      id,
-      meetingLink,
-      createdAt: new Date().toISOString(),
-    };
+    const appointment: Appointment = { ...aptData, id, meetingLink, createdAt: new Date().toISOString() };
 
     setAppointments((prev) => [appointment, ...prev]);
 
@@ -139,9 +272,22 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         addActivity(aptData.leadId, 'status_change', 'Status automatisch auf "Termin" gesetzt');
       }
     }
-  }, [addActivity, appointmentSettings, leads, updateLead]);
 
-  const removeAppointment = useCallback((id: string) => {
+    await supabase.from('appointments').insert({
+      id,
+      lead_id: aptData.leadId,
+      title: aptData.title,
+      date: aptData.date,
+      time: aptData.time,
+      duration: aptData.duration,
+      type: aptData.type,
+      meeting_link: meetingLink,
+      notes: aptData.notes,
+      created_by: aptData.createdBy,
+    });
+  }, [addActivity, appointmentSettings, leads, updateLead, addNotification]);
+
+  const removeAppointment = useCallback(async (id: string) => {
     setAppointments((prev) => {
       const appointment = prev.find((entry) => entry.id === id);
       if (appointment) {
@@ -150,19 +296,33 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       }
       return prev.filter((entry) => entry.id !== id);
     });
-  }, [addActivity]);
+    await supabase.from('appointments').delete().eq('id', id);
+  }, [addActivity, addNotification]);
 
-  const addEmployee = useCallback((employee: Omit<Employee, 'id'>) => {
+  const addEmployee = useCallback(async (employee: Omit<Employee, 'id'>) => {
     const id = `e${Date.now()}`;
     setEmployees((prev) => [...prev, { ...employee, id }]);
+    await supabase.from('employees').insert({
+      id,
+      name: employee.name,
+      email: employee.email,
+      role: employee.role,
+      agency_id: employee.agencyId,
+      avatar: employee.avatar,
+    });
   }, []);
 
-  const addAgency = useCallback((agency: Omit<Agency, 'id'>) => {
+  const addAgency = useCallback(async (agency: Omit<Agency, 'id'>) => {
     const id = `a${Date.now()}`;
     setAgencies((prev) => [...prev, { ...agency, id }]);
+    await supabase.from('agencies').insert({
+      id,
+      name: agency.name,
+      contact_email: agency.contactEmail,
+    });
   }, []);
 
-  const submitDiscTest = useCallback((leadId: string, answers: number[]) => {
+  const submitDiscTest = useCallback(async (leadId: string, answers: number[]) => {
     const scores: Record<DiscDimension, number> = { D: 0, I: 0, S: 0, C: 0 };
     const counts: Record<DiscDimension, number> = { D: 0, I: 0, S: 0, C: 0 };
 
@@ -179,8 +339,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     const dominantType = (Object.entries(normalized) as [DiscDimension, number][])
       .sort((a, b) => b[1] - a[1])[0][0];
 
+    const id = `disc-${Date.now()}`;
     const result: DiscResult = {
-      id: `disc-${Date.now()}`,
+      id,
       leadId,
       scores: normalized,
       dominantType,
@@ -190,21 +351,23 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
 
     setDiscResults((prev) => [...prev, result]);
     const lead = leads.find((e) => e.id === leadId);
-    addActivity(
-      leadId,
-      'note',
-      `DISC-Persönlichkeitstest abgeschlossen – Typ: ${dominantType} (D:${normalized.D}% I:${normalized.I}% S:${normalized.S}% C:${normalized.C}%)`,
-    );
+    addActivity(leadId, 'note', `DISC-Persönlichkeitstest abgeschlossen – Typ: ${dominantType} (D:${normalized.D}% I:${normalized.I}% S:${normalized.S}% C:${normalized.C}%)`);
     addNotification({ type: 'disc_completed', title: 'DISC-Test abgeschlossen', description: `${lead?.name ?? 'Lead'} – Typ: ${dominantType}`, leadId });
+
+    await supabase.from('disc_results').insert({
+      id,
+      lead_id: leadId,
+      scores: normalized as any,
+      dominant_type: dominantType,
+      answers: answers as any,
+    });
   }, [addActivity, addNotification, leads]);
 
   const sendAppointmentNotification = useCallback((appointmentId: string) => {
     const appointment = appointments.find((entry) => entry.id === appointmentId);
     if (!appointment) return;
-
     const lead = leads.find((entry) => entry.id === appointment.leadId);
     if (!lead) return;
-
     const methodLabels = { email: 'E-Mail', sms: 'SMS', whatsapp: 'WhatsApp' } as const;
     addActivity(
       appointment.leadId,
@@ -237,6 +400,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         setSelectedLead,
         addEmployee,
         addAgency,
+        loading,
       }}
     >
       {children}

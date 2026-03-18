@@ -4,7 +4,6 @@ import type {
   Employee,
   Agency,
   Appointment,
-  NotificationMethod,
   AppointmentSettings,
   DiscResult,
   InsightsSettings,
@@ -41,6 +40,7 @@ export interface LeadsContextType {
   setSelectedLead: (lead: Lead | null) => void;
   addEmployee: (emp: Omit<Employee, 'id'>) => void;
   addAgency: (ag: Omit<Agency, 'id'>) => void;
+  loading: boolean;
 }
 
 export const LeadsContext = createContext<LeadsContextType | null>(null);

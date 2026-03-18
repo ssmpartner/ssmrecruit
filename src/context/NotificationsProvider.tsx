@@ -1,30 +1,39 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   NotificationsContext,
   defaultNotificationPreferences,
   type AppNotification,
   type NotificationPreferences,
 } from './notifications-context';
-
-function seedNotifications(): AppNotification[] {
-  const now = Date.now();
-  return [
-    { id: 'n1', type: 'lead_new', title: 'Neuer Lead eingegangen', description: 'Lukas Müller wurde über Meta Ads erfasst.', leadId: 'l1', read: false, createdAt: new Date(now - 1000 * 60 * 5).toISOString() },
-    { id: 'n2', type: 'appointment_created', title: 'Termin erstellt', description: 'Video-Call mit Anna Meier am 20.03.2026 um 14:00.', leadId: 'l2', read: false, createdAt: new Date(now - 1000 * 60 * 30).toISOString() },
-    { id: 'n3', type: 'lead_status_change', title: 'Status geändert', description: 'Thomas Schneider wurde auf "Gespräch 1" gesetzt.', leadId: 'l3', read: false, createdAt: new Date(now - 1000 * 60 * 60).toISOString() },
-    { id: 'n4', type: 'disc_completed', title: 'DISC-Test abgeschlossen', description: 'Laura Fischer hat den Persönlichkeitstest abgeschlossen (Typ: I).', leadId: 'l4', read: true, createdAt: new Date(now - 1000 * 60 * 60 * 3).toISOString() },
-    { id: 'n5', type: 'system', title: 'Willkommen bei RecruitFlow', description: 'Ihr Benachrichtigungscenter ist aktiv. Konfigurieren Sie Ihre Präferenzen in den Einstellungen.', read: true, createdAt: new Date(now - 1000 * 60 * 60 * 24).toISOString() },
-  ];
-}
+import { supabase } from '@/integrations/supabase/client';
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
-  const [notifications, setNotifications] = useState<AppNotification[]>(seedNotifications);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [preferences, setPreferences] = useState<NotificationPreferences>(defaultNotificationPreferences);
+
+  // Load notifications from DB
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(50);
+      if (data) {
+        setNotifications(data.map(n => ({
+          id: n.id,
+          type: n.type as any,
+          title: n.title,
+          description: n.description,
+          leadId: n.lead_id ?? undefined,
+          read: n.read,
+          createdAt: n.created_at,
+        })));
+      }
+    }
+    load();
+  }, []);
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
 
   const addNotification = useCallback(
-    (data: Omit<AppNotification, 'id' | 'read' | 'createdAt'>) => {
+    async (data: Omit<AppNotification, 'id' | 'read' | 'createdAt'>) => {
       if (!preferences.enabled) return;
 
       const typeMap: Record<string, keyof NotificationPreferences> = {
@@ -41,29 +50,41 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       const prefKey = typeMap[data.type];
       if (prefKey && !preferences[prefKey]) return;
 
-      setNotifications((prev) => [
-        {
-          ...data,
-          id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          read: false,
-          createdAt: new Date().toISOString(),
-        },
-        ...prev,
-      ]);
+      const { data: inserted, error } = await supabase.from('notifications').insert({
+        type: data.type,
+        title: data.title,
+        description: data.description,
+        lead_id: data.leadId,
+      }).select().single();
+
+      if (inserted && !error) {
+        setNotifications((prev) => [{
+          id: inserted.id,
+          type: inserted.type as any,
+          title: inserted.title,
+          description: inserted.description,
+          leadId: inserted.lead_id ?? undefined,
+          read: inserted.read,
+          createdAt: inserted.created_at,
+        }, ...prev]);
+      }
     },
     [preferences],
   );
 
-  const markAsRead = useCallback((id: string) => {
+  const markAsRead = useCallback(async (id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    await supabase.from('notifications').update({ read: true }).eq('id', id);
   }, []);
 
-  const markAllAsRead = useCallback(() => {
+  const markAllAsRead = useCallback(async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    await supabase.from('notifications').update({ read: true }).eq('read', false);
   }, []);
 
-  const clearAll = useCallback(() => {
+  const clearAll = useCallback(async () => {
     setNotifications([]);
+    await supabase.from('notifications').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   }, []);
 
   const updatePreferences = useCallback((updates: Partial<NotificationPreferences>) => {
