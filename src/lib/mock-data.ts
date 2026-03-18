@@ -1,4 +1,4 @@
-export type LeadStatus = 'new' | 'contacted' | 'appointment' | 'interview' | 'hired' | 'rejected';
+export type LeadStatus = 'new' | 'contacted' | 'appointment' | 'interview_1' | 'interview_2' | 'hired' | 'rejected';
 export type LeadSource = 'website' | 'tiktok' | 'meta' | 'linkedin' | 'csv_import';
 
 export interface Lead {
@@ -25,9 +25,9 @@ export interface Appointment {
   id: string;
   leadId: string;
   title: string;
-  date: string; // ISO date
-  time: string; // HH:mm
-  duration: number; // minutes
+  date: string;
+  time: string;
+  duration: number;
   type: 'phone' | 'video' | 'onsite';
   notes: string;
   createdBy: string;
@@ -49,17 +49,36 @@ export interface Employee {
   avatar?: string;
 }
 
+// Ordered status flow for employees
+export const statusFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'interview_2', 'hired', 'rejected'];
+
+// Which statuses an employee can move to from a given status
+export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boolean): LeadStatus[] {
+  if (isAdmin) return statusFlow;
+  const flowMap: Record<LeadStatus, LeadStatus[]> = {
+    new: ['contacted'],
+    contacted: ['appointment'],
+    appointment: ['interview_1', 'rejected'],
+    interview_1: ['interview_2', 'rejected'],
+    interview_2: ['hired', 'rejected'],
+    hired: [],
+    rejected: [],
+  };
+  return flowMap[currentStatus] || [];
+}
+
 export const statusConfig: Record<LeadStatus, { label: string; color: string }> = {
   new: { label: 'Neuer Lead', color: 'bg-info text-info-foreground' },
   contacted: { label: 'Kontaktiert', color: 'bg-warning text-warning-foreground' },
-  appointment: { label: 'Termin', color: 'bg-primary text-primary-foreground' },
-  interview: { label: 'Interview', color: 'bg-accent text-accent-foreground' },
+  appointment: { label: 'Terminiert', color: 'bg-primary text-primary-foreground' },
+  interview_1: { label: 'Vorstellungsgespräch 1', color: 'bg-accent text-accent-foreground' },
+  interview_2: { label: 'Vorstellungsgespräch 2', color: 'bg-secondary text-secondary-foreground' },
   hired: { label: 'Eingestellt', color: 'bg-success text-success-foreground' },
   rejected: { label: 'Abgelehnt', color: 'bg-destructive text-destructive-foreground' },
 };
 
 export const sourceConfig: Record<LeadSource, { label: string; icon: string }> = {
-  website: { label: 'Website', icon: 'Globe' },
+  website: { label: 'Webseite', icon: 'Globe' },
   tiktok: { label: 'TikTok', icon: 'Music' },
   meta: { label: 'Meta Ads', icon: 'Facebook' },
   linkedin: { label: 'LinkedIn', icon: 'Linkedin' },
@@ -110,9 +129,9 @@ const swissLeadData = [
   { plz: '8610', city: 'Uster', canton: 'Zürich', cantonCode: 'ZH', address: 'Bankstrasse 16' },
 ];
 
-const positions = ['Frontend Developer', 'Backend Engineer', 'Product Manager', 'UX Designer', 'Data Analyst', 'DevOps Engineer', 'QA Engineer', 'Full Stack Developer', 'Marketing Manager', 'Sales Representative'];
+const positions = ['Frontend Entwickler', 'Backend Ingenieur', 'Projektleiter', 'UX Designer', 'Datenanalyst', 'DevOps Ingenieur', 'QA Ingenieur', 'Fullstack Entwickler', 'Marketing Manager', 'Verkaufsberater'];
 
-const statuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview', 'hired', 'rejected'];
+const statuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'interview_2', 'hired', 'rejected'];
 const sources: LeadSource[] = ['website', 'tiktok', 'meta', 'linkedin', 'csv_import'];
 
 export const leads: Lead[] = swissNames.map((name, i) => {

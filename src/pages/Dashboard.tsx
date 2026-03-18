@@ -7,13 +7,13 @@ import LeadDetailSheet from '@/components/LeadDetailSheet';
 import { useLeads } from '@/context/LeadsContext';
 import { statusConfig } from '@/lib/mock-data';
 
-const PIE_COLORS = ['hsl(217, 91%, 60%)', 'hsl(330, 80%, 55%)', 'hsl(166, 72%, 40%)', 'hsl(38, 92%, 50%)', 'hsl(270, 60%, 55%)'];
+const PIE_COLORS = ['hsl(217, 91%, 60%)', 'hsl(330, 80%, 55%)', 'hsl(166, 72%, 40%)', 'hsl(38, 92%, 50%)', 'hsl(270, 60%, 55%)', 'hsl(142, 71%, 45%)', 'hsl(0, 72%, 51%)'];
 
 export default function Dashboard() {
   const { leads, employees, setSelectedLead } = useLeads();
 
   const sourceData = [
-    { name: 'Website', value: leads.filter(l => l.source === 'website').length },
+    { name: 'Webseite', value: leads.filter(l => l.source === 'website').length },
     { name: 'TikTok', value: leads.filter(l => l.source === 'tiktok').length },
     { name: 'Meta', value: leads.filter(l => l.source === 'meta').length },
     { name: 'LinkedIn', value: leads.filter(l => l.source === 'linkedin').length },
@@ -26,25 +26,25 @@ export default function Dashboard() {
   }));
 
   const hiredCount = leads.filter(l => l.status === 'hired').length;
-  const conversionRate = ((hiredCount / leads.length) * 100).toFixed(1);
+  const conversionRate = leads.length > 0 ? ((hiredCount / leads.length) * 100).toFixed(1) : '0';
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your recruiting pipeline</p>
+        <p className="text-muted-foreground">Übersicht Ihrer Recruiting-Pipeline</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Users} title="Total Leads" value={leads.length} change="12% vs last month" positive />
-        <StatCard icon={UserCheck} title="Hired" value={hiredCount} change="8% vs last month" positive />
-        <StatCard icon={Target} title="Conversion Rate" value={`${conversionRate}%`} />
-        <StatCard icon={Clock} title="Avg. Processing" value="4.2 days" change="0.5 days faster" positive />
+        <StatCard icon={Users} title="Leads gesamt" value={leads.length} change="12% ggü. Vormonat" positive />
+        <StatCard icon={UserCheck} title="Eingestellt" value={hiredCount} change="8% ggü. Vormonat" positive />
+        <StatCard icon={Target} title="Konversionsrate" value={`${conversionRate}%`} />
+        <StatCard icon={Clock} title="Ø Bearbeitungszeit" value="4.2 Tage" change="0.5 Tage schneller" positive />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border bg-card p-6 shadow-sm">
-          <h3 className="text-base font-semibold mb-4">Leads by Source</h3>
+          <h3 className="text-base font-semibold mb-4">Leads nach Quelle</h3>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={sourceData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
@@ -57,7 +57,7 @@ export default function Dashboard() {
         </div>
 
         <div className="rounded-xl border bg-card p-6 shadow-sm">
-          <h3 className="text-base font-semibold mb-4">Pipeline Distribution</h3>
+          <h3 className="text-base font-semibold mb-4">Pipeline-Verteilung</h3>
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
               <Pie data={statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={4} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
@@ -73,8 +73,8 @@ export default function Dashboard() {
 
       <div className="rounded-xl border bg-card shadow-sm">
         <div className="flex items-center justify-between p-6 pb-4">
-          <h3 className="text-base font-semibold">Recent Leads</h3>
-          <a href="/leads" className="text-sm font-medium text-primary hover:underline">View all →</a>
+          <h3 className="text-base font-semibold">Neueste Leads</h3>
+          <a href="/leads" className="text-sm font-medium text-primary hover:underline">Alle anzeigen →</a>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -82,10 +82,10 @@ export default function Dashboard() {
               <tr className="border-t text-left text-muted-foreground">
                 <th className="px-6 py-3 font-medium">Name</th>
                 <th className="px-6 py-3 font-medium">Position</th>
-                <th className="px-6 py-3 font-medium">Source</th>
+                <th className="px-6 py-3 font-medium">Quelle</th>
                 <th className="px-6 py-3 font-medium">Status</th>
-                <th className="px-6 py-3 font-medium">Assigned To</th>
-                <th className="px-6 py-3 font-medium">Date</th>
+                <th className="px-6 py-3 font-medium">Zugewiesen</th>
+                <th className="px-6 py-3 font-medium">Datum</th>
               </tr>
             </thead>
             <tbody>
@@ -102,7 +102,7 @@ export default function Dashboard() {
                     <td className="px-6 py-3"><SourceBadge source={lead.source} /></td>
                     <td className="px-6 py-3"><LeadStatusBadge status={lead.status} /></td>
                     <td className="px-6 py-3 text-muted-foreground">{emp?.name ?? '—'}</td>
-                    <td className="px-6 py-3 text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-3 text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString('de-CH')}</td>
                   </tr>
                 );
               })}

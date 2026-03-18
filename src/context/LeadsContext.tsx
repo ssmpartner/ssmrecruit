@@ -51,7 +51,7 @@ function seedActivities(leads: Lead[]): ActivityEntry[] {
       id: `act-${lead.id}-1`,
       leadId: lead.id,
       type: 'status_change',
-      description: `Lead created with status "New Lead"`,
+      description: `Lead erstellt mit Status "Neuer Lead"`,
       user: 'System',
       timestamp: lead.createdAt,
     });
@@ -60,7 +60,7 @@ function seedActivities(leads: Lead[]): ActivityEntry[] {
         id: `act-${lead.id}-2`,
         leadId: lead.id,
         type: 'status_change',
-        description: `Status changed to "${lead.status}"`,
+        description: `Status geändert zu "${lead.status}"`,
         user: 'Sarah Chen',
         timestamp: lead.updatedAt,
       });

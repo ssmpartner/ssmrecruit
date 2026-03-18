@@ -6,13 +6,13 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { useLeads, type ActivityEntry } from '@/context/LeadsContext';
-import { statusConfig, type LeadStatus } from '@/lib/mock-data';
+import { statusConfig, getAllowedNextStatuses, type LeadStatus } from '@/lib/mock-data';
 import { lookupPlz, searchPlz, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus } from 'lucide-react';
 
-const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview', 'hired', 'rejected'];
+const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'interview_2', 'hired', 'rejected'];
 
 const activityIcon: Record<ActivityEntry['type'], typeof Clock> = {
   status_change: ArrowRight,
@@ -406,18 +406,44 @@ export default function LeadDetailSheet() {
 
                 <TabsContent value="status" className="mt-4 space-y-6">
                   <section>
-                    <h4 className="text-sm font-semibold mb-3">Status ändern</h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {statusKeys.map(s => (
-                        <button key={s} onClick={() => changeStatus(s)}
-                          className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${
-                            selectedLead.status === s
-                              ? 'bg-primary text-primary-foreground border-primary'
-                              : 'bg-secondary text-secondary-foreground border-transparent hover:border-primary/30'
-                          }`}>
-                          {statusConfig[s].label}
-                        </button>
-                      ))}
+                    <h4 className="text-sm font-semibold mb-2">Status ändern</h4>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Admin/Superadmin: freie Statuswahl · Mitarbeiter: gemäss Prozessablauf
+                    </p>
+                    {/* Admin view: all statuses */}
+                    <div className="mb-3">
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5">Admin-Ansicht (frei wählbar)</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {statusKeys.map(s => (
+                          <button key={s} onClick={() => changeStatus(s)}
+                            className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${
+                              selectedLead.status === s
+                                ? 'bg-primary text-primary-foreground border-primary'
+                                : 'bg-secondary text-secondary-foreground border-transparent hover:border-primary/30'
+                            }`}>
+                            {statusConfig[s].label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Employee view: process-based */}
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5">Mitarbeiter-Ansicht (nächster Schritt)</p>
+                      {(() => {
+                        const allowed = getAllowedNextStatuses(selectedLead.status, false);
+                        return allowed.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {allowed.map(s => (
+                              <button key={s} onClick={() => changeStatus(s)}
+                                className="rounded-full px-3 py-1.5 text-xs font-medium border border-primary/30 bg-primary/5 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors">
+                                → {statusConfig[s].label}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground italic">Keine weiteren Statusänderungen möglich (Endstatus erreicht)</p>
+                        );
+                      })()}
                     </div>
                   </section>
 

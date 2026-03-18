@@ -1,10 +1,10 @@
 import { useLeads } from '@/context/LeadsContext';
-import { statusConfig, type LeadStatus } from '@/lib/mock-data';
+import { statusConfig, statusFlow, getAllowedNextStatuses, type LeadStatus } from '@/lib/mock-data';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 
-const pipelineStatuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview', 'hired', 'rejected'];
+const pipelineStatuses: LeadStatus[] = statusFlow;
 
 export default function Pipeline() {
   const { leads, employees, updateLead, addActivity, setSelectedLead } = useLeads();
@@ -16,14 +16,14 @@ export default function Pipeline() {
     const oldLabel = statusConfig[lead.status].label;
     const newLabel = statusConfig[newStatus].label;
     updateLead(leadId, { status: newStatus });
-    addActivity(leadId, 'status_change', `Status changed from "${oldLabel}" to "${newLabel}"`);
+    addActivity(leadId, 'status_change', `Status geändert: "${oldLabel}" → "${newLabel}"`);
   };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Pipeline</h1>
-        <p className="text-muted-foreground">Click a lead to view details and edit</p>
+        <p className="text-muted-foreground">Lead anklicken für Details und Bearbeitung</p>
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
@@ -57,7 +57,7 @@ export default function Pipeline() {
                       <div className="mt-2 flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">{emp?.name}</span>
                         <div className="flex gap-1">
-                          {idx > 0 && (
+                          {idx > 0 && status !== 'rejected' && (
                             <button
                               onClick={(e) => moveStatus(lead.id, pipelineStatuses[idx - 1], e)}
                               className="rounded px-1.5 py-0.5 text-xs bg-secondary hover:bg-muted text-muted-foreground transition-colors"
@@ -65,7 +65,7 @@ export default function Pipeline() {
                               ←
                             </button>
                           )}
-                          {idx < pipelineStatuses.length - 1 && (
+                          {idx < pipelineStatuses.length - 1 && status !== 'hired' && status !== 'rejected' && (
                             <button
                               onClick={(e) => moveStatus(lead.id, pipelineStatuses[idx + 1], e)}
                               className="rounded px-1.5 py-0.5 text-xs bg-secondary hover:bg-muted text-muted-foreground transition-colors"
@@ -79,7 +79,7 @@ export default function Pipeline() {
                   );
                 })}
                 {columnLeads.length === 0 && (
-                  <p className="py-8 text-center text-xs text-muted-foreground">No leads</p>
+                  <p className="py-8 text-center text-xs text-muted-foreground">Keine Leads</p>
                 )}
               </div>
             </div>
