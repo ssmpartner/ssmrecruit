@@ -129,16 +129,16 @@ export interface Employee {
 }
 
 // Ordered status flow for employees
-export const statusFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'interview_2', 'hired', 'rejected'];
+export const statusFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'insights', 'interview_2', 'hired', 'rejected'];
 
-// Which statuses an employee can move to from a given status
 export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boolean): LeadStatus[] {
   if (isAdmin) return statusFlow;
   const flowMap: Record<LeadStatus, LeadStatus[]> = {
     new: ['contacted'],
     contacted: ['appointment'],
     appointment: ['interview_1', 'rejected'],
-    interview_1: ['interview_2', 'rejected'],
+    interview_1: ['insights', 'rejected'],
+    insights: ['interview_2', 'rejected'],
     interview_2: ['hired', 'rejected'],
     hired: [],
     rejected: [],
@@ -150,8 +150,9 @@ export const statusConfig: Record<LeadStatus, { label: string; color: string }> 
   new: { label: 'Neuer Lead', color: 'bg-blue-50 text-blue-700 border border-blue-200' },
   contacted: { label: 'Kontaktiert', color: 'bg-amber-50 text-amber-700 border border-amber-200' },
   appointment: { label: 'Terminiert', color: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
-  interview_1: { label: 'Vorstellungsgespräch 1', color: 'bg-violet-50 text-violet-700 border border-violet-200' },
-  interview_2: { label: 'Vorstellungsgespräch 2', color: 'bg-indigo-50 text-indigo-700 border border-indigo-200' },
+  interview_1: { label: 'Gespräch 1', color: 'bg-violet-50 text-violet-700 border border-violet-200' },
+  insights: { label: 'Insights', color: 'bg-orange-50 text-orange-700 border border-orange-200' },
+  interview_2: { label: 'Gespräch 2', color: 'bg-indigo-50 text-indigo-700 border border-indigo-200' },
   hired: { label: 'Eingestellt', color: 'bg-green-50 text-green-700 border border-green-200' },
   rejected: { label: 'Abgelehnt', color: 'bg-red-50 text-red-700 border border-red-200' },
 };
