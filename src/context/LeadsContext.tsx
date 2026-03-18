@@ -10,6 +10,9 @@ import {
   type Appointment,
   type NotificationMethod,
   type AppointmentSettings,
+  type DiscResult,
+  type DiscDimension,
+  discQuestions,
   defaultAppointmentSettings,
 } from '@/lib/mock-data';
 
@@ -28,6 +31,7 @@ interface LeadsContextType {
   agencies: Agency[];
   activities: ActivityEntry[];
   appointments: Appointment[];
+  discResults: DiscResult[];
   appointmentSettings: AppointmentSettings;
   updateAppointmentSettings: (updates: Partial<AppointmentSettings>) => void;
   updateLead: (id: string, updates: Partial<Lead>) => void;
@@ -36,6 +40,7 @@ interface LeadsContextType {
   addAppointment: (apt: Omit<Appointment, 'id' | 'createdAt' | 'meetingLink'>) => void;
   removeAppointment: (id: string) => void;
   sendAppointmentNotification: (appointmentId: string) => void;
+  submitDiscTest: (leadId: string, answers: number[]) => void;
   selectedLead: Lead | null;
   setSelectedLead: (lead: Lead | null) => void;
   addEmployee: (emp: Omit<Employee, 'id'>) => void;
@@ -81,6 +86,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const [agencies, setAgencies] = useState<Agency[]>(initialAgencies);
   const [activities, setActivities] = useState<ActivityEntry[]>(() => seedActivities(initialLeads));
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [discResults, setDiscResults] = useState<DiscResult[]>([]);
   const [appointmentSettings, setAppointmentSettings] = useState<AppointmentSettings>(defaultAppointmentSettings);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
@@ -159,6 +165,30 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     setAgencies(prev => [...prev, { ...ag, id }]);
   }, []);
 
+  const submitDiscTest = useCallback((leadId: string, answers: number[]) => {
+    const scores: Record<DiscDimension, number> = { D: 0, I: 0, S: 0, C: 0 };
+    const counts: Record<DiscDimension, number> = { D: 0, I: 0, S: 0, C: 0 };
+    discQuestions.forEach((q, i) => {
+      scores[q.dimension] += answers[i] ?? 3;
+      counts[q.dimension]++;
+    });
+    const normalized: Record<DiscDimension, number> = { D: 0, I: 0, S: 0, C: 0 };
+    (Object.keys(scores) as DiscDimension[]).forEach(d => {
+      normalized[d] = Math.round((scores[d] / (counts[d] * 5)) * 100);
+    });
+    const dominantType = (Object.entries(normalized) as [DiscDimension, number][]).sort((a, b) => b[1] - a[1])[0][0];
+    const result: DiscResult = {
+      id: `disc-${Date.now()}`,
+      leadId,
+      scores: normalized,
+      dominantType,
+      completedAt: new Date().toISOString(),
+      answers,
+    };
+    setDiscResults(prev => [...prev, result]);
+    addActivity(leadId, 'note', `DISC-Persönlichkeitstest abgeschlossen – Typ: ${dominantType} (D:${normalized.D}% I:${normalized.I}% S:${normalized.S}% C:${normalized.C}%)`);
+  }, [addActivity]);
+
   const sendAppointmentNotification = useCallback((appointmentId: string) => {
     const apt = appointments.find(a => a.id === appointmentId);
     if (!apt) return;
@@ -169,7 +199,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   }, [appointments, leads, appointmentSettings.notificationMethod, addActivity]);
 
   return (
-    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, appointmentSettings, updateAppointmentSettings, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, selectedLead, setSelectedLead, addEmployee, addAgency }}>
+    <LeadsContext.Provider value={{ leads, employees, agencies, activities, appointments, discResults, appointmentSettings, updateAppointmentSettings, updateLead, addLead, addActivity, addAppointment, removeAppointment, sendAppointmentNotification, submitDiscTest, selectedLead, setSelectedLead, addEmployee, addAgency }}>
       {children}
     </LeadsContext.Provider>
   );
