@@ -624,6 +624,21 @@ export default function Processes() {
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${rule.enabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                           {rule.enabled ? 'Aktiv' : 'Inaktiv'}
                         </span>
+                        {rule.scope === 'global' && (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                            <Workflow className="h-2.5 w-2.5" /> Global
+                          </span>
+                        )}
+                        {rule.scope === 'agency' && (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
+                            <Building2 className="h-2.5 w-2.5" /> {agencies.find(a => a.id === rule.scopeAgencyId)?.name || 'Agentur'}
+                          </span>
+                        )}
+                        {rule.scope === 'employee' && (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
+                            <User className="h-2.5 w-2.5" /> {employees.find(e => e.id === rule.scopeEmployeeId)?.name || 'Mitarbeiter'}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 text-xs">
                         <div className="inline-flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1">
