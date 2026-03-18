@@ -68,13 +68,16 @@ const appFeatures = [
   ]},
   { category: 'Backend & Datenbank', icon: '🗄️', features: [
     { name: 'Lovable Cloud', desc: 'Vollständig persistente Datenbank für alle Module (Leads, Termine, Aufgaben, etc.).' },
-    { name: 'Row Level Security', desc: 'Sicherheitsrichtlinien auf Datenbankebene für alle Tabellen.' },
-    { name: 'Edge Functions', desc: 'Serverless Backend-Funktionen für KI-Aufgabengenerierung.' },
+    { name: 'Row Level Security', desc: 'Verschärfte Sicherheitsrichtlinien – nur authentifizierte Benutzer haben Datenbankzugriff.' },
+    { name: 'Edge Functions', desc: 'Serverless Backend-Funktionen für KI-Aufgabengenerierung und Benutzerverwaltung.' },
     { name: 'Echtzeit-Sync', desc: 'Automatische Datensynchronisation zwischen Frontend und Datenbank.' },
+    { name: 'Code-Splitting', desc: 'Lazy Loading aller Seiten für optimierte Ladezeiten und kleinere Bundle-Grössen.' },
   ]},
   { category: 'Administration', icon: '⚙️', features: [
-    { name: 'Benutzerverwaltung', desc: 'Benutzer mit Rollen (Superadmin, Admin, Backoffice, Analyst) verwalten.' },
+    { name: 'Benutzerverwaltung', desc: 'Superadmins können Benutzer erstellen, Rollen zuweisen und Konten löschen.' },
+    { name: 'Rollensystem', desc: 'Vier Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Backoffice, Analyst.' },
     { name: 'Einstellungen', desc: 'Zentrale Konfiguration für Benachrichtigungen, Termine, Integrationen und API.' },
+    { name: 'Profilverwaltung', desc: 'Benutzer können Name, E-Mail und Passwort in den Profileinstellungen ändern.' },
   ]},
 ];
 
