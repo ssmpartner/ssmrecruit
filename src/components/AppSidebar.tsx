@@ -1,10 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays } from 'lucide-react';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/pipeline', icon: Kanban, label: 'Pipeline' },
   { to: '/leads', icon: Table, label: 'Leads' },
+  { to: '/calendar', icon: CalendarDays, label: 'Kalender' },
   { to: '/agencies', icon: Building2, label: 'Agenturen' },
   { to: '/employees', icon: UserCog, label: 'Mitarbeiter' },
   { to: '/analytics', icon: BarChart3, label: 'Statistik' },
