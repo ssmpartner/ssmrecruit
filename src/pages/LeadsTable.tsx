@@ -48,10 +48,10 @@ export default function LeadsTable() {
     });
   }, [leads, statusFilter, sourceFilter, agencyFilter, employeeFilter, cantonFilter, search, dateFrom, dateTo]);
 
-  const hasFilters = statusFilter || sourceFilter || agencyFilter || cantonFilter || search || dateFrom || dateTo;
+  const hasFilters = statusFilter || sourceFilter || agencyFilter || employeeFilter || cantonFilter || search || dateFrom || dateTo;
 
   const clearFilters = () => {
-    setStatusFilter(''); setSourceFilter(''); setAgencyFilter(''); setCantonFilter(''); setSearch(''); setDateFrom(undefined); setDateTo(undefined);
+    setStatusFilter(''); setSourceFilter(''); setAgencyFilter(''); setEmployeeFilter(''); setCantonFilter(''); setSearch(''); setDateFrom(undefined); setDateTo(undefined);
   };
 
   const exportCSV = () => {
