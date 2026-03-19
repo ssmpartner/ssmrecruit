@@ -55,7 +55,7 @@ serve(async (req) => {
       });
     }
 
-    // 1. Get mandatory phase tasks
+    // Get mandatory phase tasks (system-only, no AI)
     const phaseTasks = (PHASE_TASKS[leadStatus] || []).map((t) => ({
       ...t,
       source: "system",
@@ -66,75 +66,11 @@ serve(async (req) => {
       status: "open",
     }));
 
-    // Filter out tasks that already exist for this lead+status
+    // Filter out tasks that already exist for this lead
     const existingTitles = new Set((existingTasks || []).map((t: any) => t.title));
     const newPhaseTasks = phaseTasks.filter((t) => !existingTitles.has(t.title));
 
-    // 2. Generate AI supplementary tasks
-    let aiTasks: any[] = [];
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-
-    if (LOVABLE_API_KEY) {
-      try {
-        const prompt = `Du bist ein Recruiting-Experte für den Schweizer Markt. Ein Lead befindet sich in der Phase "${leadStatus}".
-Lead-Name: ${leadName || "Unbekannt"}
-Position/Anrede: ${leadPosition || "Nicht angegeben"}
-Bereits vorhandene Aufgaben: ${[...existingTitles, ...newPhaseTasks.map(t => t.title)].join(", ") || "Keine"}
-
-Erstelle genau 2 zusätzliche, kontextbezogene Aufgaben die über die Standard-Prozessschritte hinausgehen.
-Jede Aufgabe soll praktisch und sofort umsetzbar sein.
-
-Antworte NUR mit einem JSON-Array mit genau 2 Objekten:
-[{"title": "...", "description": "...", "priority": "medium"}]
-
-Prioritäten: low, medium, high, urgent. Keine anderen Felder.`;
-
-        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-3-flash-preview",
-            messages: [
-              { role: "system", content: "Du bist ein Recruiting-Assistent. Antworte immer nur mit validem JSON." },
-              { role: "user", content: prompt },
-            ],
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const content = data.choices?.[0]?.message?.content || "";
-          const jsonMatch = content.match(/\[[\s\S]*\]/);
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            aiTasks = parsed.map((t: any) => ({
-              title: t.title,
-              description: t.description,
-              priority: t.priority || "medium",
-              source: "ai",
-              lead_id: leadId,
-              assigned_to: assignedTo,
-              agency_id: agencyId,
-              lead_status: leadStatus,
-              status: "open",
-            }));
-          }
-        } else if (response.status === 429) {
-          console.warn("AI rate limited, skipping AI tasks");
-        } else if (response.status === 402) {
-          console.warn("AI credits exhausted, skipping AI tasks");
-        }
-      } catch (aiError) {
-        console.error("AI task generation failed:", aiError);
-      }
-    }
-
-    const allNewTasks = [...newPhaseTasks, ...aiTasks];
-
-    return new Response(JSON.stringify({ tasks: allNewTasks }), {
+    return new Response(JSON.stringify({ tasks: newPhaseTasks }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
