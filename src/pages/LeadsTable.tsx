@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadSource, type LeadLifecycle, statusConfig, sourceConfig } from '@/lib/mock-data';
@@ -12,9 +12,11 @@ import AddLeadDialog from '@/components/AddLeadDialog';
 import LeadActions from '@/components/LeadActions';
 import DuplicateLeads from '@/components/DuplicateLeads';
 import CsvImportDialog from '@/components/CsvImportDialog';
+import BulkActionsBar from '@/components/BulkActionsBar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 
 type TabKey = 'active' | 'archived' | 'deleted' | 'duplicates';
