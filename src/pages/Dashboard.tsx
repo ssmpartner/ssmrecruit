@@ -44,9 +44,12 @@ function WeatherIcon({ icon }: { icon: string }) {
   return <Cloud className={cls} />;
 }
 
-function MiniStat({ icon: Icon, label, value, color }: { icon: any; label: string; value: number | string; color?: string }) {
+function MiniStat({ icon: Icon, label, value, color, onClick }: { icon: any; label: string; value: number | string; color?: string; onClick?: () => void }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm">
+    <div
+      className={`flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       <div className="rounded-lg bg-muted p-2.5">
         <Icon className="h-4 w-4 text-secondary" />
       </div>
@@ -55,6 +58,20 @@ function MiniStat({ icon: Icon, label, value, color }: { icon: any; label: strin
         <p className="text-xs text-muted-foreground">{label}</p>
       </div>
     </div>
+  );
+}
+
+function QuickAction({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-2.5 rounded-xl border bg-card px-4 py-3 shadow-sm text-sm font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5"
+    >
+      <div className="rounded-lg bg-primary/10 p-1.5">
+        <Icon className="h-4 w-4 text-primary" />
+      </div>
+      {label}
+    </button>
   );
 }
 
