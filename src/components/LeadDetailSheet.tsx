@@ -714,33 +714,16 @@ export default function LeadDetailSheet() {
 
                 {/* Tab: Prozesse (Step Actions + Insights/DISC/Dokumente) */}
                 <TabsContent value="prozesse" className="mt-4 space-y-6">
-                  {/* Step-aware action panel */}
-                  <StepActionsPanel
+                  <LeadInsightsDocumentsWithActions
                     leadId={selectedLead.id}
                     leadName={selectedLead.name}
                     leadStatus={selectedLead.status}
                     onScheduleAppointment={() => {
-                      // Switch to appointments tab and open form
                       const aptTab = document.querySelector('[data-value="appointments"]') as HTMLButtonElement;
                       if (aptTab) aptTab.click();
                       setTimeout(() => setShowAptForm(true), 100);
                     }}
-                    onOpenInsights={() => {
-                      // Scroll to insights section
-                    }}
-                    onOpenDocuments={() => {
-                      // Scroll to documents section
-                    }}
-                    discCompleted={false}
-                    documentsCompleted={false}
-                    insightsSent={false}
                   />
-                  
-                  {/* Detailed process tools */}
-                  <div className="border-t pt-4">
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Prozess-Tools</h4>
-                    <LeadInsightsDocuments leadId={selectedLead.id} leadName={selectedLead.name} leadStatus={selectedLead.status} />
-                  </div>
                 </TabsContent>
               </div>
             </Tabs>
