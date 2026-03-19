@@ -135,11 +135,14 @@ export default function Agencies() {
             >
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="rounded-lg bg-accent p-2.5">
-                    <Building2 className="h-5 w-5 text-accent-foreground" />
+                  <div className="rounded-lg p-2.5" style={{ backgroundColor: agency.color + '20' }}>
+                    <Building2 className="h-5 w-5" style={{ color: agency.color }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold truncate">{agency.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold truncate">{agency.name}</h3>
+                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: agency.color }} />
+                    </div>
                     <p className="text-xs text-muted-foreground truncate">{agency.contactEmail}</p>
                   </div>
                 </div>

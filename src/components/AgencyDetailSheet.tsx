@@ -87,8 +87,8 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-primary/10 p-3">
-              <Building2 className="h-6 w-6 text-primary" />
+            <div className="rounded-xl p-3" style={{ backgroundColor: form.color + '20' }}>
+              <Building2 className="h-6 w-6" style={{ color: form.color }} />
             </div>
             <div>
               <SheetTitle className="text-xl">{agency.name}</SheetTitle>
