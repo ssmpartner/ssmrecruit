@@ -518,7 +518,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
     setEditColor(source.color);
   };
 
-  const cancelEdit = () => { setEditId(null); setEditLabel(''); setEditIcon('Globe'); };
+  const cancelEdit = () => { setEditId(null); setEditLabel(''); setEditIcon('Globe'); setEditColor('#6B7280'); };
 
   const saveEdit = async () => {
     if (!editId || !editLabel.trim()) return;
