@@ -61,7 +61,7 @@ function parseCsv(text: string): { headers: string[]; rows: string[][] } {
 function autoMapHeaders(csvHeaders: string[]): Record<number, string> {
   const mapping: Record<number, string> = {};
   const aliases: Record<string, string[]> = {
-    name: ['name', 'vorname', 'nachname', 'full_name', 'fullname', 'vor- und nachname'],
+    name: ['name', 'vorname', 'nachname', 'full_name', 'fullname', 'vor- und nachname', 'kandidat'],
     email: ['email', 'e-mail', 'mail', 'e_mail', 'email_address'],
     phone: ['phone', 'telefon', 'tel', 'phone_number', 'mobiltelefon', 'handy'],
     address: ['address', 'adresse', 'strasse', 'street'],
@@ -70,8 +70,13 @@ function autoMapHeaders(csvHeaders: string[]): Record<number, string> {
     canton: ['canton', 'kanton', 'state', 'province'],
     cantonCode: ['canton_code', 'kanton_code', 'cantoncode', 'kantoncode'],
     position: ['position', 'job', 'job_title', 'stelle', 'beruf'],
-    source: ['source', 'quelle', 'herkunft', 'lead_source'],
+    source: ['source', 'quelle', 'herkunft', 'lead_source', 'leadquelle', 'lead_quelle'],
     notes: ['notes', 'notizen', 'bemerkungen', 'kommentar', 'comment'],
+    createdAt: ['created_at', 'createdat', 'datum', 'date', 'lead_datum', 'leaddatum', 'erstelldatum', 'eingangsdatum', 'erfasst_am'],
+    status: ['status', 'lead_status', 'leadstatus', 'phase', 'stufe'],
+    employeeId: ['employee', 'berater', 'zugewiesen', 'assigned', 'assigned_to', 'assignedto', 'mitarbeiter', 'betreuer', 'zugewiesen_an'],
+    agencyId: ['agency', 'agentur', 'niederlassung', 'filiale', 'standort', 'agency_id'],
+    campaign: ['campaign', 'kampagne', 'werbekampagne', 'utm_campaign', 'marketing_campaign'],
   };
   csvHeaders.forEach((h, i) => {
     const lower = h.toLowerCase().replace(/[^a-zäöü0-9_]/g, '');
