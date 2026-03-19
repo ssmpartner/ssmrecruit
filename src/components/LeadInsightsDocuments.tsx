@@ -184,8 +184,8 @@ export default function LeadInsightsDocuments({ leadId, leadName, leadStatus }: 
   const insightsCompleted = latestInsights?.status === 'completed';
   const docsCompleted = latestDocReq?.status === 'completed';
 
-  const canSendInsights = ['appointment'].includes(leadStatus);
-  const canRequestDocs = ['appointment', 'follow_up'].includes(leadStatus);
+  const canSendInsights = ['contacted', 'appointment'].includes(leadStatus);
+  const canRequestDocs = ['contacted', 'appointment', 'follow_up'].includes(leadStatus);
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
