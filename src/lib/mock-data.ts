@@ -140,7 +140,14 @@ export interface Agency {
   region: string;
   language: string;
   allowedCantons: string[];
+  color: string;
 }
+
+export const AGENCY_COLORS = [
+  '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+  '#EC4899', '#06B6D4', '#F97316', '#14B8A6', '#6366F1',
+  '#84CC16', '#E11D48',
+] as const;
 
 export const SWISS_CANTONS = [
   { code: 'AG', name: 'Aargau' }, { code: 'AI', name: 'Appenzell I.Rh.' }, { code: 'AR', name: 'Appenzell A.Rh.' },
