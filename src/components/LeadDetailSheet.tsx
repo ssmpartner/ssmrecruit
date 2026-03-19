@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { type ActivityEntry } from '@/context/leads-context';
 import { useLeads } from '@/context/useLeads';
 import { statusConfig, getAllowedNextStatuses, type LeadStatus, type LeadSource, sourceConfig } from '@/lib/mock-data';
-import { lookupPlz, searchPlz, type SwissLocation } from '@/lib/swiss-plz';
+import { lookupPlz, searchPlz, cantons, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus, Link2, Send, Copy, ExternalLink, Brain } from 'lucide-react';
@@ -315,7 +315,13 @@ export default function LeadDetailSheet() {
                         <div>
                           <label className="text-xs font-medium text-muted-foreground">Kanton</label>
                           {isSuperadmin ? (
-                            <input value={form.canton} onChange={e => setForm(prev => ({ ...prev, canton: e.target.value }))} placeholder="Kanton" className={inputCls} />
+                            <select value={form.cantonCode} onChange={e => {
+                              const c = cantons.find(ct => ct.code === e.target.value);
+                              if (c) setForm(prev => ({ ...prev, canton: c.name, cantonCode: c.code }));
+                            }} className={inputCls}>
+                              <option value="">— Kanton wählen —</option>
+                              {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
+                            </select>
                           ) : (
                             <input value={form.canton ? `${form.canton} (${form.cantonCode})` : ''} readOnly className="h-9 w-full rounded-lg border bg-muted px-3 text-sm" />
                           )}
