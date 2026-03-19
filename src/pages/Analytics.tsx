@@ -101,9 +101,9 @@ function ChartCard({ title, subtitle, icon: Icon, children, className }: { title
 }
 
 export default function Analytics() {
-  const { leads, agencies, employees } = useLeads();
+  const { leads, agencies, employees, leadSources } = useLeads();
   const [cantonFilter, setCantonFilter] = useState('');
-  const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
+  const [sourceFilter, setSourceFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
   const [agencyFilter, setAgencyFilter] = useState('');
   const [employeeFilter, setEmployeeFilter] = useState('');
