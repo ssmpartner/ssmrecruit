@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2, Building2, User } from 'lucide-react';
+import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2, Building2, User, ClipboardList, FileText, Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLeads } from '@/context/useLeads';
@@ -10,7 +10,7 @@ import ProcessStepper from '@/components/ProcessStepper';
 import { supabase } from '@/integrations/supabase/client';
 
 // ── Types ──
-export type AutomationTrigger = 'status_change' | 'lead_created' | 'disc_completed' | 'time_in_status';
+export type AutomationTrigger = 'status_change' | 'lead_created' | 'disc_completed' | 'insights_form_completed' | 'documents_uploaded' | 'time_in_status';
 export type AutomationAction = 'change_status' | 'assign_employee' | 'send_notification';
 
 export type AutomationScope = 'global' | 'agency' | 'employee';
@@ -49,6 +49,8 @@ const triggerOptions: Record<AutomationTrigger, { label: string; icon: typeof Za
   status_change: { label: 'Status-Wechsel', icon: ArrowRight, desc: 'Wenn ein Lead einen bestimmten Status erreicht' },
   lead_created: { label: 'Lead erstellt', icon: Users, desc: 'Wenn ein neuer Lead erfasst wird' },
   disc_completed: { label: 'DISC-Test fertig', icon: Brain, desc: 'Wenn der Persönlichkeitstest abgeschlossen wird' },
+  insights_form_completed: { label: 'Insights-Formular', icon: ClipboardList, desc: 'Wenn der Kandidat das Insights-Formular ausgefüllt hat' },
+  documents_uploaded: { label: 'Dokumente erhalten', icon: Upload, desc: 'Wenn der Kandidat Dokumente hochgeladen hat' },
   time_in_status: { label: 'Verweildauer', icon: Bell, desc: 'Wenn ein Lead zu lange in einem Status bleibt' },
 };
 
@@ -70,26 +72,28 @@ const initialSteps: ProcessStep[] = [
   },
   {
     status: 'contacted', icon: '📞', title: 'Kontaktiert',
-    description: 'Der zugewiesene Mitarbeiter nimmt den ersten Kontakt mit dem Kandidaten auf – per Telefon, E-Mail oder WhatsApp.',
-    features: ['Kontaktversuch wird protokolliert', 'Notizen hinterlegbar', 'Zuweisung änderbar', 'Erinnerung bei Inaktivität'],
+    description: 'Der zugewiesene Mitarbeiter nimmt den ersten Kontakt auf. In dieser Phase kann das Insights-Formular an den Kandidaten versendet werden.',
+    features: ['Kontaktversuch wird protokolliert', 'Notizen hinterlegbar', '📋 Insights-Formular senden (Link per Email/SMS/WhatsApp)', 'Erinnerung bei Inaktivität', 'Auto-Erinnerung nach 24h wenn Formular nicht ausgefüllt'],
     guidelines: [
       { id: 'g3', text: 'Mindestens 3 Kontaktversuche bevor der Lead abgelehnt wird', type: 'rule' },
-      { id: 'g4', text: 'Kontaktversuche im Abstand von min. 24h durchführen', type: 'guideline' },
+      { id: 'g4', text: 'Insights-Formular sollte nach erfolgreichem Erstkontakt versendet werden', type: 'guideline' },
+      { id: 'g4b', text: 'Kontaktversuche im Abstand von min. 24h durchführen', type: 'guideline' },
     ],
   },
   {
     status: 'appointment', icon: '📅', title: 'Terminiert',
-    description: 'Ein Termin wurde mit dem Kandidaten vereinbart. Das System unterstützt Telefon-, Video- und Vor-Ort-Termine.',
-    features: ['Termin mit Datum, Uhrzeit & Typ', 'Video-Link (Jitsi) automatisch', 'Einladung per E-Mail/SMS/WhatsApp', 'Auto-Status «Terminiert»'],
+    description: 'Ein Termin wurde mit dem Kandidaten vereinbart. Dokumente können in dieser Phase bereits angefordert werden.',
+    features: ['Termin mit Datum, Uhrzeit & Typ', 'Video-Link (Jitsi) automatisch', 'Einladung per E-Mail/SMS/WhatsApp', '📄 Dokumente anfordern (Upload-Link)', 'Auto-Status «Terminiert»'],
     guidelines: [
       { id: 'g5', text: 'Termin muss innerhalb von 5 Werktagen nach Kontakt vereinbart werden', type: 'rule' },
       { id: 'g6', text: 'Video-Call ist bevorzugte Terminart für Erstgespräche', type: 'guideline' },
+      { id: 'g6b', text: 'Dokumente (CV, Zeugnisse) frühzeitig anfordern um Prozess zu beschleunigen', type: 'guideline' },
     ],
   },
   {
     status: 'interview_1', icon: '🎤', title: 'Gespräch 1',
-    description: 'Das erste persönliche oder virtuelle Gespräch. Eignung und Motivation des Kandidaten werden geprüft.',
-    features: ['Video-Call aus dem System starten', 'Gesprächsnotizen protokollieren', 'Bewertung hinterlegen', 'Ablehnung bei Nicht-Eignung'],
+    description: 'Das erste persönliche oder virtuelle Gespräch. Eignung und Motivation werden geprüft. Insights-Formular und Dokumente können auch hier angefordert werden.',
+    features: ['Video-Call aus dem System starten', 'Gesprächsnotizen protokollieren', '📋 Insights-Formular senden (falls noch nicht geschehen)', '📄 Dokumente anfordern', 'Ablehnung bei Nicht-Eignung'],
     guidelines: [
       { id: 'g7', text: 'Strukturierter Interviewleitfaden muss verwendet werden', type: 'rule' },
       { id: 'g8', text: 'Gesprächsbewertung innerhalb 1h nach dem Gespräch eintragen', type: 'guideline' },
@@ -97,26 +101,28 @@ const initialSteps: ProcessStep[] = [
   },
   {
     status: 'insights', icon: '🧠', title: 'Insights (DISC-Test)',
-    description: 'Der Kandidat füllt einen DISC-Persönlichkeitstest aus. Die Ergebnisse zeigen Verhaltenspräferenzen.',
-    features: ['12-Fragen DISC-Test', 'Automatische Auswertung D/I/S/C', 'Grafische Visualisierung', 'Pflicht vor Gespräch 2 konfigurierbar'],
+    description: 'Der Kandidat füllt den DISC-Persönlichkeitstest aus. Die Ergebnisse zeigen Verhaltenspräferenzen. Dokumente werden in dieser Phase ebenfalls geprüft.',
+    features: ['12-Fragen DISC-Test', 'Automatische Auswertung D/I/S/C', 'Grafische Visualisierung', 'Pflicht vor Gespräch 2 konfigurierbar', '📄 Dokumenten-Status prüfen', 'Auto-Erinnerung nach 48h für fehlende Dokumente'],
     guidelines: [
       { id: 'g9', text: 'DISC-Test muss abgeschlossen sein, bevor Gespräch 2 stattfindet', type: 'rule' },
+      { id: 'g9b', text: 'Insights-Formular-Antworten vor DISC-Test durchlesen', type: 'guideline' },
       { id: 'g10', text: 'Ergebnisse werden dem Interviewer vor Gespräch 2 zur Verfügung gestellt', type: 'guideline' },
     ],
   },
   {
     status: 'interview_2', icon: '🤝', title: 'Gespräch 2',
-    description: 'Das zweite, vertiefende Gespräch – oft mit Teamleitung oder Management. Basierend auf Insights-Ergebnissen.',
-    features: ['DISC als Gesprächsgrundlage', 'Detaillierte Bewertung', 'Finale Entscheidung', 'Ablehnung oder Einstellung'],
+    description: 'Das zweite, vertiefende Gespräch – oft mit Teamleitung oder Management. Basierend auf Insights-Ergebnissen und eingereichten Dokumenten.',
+    features: ['DISC & Insights-Formular als Gesprächsgrundlage', 'Eingereichte Dokumente prüfen', 'Detaillierte Bewertung', 'Finale Entscheidung', '📄 Fehlende Dokumente nachfordern'],
     guidelines: [
       { id: 'g11', text: 'Mindestens 2 Interviewer müssen am Zweitgespräch teilnehmen', type: 'rule' },
+      { id: 'g11b', text: 'Alle Dokumente müssen vor finaler Entscheidung vollständig vorliegen', type: 'rule' },
       { id: 'g12', text: 'Entscheidung (Zusage/Absage) muss innerhalb von 48h kommuniziert werden', type: 'guideline' },
     ],
   },
   {
     status: 'hired', icon: '✅', title: 'Eingestellt',
     description: 'Der Kandidat hat den gesamten Prozess durchlaufen und wurde erfolgreich eingestellt.',
-    features: ['Vollständige Prozess-Historie', 'Notizen & DISC archiviert', 'Konversionsrate', 'Pipeline-Abschluss'],
+    features: ['Vollständige Prozess-Historie', 'Insights-Formular & DISC archiviert', 'Alle Dokumente archiviert', 'Konversionsrate', 'Pipeline-Abschluss'],
     guidelines: [
       { id: 'g13', text: 'Willkommens-E-Mail wird automatisch nach Einstellung versendet', type: 'guideline' },
     ],
@@ -135,6 +141,8 @@ const initialSteps: ProcessStep[] = [
 const defaultRules: AutomationRule[] = [
   { id: 'rule-1', name: 'DISC-Test → Gespräch 2', enabled: true, trigger: 'disc_completed', triggerConfig: {}, action: 'change_status', actionConfig: { targetStatus: 'interview_2' }, scope: 'global', createdAt: new Date().toISOString() },
   { id: 'rule-2', name: 'Erinnerung bei Inaktivität', enabled: false, trigger: 'time_in_status', triggerConfig: { toStatus: 'contacted', daysInStatus: 3 }, action: 'send_notification', actionConfig: { notificationMessage: 'Lead seit 3 Tagen im Status "Kontaktiert" – bitte nachfassen!' }, scope: 'global', createdAt: new Date().toISOString() },
+  { id: 'rule-3', name: 'Insights-Formular → Benachrichtigung', enabled: true, trigger: 'insights_form_completed', triggerConfig: {}, action: 'send_notification', actionConfig: { notificationMessage: 'Das Insights-Formular wurde ausgefüllt – bitte Antworten prüfen.' }, scope: 'global', createdAt: new Date().toISOString() },
+  { id: 'rule-4', name: 'Dokumente hochgeladen → Benachrichtigung', enabled: true, trigger: 'documents_uploaded', triggerConfig: {}, action: 'send_notification', actionConfig: { notificationMessage: 'Dokumente wurden hochgeladen – bitte prüfen.' }, scope: 'global', createdAt: new Date().toISOString() },
 ];
 
 const mainFlow: LeadStatus[] = statusFlow.filter(s => s !== 'rejected');
