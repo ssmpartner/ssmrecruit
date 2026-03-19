@@ -100,7 +100,7 @@ const appFeatures = [
   ]},
   { category: 'Kommunikation', icon: '📞', features: [
     { name: 'Video-Calls', desc: 'Integrierte Video-Anrufe direkt aus der Anwendung starten.' },
-    { name: 'Benachrichtigungen', desc: 'Echtzeit In-App-Benachrichtigungen für Lead-Änderungen, Termine und Automatisierungen.' },
+    { name: 'Benachrichtigungen', desc: 'Echtzeit In-App-Benachrichtigungen für Leads, Termine, Tasks, Prozess-Schritte, DISC, Insights, Dokument-Uploads, Duplikate und Automatisierungen – individuell konfigurierbar.' },
     { name: 'Termin-Erinnerungen', desc: 'Automatische Erinnerungen vor anstehenden Terminen.' },
   ]},
   { category: 'Terminplanung', icon: '📅', features: [
