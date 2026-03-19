@@ -195,6 +195,80 @@ export type Database = {
           },
         ]
       }
+      document_requests: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          reminder_sent_at: string | null
+          sent_at: string
+          sent_via: string
+          status: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          reminder_sent_at?: string | null
+          sent_at?: string
+          sent_via?: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          reminder_sent_at?: string | null
+          sent_at?: string
+          sent_via?: string
+          status?: string
+          token?: string
+        }
+        Relationships: []
+      }
+      document_uploads: {
+        Row: {
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          lead_id: string
+          request_id: string
+          uploaded_at: string
+        }
+        Insert: {
+          file_name: string
+          file_path: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          lead_id: string
+          request_id: string
+          uploaded_at?: string
+        }
+        Update: {
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          lead_id?: string
+          request_id?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_uploads_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "document_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           agency_id: string
@@ -235,6 +309,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      insights_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          lead_id: string
+          reminder_sent_at: string | null
+          responses: Json | null
+          sent_at: string
+          sent_via: string
+          status: string
+          token: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lead_id: string
+          reminder_sent_at?: string | null
+          responses?: Json | null
+          sent_at?: string
+          sent_via?: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string
+          reminder_sent_at?: string | null
+          responses?: Json | null
+          sent_at?: string
+          sent_via?: string
+          status?: string
+          token?: string
+        }
+        Relationships: []
       }
       integrations: {
         Row: {

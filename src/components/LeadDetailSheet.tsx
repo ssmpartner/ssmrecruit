@@ -11,12 +11,13 @@ import { statusConfig, getAllowedNextStatuses, type LeadStatus } from '@/lib/moc
 import { lookupPlz, searchPlz, cantons, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
-import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus, Link2, Send, Copy, ExternalLink, Brain, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus, Link2, Send, Copy, ExternalLink, Brain, ChevronLeft, ChevronRight, FolderOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import VideoCallDialog from './VideoCallDialog';
 import InsightsTab from './InsightsTab';
 import ProcessStepper from './ProcessStepper';
+import LeadInsightsDocuments from './LeadInsightsDocuments';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'insights', 'interview_2', 'hired', 'rejected'];
 
@@ -302,6 +303,9 @@ export default function LeadDetailSheet() {
                 </TabsTrigger>
                 <TabsTrigger value="insights" className="gap-1.5">
                   <Brain className="h-3.5 w-3.5" /> Insights
+                </TabsTrigger>
+                <TabsTrigger value="prozesse" className="gap-1.5">
+                  <FolderOpen className="h-3.5 w-3.5" /> Prozesse
                 </TabsTrigger>
               </TabsList>
 
@@ -714,6 +718,11 @@ export default function LeadDetailSheet() {
                 {/* Tab: Insights */}
                 <TabsContent value="insights" className="mt-4">
                   <InsightsTab leadId={selectedLead.id} leadName={selectedLead.name} />
+                </TabsContent>
+
+                {/* Tab: Prozesse (Insights & Dokumente) */}
+                <TabsContent value="prozesse" className="mt-4">
+                  <LeadInsightsDocuments leadId={selectedLead.id} leadName={selectedLead.name} leadStatus={selectedLead.status} />
                 </TabsContent>
               </div>
             </Tabs>

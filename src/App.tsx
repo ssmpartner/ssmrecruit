@@ -28,6 +28,8 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const InsightsFormPage = lazy(() => import("./pages/InsightsFormPage"));
+const DocumentUploadPage = lazy(() => import("./pages/DocumentUploadPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,6 +84,10 @@ const App = () => (
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
               <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
               <Route path="/reset-password" element={<ResetPassword />} />
+
+              {/* Public lead forms (no auth required) */}
+              <Route path="/insights-form" element={<Suspense fallback={<FullScreenLoader />}><InsightsFormPage /></Suspense>} />
+              <Route path="/document-upload" element={<Suspense fallback={<FullScreenLoader />}><DocumentUploadPage /></Suspense>} />
 
               {/* Protected routes – providers inside so DB queries only run when authenticated */}
               <Route element={

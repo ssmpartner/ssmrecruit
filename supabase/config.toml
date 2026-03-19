@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.generate-guidelines]
 verify_jwt = false
+
+[functions.check-reminders]
+verify_jwt = false
