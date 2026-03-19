@@ -475,6 +475,235 @@ function UsersTab({ isSuperadmin }: { isSuperadmin: boolean }) {
   );
 }
 
+const SOURCE_ICONS = [
+  { value: 'Globe', label: 'Webseite' },
+  { value: 'Music', label: 'TikTok' },
+  { value: 'Facebook', label: 'Facebook/Meta' },
+  { value: 'Linkedin', label: 'LinkedIn' },
+  { value: 'FileSpreadsheet', label: 'Tabelle/CSV' },
+  { value: 'Mail', label: 'E-Mail' },
+  { value: 'Phone', label: 'Telefon' },
+  { value: 'MessageSquare', label: 'Chat' },
+  { value: 'Tag', label: 'Allgemein' },
+];
+
+function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
+  const { toast } = useToast();
+  const { leadSources, reloadLeadSources } = useLeads();
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editLabel, setEditLabel] = useState('');
+  const [editIcon, setEditIcon] = useState('Globe');
+  const [newId, setNewId] = useState('');
+  const [newLabel, setNewLabel] = useState('');
+  const [newIcon, setNewIcon] = useState('Globe');
+  const [saving, setSaving] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+
+  if (!isSuperadmin) {
+    return (
+      <div className="rounded-xl border bg-card p-8 text-center">
+        <Shield className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+        <h2 className="text-lg font-semibold">Zugriff verweigert</h2>
+        <p className="text-sm text-muted-foreground mt-1">Nur Superadmins können Lead-Quellen verwalten.</p>
+      </div>
+    );
+  }
+
+  const startEdit = (source: typeof leadSources[0]) => {
+    setEditId(source.id);
+    setEditLabel(source.label);
+    setEditIcon(source.icon);
+  };
+
+  const cancelEdit = () => { setEditId(null); setEditLabel(''); setEditIcon('Globe'); };
+
+  const saveEdit = async () => {
+    if (!editId || !editLabel.trim()) return;
+    setSaving(true);
+    const { error } = await supabase.from('lead_sources').update({
+      label: editLabel.trim(),
+      icon: editIcon,
+    }).eq('id', editId);
+    setSaving(false);
+    if (error) {
+      toast({ title: 'Fehler', description: 'Konnte nicht gespeichert werden', variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Gespeichert', description: `Quelle "${editLabel.trim()}" wurde aktualisiert.` });
+    cancelEdit();
+    reloadLeadSources();
+  };
+
+  const handleAdd = async () => {
+    const id = newId.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    if (!id || !newLabel.trim()) {
+      toast({ title: 'Fehler', description: 'ID und Label sind erforderlich', variant: 'destructive' });
+      return;
+    }
+    if (leadSources.some(s => s.id === id)) {
+      toast({ title: 'Fehler', description: 'Diese ID existiert bereits', variant: 'destructive' });
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.from('lead_sources').insert({
+      id,
+      label: newLabel.trim(),
+      icon: newIcon,
+      sort_order: leadSources.length + 1,
+    });
+    setSaving(false);
+    if (error) {
+      toast({ title: 'Fehler', description: 'Konnte nicht erstellt werden', variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Erstellt', description: `Quelle "${newLabel.trim()}" wurde hinzugefügt.` });
+    setNewId(''); setNewLabel(''); setNewIcon('Globe'); setShowAdd(false);
+    reloadLeadSources();
+  };
+
+  const handleDelete = async (id: string) => {
+    setSaving(true);
+    const { error } = await supabase.from('lead_sources').delete().eq('id', id);
+    setSaving(false);
+    if (error) {
+      toast({ title: 'Fehler', description: 'Konnte nicht gelöscht werden. Möglicherweise wird die Quelle noch verwendet.', variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Gelöscht', description: 'Quelle wurde entfernt.' });
+    reloadLeadSources();
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2"><Tag className="h-5 w-5" /> Lead-Quellen</h2>
+          <p className="text-sm text-muted-foreground">Quellen verwalten, die bei Leads zugewiesen werden können.</p>
+        </div>
+        <button
+          onClick={() => setShowAdd(!showAdd)}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+        >
+          <Plus className="h-4 w-4" /> Neue Quelle
+        </button>
+      </div>
+
+      {showAdd && (
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
+          <h3 className="text-sm font-semibold">Neue Quelle hinzufügen</h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">ID (eindeutig)</label>
+              <input value={newId} onChange={e => setNewId(e.target.value)}
+                placeholder="z.B. google_ads"
+                className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Anzeigename</label>
+              <input value={newLabel} onChange={e => setNewLabel(e.target.value)}
+                placeholder="z.B. Google Ads"
+                className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Icon</label>
+              <select value={newIcon} onChange={e => setNewIcon(e.target.value)}
+                className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                {SOURCE_ICONS.map(ic => <option key={ic.value} value={ic.value}>{ic.label}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={handleAdd} disabled={saving || !newId.trim() || !newLabel.trim()}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />} Hinzufügen
+            </button>
+            <button onClick={() => { setShowAdd(false); setNewId(''); setNewLabel(''); }}
+              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors">
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b text-left text-muted-foreground">
+              <th className="px-5 py-3 font-medium">Quelle</th>
+              <th className="px-5 py-3 font-medium">ID</th>
+              <th className="px-5 py-3 font-medium">Icon</th>
+              <th className="px-5 py-3 font-medium w-32">Aktionen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leadSources.map(source => (
+              <tr key={source.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                <td className="px-5 py-3">
+                  {editId === source.id ? (
+                    <input value={editLabel} onChange={e => setEditLabel(e.target.value)}
+                      className="h-8 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                  ) : (
+                    <span className="font-medium">{source.label}</span>
+                  )}
+                </td>
+                <td className="px-5 py-3 text-xs text-muted-foreground font-mono">{source.id}</td>
+                <td className="px-5 py-3">
+                  {editId === source.id ? (
+                    <select value={editIcon} onChange={e => setEditIcon(e.target.value)}
+                      className="h-8 rounded-lg border bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-ring">
+                      {SOURCE_ICONS.map(ic => <option key={ic.value} value={ic.value}>{ic.label}</option>)}
+                    </select>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">{SOURCE_ICONS.find(i => i.value === source.icon)?.label || source.icon}</span>
+                  )}
+                </td>
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-1">
+                    {editId === source.id ? (
+                      <>
+                        <button onClick={saveEdit} disabled={saving}
+                          className="rounded-lg p-1.5 text-primary hover:bg-primary/10 transition-colors" title="Speichern">
+                          <Save className="h-4 w-4" />
+                        </button>
+                        <button onClick={cancelEdit}
+                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted transition-colors" title="Abbrechen">
+                          <XCircle className="h-4 w-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={() => startEdit(source)}
+                          className="rounded-lg p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" title="Bearbeiten">
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDelete(source.id)}
+                          className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Löschen">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {leadSources.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-5 py-8 text-center text-muted-foreground">Keine Quellen konfiguriert.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="rounded-xl border bg-muted/50 p-4">
+        <p className="text-xs text-muted-foreground">
+          <strong>Tipp:</strong> Verwenden Sie die Bulk-Aktionen in der Leads-Übersicht, um die Quelle mehrerer Leads gleichzeitig zu ändern. Wählen Sie dazu die gewünschten Leads aus und klicken Sie auf «Quelle ändern».
+        </p>
+      </div>
+    </>
+  );
+}
+
 function AppointmentsTab({ appointmentSettings, updateAppointmentSettings, toast }: any) {
   return (
     <>
