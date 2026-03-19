@@ -157,19 +157,9 @@ export default function Tasks() {
     toast.success('Aufgabe neu zugewiesen');
   }, []);
 
-  const agencyColleagues = useMemo(() =>
-    employees.filter(e => e.agencyId === currentUser?.agencyId),
-    [employees, currentUser]
-  );
-
-  // Filter tasks
+  // Filter tasks - show all for authenticated user (no employee-based filtering since we use auth user)
   const visibleTasks = useMemo(() => {
     let result = tasks;
-    if (!isBackoffice) {
-      result = result.filter(t => t.assigned_to === currentUser?.id);
-    } else {
-      result = result.filter(t => t.agency_id === currentUser?.agencyId || t.assigned_to === currentUser?.id);
-    }
     if (statusFilter !== 'all') result = result.filter(t => t.status === statusFilter);
     if (employeeFilter) result = result.filter(t => t.assigned_to === employeeFilter);
     if (priorityFilter !== 'all') result = result.filter(t => t.priority === priorityFilter);
@@ -179,7 +169,7 @@ export default function Tasks() {
       if ((so[a.status] ?? 2) !== (so[b.status] ?? 2)) return (so[a.status] ?? 2) - (so[b.status] ?? 2);
       return (po[a.priority] ?? 3) - (po[b.priority] ?? 3);
     });
-  }, [tasks, statusFilter, employeeFilter, priorityFilter, currentUser, isBackoffice]);
+  }, [tasks, statusFilter, employeeFilter, priorityFilter]);
 
   const openCount = visibleTasks.filter(t => t.status === 'open').length;
   const inProgressCount = visibleTasks.filter(t => t.status === 'in_progress').length;
