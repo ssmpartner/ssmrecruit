@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
@@ -7,12 +7,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { type ActivityEntry } from '@/context/leads-context';
 import { useLeads } from '@/context/useLeads';
-import { statusConfig, getAllowedNextStatuses, type LeadStatus } from '@/lib/mock-data';
+import { statusConfig, getAllowedNextStatuses, type LeadStatus, type LeadSource, sourceConfig } from '@/lib/mock-data';
 import { lookupPlz, searchPlz, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus, Link2, Send, Copy, ExternalLink, Brain } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import VideoCallDialog from './VideoCallDialog';
 import InsightsTab from './InsightsTab';
 import ProcessStepper from './ProcessStepper';
@@ -36,11 +37,12 @@ const appointmentTypeConfig = {
 export default function LeadDetailSheet() {
   const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings } = useLeads();
   const { toast } = useToast();
+  const { isSuperadmin } = useAuth();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
   const [showPlzDropdown, setShowPlzDropdown] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '' });
 
   // Appointment form
   const [showAptForm, setShowAptForm] = useState(false);
@@ -68,7 +70,8 @@ export default function LeadDetailSheet() {
       name: selectedLead.name, email: selectedLead.email, phone: selectedLead.phone,
       position: selectedLead.position, address: selectedLead.address, plz: selectedLead.plz,
       city: selectedLead.city, canton: selectedLead.canton, cantonCode: selectedLead.cantonCode,
-      notes: selectedLead.notes,
+      notes: selectedLead.notes, source: selectedLead.source,
+      createdAt: selectedLead.createdAt,
     });
     setEditing(true);
   };
@@ -106,8 +109,16 @@ export default function LeadDetailSheet() {
     if (form.address !== selectedLead.address) changes.push(`Adresse aktualisiert`);
     if (form.plz !== selectedLead.plz) changes.push(`PLZ → ${form.plz} ${form.city}`);
     if (form.notes !== selectedLead.notes) changes.push(`Notizen aktualisiert`);
+    if (isSuperadmin && form.source !== selectedLead.source) changes.push(`Quelle → "${sourceConfig[form.source as LeadSource]?.label || form.source}"`);
+    if (isSuperadmin && form.createdAt !== selectedLead.createdAt) changes.push(`Erstelldatum geändert`);
 
-    updateLead(selectedLead.id, form);
+    const updates: Partial<Record<string, any>> = { ...form };
+    if (!isSuperadmin) {
+      delete updates.source;
+      delete updates.createdAt;
+    }
+
+    updateLead(selectedLead.id, updates);
     if (changes.length > 0) addActivity(selectedLead.id, 'edit', changes.join(', '));
     setEditing(false);
   };
@@ -299,13 +310,47 @@ export default function LeadDetailSheet() {
                         </div>
                         <div>
                           <label className="text-xs font-medium text-muted-foreground">Ort</label>
-                          <input value={form.city} readOnly className="h-9 w-full rounded-lg border bg-muted px-3 text-sm" />
+                          <input value={form.city} onChange={isSuperadmin ? e => setForm(prev => ({ ...prev, city: e.target.value })) : undefined} readOnly={!isSuperadmin} className={isSuperadmin ? inputCls : "h-9 w-full rounded-lg border bg-muted px-3 text-sm"} />
                         </div>
                         <div>
                           <label className="text-xs font-medium text-muted-foreground">Kanton</label>
-                          <input value={form.canton ? `${form.canton} (${form.cantonCode})` : ''} readOnly className="h-9 w-full rounded-lg border bg-muted px-3 text-sm" />
+                          {isSuperadmin ? (
+                            <input value={form.canton} onChange={e => setForm(prev => ({ ...prev, canton: e.target.value }))} placeholder="Kanton" className={inputCls} />
+                          ) : (
+                            <input value={form.canton ? `${form.canton} (${form.cantonCode})` : ''} readOnly className="h-9 w-full rounded-lg border bg-muted px-3 text-sm" />
+                          )}
                         </div>
                       </div>
+                      {/* Superadmin-only: Quelle, Datum */}
+                      {isSuperadmin && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground">Quelle</label>
+                            <select value={form.source} onChange={e => setForm(prev => ({ ...prev, source: e.target.value }))} className={inputCls}>
+                              {Object.entries(sourceConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground">Erstelldatum</label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button className={cn(inputCls, 'flex items-center gap-2 text-left')}>
+                                  <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                                  {form.createdAt ? new Date(form.createdAt).toLocaleDateString('de-CH') : 'Datum wählen'}
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={form.createdAt ? new Date(form.createdAt) : undefined}
+                                  onSelect={(date) => date && setForm(prev => ({ ...prev, createdAt: date.toISOString() }))}
+                                  className={cn("p-3 pointer-events-auto")}
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        </div>
+                      )}
                       <div>
                         <label className="text-xs font-medium text-muted-foreground">Notizen</label>
                         <textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3}
