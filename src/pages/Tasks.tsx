@@ -273,17 +273,15 @@ export default function Tasks() {
               ))}
             </SelectContent>
           </Select>
-          {isBackoffice && (
-            <Select value={employeeFilter || 'all'} onValueChange={(v) => setEmployeeFilter(v === 'all' ? '' : v)}>
-              <SelectTrigger className="h-9 w-[180px]"><SelectValue placeholder="Mitarbeiter" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle Mitarbeiter</SelectItem>
-                {agencyColleagues.map(e => (
-                  <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          <Select value={employeeFilter || 'all'} onValueChange={(v) => setEmployeeFilter(v === 'all' ? '' : v)}>
+            <SelectTrigger className="h-9 w-[180px]"><SelectValue placeholder="Mitarbeiter" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Mitarbeiter</SelectItem>
+              {employees.map(e => (
+                <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {hasFilters && (
             <button onClick={() => { setStatusFilter('all'); setEmployeeFilter(''); setPriorityFilter('all'); }} className="inline-flex items-center gap-1.5 rounded-lg bg-destructive/10 text-destructive px-3 py-1.5 text-xs font-semibold hover:bg-destructive/20 transition-colors">
               <X className="h-3 w-3" /> Zurücksetzen
