@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Brain, FileText, Send, Copy, Check, Loader2, Clock, CheckCircle2, File, Download, ChevronDown, ChevronUp, Upload, AlertCircle } from 'lucide-react';
+import { Brain, FileText, Send, Copy, Check, Loader2, Clock, CheckCircle2, File, Download, ChevronDown, ChevronUp, Upload, AlertCircle, CalendarPlus, CalendarCheck, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import InsightsTab from './InsightsTab';
 import StepActionsPanel from './StepActionsPanel';
