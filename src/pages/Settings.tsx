@@ -708,8 +708,8 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
           const isComingSoon = integration.id === 'linkedin' || integration.id === 'microsoft365';
           return (
             <div key={integration.id} className="rounded-xl border bg-card shadow-sm overflow-hidden">
-              <button onClick={() => !isLinkedIn && setExpandedId(isExpanded ? null : integration.id)}
-                className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors" disabled={isLinkedIn}>
+              <button onClick={() => !isComingSoon && setExpandedId(isExpanded ? null : integration.id)}
+                className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors" disabled={isComingSoon}>
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{integration.icon}</span>
                   <div>
@@ -718,13 +718,13 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {isLinkedIn && <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Demnächst</span>}
+                  {isComingSoon && <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Demnächst</span>}
                   {integration.connected && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
-                  {!integration.connected && !isLinkedIn && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht verbunden</span>}
+                  {!integration.connected && !isComingSoon && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht verbunden</span>}
                 </div>
               </button>
 
-              {isExpanded && !isLinkedIn && (
+              {isExpanded && !isComingSoon && (
                 <div className="border-t px-5 py-5 space-y-5">
                   <div>
                     <label className="text-sm font-medium mb-2 block">Verbindungsmethode</label>
