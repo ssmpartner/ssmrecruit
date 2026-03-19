@@ -645,6 +645,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
             <tr className="border-b text-left text-muted-foreground">
               <th className="px-5 py-3 font-medium">Quelle</th>
               <th className="px-5 py-3 font-medium">ID</th>
+              <th className="px-5 py-3 font-medium">Farbe</th>
               <th className="px-5 py-3 font-medium">Icon</th>
               <th className="px-5 py-3 font-medium w-32">Aktionen</th>
             </tr>
