@@ -32,13 +32,19 @@ const taskStatusConfig: Record<string, { label: string; color: string }> = {
 
 export default function Tasks() {
   const { leads, employees, agencies } = useLeads();
-  const { profile } = useAuth();
+  const { profile, user, isSuperadmin } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+
+  // Match logged-in user to an employee by email
+  const currentEmployee = useMemo(() => {
+    if (!user?.email) return null;
+    return employees.find(e => e.email.toLowerCase() === user.email!.toLowerCase()) || null;
+  }, [user, employees]);
 
   // Load tasks from DB
   const fetchTasks = useCallback(async () => {
@@ -157,9 +163,16 @@ export default function Tasks() {
     toast.success('Aufgabe neu zugewiesen');
   }, []);
 
-  // Filter tasks - show all for authenticated user (no employee-based filtering since we use auth user)
+  // Filter tasks: Superadmins see all, others see only their own assigned tasks
   const visibleTasks = useMemo(() => {
     let result = tasks;
+    // Non-superadmin: only show tasks assigned to the current employee
+    if (!isSuperadmin && currentEmployee) {
+      result = result.filter(t => t.assigned_to === currentEmployee.id);
+    } else if (!isSuperadmin && !currentEmployee) {
+      // No matching employee found → show nothing
+      result = [];
+    }
     if (statusFilter !== 'all') result = result.filter(t => t.status === statusFilter);
     if (employeeFilter) result = result.filter(t => t.assigned_to === employeeFilter);
     if (priorityFilter !== 'all') result = result.filter(t => t.priority === priorityFilter);
@@ -169,7 +182,7 @@ export default function Tasks() {
       if ((so[a.status] ?? 2) !== (so[b.status] ?? 2)) return (so[a.status] ?? 2) - (so[b.status] ?? 2);
       return (po[a.priority] ?? 3) - (po[b.priority] ?? 3);
     });
-  }, [tasks, statusFilter, employeeFilter, priorityFilter]);
+  }, [tasks, statusFilter, employeeFilter, priorityFilter, isSuperadmin, currentEmployee]);
 
   const openCount = visibleTasks.filter(t => t.status === 'open').length;
   const inProgressCount = visibleTasks.filter(t => t.status === 'in_progress').length;
@@ -213,8 +226,11 @@ export default function Tasks() {
             <h1 className="text-2xl font-bold tracking-tight">Aufgaben</h1>
           </div>
           <p className="text-sm text-muted-foreground ml-[52px]">
-            Systemgenerierte Aufgaben mit KI-Unterstützung
-            {' · '} Angemeldet als <span className="font-medium text-foreground">{profile.display_name}</span>
+            {isSuperadmin
+              ? 'Alle Aufgaben · Superadmin-Ansicht'
+              : currentEmployee
+                ? `Meine Aufgaben · ${currentEmployee.name}`
+                : 'Kein Mitarbeiter-Profil zugeordnet'}
           </p>
         </div>
         <div className="flex gap-2">
