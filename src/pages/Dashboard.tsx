@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Users, UserCheck, Clock, Target, CalendarDays, ListTodo, Cloud, Sun, CloudRain, CloudSnow, CloudLightning, Cloudy } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, UserCheck, Clock, Target, CalendarDays, ListTodo, Cloud, Sun, CloudRain, CloudSnow, CloudLightning, Cloudy, UserPlus, ClipboardList, Building2, BarChart3, Plus, Sparkles } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import AddLeadDialog from '@/components/AddLeadDialog';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
