@@ -141,6 +141,8 @@ const initialSteps: ProcessStep[] = [
 const defaultRules: AutomationRule[] = [
   { id: 'rule-1', name: 'DISC-Test → Gespräch 2', enabled: true, trigger: 'disc_completed', triggerConfig: {}, action: 'change_status', actionConfig: { targetStatus: 'interview_2' }, scope: 'global', createdAt: new Date().toISOString() },
   { id: 'rule-2', name: 'Erinnerung bei Inaktivität', enabled: false, trigger: 'time_in_status', triggerConfig: { toStatus: 'contacted', daysInStatus: 3 }, action: 'send_notification', actionConfig: { notificationMessage: 'Lead seit 3 Tagen im Status "Kontaktiert" – bitte nachfassen!' }, scope: 'global', createdAt: new Date().toISOString() },
+  { id: 'rule-3', name: 'Insights-Formular → Benachrichtigung', enabled: true, trigger: 'insights_form_completed', triggerConfig: {}, action: 'send_notification', actionConfig: { notificationMessage: 'Das Insights-Formular wurde ausgefüllt – bitte Antworten prüfen.' }, scope: 'global', createdAt: new Date().toISOString() },
+  { id: 'rule-4', name: 'Dokumente hochgeladen → Benachrichtigung', enabled: true, trigger: 'documents_uploaded', triggerConfig: {}, action: 'send_notification', actionConfig: { notificationMessage: 'Dokumente wurden hochgeladen – bitte prüfen.' }, scope: 'global', createdAt: new Date().toISOString() },
 ];
 
 const mainFlow: LeadStatus[] = statusFlow.filter(s => s !== 'rejected');
