@@ -84,6 +84,7 @@ export default function Dashboard() {
                 <th className="px-6 py-3 font-medium">Position</th>
                 <th className="px-6 py-3 font-medium">Quelle</th>
                 <th className="px-6 py-3 font-medium">Status</th>
+                <th className="px-6 py-3 font-medium">Agentur</th>
                 <th className="px-6 py-3 font-medium">Zugewiesen</th>
                 <th className="px-6 py-3 font-medium">Datum</th>
               </tr>
