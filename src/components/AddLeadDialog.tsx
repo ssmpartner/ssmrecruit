@@ -78,7 +78,7 @@ export default function AddLeadDialog() {
     if (!SWISS_PHONE_REGEX.test(form.phone.replace(/\s+/g, ' ').trim())) errs.phone = 'Format: +41 XX XXX XX XX';
     if (!form.plz || form.plz.length !== 4) errs.plz = 'Gültige PLZ erforderlich';
     if (!form.city) errs.city = 'Ort wird benötigt';
-    if (!form.position.trim()) errs.position = 'Position erforderlich';
+    // position (Anrede) is optional now
     if (!form.agencyId) errs.agencyId = 'Agentur wählen';
     if (!form.employeeId) errs.employeeId = 'Mitarbeiter wählen';
     setErrors(errs);
