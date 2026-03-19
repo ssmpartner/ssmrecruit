@@ -463,3 +463,56 @@ export default function LeadInsightsDocuments({ leadId, leadName, leadStatus }: 
     </div>
   );
 }
+
+// Combined component with step actions panel
+export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus, onScheduleAppointment }: PropsWithActions) {
+  const { discResults } = useLeads();
+  const [processData, setProcessData] = useState({ insightsSent: false, insightsCompleted: false, docsCompleted: false });
+  const insightsRef = useRef<HTMLDivElement>(null);
+  const docsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    async function check() {
+      const [insRes, docRes] = await Promise.all([
+        supabase.from('insights_requests').select('status').eq('lead_id', leadId).order('created_at', { ascending: false }).limit(1),
+        supabase.from('document_requests').select('status').eq('lead_id', leadId).order('created_at', { ascending: false }).limit(1),
+      ]);
+      setProcessData({
+        insightsSent: !!(insRes.data && insRes.data.length > 0),
+        insightsCompleted: insRes.data?.[0]?.status === 'completed',
+        docsCompleted: docRes.data?.[0]?.status === 'completed',
+      });
+    }
+    check();
+    const ch = supabase.channel(`step-actions-${leadId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'insights_requests', filter: `lead_id=eq.${leadId}` }, () => check())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'document_requests', filter: `lead_id=eq.${leadId}` }, () => check())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [leadId]);
+
+  const hasDisc = discResults.some(d => d.leadId === leadId);
+
+  return (
+    <div className="space-y-6">
+      <StepActionsPanel
+        leadId={leadId}
+        leadName={leadName}
+        leadStatus={leadStatus as LeadStatus}
+        onScheduleAppointment={onScheduleAppointment}
+        onOpenInsights={() => insightsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+        onOpenDocuments={() => docsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+        discCompleted={hasDisc || processData.insightsCompleted}
+        documentsCompleted={processData.docsCompleted}
+        insightsSent={processData.insightsSent}
+      />
+
+      <div className="border-t pt-4" ref={insightsRef}>
+        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Prozess-Tools</h4>
+        <div ref={docsRef}>
+          <LeadInsightsDocuments leadId={leadId} leadName={leadName} leadStatus={leadStatus} />
+        </div>
+      </div>
+    </div>
+  );
+}
