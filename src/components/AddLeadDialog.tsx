@@ -224,11 +224,13 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetAndClose(); else setOpen(true); }}>
-      <DialogTrigger asChild>
-        <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-          <Plus className="h-4 w-4" /> Neuer Lead
-        </button>
-      </DialogTrigger>
+      {controlledOpen === undefined && (
+        <DialogTrigger asChild>
+          <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+            <Plus className="h-4 w-4" /> Neuer Lead
+          </button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Step 1: Lead form */}
         {step === 'lead' && (
