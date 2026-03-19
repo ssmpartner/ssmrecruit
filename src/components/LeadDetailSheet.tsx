@@ -18,7 +18,7 @@ import VideoCallDialog from './VideoCallDialog';
 import ProcessStepper from './ProcessStepper';
 import LeadInsightsDocuments from './LeadInsightsDocuments';
 
-const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'insights', 'interview_2', 'hired', 'rejected'];
+const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
 const activityIcon: Record<ActivityEntry['type'], typeof Clock> = {
   status_change: ArrowRight,

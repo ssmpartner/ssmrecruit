@@ -155,7 +155,7 @@ export default function Analytics() {
     const agencyLeads = filtered.filter(l => l.agencyId === a.id);
     const hired = agencyLeads.filter(l => l.status === 'hired').length;
     const contacted = agencyLeads.filter(l => l.status === 'contacted').length;
-    const interview = agencyLeads.filter(l => l.status === 'interview_1' || l.status === 'interview_2').length;
+    const interview = agencyLeads.filter(l => l.status === 'appointment' || l.status === 'follow_up').length;
     const rejected = agencyLeads.filter(l => l.status === 'rejected').length;
     return {
       id: a.id,
@@ -187,7 +187,7 @@ export default function Analytics() {
 
   const hiredCount = filtered.filter(l => l.status === 'hired').length;
   const contactedCount = filtered.filter(l => l.status === 'contacted').length;
-  const interviewCount = filtered.filter(l => l.status === 'interview_1' || l.status === 'interview_2').length;
+  const interviewCount = filtered.filter(l => l.status === 'appointment' || l.status === 'follow_up').length;
   const conversionRate = filtered.length > 0 ? ((hiredCount / filtered.length) * 100).toFixed(1) : '0';
   const uniqueCantons = new Set(filtered.map(l => l.cantonCode)).size;
 

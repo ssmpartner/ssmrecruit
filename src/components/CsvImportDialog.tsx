@@ -166,7 +166,7 @@ export default function CsvImportDialog() {
       const match = agencies.find(a => a.name.toLowerCase() === val.toLowerCase() || a.id === val);
       return match?.id || defaultAgency;
     };
-    const validStatuses = ['new', 'contacted', 'appointment', 'interview_1', 'insights', 'interview_2', 'hired', 'rejected'];
+    const validStatuses = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
     const resolveStatus = (val?: string) => {
       if (!val) return 'new';
       const lower = val.toLowerCase().trim();

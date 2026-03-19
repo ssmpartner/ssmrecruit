@@ -1,4 +1,4 @@
-export type LeadStatus = 'new' | 'contacted' | 'appointment' | 'interview_1' | 'insights' | 'interview_2' | 'hired' | 'rejected';
+export type LeadStatus = 'new' | 'contacted' | 'appointment' | 'follow_up' | 'hired' | 'rejected';
 
 export type DiscDimension = 'D' | 'I' | 'S' | 'C';
 
@@ -182,17 +182,15 @@ export interface Employee {
 }
 
 // Ordered status flow for employees
-export const statusFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'insights', 'interview_2', 'hired', 'rejected'];
+export const statusFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
 export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boolean): LeadStatus[] {
   if (isAdmin) return statusFlow;
   const flowMap: Record<LeadStatus, LeadStatus[]> = {
     new: ['contacted'],
     contacted: ['appointment'],
-    appointment: ['interview_1', 'rejected'],
-    interview_1: ['insights', 'rejected'],
-    insights: ['interview_2', 'rejected'],
-    interview_2: ['hired', 'rejected'],
+    appointment: ['follow_up', 'rejected'],
+    follow_up: ['hired', 'rejected'],
     hired: [],
     rejected: [],
   };
@@ -203,9 +201,7 @@ export const statusConfig: Record<LeadStatus, { label: string; color: string }> 
   new: { label: 'Neuer Lead', color: 'bg-blue-50 text-blue-700 border border-blue-200' },
   contacted: { label: 'Kontaktiert', color: 'bg-amber-50 text-amber-700 border border-amber-200' },
   appointment: { label: 'Terminiert', color: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
-  interview_1: { label: 'Gespräch 1', color: 'bg-violet-50 text-violet-700 border border-violet-200' },
-  insights: { label: 'Insights', color: 'bg-orange-50 text-orange-700 border border-orange-200' },
-  interview_2: { label: 'Gespräch 2', color: 'bg-indigo-50 text-indigo-700 border border-indigo-200' },
+  follow_up: { label: 'Follow-up', color: 'bg-violet-50 text-violet-700 border border-violet-200' },
   hired: { label: 'Eingestellt', color: 'bg-green-50 text-green-700 border border-green-200' },
   rejected: { label: 'Abgelehnt', color: 'bg-red-50 text-red-700 border border-red-200' },
 };
@@ -268,7 +264,7 @@ const swissLeadData = [
 
 const positions = ['Frontend Entwickler', 'Backend Ingenieur', 'Projektleiter', 'UX Designer', 'Datenanalyst', 'DevOps Ingenieur', 'QA Ingenieur', 'Fullstack Entwickler', 'Marketing Manager', 'Verkaufsberater'];
 
-const statuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'interview_2', 'hired', 'rejected'];
+const statuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 const sources: LeadSource[] = ['website', 'tiktok', 'meta', 'linkedin', 'csv_import'];
 
 export const leads: Lead[] = swissNames.map((name, i) => {
