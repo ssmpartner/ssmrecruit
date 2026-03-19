@@ -193,7 +193,7 @@ export default function LeadDetailSheet() {
                 <div className="min-w-0 flex-1">
                   <DialogHeader className="space-y-0">
                     <DialogTitle className="text-lg font-bold tracking-tight">{selectedLead.name}</DialogTitle>
-                    <DialogDescription className="text-xs text-muted-foreground">{selectedLead.position || 'Kein Titel'}</DialogDescription>
+                    <DialogDescription className="text-sm text-muted-foreground">{selectedLead.position || 'Kein Titel'}</DialogDescription>
                   </DialogHeader>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
