@@ -109,8 +109,16 @@ export default function LeadDetailSheet() {
     if (form.address !== selectedLead.address) changes.push(`Adresse aktualisiert`);
     if (form.plz !== selectedLead.plz) changes.push(`PLZ → ${form.plz} ${form.city}`);
     if (form.notes !== selectedLead.notes) changes.push(`Notizen aktualisiert`);
+    if (isSuperadmin && form.source !== selectedLead.source) changes.push(`Quelle → "${sourceConfig[form.source as LeadSource]?.label || form.source}"`);
+    if (isSuperadmin && form.createdAt !== selectedLead.createdAt) changes.push(`Erstelldatum geändert`);
 
-    updateLead(selectedLead.id, form);
+    const updates: Partial<Record<string, any>> = { ...form };
+    if (!isSuperadmin) {
+      delete updates.source;
+      delete updates.createdAt;
+    }
+
+    updateLead(selectedLead.id, updates);
     if (changes.length > 0) addActivity(selectedLead.id, 'edit', changes.join(', '));
     setEditing(false);
   };
