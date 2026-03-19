@@ -13,6 +13,7 @@ import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus, Link2, Send, Copy, ExternalLink, Brain } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import VideoCallDialog from './VideoCallDialog';
 import InsightsTab from './InsightsTab';
 import ProcessStepper from './ProcessStepper';
