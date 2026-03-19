@@ -126,7 +126,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function loadData() {
       try {
-        const [leadsRes, employeesRes, agenciesRes, activitiesRes, appointmentsRes, discRes, settingsRes] = await Promise.all([
+        const [leadsRes, employeesRes, agenciesRes, activitiesRes, appointmentsRes, discRes, settingsRes, sourcesRes] = await Promise.all([
           supabase.from('leads').select('*').order('created_at', { ascending: false }),
           supabase.from('employees').select('*'),
           supabase.from('agencies').select('*'),
@@ -134,6 +134,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
           supabase.from('appointments').select('*').order('created_at', { ascending: false }),
           supabase.from('disc_results').select('*'),
           supabase.from('app_settings').select('*'),
+          supabase.from('lead_sources').select('*').order('sort_order'),
         ]);
 
         if (leadsRes.data) setLeads(leadsRes.data.map(dbToLead));
@@ -142,6 +143,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         if (activitiesRes.data) setActivities(activitiesRes.data.map(dbToActivity));
         if (appointmentsRes.data) setAppointments(appointmentsRes.data.map(dbToAppointment));
         if (discRes.data) setDiscResults(discRes.data.map(dbToDiscResult));
+        if (sourcesRes.data) setLeadSources(sourcesRes.data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, sortOrder: r.sort_order })));
 
         if (settingsRes.data) {
           const aptSetting = settingsRes.data.find(s => s.key === 'appointment');
