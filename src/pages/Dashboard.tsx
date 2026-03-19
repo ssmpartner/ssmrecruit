@@ -101,7 +101,12 @@ export default function Dashboard() {
                     <td className="px-6 py-3 text-muted-foreground">{lead.position}</td>
                     <td className="px-6 py-3"><SourceBadge source={lead.source} /></td>
                     <td className="px-6 py-3"><LeadStatusBadge status={lead.status} /></td>
-                    <td className="px-6 py-3 text-muted-foreground">{emp?.name ?? '—'}</td>
+                    <td className="px-6 py-3">
+                      {(() => {
+                        const ag = leads.length > 0 ? undefined : undefined; // handled below
+                        return null;
+                      })()}
+                    </td>
                     <td className="px-6 py-3 text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString('de-CH')}</td>
                   </tr>
                 );

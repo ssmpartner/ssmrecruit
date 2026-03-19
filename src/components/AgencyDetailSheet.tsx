@@ -147,6 +147,25 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
             />
           </div>
 
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              <Palette className="h-3.5 w-3.5" /> Agenturfarbe
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {AGENCY_COLORS.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => update('color', c)}
+                  className={`h-8 w-8 rounded-full border-2 transition-all ${
+                    form.color === c ? 'border-foreground scale-110 ring-2 ring-ring ring-offset-2 ring-offset-background' : 'border-transparent hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
+
           <Separator />
 
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Regionale Einstellungen</h3>
