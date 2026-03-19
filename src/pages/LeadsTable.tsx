@@ -164,6 +164,7 @@ export default function LeadsTable() {
       {/* Table Tabs */}
       {activeTab !== 'duplicates' && (
         <>
+          {isSuperadmin && <BulkActionsBar selectedIds={selectedIds} onClear={() => setSelectedIds([])} />}
           <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4 shadow-sm">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <input
