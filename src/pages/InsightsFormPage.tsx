@@ -3,7 +3,11 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckCircle2, Loader2, AlertCircle, Send, Brain, ClipboardList, CalendarPlus, Plus, Trash2 } from 'lucide-react';
 
-const insightsQuestions = [
+interface InsightsQuestion { key: string; label: string; question: string }
+interface DiscQuestionItem { text: string; dimension: 'D' | 'I' | 'S' | 'C' }
+
+// Fallbacks if DB is empty
+const defaultInsightsQuestions: InsightsQuestion[] = [
   { key: 'motivation', label: 'Motivation', question: 'Was motiviert Sie, eine neue berufliche Herausforderung zu suchen?' },
   { key: 'experience', label: 'Erfahrung', question: 'Beschreiben Sie Ihre relevanteste berufliche Erfahrung.' },
   { key: 'availability', label: 'Verfügbarkeit', question: 'Ab wann sind Sie verfügbar und wie flexibel sind Sie bezüglich Arbeitszeiten?' },
@@ -12,7 +16,7 @@ const insightsQuestions = [
   { key: 'salary', label: 'Gehaltsvorstellung', question: 'Was sind Ihre Gehaltsvorstellungen?' },
 ];
 
-const discQuestions: { text: string; dimension: 'D' | 'I' | 'S' | 'C' }[] = [
+const defaultDiscQuestions: DiscQuestionItem[] = [
   { text: 'Ich treffe Entscheidungen schnell und entschlossen.', dimension: 'D' },
   { text: 'Ich arbeite gerne mit anderen Menschen zusammen und bin gesellig.', dimension: 'I' },
   { text: 'Ich bevorzuge ein stabiles und vorhersehbares Arbeitsumfeld.', dimension: 'S' },
