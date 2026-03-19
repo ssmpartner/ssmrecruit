@@ -9,11 +9,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { type NotificationMethod, discQuestions } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst';
+type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter';
 
 const roleConfig: Record<SystemRole, { label: string; color: string; description: string }> = {
   superadmin: { label: 'Superadmin', color: 'bg-destructive text-destructive-foreground', description: 'Vollzugriff – kann alles verwalten inkl. Benutzer & Einstellungen' },
   admin: { label: 'Admin', color: 'bg-primary text-primary-foreground', description: 'Kann Leads, Mitarbeiter & Agenturen verwalten' },
+  teamleiter: { label: 'Teamleiter', color: 'bg-emerald-600 text-white', description: 'Eigene Leads bearbeiten, Pipeline, Aufgaben, Kalender & Statistik' },
   backoffice: { label: 'Backoffice', color: 'bg-warning text-warning-foreground', description: 'Kann Leads bearbeiten, zuweisen und Status ändern' },
   analyst: { label: 'Analyst', color: 'bg-info text-info-foreground', description: 'Nur Lesezugriff auf Dashboard & Analytics' },
 };

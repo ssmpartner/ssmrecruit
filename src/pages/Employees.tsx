@@ -278,6 +278,7 @@ export default function Employees() {
                   onChange={e => setConvertForm(p => ({ ...p, role: e.target.value }))}
                   className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 >
+                  <option value="teamleiter">Teamleiter</option>
                   <option value="backoffice">Backoffice</option>
                   <option value="analyst">Analyst</option>
                   <option value="admin">Admin</option>
