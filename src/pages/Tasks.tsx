@@ -199,7 +199,7 @@ export default function Tasks() {
     return map;
   }, [visibleTasks]);
 
-  if (!currentUser) return null;
+  if (!profile) return null;
 
   return (
     <div className="space-y-6">
