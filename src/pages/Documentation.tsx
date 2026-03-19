@@ -115,7 +115,7 @@ const appFeatures = [
     { name: 'Prozesse', desc: 'Mehrstufige Recruiting-Prozesse mit Stepper-Ansicht, KI-generierten Richtlinien und Geltungsbereichen für Automatisierungen (Global/Agentur/Mitarbeiter).' },
   ]},
   { category: 'Analyse & Insights', icon: '📊', features: [
-    { name: 'Dashboard', desc: 'Übersicht mit KPIs, Lead-Statistiken und Performance-Metriken.' },
+    { name: 'Dashboard', desc: 'Übersicht mit Begrüssung, Uhrzeit, Wetter, 6 KPI-Karten, Leads nach Kanal, Pipeline-Verteilung, anstehende Termine und Schnellzugriff (+ Neu Dropdown).' },
     { name: 'Analytics', desc: 'Detaillierte Auswertungen mit interaktiven Charts (Recharts).' },
     { name: 'DISC-Persönlichkeitstest', desc: 'Automatisierte Persönlichkeitsanalyse für Kandidaten mit automatischer Ergebnisanzeige.' },
     { name: 'Insights-Fragebogen', desc: 'Anpassbare Fragen (Teil 1: Insights, Teil 2: DISC, Teil 3: Terminvorschläge) – konfigurierbar in den Einstellungen.' },
