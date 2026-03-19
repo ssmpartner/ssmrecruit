@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UserPlus, X, Archive, Trash2 } from 'lucide-react';
+import { UserPlus, X, Archive, Trash2, Tag } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -28,9 +28,9 @@ interface BulkActionsBarProps {
 }
 
 export default function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarProps) {
-  const { leads, employees, agencies, updateLead, archiveLead, deleteLead, addActivity } = useLeads();
+  const { leads, employees, agencies, leadSources, updateLead, archiveLead, deleteLead, addActivity } = useLeads();
   const { isSuperadmin } = useAuth();
-  const [assignType, setAssignType] = useState<'employee' | 'agency' | null>(null);
+  const [assignType, setAssignType] = useState<'employee' | 'agency' | 'source' | null>(null);
   const [confirmBulk, setConfirmBulk] = useState<'archive' | 'delete' | null>(null);
 
   if (!isSuperadmin || selectedIds.length === 0) return null;
@@ -57,6 +57,17 @@ export default function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarP
     onClear();
   };
 
+  const handleChangeSource = (sourceId: string) => {
+    const src = leadSources.find(s => s.id === sourceId);
+    selectedIds.forEach(id => {
+      updateLead(id, { source: sourceId as any });
+      addActivity(id, 'edit', `Quelle geändert zu: ${src?.label ?? sourceId}`);
+    });
+    toast.success(`${selectedIds.length} Leads – Quelle auf "${src?.label}" geändert`);
+    setAssignType(null);
+    onClear();
+  };
+
   const handleBulkConfirm = () => {
     if (confirmBulk === 'archive') {
       selectedIds.forEach(id => archiveLead(id));
@@ -76,7 +87,7 @@ export default function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarP
           {selectedIds.length} Lead{selectedIds.length > 1 ? 's' : ''} ausgewählt
         </span>
 
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex items-center gap-2 ml-auto flex-wrap">
           {/* Assign to employee */}
           {assignType === 'employee' ? (
             <Select onValueChange={handleAssignEmployee}>
@@ -110,6 +121,24 @@ export default function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarP
           ) : (
             <Button variant="outline" size="sm" onClick={() => { setAssignType('agency'); }}>
               <UserPlus className="h-4 w-4 mr-1" /> Agentur zuweisen
+            </Button>
+          )}
+
+          {/* Change source */}
+          {assignType === 'source' ? (
+            <Select onValueChange={handleChangeSource}>
+              <SelectTrigger className="w-48 h-9 text-sm">
+                <SelectValue placeholder="Quelle wählen..." />
+              </SelectTrigger>
+              <SelectContent>
+                {leadSources.map(s => (
+                  <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Button variant="outline" size="sm" onClick={() => { setAssignType('source'); }}>
+              <Tag className="h-4 w-4 mr-1" /> Quelle ändern
             </Button>
           )}
 
