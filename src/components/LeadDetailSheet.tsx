@@ -162,7 +162,7 @@ export default function LeadDetailSheet() {
   };
 
   const leadActivities = selectedLead ? activities.filter(a => a.leadId === selectedLead.id) : [];
-  const inputCls = "h-8 w-full rounded-md border bg-background px-2.5 text-sm outline-none focus:ring-2 focus:ring-ring";
+  const inputCls = "h-9 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
   const inputErr = (field: string) => fieldErrors[field] ? inputCls + ' border-destructive ring-1 ring-destructive/30' : inputCls;
 
   const rightTabs = [
@@ -175,35 +175,35 @@ export default function LeadDetailSheet() {
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-[95vw] w-[95vw] max-h-[92vh] h-[92vh] overflow-hidden flex flex-col p-0 gap-0">
+        <DialogContent className="max-w-6xl w-[85vw] max-h-[85vh] h-[85vh] overflow-hidden flex flex-col p-0 gap-0">
           {selectedLead && (
             <>
               {/* Compact Header */}
               <div className="border-b px-5 py-3 flex items-center gap-3 shrink-0" style={{ background: 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--background)))' }}>
                 <div className="flex items-center gap-1.5">
                   <button onClick={goToPrev} disabled={!hasPrev}
-                    className="flex h-7 w-7 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
-                    <ChevronLeft className="h-3.5 w-3.5" />
+                    className="flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                    <ChevronLeft className="h-4 w-4" />
                   </button>
                   <button onClick={goToNext} disabled={!hasNext}
-                    className="flex h-7 w-7 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    className="flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                    <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
                 <div className="min-w-0 flex-1">
                   <DialogHeader className="space-y-0">
-                    <DialogTitle className="text-base font-bold tracking-tight">{selectedLead.name}</DialogTitle>
-                    <DialogDescription className="text-xs text-muted-foreground">{selectedLead.position || 'Kein Titel'}</DialogDescription>
+                    <DialogTitle className="text-lg font-bold tracking-tight">{selectedLead.name}</DialogTitle>
+                    <DialogDescription className="text-sm text-muted-foreground">{selectedLead.position || 'Kein Titel'}</DialogDescription>
                   </DialogHeader>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <LeadStatusBadge status={selectedLead.status} />
                   <SourceBadge source={selectedLead.source} />
-                  <span className="hidden md:inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                  <span className="hidden md:inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                     <MapPin className="h-3 w-3" /> {selectedLead.plz} {selectedLead.city}
                   </span>
                   {currentIndex >= 0 && (
-                    <span className="rounded-md bg-primary/10 px-2 py-0.5 text-[11px] text-primary font-semibold tabular-nums">
+                    <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs text-primary font-semibold tabular-nums">
                       {currentIndex + 1}/{activeLeads.length}
                     </span>
                   )}
@@ -218,7 +218,7 @@ export default function LeadDetailSheet() {
               {/* Two Column Layout */}
               <div className="flex-1 flex overflow-hidden">
                 {/* LEFT: Step Actions + Workflow */}
-                <div className="w-[380px] shrink-0 border-r overflow-y-auto bg-muted/20">
+                <div className="w-[400px] shrink-0 border-r overflow-y-auto bg-muted/20">
                   <div className="p-4">
                     <LeadInsightsDocumentsWithActions
                       leadId={selectedLead.id}
@@ -240,12 +240,12 @@ export default function LeadDetailSheet() {
                         <Video className="h-4 w-4 text-primary shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-semibold truncate">{nextVideoApt.title}</p>
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {new Date(nextVideoApt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short' })} • {nextVideoApt.time}
                           </p>
                         </div>
                         <button onClick={() => setActiveCallAptId(nextVideoApt.id)}
-                          className="rounded-md bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
+                          className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
                           Starten
                         </button>
                       </div>
@@ -271,7 +271,7 @@ export default function LeadDetailSheet() {
                         <tab.icon className="h-3.5 w-3.5" />
                         {tab.label}
                         {tab.count ? (
-                          <span className="ml-0.5 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground leading-none">{tab.count}</span>
+                          <span className="ml-0.5 rounded-full bg-primary px-1.5 py-0.5 text-xs font-bold text-primary-foreground leading-none">{tab.count}</span>
                         ) : null}
                       </button>
                     ))}
@@ -279,11 +279,11 @@ export default function LeadDetailSheet() {
                     <div className="ml-auto">
                       {rightTab === 'info' && (
                         !editing ? (
-                          <button onClick={startEdit} className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted transition-colors">
+                          <button onClick={startEdit} className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted transition-colors">
                             <Edit3 className="h-3 w-3" /> Bearbeiten
                           </button>
                         ) : (
-                          <button onClick={saveEdit} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-[11px] font-semibold text-primary-foreground hover:opacity-90 transition-all">
+                          <button onClick={saveEdit} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-all">
                             <Save className="h-3 w-3" /> Speichern
                           </button>
                         )
@@ -300,13 +300,13 @@ export default function LeadDetailSheet() {
                           <h4 className="text-xs font-semibold flex items-center gap-1.5"><UserCog className="h-3.5 w-3.5" /> Zuweisung</h4>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="text-[11px] text-muted-foreground">Agentur</label>
+                              <label className="text-xs text-muted-foreground">Agentur</label>
                               <select value={selectedLead.agencyId} onChange={e => changeAgency(e.target.value)} className={inputCls + ' mt-0.5'}>
                                 {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                               </select>
                             </div>
                             <div>
-                              <label className="text-[11px] text-muted-foreground">Mitarbeiter</label>
+                              <label className="text-xs text-muted-foreground">Mitarbeiter</label>
                               <select value={selectedLead.employeeId} onChange={e => changeEmployee(e.target.value)} className={inputCls + ' mt-0.5'}>
                                 {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                               </select>
@@ -319,31 +319,31 @@ export default function LeadDetailSheet() {
                             <div className="grid grid-cols-2 gap-2.5">
                               {(['name', 'position'] as const).map(field => (
                                 <div key={field}>
-                                  <label className={`text-[11px] ${fieldErrors[field] ? 'text-destructive' : 'text-muted-foreground'}`}>{field === 'name' ? 'Name *' : 'Position'}</label>
+                                  <label className={`text-xs ${fieldErrors[field] ? 'text-destructive' : 'text-muted-foreground'}`}>{field === 'name' ? 'Name *' : 'Position'}</label>
                                   <input value={form[field]} onChange={e => { setForm(prev => ({ ...prev, [field]: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n[field]; return n; }); }} className={inputErr(field)} />
-                                  {fieldErrors[field] && <p className="text-[10px] text-destructive mt-0.5">{fieldErrors[field]}</p>}
+                                  {fieldErrors[field] && <p className="text-xs text-destructive mt-0.5">{fieldErrors[field]}</p>}
                                 </div>
                               ))}
                             </div>
                             <div className="grid grid-cols-2 gap-2.5">
                               <div>
-                                <label className={`text-[11px] ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail</label>
+                                <label className={`text-xs ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail</label>
                                 <input value={form.email} onChange={e => { setForm(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.email; return n; }); }} className={inputErr('email')} />
-                                {fieldErrors.email && <p className="text-[10px] text-destructive mt-0.5">{fieldErrors.email}</p>}
+                                {fieldErrors.email && <p className="text-xs text-destructive mt-0.5">{fieldErrors.email}</p>}
                               </div>
                               <div>
-                                <label className={`text-[11px] ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon</label>
+                                <label className={`text-xs ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon</label>
                                 <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
-                                {fieldErrors.phone && <p className="text-[10px] text-destructive mt-0.5">{fieldErrors.phone}</p>}
+                                {fieldErrors.phone && <p className="text-xs text-destructive mt-0.5">{fieldErrors.phone}</p>}
                               </div>
                             </div>
                             <div>
-                              <label className="text-[11px] text-muted-foreground">Strasse & Nr.</label>
+                              <label className="text-xs text-muted-foreground">Strasse & Nr.</label>
                               <input value={form.address} onChange={e => setForm(prev => ({ ...prev, address: e.target.value }))} className={inputCls} />
                             </div>
                             <div className="grid grid-cols-3 gap-2.5">
                               <div className="relative">
-                                <label className="text-[11px] text-muted-foreground">PLZ</label>
+                                <label className="text-xs text-muted-foreground">PLZ</label>
                                 <input value={form.plz} onChange={e => handlePlzChange(e.target.value)}
                                   onFocus={() => form.plz.length >= 2 && setShowPlzDropdown(plzSuggestions.length > 0)}
                                   onBlur={() => setTimeout(() => setShowPlzDropdown(false), 200)}
@@ -361,11 +361,11 @@ export default function LeadDetailSheet() {
                                 )}
                               </div>
                               <div>
-                                <label className="text-[11px] text-muted-foreground">Ort</label>
+                                <label className="text-xs text-muted-foreground">Ort</label>
                                 <input value={form.city} onChange={isSuperadmin ? e => setForm(prev => ({ ...prev, city: e.target.value })) : undefined} readOnly={!isSuperadmin} className={isSuperadmin ? inputCls : "h-8 w-full rounded-md border bg-muted px-2.5 text-sm"} />
                               </div>
                               <div>
-                                <label className="text-[11px] text-muted-foreground">Kanton</label>
+                                <label className="text-xs text-muted-foreground">Kanton</label>
                                 {isSuperadmin ? (
                                   <select value={form.cantonCode} onChange={e => {
                                     const c = cantons.find(ct => ct.code === e.target.value);
@@ -382,13 +382,13 @@ export default function LeadDetailSheet() {
                             {isSuperadmin && (
                               <div className="grid grid-cols-2 gap-2.5">
                                 <div>
-                                  <label className="text-[11px] text-muted-foreground">Quelle</label>
+                                  <label className="text-xs text-muted-foreground">Quelle</label>
                                   <select value={form.source} onChange={e => setForm(prev => ({ ...prev, source: e.target.value }))} className={inputCls}>
                                     {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="text-[11px] text-muted-foreground">Erstelldatum</label>
+                                  <label className="text-xs text-muted-foreground">Erstelldatum</label>
                                   <Popover>
                                     <PopoverTrigger asChild>
                                       <button className={cn(inputCls, 'flex items-center gap-1.5 text-left')}>
@@ -406,7 +406,7 @@ export default function LeadDetailSheet() {
                               </div>
                             )}
                             <div>
-                              <label className="text-[11px] text-muted-foreground">Notizen</label>
+                              <label className="text-xs text-muted-foreground">Notizen</label>
                               <textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={2}
                                 className="w-full rounded-md border bg-background px-2.5 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
                             </div>
@@ -429,7 +429,7 @@ export default function LeadDetailSheet() {
                             ))}
                             {selectedLead.notes && (
                               <div className="col-span-2 pt-2">
-                                <span className="text-muted-foreground text-[11px]">Notizen</span>
+                                <span className="text-muted-foreground text-xs">Notizen</span>
                                 <p className="mt-0.5 text-xs">{selectedLead.notes}</p>
                               </div>
                             )}
@@ -444,7 +444,7 @@ export default function LeadDetailSheet() {
                         <div className="flex items-center justify-between">
                           <h4 className="text-sm font-semibold">Termine</h4>
                           <button onClick={() => { setShowAptForm(!showAptForm); setAptForm({ title: '', date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' }); }}
-                            className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-[11px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                            className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
                             <Plus className="h-3 w-3" /> Neu
                           </button>
                         </div>
@@ -453,11 +453,11 @@ export default function LeadDetailSheet() {
                           <div className="rounded-lg border bg-muted/30 p-3 space-y-2.5">
                             <div className="grid grid-cols-2 gap-2.5">
                               <div>
-                                <label className="text-[11px] text-muted-foreground">Titel *</label>
+                                <label className="text-xs text-muted-foreground">Titel *</label>
                                 <input value={aptForm.title} onChange={e => setAptForm(prev => ({ ...prev, title: e.target.value }))} placeholder="z.B. Erstgespräch" className={inputCls} />
                               </div>
                               <div>
-                                <label className="text-[11px] text-muted-foreground">Art</label>
+                                <label className="text-xs text-muted-foreground">Art</label>
                                 <select value={aptForm.type} onChange={e => setAptForm(prev => ({ ...prev, type: e.target.value as any }))} className={inputCls}>
                                   {Object.entries(appointmentTypeConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                                 </select>
@@ -465,7 +465,7 @@ export default function LeadDetailSheet() {
                             </div>
                             <div className="grid grid-cols-3 gap-2.5">
                               <div>
-                                <label className="text-[11px] text-muted-foreground">Datum *</label>
+                                <label className="text-xs text-muted-foreground">Datum *</label>
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <button className={cn(inputCls, 'flex items-center gap-1.5 text-left', !aptForm.date && 'text-muted-foreground')}>
@@ -481,23 +481,23 @@ export default function LeadDetailSheet() {
                                 </Popover>
                               </div>
                               <div>
-                                <label className="text-[11px] text-muted-foreground">Uhrzeit</label>
+                                <label className="text-xs text-muted-foreground">Uhrzeit</label>
                                 <input type="time" value={aptForm.time} onChange={e => setAptForm(prev => ({ ...prev, time: e.target.value }))} className={inputCls} />
                               </div>
                               <div>
-                                <label className="text-[11px] text-muted-foreground">Dauer</label>
+                                <label className="text-xs text-muted-foreground">Dauer</label>
                                 <select value={aptForm.duration} onChange={e => setAptForm(prev => ({ ...prev, duration: Number(e.target.value) }))} className={inputCls}>
                                   {[15, 30, 45, 60, 90].map(d => <option key={d} value={d}>{d} Min.</option>)}
                                 </select>
                               </div>
                             </div>
                             <div>
-                              <label className="text-[11px] text-muted-foreground">Notizen</label>
+                              <label className="text-xs text-muted-foreground">Notizen</label>
                               <textarea value={aptForm.notes} onChange={e => setAptForm(prev => ({ ...prev, notes: e.target.value }))} rows={2} placeholder="Optional..."
                                 className="w-full rounded-md border bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
                             </div>
                             <div className="flex justify-end gap-2">
-                              <button onClick={() => setShowAptForm(false)} className="rounded-md border px-2.5 py-1 text-[11px] hover:bg-muted transition-colors">Abbrechen</button>
+                              <button onClick={() => setShowAptForm(false)} className="rounded-md border px-2.5 py-1 text-xs hover:bg-muted transition-colors">Abbrechen</button>
                               <button disabled={!aptForm.title.trim() || !aptForm.date}
                                 onClick={() => {
                                   if (!aptForm.title.trim() || !aptForm.date || !selectedLead) return;
@@ -505,7 +505,7 @@ export default function LeadDetailSheet() {
                                   setShowAptForm(false);
                                   setAptForm({ title: '', date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' });
                                 }}
-                                className="rounded-md bg-primary px-3 py-1 text-[11px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
                                 Speichern
                               </button>
                             </div>
@@ -528,10 +528,10 @@ export default function LeadDetailSheet() {
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="text-xs font-medium">{apt.title}</p>
-                                    <p className="text-[11px] text-muted-foreground">
+                                    <p className="text-xs text-muted-foreground">
                                       {new Date(apt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short' })} • {apt.time} • {apt.duration}min • {appointmentTypeConfig[apt.type].label}
                                     </p>
-                                    {apt.notes && <p className="text-[11px] mt-0.5 text-muted-foreground">{apt.notes}</p>}
+                                    {apt.notes && <p className="text-xs mt-0.5 text-muted-foreground">{apt.notes}</p>}
                                   </div>
                                   <button onClick={() => removeAppointment(apt.id)} className="shrink-0 rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
                                     <Trash2 className="h-3 w-3" />
@@ -540,15 +540,15 @@ export default function LeadDetailSheet() {
                                 {apt.meetingLink && (
                                   <div className="ml-9 flex items-center gap-2 flex-wrap">
                                     <button onClick={() => setActiveCallAptId(apt.id)}
-                                      className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-[11px] font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
+                                      className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
                                       <Video className="h-3 w-3" /> Starten
                                     </button>
                                     <button onClick={() => { navigator.clipboard.writeText(apt.meetingLink!); toast({ title: 'Kopiert' }); }}
-                                      className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] hover:bg-muted transition-colors">
+                                      className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs hover:bg-muted transition-colors">
                                       <Copy className="h-3 w-3" /> Link
                                     </button>
                                     <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Gesendet' }); }}
-                                      className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary px-2 py-0.5 text-[10px] hover:bg-primary/20 transition-colors">
+                                      className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary px-2 py-0.5 text-xs hover:bg-primary/20 transition-colors">
                                       <Send className="h-3 w-3" /> {methodLabels[appointmentSettings.notificationMethod]}
                                     </button>
                                   </div>
@@ -566,11 +566,11 @@ export default function LeadDetailSheet() {
                         <section>
                           <h4 className="text-sm font-semibold mb-2">Status ändern</h4>
                           <div className="mb-3">
-                            <p className="text-[11px] text-muted-foreground mb-1.5">Admin (frei wählbar)</p>
+                            <p className="text-xs text-muted-foreground mb-1.5">Admin (frei wählbar)</p>
                             <div className="flex flex-wrap gap-1">
                               {statusKeys.map(s => (
                                 <button key={s} onClick={() => changeStatus(s)}
-                                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium border transition-colors ${
+                                  className={`rounded-full px-2.5 py-1 text-xs font-medium border transition-colors ${
                                     selectedLead.status === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary text-secondary-foreground border-transparent hover:border-primary/30'
                                   }`}>
                                   {statusConfig[s].label}
@@ -579,20 +579,20 @@ export default function LeadDetailSheet() {
                             </div>
                           </div>
                           <div>
-                            <p className="text-[11px] text-muted-foreground mb-1.5">Nächster Schritt</p>
+                            <p className="text-xs text-muted-foreground mb-1.5">Nächster Schritt</p>
                             {(() => {
                               const allowed = getAllowedNextStatuses(selectedLead.status, false);
                               return allowed.length > 0 ? (
                                 <div className="flex flex-wrap gap-1">
                                   {allowed.map(s => (
                                     <button key={s} onClick={() => changeStatus(s)}
-                                      className="rounded-full px-2.5 py-1 text-[11px] font-medium border border-primary/30 bg-primary/5 hover:bg-primary hover:text-primary-foreground transition-colors">
+                                      className="rounded-full px-2.5 py-1 text-xs font-medium border border-primary/30 bg-primary/5 hover:bg-primary hover:text-primary-foreground transition-colors">
                                       → {statusConfig[s].label}
                                     </button>
                                   ))}
                                 </div>
                               ) : (
-                                <p className="text-[11px] text-muted-foreground italic">Endstatus erreicht</p>
+                                <p className="text-xs text-muted-foreground italic">Endstatus erreicht</p>
                               );
                             })()}
                           </div>
@@ -609,7 +609,7 @@ export default function LeadDetailSheet() {
                               onKeyDown={e => e.key === 'Enter' && addNote()}
                               placeholder="Notiz schreiben..." className={inputCls + ' flex-1'} />
                             <button onClick={addNote} disabled={!noteText.trim()}
-                              className="rounded-md bg-primary px-3 py-1 text-[11px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                              className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
                               +
                             </button>
                           </div>
@@ -630,7 +630,7 @@ export default function LeadDetailSheet() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs">{act.description}</p>
-                                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                                  <p className="text-xs text-muted-foreground mt-0.5">
                                     {act.user} • {new Date(act.timestamp).toLocaleString('de-CH')}
                                   </p>
                                 </div>
