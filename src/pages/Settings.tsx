@@ -199,6 +199,7 @@ export default function Settings() {
           {activeTab === 'profile' && <ProfileSettings />}
           {activeTab === 'notifications' && <NotificationsTab notifPrefs={notifPrefs} updateNotifPrefs={updateNotifPrefs} toast={toast} />}
           {activeTab === 'users' && <UsersTab isSuperadmin={isSuperadmin} />}
+          {activeTab === 'sources' && <LeadSourcesTab isSuperadmin={isSuperadmin} />}
           {activeTab === 'appointments' && <AppointmentsTab appointmentSettings={appointmentSettings} updateAppointmentSettings={updateAppointmentSettings} toast={toast} />}
           {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}
           {activeTab === 'integrations' && (
