@@ -16,6 +16,7 @@ import {
 import { LeadsContext, type ActivityEntry, type LeadSourceConfig } from './leads-context';
 import { useNotifications } from './useNotifications';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
 
 // Map DB row to app Lead type
 function dbToLead(row: any): Lead {
