@@ -21,7 +21,7 @@ interface FormState {
   canton: string;
   cantonCode: string;
   position: string;
-  source: LeadSource;
+  source: string;
   notes: string;
   agencyId: string;
   employeeId: string;
