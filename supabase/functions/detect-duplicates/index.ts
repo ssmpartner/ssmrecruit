@@ -5,105 +5,154 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Normalize string for comparison
+function normalize(s: string): string {
+  return (s || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+// Simple similarity score between two strings (0-1)
+function similarity(a: string, b: string): number {
+  const na = normalize(a);
+  const nb = normalize(b);
+  if (!na || !nb) return 0;
+  if (na === nb) return 1;
+
+  // Check if one contains the other
+  if (na.includes(nb) || nb.includes(na)) return 0.8;
+
+  // Levenshtein-based similarity for short strings
+  const maxLen = Math.max(na.length, nb.length);
+  if (maxLen === 0) return 0;
+  const dist = levenshtein(na, nb);
+  return 1 - dist / maxLen;
+}
+
+function levenshtein(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+// Normalize phone: strip spaces, dashes, dots
+function normalizePhone(p: string): string {
+  return (p || "").replace(/[\s\-\.\(\)]/g, "");
+}
+
+// Normalize email
+function normalizeEmail(e: string): string {
+  return normalize(e);
+}
+
+interface Lead {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  plz: string;
+  city: string;
+  position: string;
+}
+
+interface DuplicateMatch {
+  leadId1: string;
+  leadId2: string;
+  confidence: number;
+  reason: string;
+}
+
+function detectDuplicates(leads: Lead[]): DuplicateMatch[] {
+  const duplicates: DuplicateMatch[] = [];
+
+  for (let i = 0; i < leads.length; i++) {
+    for (let j = i + 1; j < leads.length; j++) {
+      const a = leads[i];
+      const b = leads[j];
+      let score = 0;
+      const reasons: string[] = [];
+
+      // 1. Exact email match (strongest signal)
+      const emailA = normalizeEmail(a.email);
+      const emailB = normalizeEmail(b.email);
+      if (emailA && emailB && emailA === emailB) {
+        score += 50;
+        reasons.push("Gleiche E-Mail-Adresse");
+      } else if (emailA && emailB) {
+        const emailSim = similarity(emailA, emailB);
+        if (emailSim >= 0.85) {
+          score += 30;
+          reasons.push("Ähnliche E-Mail-Adresse");
+        }
+      }
+
+      // 2. Exact phone match
+      const phoneA = normalizePhone(a.phone);
+      const phoneB = normalizePhone(b.phone);
+      if (phoneA && phoneB && phoneA.length >= 8 && phoneA === phoneB) {
+        score += 40;
+        reasons.push("Gleiche Telefonnummer");
+      }
+
+      // 3. Name similarity
+      const nameSim = similarity(a.name, b.name);
+      if (nameSim >= 0.9) {
+        score += 35;
+        reasons.push("Sehr ähnlicher Name");
+      } else if (nameSim >= 0.75) {
+        score += 20;
+        reasons.push("Ähnlicher Name");
+      }
+
+      // 4. Same PLZ + City combo
+      if (a.plz && b.plz && a.plz === b.plz) {
+        score += 10;
+        if (normalize(a.city) === normalize(b.city)) {
+          score += 5;
+          reasons.push("Gleiche PLZ & Ort");
+        }
+      }
+
+      // Only report if confidence >= 50
+      if (score >= 50 && reasons.length > 0) {
+        duplicates.push({
+          leadId1: a.id,
+          leadId2: b.id,
+          confidence: Math.min(score, 100),
+          reason: reasons.join(", "),
+        });
+      }
+    }
+  }
+
+  // Sort by confidence descending, limit to top 20
+  return duplicates.sort((a, b) => b.confidence - a.confidence).slice(0, 20);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const { leads } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const leadsStr = leads.map((l: any) =>
-      `ID:${l.id} | Name:${l.name} | Email:${l.email} | Phone:${l.phone} | PLZ:${l.plz} | City:${l.city} | Position:${l.position}`
-    ).join("\n");
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          {
-            role: "system",
-            content: `Du bist ein Duplikat-Erkennungssystem für Leads in einem Recruiting-CRM.
-Analysiere die folgenden Leads und finde potenzielle Duplikate basierend auf:
-- Ähnliche Namen (Tippfehler, Abkürzungen, gleiche Person)
-- Gleiche oder ähnliche E-Mail-Adressen
-- Gleiche Telefonnummern
-- Gleiche Kombination aus PLZ + Stadt + Position
-
-Gib NUR das JSON-Ergebnis zurück, keine Erklärungen.`
-          },
-          {
-            role: "user",
-            content: `Finde Duplikate in diesen Leads:\n\n${leadsStr}`
-          }
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "report_duplicates",
-              description: "Report found duplicate lead pairs with confidence scores",
-              parameters: {
-                type: "object",
-                properties: {
-                  duplicates: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        leadId1: { type: "string", description: "ID of first lead" },
-                        leadId2: { type: "string", description: "ID of second lead" },
-                        confidence: { type: "number", description: "Confidence score 0-100" },
-                        reason: { type: "string", description: "Reason why these are duplicates (German)" }
-                      },
-                      required: ["leadId1", "leadId2", "confidence", "reason"],
-                      additionalProperties: false
-                    }
-                  }
-                },
-                required: ["duplicates"],
-                additionalProperties: false
-              }
-            }
-          }
-        ],
-        tool_choice: { type: "function", function: { name: "report_duplicates" } },
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit erreicht, bitte versuchen Sie es später erneut." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Guthaben aufgebraucht. Bitte laden Sie Ihr Guthaben auf." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "KI-Gateway Fehler" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (toolCall?.function?.arguments) {
-      const result = JSON.parse(toolCall.function.arguments);
-      return new Response(JSON.stringify(result), {
+    if (!leads || !Array.isArray(leads) || leads.length < 2) {
+      return new Response(JSON.stringify({ duplicates: [] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ duplicates: [] }), {
+    const duplicates = detectDuplicates(leads);
+
+    return new Response(JSON.stringify({ duplicates }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
