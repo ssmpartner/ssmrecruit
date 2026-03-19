@@ -596,7 +596,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
       {showAdd && (
         <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
           <h3 className="text-sm font-semibold">Neue Quelle hinzufügen</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div>
               <label className="text-xs font-medium text-muted-foreground">ID (eindeutig)</label>
               <input value={newId} onChange={e => setNewId(e.target.value)}
@@ -615,6 +615,15 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
                 className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
                 {SOURCE_ICONS.map(ic => <option key={ic.value} value={ic.value}>{ic.label}</option>)}
               </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Farbe</label>
+              <div className="mt-1 flex items-center gap-2">
+                <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)}
+                  className="h-9 w-12 rounded-lg border bg-background cursor-pointer" />
+                <input value={newColor} onChange={e => setNewColor(e.target.value)}
+                  className="h-9 flex-1 rounded-lg border bg-background px-3 text-sm font-mono outline-none focus:ring-2 focus:ring-ring" />
+              </div>
             </div>
           </div>
           <div className="flex gap-2">
