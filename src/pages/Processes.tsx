@@ -63,86 +63,64 @@ const actionOptions: Record<AutomationAction, { label: string; icon: typeof Zap 
 const initialSteps: ProcessStep[] = [
   {
     status: 'new', icon: '🆕', title: 'Neuer Lead',
-    description: 'Ein Lead wird über eine der konfigurierten Quellen (Webseite, TikTok, Meta, LinkedIn, CSV) erfasst und landet im System.',
-    features: ['Automatische Erfassung via Webhook/API', 'Manuelle Erfassung über Lead-Formular', 'Quelle & Kanton automatisch zugeordnet', 'Auto-Zuweisung an Mitarbeiter möglich'],
+    description: 'Ein Lead wird über eine der konfigurierten Quellen erfasst. Der Recruiter prüft die Daten, bearbeitet bei Bedarf und bereitet den Erstkontakt vor.',
+    features: ['Automatische Erfassung via Webhook/API', 'Manuelle Erfassung über Lead-Formular', 'Quelle & Kanton automatisch zugeordnet', 'Lead-Daten prüfen & bearbeiten', 'Auto-Zuweisung an Mitarbeiter möglich'],
     guidelines: [
       { id: 'g1', text: 'Neuer Lead muss innerhalb von 24h erstmalig kontaktiert werden', type: 'rule' },
-      { id: 'g2', text: 'Doppelte Leads (gleiche E-Mail) müssen vor Kontaktaufnahme zusammengeführt werden', type: 'rule' },
+      { id: 'g2', text: 'Doppelte Leads müssen vor Kontaktaufnahme zusammengeführt werden', type: 'rule' },
     ],
   },
   {
     status: 'contacted', icon: '📞', title: 'Kontaktiert',
-    description: 'Der zugewiesene Mitarbeiter nimmt den ersten Kontakt auf. In dieser Phase kann das Insights-Formular an den Kandidaten versendet werden.',
-    features: ['Kontaktversuch wird protokolliert', 'Notizen hinterlegbar', '📋 Insights-Formular senden (Link per Email/SMS/WhatsApp)', 'Erinnerung bei Inaktivität', 'Auto-Erinnerung nach 24h wenn Formular nicht ausgefüllt'],
+    description: 'Der Recruiter nimmt telefonisch Kontakt auf, qualifiziert den Lead und entscheidet, ob ein Termin vereinbart wird.',
+    features: ['Erst-Call durchführen & protokollieren', 'Qualifizierung des Kandidaten', 'Notizen & Bewertung hinterlegen', 'Bei Eignung: weiter zum Termin'],
     guidelines: [
       { id: 'g3', text: 'Mindestens 3 Kontaktversuche bevor der Lead abgelehnt wird', type: 'rule' },
-      { id: 'g4', text: 'Insights-Formular sollte nach erfolgreichem Erstkontakt versendet werden', type: 'guideline' },
-      { id: 'g4b', text: 'Kontaktversuche im Abstand von min. 24h durchführen', type: 'guideline' },
+      { id: 'g4', text: 'Kontaktversuche im Abstand von min. 24h durchführen', type: 'guideline' },
     ],
   },
   {
-    status: 'appointment', icon: '📅', title: 'Terminiert',
-    description: 'Ein Termin wurde mit dem Kandidaten vereinbart. Dokumente können in dieser Phase bereits angefordert werden.',
-    features: ['Termin mit Datum, Uhrzeit & Typ', 'Video-Link (Jitsi) automatisch', 'Einladung per E-Mail/SMS/WhatsApp', '📄 Dokumente anfordern (Upload-Link)', 'Auto-Status «Terminiert»'],
+    status: 'appointment', icon: '📅', title: 'Terminiert + DISC',
+    description: 'Termin wird vereinbart und gleichzeitig der DISC-Persönlichkeitstest-Link versendet. Sobald der DISC abgeschlossen ist, wechselt der Status automatisch auf Follow-up.',
+    features: ['Termin erstellen (Telefon/Video/Vor Ort)', 'DISC-Link gleichzeitig versenden', '📄 Dokumente anfordern (CV, Zeugnisse)', 'Auto-Status auf Follow-up nach DISC-Abschluss', 'Lead kann Terminvorschläge angeben'],
     guidelines: [
       { id: 'g5', text: 'Termin muss innerhalb von 5 Werktagen nach Kontakt vereinbart werden', type: 'rule' },
-      { id: 'g6', text: 'Video-Call ist bevorzugte Terminart für Erstgespräche', type: 'guideline' },
-      { id: 'g6b', text: 'Dokumente (CV, Zeugnisse) frühzeitig anfordern um Prozess zu beschleunigen', type: 'guideline' },
+      { id: 'g6', text: 'DISC-Link immer zusammen mit Termineinladung versenden', type: 'rule' },
+      { id: 'g7', text: 'Video-Call ist bevorzugte Terminart', type: 'guideline' },
     ],
   },
   {
-    status: 'interview_1', icon: '🎤', title: 'Gespräch 1',
-    description: 'Das erste persönliche oder virtuelle Gespräch. Eignung und Motivation werden geprüft. Insights-Formular und Dokumente können auch hier angefordert werden.',
-    features: ['Video-Call aus dem System starten', 'Gesprächsnotizen protokollieren', '📋 Insights-Formular senden (falls noch nicht geschehen)', '📄 Dokumente anfordern', 'Ablehnung bei Nicht-Eignung'],
+    status: 'follow_up', icon: '🔄', title: 'Follow-up',
+    description: 'Nach DISC-Abschluss: Ergebnisse besprechen, Dokumente prüfen, finale Entscheidung treffen. Der Lead kann weitere Terminvorschläge angeben.',
+    features: ['DISC-Ergebnisse als Gesprächsgrundlage', 'Eingereichte Dokumente prüfen', 'Weitere Termine vereinbaren', 'Finale Entscheidung: Einstellen oder Ablehnen'],
     guidelines: [
-      { id: 'g7', text: 'Strukturierter Interviewleitfaden muss verwendet werden', type: 'rule' },
-      { id: 'g8', text: 'Gesprächsbewertung innerhalb 1h nach dem Gespräch eintragen', type: 'guideline' },
-    ],
-  },
-  {
-    status: 'insights', icon: '🧠', title: 'Insights (DISC-Test)',
-    description: 'Der Kandidat füllt den DISC-Persönlichkeitstest aus. Die Ergebnisse zeigen Verhaltenspräferenzen. Dokumente werden in dieser Phase ebenfalls geprüft.',
-    features: ['12-Fragen DISC-Test', 'Automatische Auswertung D/I/S/C', 'Grafische Visualisierung', 'Pflicht vor Gespräch 2 konfigurierbar', '📄 Dokumenten-Status prüfen', 'Auto-Erinnerung nach 48h für fehlende Dokumente'],
-    guidelines: [
-      { id: 'g9', text: 'DISC-Test muss abgeschlossen sein, bevor Gespräch 2 stattfindet', type: 'rule' },
-      { id: 'g9b', text: 'Insights-Formular-Antworten vor DISC-Test durchlesen', type: 'guideline' },
-      { id: 'g10', text: 'Ergebnisse werden dem Interviewer vor Gespräch 2 zur Verfügung gestellt', type: 'guideline' },
-    ],
-  },
-  {
-    status: 'interview_2', icon: '🤝', title: 'Gespräch 2',
-    description: 'Das zweite, vertiefende Gespräch – oft mit Teamleitung oder Management. Basierend auf Insights-Ergebnissen und eingereichten Dokumenten.',
-    features: ['DISC & Insights-Formular als Gesprächsgrundlage', 'Eingereichte Dokumente prüfen', 'Detaillierte Bewertung', 'Finale Entscheidung', '📄 Fehlende Dokumente nachfordern'],
-    guidelines: [
-      { id: 'g11', text: 'Mindestens 2 Interviewer müssen am Zweitgespräch teilnehmen', type: 'rule' },
-      { id: 'g11b', text: 'Alle Dokumente müssen vor finaler Entscheidung vollständig vorliegen', type: 'rule' },
-      { id: 'g12', text: 'Entscheidung (Zusage/Absage) muss innerhalb von 48h kommuniziert werden', type: 'guideline' },
+      { id: 'g8', text: 'Alle Dokumente müssen vor finaler Entscheidung vorliegen', type: 'rule' },
+      { id: 'g9', text: 'Entscheidung innerhalb von 48h nach Follow-up kommunizieren', type: 'guideline' },
     ],
   },
   {
     status: 'hired', icon: '✅', title: 'Eingestellt',
-    description: 'Der Kandidat hat den gesamten Prozess durchlaufen und wurde erfolgreich eingestellt.',
-    features: ['Vollständige Prozess-Historie', 'Insights-Formular & DISC archiviert', 'Alle Dokumente archiviert', 'Konversionsrate', 'Pipeline-Abschluss'],
+    description: 'Der Kandidat wurde erfolgreich eingestellt.',
+    features: ['Vollständige Prozess-Historie', 'DISC-Ergebnisse & Dokumente archiviert', 'Konversionsrate', 'Pipeline-Abschluss'],
     guidelines: [
-      { id: 'g13', text: 'Willkommens-E-Mail wird automatisch nach Einstellung versendet', type: 'guideline' },
+      { id: 'g10', text: 'Willkommens-Nachricht innerhalb 24h senden', type: 'guideline' },
     ],
   },
   {
     status: 'rejected', icon: '❌', title: 'Abgelehnt',
-    description: 'Der Kandidat wurde in einer beliebigen Phase des Prozesses abgelehnt.',
-    features: ['Ablehnungsgrund dokumentierbar', 'Zeitpunkt protokolliert', 'Spätere Referenz möglich', 'Ablehnungsquote pro Phase'],
+    description: 'Der Kandidat wurde in einer beliebigen Phase abgelehnt.',
+    features: ['Ablehnungsgrund dokumentierbar', 'Zeitpunkt protokolliert', 'Ablehnungsquote pro Phase'],
     guidelines: [
-      { id: 'g14', text: 'Absagegrund muss immer dokumentiert werden', type: 'rule' },
-      { id: 'g15', text: 'Freundliche Absage-Nachricht innerhalb 24h senden', type: 'guideline' },
+      { id: 'g11', text: 'Absagegrund muss immer dokumentiert werden', type: 'rule' },
+      { id: 'g12', text: 'Freundliche Absage innerhalb 24h senden', type: 'guideline' },
     ],
   },
 ];
 
 const defaultRules: AutomationRule[] = [
-  { id: 'rule-1', name: 'DISC-Test → Gespräch 2', enabled: true, trigger: 'disc_completed', triggerConfig: {}, action: 'change_status', actionConfig: { targetStatus: 'interview_2' }, scope: 'global', createdAt: new Date().toISOString() },
+  { id: 'rule-1', name: 'DISC-Test → Follow-up', enabled: true, trigger: 'disc_completed', triggerConfig: {}, action: 'change_status', actionConfig: { targetStatus: 'follow_up' }, scope: 'global', createdAt: new Date().toISOString() },
   { id: 'rule-2', name: 'Erinnerung bei Inaktivität', enabled: false, trigger: 'time_in_status', triggerConfig: { toStatus: 'contacted', daysInStatus: 3 }, action: 'send_notification', actionConfig: { notificationMessage: 'Lead seit 3 Tagen im Status "Kontaktiert" – bitte nachfassen!' }, scope: 'global', createdAt: new Date().toISOString() },
-  { id: 'rule-3', name: 'Insights-Formular → Benachrichtigung', enabled: true, trigger: 'insights_form_completed', triggerConfig: {}, action: 'send_notification', actionConfig: { notificationMessage: 'Das Insights-Formular wurde ausgefüllt – bitte Antworten prüfen.' }, scope: 'global', createdAt: new Date().toISOString() },
-  { id: 'rule-4', name: 'Dokumente hochgeladen → Benachrichtigung', enabled: true, trigger: 'documents_uploaded', triggerConfig: {}, action: 'send_notification', actionConfig: { notificationMessage: 'Dokumente wurden hochgeladen – bitte prüfen.' }, scope: 'global', createdAt: new Date().toISOString() },
+  { id: 'rule-3', name: 'Dokumente hochgeladen → Benachrichtigung', enabled: true, trigger: 'documents_uploaded', triggerConfig: {}, action: 'send_notification', actionConfig: { notificationMessage: 'Dokumente wurden hochgeladen – bitte prüfen.' }, scope: 'global', createdAt: new Date().toISOString() },
 ];
 
 const mainFlow: LeadStatus[] = statusFlow.filter(s => s !== 'rejected');

@@ -66,8 +66,8 @@ export default function InsightsFormPage() {
 
     if (updateErr) { setError('Fehler beim Speichern. Bitte versuchen Sie es erneut.'); setSubmitting(false); return; }
 
-    // Update lead status to qualified (via activities too)
-    await supabase.from('leads').update({ status: 'insights' }).eq('id', leadId);
+    // Update lead status to follow_up (DISC completed triggers this)
+    await supabase.from('leads').update({ status: 'follow_up' }).eq('id', leadId);
 
     // Add activity
     await supabase.from('activities').insert({
