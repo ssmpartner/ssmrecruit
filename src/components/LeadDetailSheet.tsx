@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -11,7 +10,11 @@ import { statusConfig, getAllowedNextStatuses, type LeadStatus } from '@/lib/moc
 import { lookupPlz, searchPlz, cantons, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
-import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus, Link2, Send, Copy, ExternalLink, Brain, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
+  FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus,
+  Link2, Send, Copy, ChevronLeft, ChevronRight, X
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import VideoCallDialog from './VideoCallDialog';
@@ -44,38 +47,27 @@ export default function LeadDetailSheet() {
   const [showPlzDropdown, setShowPlzDropdown] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({ name: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '' });
-
-  // Appointment form
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
+  const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'status'>('info');
 
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
     [selectedLead, appointments]
   );
 
-  // Lead navigation
   const activeLeads = useMemo(() => leads.filter(l => l.lifecycle === 'active'), [leads]);
   const currentIndex = useMemo(() => selectedLead ? activeLeads.findIndex(l => l.id === selectedLead.id) : -1, [selectedLead, activeLeads]);
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex >= 0 && currentIndex < activeLeads.length - 1;
 
-  const goToPrev = () => {
-    if (hasPrev) { setEditing(false); setSelectedLead(activeLeads[currentIndex - 1]); }
-  };
-  const goToNext = () => {
-    if (hasNext) { setEditing(false); setSelectedLead(activeLeads[currentIndex + 1]); }
-  };
+  const goToPrev = () => { if (hasPrev) { setEditing(false); setSelectedLead(activeLeads[currentIndex - 1]); } };
+  const goToNext = () => { if (hasNext) { setEditing(false); setSelectedLead(activeLeads[currentIndex + 1]); } };
 
   const open = !!selectedLead;
-
   const onOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      setSelectedLead(null);
-      setEditing(false);
-      setShowPlzDropdown(false);
-    }
+    if (!isOpen) { setSelectedLead(null); setEditing(false); setShowPlzDropdown(false); }
   };
 
   const startEdit = () => {
@@ -84,8 +76,7 @@ export default function LeadDetailSheet() {
       name: selectedLead.name, email: selectedLead.email, phone: selectedLead.phone,
       position: selectedLead.position, address: selectedLead.address, plz: selectedLead.plz,
       city: selectedLead.city, canton: selectedLead.canton, cantonCode: selectedLead.cantonCode,
-      notes: selectedLead.notes, source: selectedLead.source,
-      createdAt: selectedLead.createdAt,
+      notes: selectedLead.notes, source: selectedLead.source, createdAt: selectedLead.createdAt,
     });
     setEditing(true);
   };
@@ -96,13 +87,9 @@ export default function LeadDetailSheet() {
       const results = searchPlz(value);
       setPlzSuggestions(results);
       setShowPlzDropdown(results.length > 0);
-    } else {
-      setShowPlzDropdown(false);
-    }
+    } else { setShowPlzDropdown(false); }
     const exact = lookupPlz(value);
-    if (exact) {
-      setForm(prev => ({ ...prev, city: exact.city, canton: exact.canton, cantonCode: exact.cantonCode }));
-    }
+    if (exact) setForm(prev => ({ ...prev, city: exact.city, canton: exact.canton, cantonCode: exact.cantonCode }));
   };
 
   const selectPlzSuggestion = (loc: SwissLocation) => {
@@ -113,30 +100,13 @@ export default function LeadDetailSheet() {
   const saveEdit = () => {
     if (!selectedLead) return;
     const errors: Record<string, string> = {};
-
-    // Validate phone
     const phoneClean = form.phone.replace(/\s/g, '');
-    if (phoneClean && !phoneClean.startsWith('+41') && !phoneClean.startsWith('041') && !phoneClean.startsWith('0')) {
-      errors.phone = 'Ungültige Schweizer Nummer';
-    }
-
-    // Validate email
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      errors.email = 'Ungültige E-Mail-Adresse';
-    }
-
-    // Validate name
-    if (!form.name.trim()) {
-      errors.name = 'Name ist erforderlich';
-    }
-
+    if (phoneClean && !phoneClean.startsWith('+41') && !phoneClean.startsWith('041') && !phoneClean.startsWith('0')) errors.phone = 'Ungültige Schweizer Nummer';
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Ungültige E-Mail-Adresse';
+    if (!form.name.trim()) errors.name = 'Name ist erforderlich';
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      toast({
-        title: '⚠️ Validierungsfehler',
-        description: Object.values(errors).join(', '),
-        variant: 'destructive',
-      });
+      toast({ title: '⚠️ Validierungsfehler', description: Object.values(errors).join(', '), variant: 'destructive' });
       return;
     }
     setFieldErrors({});
@@ -153,28 +123,20 @@ export default function LeadDetailSheet() {
     if (isSuperadmin && form.createdAt !== selectedLead.createdAt) changes.push(`Erstelldatum geändert`);
 
     const updates: Partial<Record<string, any>> = { ...form };
-    if (!isSuperadmin) {
-      delete updates.source;
-      delete updates.createdAt;
-    }
-
+    if (!isSuperadmin) { delete updates.source; delete updates.createdAt; }
     updateLead(selectedLead.id, updates);
     if (changes.length > 0) addActivity(selectedLead.id, 'edit', changes.join(', '));
     setEditing(false);
     toast({
       title: '✅ Gespeichert',
-      description: changes.length > 0
-        ? `${changes.length} Änderung${changes.length > 1 ? 'en' : ''} erfolgreich gespeichert.`
-        : 'Keine Änderungen erkannt.',
+      description: changes.length > 0 ? `${changes.length} Änderung${changes.length > 1 ? 'en' : ''} gespeichert.` : 'Keine Änderungen.',
     });
   };
 
   const changeStatus = (newStatus: LeadStatus) => {
     if (!selectedLead || selectedLead.status === newStatus) return;
-    const oldLabel = statusConfig[selectedLead.status].label;
-    const newLabel = statusConfig[newStatus].label;
     updateLead(selectedLead.id, { status: newStatus });
-    addActivity(selectedLead.id, 'status_change', `Status geändert: "${oldLabel}" → "${newLabel}"`);
+    addActivity(selectedLead.id, 'status_change', `Status: "${statusConfig[selectedLead.status].label}" → "${statusConfig[newStatus].label}"`);
   };
 
   const changeEmployee = (empId: string) => {
@@ -200,547 +162,506 @@ export default function LeadDetailSheet() {
   };
 
   const leadActivities = selectedLead ? activities.filter(a => a.leadId === selectedLead.id) : [];
-  const inputCls = "h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
+  const inputCls = "h-8 w-full rounded-md border bg-background px-2.5 text-sm outline-none focus:ring-2 focus:ring-ring";
   const inputErr = (field: string) => fieldErrors[field] ? inputCls + ' border-destructive ring-1 ring-destructive/30' : inputCls;
+
+  const rightTabs = [
+    { key: 'info' as const, label: 'Info', icon: User },
+    { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length },
+    { key: 'activity' as const, label: 'Aktivität', icon: Activity },
+    { key: 'status' as const, label: 'Status', icon: FileText },
+  ];
 
   return (
     <>
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
-        {selectedLead && (
-          <>
-            {/* Header */}
-            <div className="border-b px-6 pt-5 pb-4" style={{ background: 'linear-gradient(135deg, hsl(162 25% 94%), hsl(168 20% 92%))' }}>
-              {/* Navigation + Title row */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <button
-                    onClick={goToPrev}
-                    disabled={!hasPrev}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-ring/30 bg-background shadow-sm text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    title="Vorheriger Lead"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-[95vw] w-[95vw] max-h-[92vh] h-[92vh] overflow-hidden flex flex-col p-0 gap-0">
+          {selectedLead && (
+            <>
+              {/* Compact Header */}
+              <div className="border-b px-5 py-3 flex items-center gap-3 shrink-0" style={{ background: 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--background)))' }}>
+                <div className="flex items-center gap-1.5">
+                  <button onClick={goToPrev} disabled={!hasPrev}
+                    className="flex h-7 w-7 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                    <ChevronLeft className="h-3.5 w-3.5" />
                   </button>
-                  <button
-                    onClick={goToNext}
-                    disabled={!hasNext}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-ring/30 bg-background shadow-sm text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    title="Nächster Lead"
-                  >
-                    <ChevronRight className="h-4 w-4" />
+                  <button onClick={goToNext} disabled={!hasNext}
+                    className="flex h-7 w-7 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                    <ChevronRight className="h-3.5 w-3.5" />
                   </button>
-                  <div className="min-w-0 ml-2">
-                    <DialogHeader>
-                      <DialogTitle className="text-xl font-bold tracking-tight">{selectedLead.name}</DialogTitle>
-                      <DialogDescription className="text-sm text-primary/70">{selectedLead.position || 'Kein Titel'}</DialogDescription>
-                    </DialogHeader>
-                  </div>
                 </div>
-                {currentIndex >= 0 && (
-                  <span className="shrink-0 rounded-md bg-primary/10 px-2 py-1 text-xs text-primary font-semibold tabular-nums mt-1">
-                    {currentIndex + 1} / {activeLeads.length}
+                <div className="min-w-0 flex-1">
+                  <DialogHeader className="space-y-0">
+                    <DialogTitle className="text-base font-bold tracking-tight">{selectedLead.name}</DialogTitle>
+                    <DialogDescription className="text-xs text-muted-foreground">{selectedLead.position || 'Kein Titel'}</DialogDescription>
+                  </DialogHeader>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <LeadStatusBadge status={selectedLead.status} />
+                  <SourceBadge source={selectedLead.source} />
+                  <span className="hidden md:inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                    <MapPin className="h-3 w-3" /> {selectedLead.plz} {selectedLead.city}
                   </span>
-                )}
-              </div>
-              <div className="mt-3 flex items-center gap-2 flex-wrap">
-                <LeadStatusBadge status={selectedLead.status} />
-                <SourceBadge source={selectedLead.source} />
-                <span className="inline-flex items-center gap-1 rounded-md bg-background/80 border border-ring/20 px-2 py-1 text-xs font-medium text-foreground/70 shadow-sm">
-                  <MapPin className="h-3 w-3" /> {selectedLead.plz} {selectedLead.city} {selectedLead.cantonCode ? `(${selectedLead.cantonCode})` : ''}
-                </span>
+                  {currentIndex >= 0 && (
+                    <span className="rounded-md bg-primary/10 px-2 py-0.5 text-[11px] text-primary font-semibold tabular-nums">
+                      {currentIndex + 1}/{activeLeads.length}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Process Stepper */}
-              <div className="mt-4 rounded-xl border border-ring/15 bg-background/70 backdrop-blur-sm px-4 py-3 shadow-sm">
+              <div className="border-b px-5 py-2 shrink-0">
                 <ProcessStepper currentStatus={selectedLead.status} compact />
               </div>
 
-              {/* Prominent Video Call CTA when upcoming appointment exists */}
-              {(() => {
-                const nextVideoApt = leadAppointments.find(a => a.type === 'video' && a.meetingLink && new Date(`${a.date}T${a.time}`) >= new Date());
-                if (!nextVideoApt) return null;
-                return (
-                  <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 shadow-sm">
-                      <Video className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-emerald-900">{nextVideoApt.title}</p>
-                      <p className="text-xs text-emerald-700">
-                        {new Date(nextVideoApt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short' })} • {nextVideoApt.time} Uhr
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setActiveCallAptId(nextVideoApt.id)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-colors"
-                    >
-                      <Video className="h-4 w-4" /> Jetzt starten
-                    </button>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* Step Actions - always visible */}
-            <div className="mx-6 mt-4">
-              <LeadInsightsDocumentsWithActions
-                leadId={selectedLead.id}
-                leadName={selectedLead.name}
-                leadStatus={selectedLead.status}
-                onScheduleAppointment={() => {
-                  setShowAptForm(true);
-                }}
-              />
-            </div>
-
-            {/* Tabs */}
-            <Tabs defaultValue="details" className="flex-1 overflow-hidden flex flex-col">
-              <TabsList className="mx-6 mt-4 w-fit">
-                <TabsTrigger value="details" className="gap-1.5">
-                  <User className="h-3.5 w-3.5" /> Details
-                </TabsTrigger>
-                <TabsTrigger value="appointments" className="gap-1.5">
-                  <CalendarIcon className="h-3.5 w-3.5" /> Termine
-                  {leadAppointments.length > 0 && (
-                    <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground leading-none">{leadAppointments.length}</span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="status" className="gap-1.5">
-                  <FileText className="h-3.5 w-3.5" /> Status
-                </TabsTrigger>
-                <TabsTrigger value="activity" className="gap-1.5">
-                  <Activity className="h-3.5 w-3.5" /> Aktivität
-                </TabsTrigger>
-              </TabsList>
-
-              <div className="flex-1 overflow-y-auto px-6 pb-6">
-                {/* Tab: Details */}
-                <TabsContent value="details" className="mt-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-semibold">Lead-Informationen</h4>
-                    {!editing ? (
-                      <button onClick={startEdit} className="inline-flex items-center gap-1.5 rounded-lg border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
-                        <Edit3 className="h-3 w-3" /> Bearbeiten
-                      </button>
-                    ) : (
-                      <button onClick={saveEdit} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-md hover:opacity-90 transition-all animate-in fade-in">
-                        <Save className="h-4 w-4" /> Änderungen speichern
-                      </button>
-                    )}
+              {/* Two Column Layout */}
+              <div className="flex-1 flex overflow-hidden">
+                {/* LEFT: Step Actions + Workflow */}
+                <div className="w-[380px] shrink-0 border-r overflow-y-auto bg-muted/20">
+                  <div className="p-4">
+                    <LeadInsightsDocumentsWithActions
+                      leadId={selectedLead.id}
+                      leadName={selectedLead.name}
+                      leadStatus={selectedLead.status}
+                      onScheduleAppointment={() => {
+                        setRightTab('appointments');
+                        setShowAptForm(true);
+                      }}
+                    />
                   </div>
 
-                  {/* Zuweisung – prominent im Details-Tab */}
-                  <section className="rounded-lg border bg-muted/30 p-4 space-y-3">
-                    <h4 className="text-sm font-semibold flex items-center gap-1.5"><UserCog className="h-3.5 w-3.5" /> Zuweisung</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground">Agentur</label>
-                        <select value={selectedLead.agencyId} onChange={e => changeAgency(e.target.value)} className={inputCls + ' mt-1'}>
-                          {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                        </select>
+                  {/* Quick Video Call CTA */}
+                  {(() => {
+                    const nextVideoApt = leadAppointments.find(a => a.type === 'video' && a.meetingLink && new Date(`${a.date}T${a.time}`) >= new Date());
+                    if (!nextVideoApt) return null;
+                    return (
+                      <div className="mx-4 mb-4 flex items-center gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5">
+                        <Video className="h-4 w-4 text-primary shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold truncate">{nextVideoApt.title}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {new Date(nextVideoApt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short' })} • {nextVideoApt.time}
+                          </p>
+                        </div>
+                        <button onClick={() => setActiveCallAptId(nextVideoApt.id)}
+                          className="rounded-md bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
+                          Starten
+                        </button>
                       </div>
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground">Mitarbeiter</label>
-                        <select value={selectedLead.employeeId} onChange={e => changeEmployee(e.target.value)} className={inputCls + ' mt-1'}>
-                          {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                  </section>
+                    );
+                  })()}
+                </div>
 
-                  {editing ? (
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
-                        {(['name', 'position'] as const).map(field => (
-                          <div key={field}>
-                            <label className={`text-xs font-medium ${fieldErrors[field] ? 'text-destructive' : 'text-muted-foreground'}`}>{field === 'name' ? 'Name *' : 'Position'}</label>
-                            <input value={form[field]} onChange={e => { setForm(prev => ({ ...prev, [field]: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n[field]; return n; }); }} className={inputErr(field)} />
-                            {fieldErrors[field] && <p className="text-xs text-destructive mt-1">{fieldErrors[field]}</p>}
+                {/* RIGHT: Info / Appointments / Activity / Status */}
+                <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+                  {/* Right tab bar */}
+                  <div className="border-b px-4 flex items-center gap-1 shrink-0">
+                    {rightTabs.map(tab => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setRightTab(tab.key)}
+                        className={cn(
+                          'flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors border-b-2',
+                          rightTab === tab.key
+                            ? 'border-primary text-foreground'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        <tab.icon className="h-3.5 w-3.5" />
+                        {tab.label}
+                        {tab.count ? (
+                          <span className="ml-0.5 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground leading-none">{tab.count}</span>
+                        ) : null}
+                      </button>
+                    ))}
+                    {/* Edit/Save in header */}
+                    <div className="ml-auto">
+                      {rightTab === 'info' && (
+                        !editing ? (
+                          <button onClick={startEdit} className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted transition-colors">
+                            <Edit3 className="h-3 w-3" /> Bearbeiten
+                          </button>
+                        ) : (
+                          <button onClick={saveEdit} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-[11px] font-semibold text-primary-foreground hover:opacity-90 transition-all">
+                            <Save className="h-3 w-3" /> Speichern
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto p-4">
+                    {/* Info Tab */}
+                    {rightTab === 'info' && (
+                      <div className="space-y-4">
+                        {/* Assignment */}
+                        <section className="rounded-lg border bg-muted/30 p-3 space-y-2">
+                          <h4 className="text-xs font-semibold flex items-center gap-1.5"><UserCog className="h-3.5 w-3.5" /> Zuweisung</h4>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-[11px] text-muted-foreground">Agentur</label>
+                              <select value={selectedLead.agencyId} onChange={e => changeAgency(e.target.value)} className={inputCls + ' mt-0.5'}>
+                                {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-[11px] text-muted-foreground">Mitarbeiter</label>
+                              <select value={selectedLead.employeeId} onChange={e => changeEmployee(e.target.value)} className={inputCls + ' mt-0.5'}>
+                                {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                              </select>
+                            </div>
                           </div>
-                        ))}
+                        </section>
+
+                        {editing ? (
+                          <div className="space-y-2.5">
+                            <div className="grid grid-cols-2 gap-2.5">
+                              {(['name', 'position'] as const).map(field => (
+                                <div key={field}>
+                                  <label className={`text-[11px] ${fieldErrors[field] ? 'text-destructive' : 'text-muted-foreground'}`}>{field === 'name' ? 'Name *' : 'Position'}</label>
+                                  <input value={form[field]} onChange={e => { setForm(prev => ({ ...prev, [field]: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n[field]; return n; }); }} className={inputErr(field)} />
+                                  {fieldErrors[field] && <p className="text-[10px] text-destructive mt-0.5">{fieldErrors[field]}</p>}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="grid grid-cols-2 gap-2.5">
+                              <div>
+                                <label className={`text-[11px] ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail</label>
+                                <input value={form.email} onChange={e => { setForm(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.email; return n; }); }} className={inputErr('email')} />
+                                {fieldErrors.email && <p className="text-[10px] text-destructive mt-0.5">{fieldErrors.email}</p>}
+                              </div>
+                              <div>
+                                <label className={`text-[11px] ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon</label>
+                                <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
+                                {fieldErrors.phone && <p className="text-[10px] text-destructive mt-0.5">{fieldErrors.phone}</p>}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-[11px] text-muted-foreground">Strasse & Nr.</label>
+                              <input value={form.address} onChange={e => setForm(prev => ({ ...prev, address: e.target.value }))} className={inputCls} />
+                            </div>
+                            <div className="grid grid-cols-3 gap-2.5">
+                              <div className="relative">
+                                <label className="text-[11px] text-muted-foreground">PLZ</label>
+                                <input value={form.plz} onChange={e => handlePlzChange(e.target.value)}
+                                  onFocus={() => form.plz.length >= 2 && setShowPlzDropdown(plzSuggestions.length > 0)}
+                                  onBlur={() => setTimeout(() => setShowPlzDropdown(false), 200)}
+                                  placeholder="8001" className={inputCls} />
+                                {showPlzDropdown && (
+                                  <div className="absolute z-50 mt-1 w-56 rounded-lg border bg-card shadow-lg max-h-40 overflow-y-auto">
+                                    {plzSuggestions.map(loc => (
+                                      <button key={loc.plz + loc.city} onMouseDown={() => selectPlzSuggestion(loc)}
+                                        className="flex w-full items-center justify-between px-2.5 py-1.5 text-xs hover:bg-muted transition-colors text-left">
+                                        <span className="font-medium">{loc.plz} {loc.city}</span>
+                                        <span className="text-muted-foreground">{loc.cantonCode}</span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <label className="text-[11px] text-muted-foreground">Ort</label>
+                                <input value={form.city} onChange={isSuperadmin ? e => setForm(prev => ({ ...prev, city: e.target.value })) : undefined} readOnly={!isSuperadmin} className={isSuperadmin ? inputCls : "h-8 w-full rounded-md border bg-muted px-2.5 text-sm"} />
+                              </div>
+                              <div>
+                                <label className="text-[11px] text-muted-foreground">Kanton</label>
+                                {isSuperadmin ? (
+                                  <select value={form.cantonCode} onChange={e => {
+                                    const c = cantons.find(ct => ct.code === e.target.value);
+                                    if (c) setForm(prev => ({ ...prev, canton: c.name, cantonCode: c.code }));
+                                  }} className={inputCls}>
+                                    <option value="">—</option>
+                                    {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
+                                  </select>
+                                ) : (
+                                  <input value={form.canton ? `${form.canton} (${form.cantonCode})` : ''} readOnly className="h-8 w-full rounded-md border bg-muted px-2.5 text-sm" />
+                                )}
+                              </div>
+                            </div>
+                            {isSuperadmin && (
+                              <div className="grid grid-cols-2 gap-2.5">
+                                <div>
+                                  <label className="text-[11px] text-muted-foreground">Quelle</label>
+                                  <select value={form.source} onChange={e => setForm(prev => ({ ...prev, source: e.target.value }))} className={inputCls}>
+                                    {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="text-[11px] text-muted-foreground">Erstelldatum</label>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <button className={cn(inputCls, 'flex items-center gap-1.5 text-left')}>
+                                        <CalendarIcon className="h-3 w-3 text-muted-foreground" />
+                                        {form.createdAt ? new Date(form.createdAt).toLocaleDateString('de-CH') : 'Datum'}
+                                      </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                      <Calendar mode="single" selected={form.createdAt ? new Date(form.createdAt) : undefined}
+                                        onSelect={(date) => date && setForm(prev => ({ ...prev, createdAt: date.toISOString() }))}
+                                        className={cn("p-3 pointer-events-auto")} />
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
+                              </div>
+                            )}
+                            <div>
+                              <label className="text-[11px] text-muted-foreground">Notizen</label>
+                              <textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={2}
+                                className="w-full rounded-md border bg-background px-2.5 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-x-6 gap-y-0.5 text-sm">
+                            {[
+                              ['E-Mail', selectedLead.email],
+                              ['Telefon', selectedLead.phone],
+                              ['Position', selectedLead.position],
+                              ['Erstellt', new Date(selectedLead.createdAt).toLocaleDateString('de-CH')],
+                              ['Adresse', selectedLead.address],
+                              ['Ort', `${selectedLead.plz} ${selectedLead.city}`],
+                              ['Kanton', `${selectedLead.canton} (${selectedLead.cantonCode})`],
+                            ].map(([label, value]) => (
+                              <div key={label} className="flex justify-between py-1.5 border-b">
+                                <span className="text-muted-foreground text-xs">{label}</span>
+                                <span className="font-medium text-xs text-right">{value || '—'}</span>
+                              </div>
+                            ))}
+                            {selectedLead.notes && (
+                              <div className="col-span-2 pt-2">
+                                <span className="text-muted-foreground text-[11px]">Notizen</span>
+                                <p className="mt-0.5 text-xs">{selectedLead.notes}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className={`text-xs font-medium ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail</label>
-                          <input value={form.email} onChange={e => { setForm(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.email; return n; }); }} className={inputErr('email')} />
-                          {fieldErrors.email && <p className="text-xs text-destructive mt-1">{fieldErrors.email}</p>}
+                    )}
+
+                    {/* Appointments Tab */}
+                    {rightTab === 'appointments' && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold">Termine</h4>
+                          <button onClick={() => { setShowAptForm(!showAptForm); setAptForm({ title: '', date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' }); }}
+                            className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-[11px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                            <Plus className="h-3 w-3" /> Neu
+                          </button>
                         </div>
-                        <div>
-                          <label className={`text-xs font-medium ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon (+41)</label>
-                          <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
-                          {fieldErrors.phone && <p className="text-xs text-destructive mt-1">{fieldErrors.phone}</p>}
+
+                        {showAptForm && (
+                          <div className="rounded-lg border bg-muted/30 p-3 space-y-2.5">
+                            <div className="grid grid-cols-2 gap-2.5">
+                              <div>
+                                <label className="text-[11px] text-muted-foreground">Titel *</label>
+                                <input value={aptForm.title} onChange={e => setAptForm(prev => ({ ...prev, title: e.target.value }))} placeholder="z.B. Erstgespräch" className={inputCls} />
+                              </div>
+                              <div>
+                                <label className="text-[11px] text-muted-foreground">Art</label>
+                                <select value={aptForm.type} onChange={e => setAptForm(prev => ({ ...prev, type: e.target.value as any }))} className={inputCls}>
+                                  {Object.entries(appointmentTypeConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                                </select>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2.5">
+                              <div>
+                                <label className="text-[11px] text-muted-foreground">Datum *</label>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <button className={cn(inputCls, 'flex items-center gap-1.5 text-left', !aptForm.date && 'text-muted-foreground')}>
+                                      <CalendarIcon className="h-3 w-3" />
+                                      {aptForm.date ? format(aptForm.date, 'dd.MM.yyyy') : 'Wählen'}
+                                    </button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar mode="single" selected={aptForm.date} onSelect={(d) => setAptForm(prev => ({ ...prev, date: d }))}
+                                      disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                      initialFocus className={cn("p-3 pointer-events-auto")} />
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                              <div>
+                                <label className="text-[11px] text-muted-foreground">Uhrzeit</label>
+                                <input type="time" value={aptForm.time} onChange={e => setAptForm(prev => ({ ...prev, time: e.target.value }))} className={inputCls} />
+                              </div>
+                              <div>
+                                <label className="text-[11px] text-muted-foreground">Dauer</label>
+                                <select value={aptForm.duration} onChange={e => setAptForm(prev => ({ ...prev, duration: Number(e.target.value) }))} className={inputCls}>
+                                  {[15, 30, 45, 60, 90].map(d => <option key={d} value={d}>{d} Min.</option>)}
+                                </select>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-[11px] text-muted-foreground">Notizen</label>
+                              <textarea value={aptForm.notes} onChange={e => setAptForm(prev => ({ ...prev, notes: e.target.value }))} rows={2} placeholder="Optional..."
+                                className="w-full rounded-md border bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <button onClick={() => setShowAptForm(false)} className="rounded-md border px-2.5 py-1 text-[11px] hover:bg-muted transition-colors">Abbrechen</button>
+                              <button disabled={!aptForm.title.trim() || !aptForm.date}
+                                onClick={() => {
+                                  if (!aptForm.title.trim() || !aptForm.date || !selectedLead) return;
+                                  addAppointment({ leadId: selectedLead.id, title: aptForm.title.trim(), date: format(aptForm.date, 'yyyy-MM-dd'), time: aptForm.time, duration: aptForm.duration, type: aptForm.type, notes: aptForm.notes.trim(), createdBy: 'Sarah Chen' });
+                                  setShowAptForm(false);
+                                  setAptForm({ title: '', date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' });
+                                }}
+                                className="rounded-md bg-primary px-3 py-1 text-[11px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                Speichern
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {leadAppointments.length === 0 && !showAptForm && (
+                          <p className="text-xs text-muted-foreground py-8 text-center">Noch keine Termine</p>
+                        )}
+                        <div className="space-y-2">
+                          {leadAppointments.map(apt => {
+                            const TypeIcon = appointmentTypeConfig[apt.type].icon;
+                            const isPast = new Date(`${apt.date}T${apt.time}`) < new Date();
+                            const methodLabels: Record<string, string> = { email: 'E-Mail', sms: 'SMS', whatsapp: 'WhatsApp' };
+                            return (
+                              <div key={apt.id} className={cn("rounded-lg border p-2.5 space-y-1.5 transition-colors", isPast ? 'opacity-60 bg-muted/30' : 'bg-card hover:bg-muted/20')}>
+                                <div className="flex items-start gap-2.5">
+                                  <div className={cn("mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full", isPast ? 'bg-muted' : 'bg-primary/10')}>
+                                    <TypeIcon className={cn("h-3.5 w-3.5", isPast ? 'text-muted-foreground' : 'text-primary')} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-medium">{apt.title}</p>
+                                    <p className="text-[11px] text-muted-foreground">
+                                      {new Date(apt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short' })} • {apt.time} • {apt.duration}min • {appointmentTypeConfig[apt.type].label}
+                                    </p>
+                                    {apt.notes && <p className="text-[11px] mt-0.5 text-muted-foreground">{apt.notes}</p>}
+                                  </div>
+                                  <button onClick={() => removeAppointment(apt.id)} className="shrink-0 rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+                                </div>
+                                {apt.meetingLink && (
+                                  <div className="ml-9 flex items-center gap-2 flex-wrap">
+                                    <button onClick={() => setActiveCallAptId(apt.id)}
+                                      className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-[11px] font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
+                                      <Video className="h-3 w-3" /> Starten
+                                    </button>
+                                    <button onClick={() => { navigator.clipboard.writeText(apt.meetingLink!); toast({ title: 'Kopiert' }); }}
+                                      className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] hover:bg-muted transition-colors">
+                                      <Copy className="h-3 w-3" /> Link
+                                    </button>
+                                    <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Gesendet' }); }}
+                                      className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary px-2 py-0.5 text-[10px] hover:bg-primary/20 transition-colors">
+                                      <Send className="h-3 w-3" /> {methodLabels[appointmentSettings.notificationMethod]}
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground">Strasse & Nr.</label>
-                        <input value={form.address} onChange={e => setForm(prev => ({ ...prev, address: e.target.value }))} className={inputCls} />
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="relative">
-                          <label className="text-xs font-medium text-muted-foreground">PLZ</label>
-                          <input value={form.plz} onChange={e => handlePlzChange(e.target.value)}
-                            onFocus={() => form.plz.length >= 2 && setShowPlzDropdown(plzSuggestions.length > 0)}
-                            onBlur={() => setTimeout(() => setShowPlzDropdown(false), 200)}
-                            placeholder="8001" className={inputCls} />
-                          {showPlzDropdown && (
-                            <div className="absolute z-50 mt-1 w-64 rounded-lg border bg-card shadow-lg max-h-48 overflow-y-auto">
-                              {plzSuggestions.map(loc => (
-                                <button key={loc.plz + loc.city} onMouseDown={() => selectPlzSuggestion(loc)}
-                                  className="flex w-full items-center justify-between px-3 py-2 text-xs hover:bg-muted transition-colors text-left">
-                                  <span className="font-medium">{loc.plz} {loc.city}</span>
-                                  <span className="text-muted-foreground">{loc.cantonCode}</span>
+                    )}
+
+                    {/* Status Tab */}
+                    {rightTab === 'status' && (
+                      <div className="space-y-4">
+                        <section>
+                          <h4 className="text-sm font-semibold mb-2">Status ändern</h4>
+                          <div className="mb-3">
+                            <p className="text-[11px] text-muted-foreground mb-1.5">Admin (frei wählbar)</p>
+                            <div className="flex flex-wrap gap-1">
+                              {statusKeys.map(s => (
+                                <button key={s} onClick={() => changeStatus(s)}
+                                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium border transition-colors ${
+                                    selectedLead.status === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary text-secondary-foreground border-transparent hover:border-primary/30'
+                                  }`}>
+                                  {statusConfig[s].label}
                                 </button>
                               ))}
                             </div>
-                          )}
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-muted-foreground">Ort</label>
-                          <input value={form.city} onChange={isSuperadmin ? e => setForm(prev => ({ ...prev, city: e.target.value })) : undefined} readOnly={!isSuperadmin} className={isSuperadmin ? inputCls : "h-9 w-full rounded-lg border bg-muted px-3 text-sm"} />
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-muted-foreground">Kanton</label>
-                          {isSuperadmin ? (
-                            <select value={form.cantonCode} onChange={e => {
-                              const c = cantons.find(ct => ct.code === e.target.value);
-                              if (c) setForm(prev => ({ ...prev, canton: c.name, cantonCode: c.code }));
-                            }} className={inputCls}>
-                              <option value="">— Kanton wählen —</option>
-                              {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
-                            </select>
-                          ) : (
-                            <input value={form.canton ? `${form.canton} (${form.cantonCode})` : ''} readOnly className="h-9 w-full rounded-lg border bg-muted px-3 text-sm" />
-                          )}
-                        </div>
-                      </div>
-                      {/* Superadmin-only: Quelle, Datum */}
-                      {isSuperadmin && (
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-xs font-medium text-muted-foreground">Quelle</label>
-                            <select value={form.source} onChange={e => setForm(prev => ({ ...prev, source: e.target.value }))} className={inputCls}>
-                              {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                            </select>
                           </div>
                           <div>
-                            <label className="text-xs font-medium text-muted-foreground">Erstelldatum</label>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <button className={cn(inputCls, 'flex items-center gap-2 text-left')}>
-                                  <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                                  {form.createdAt ? new Date(form.createdAt).toLocaleDateString('de-CH') : 'Datum wählen'}
-                                </button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={form.createdAt ? new Date(form.createdAt) : undefined}
-                                  onSelect={(date) => date && setForm(prev => ({ ...prev, createdAt: date.toISOString() }))}
-                                  className={cn("p-3 pointer-events-auto")}
-                                />
-                              </PopoverContent>
-                            </Popover>
+                            <p className="text-[11px] text-muted-foreground mb-1.5">Nächster Schritt</p>
+                            {(() => {
+                              const allowed = getAllowedNextStatuses(selectedLead.status, false);
+                              return allowed.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {allowed.map(s => (
+                                    <button key={s} onClick={() => changeStatus(s)}
+                                      className="rounded-full px-2.5 py-1 text-[11px] font-medium border border-primary/30 bg-primary/5 hover:bg-primary hover:text-primary-foreground transition-colors">
+                                      → {statusConfig[s].label}
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-[11px] text-muted-foreground italic">Endstatus erreicht</p>
+                              );
+                            })()}
                           </div>
-                        </div>
-                      )}
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground">Notizen</label>
-                        <textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3}
-                          className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+                        </section>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
-                      {[
-                        ['E-Mail', selectedLead.email],
-                        ['Telefon', selectedLead.phone],
-                        ['Position', selectedLead.position],
-                        ['Erstellt', new Date(selectedLead.createdAt).toLocaleDateString('de-CH')],
-                        ['Adresse', `${selectedLead.address}`],
-                        ['Ort', `${selectedLead.plz} ${selectedLead.city}`],
-                        ['Kanton', `${selectedLead.canton} (${selectedLead.cantonCode})`],
-                      ].map(([label, value]) => (
-                        <div key={label} className="flex justify-between py-2 border-b">
-                          <span className="text-muted-foreground">{label}</span>
-                          <span className="font-medium text-right">{value}</span>
-                        </div>
-                      ))}
-                      {selectedLead.notes && (
-                        <div className="col-span-2 pt-2">
-                          <span className="text-muted-foreground text-xs">Notizen</span>
-                          <p className="mt-1 text-sm">{selectedLead.notes}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </TabsContent>
+                    )}
 
-                {/* Tab: Appointments */}
-                <TabsContent value="appointments" className="mt-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-semibold">Termine für {selectedLead.name}</h4>
-                    <button onClick={() => { setShowAptForm(!showAptForm); setAptForm({ title: '', date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' }); }}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-                      <Plus className="h-3 w-3" /> Termin erstellen
-                    </button>
-                  </div>
-
-                  {showAptForm && (
-                    <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
+                    {/* Activity Tab */}
+                    {rightTab === 'activity' && (
+                      <div className="space-y-3">
                         <div>
-                          <label className="text-xs font-medium text-muted-foreground">Titel *</label>
-                          <input value={aptForm.title} onChange={e => setAptForm(prev => ({ ...prev, title: e.target.value }))}
-                            placeholder="z.B. Erstgespräch" maxLength={100}
-                            className={inputCls} />
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-muted-foreground">Art</label>
-                          <select value={aptForm.type} onChange={e => setAptForm(prev => ({ ...prev, type: e.target.value as 'phone' | 'video' | 'onsite' }))}
-                            className={inputCls}>
-                            {Object.entries(appointmentTypeConfig).map(([k, v]) => (
-                              <option key={k} value={k}>{v.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div>
-                          <label className="text-xs font-medium text-muted-foreground">Datum *</label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button className={cn(inputCls, 'flex items-center gap-2 text-left', !aptForm.date && 'text-muted-foreground')}>
-                                <CalendarIcon className="h-3.5 w-3.5" />
-                                {aptForm.date ? format(aptForm.date, 'dd.MM.yyyy') : 'Datum wählen'}
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar mode="single" selected={aptForm.date} onSelect={(d) => setAptForm(prev => ({ ...prev, date: d }))}
-                                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                                initialFocus className={cn("p-3 pointer-events-auto")} />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-muted-foreground">Uhrzeit *</label>
-                          <input type="time" value={aptForm.time} onChange={e => setAptForm(prev => ({ ...prev, time: e.target.value }))}
-                            className={inputCls} />
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-muted-foreground">Dauer (Min.)</label>
-                          <select value={aptForm.duration} onChange={e => setAptForm(prev => ({ ...prev, duration: Number(e.target.value) }))}
-                            className={inputCls}>
-                            <option value={15}>15 Min.</option>
-                            <option value={30}>30 Min.</option>
-                            <option value={45}>45 Min.</option>
-                            <option value={60}>60 Min.</option>
-                            <option value={90}>90 Min.</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground">Notizen</label>
-                        <textarea value={aptForm.notes} onChange={e => setAptForm(prev => ({ ...prev, notes: e.target.value }))}
-                          rows={2} maxLength={500} placeholder="Zusätzliche Infos..."
-                          className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => setShowAptForm(false)}
-                          className="rounded-lg border bg-card px-3 py-1.5 text-xs font-medium hover:bg-secondary transition-colors">Abbrechen</button>
-                        <button disabled={!aptForm.title.trim() || !aptForm.date}
-                          onClick={() => {
-                            if (!aptForm.title.trim() || !aptForm.date || !selectedLead) return;
-                            addAppointment({
-                              leadId: selectedLead.id,
-                              title: aptForm.title.trim(),
-                              date: format(aptForm.date, 'yyyy-MM-dd'),
-                              time: aptForm.time,
-                              duration: aptForm.duration,
-                              type: aptForm.type,
-                              notes: aptForm.notes.trim(),
-                              createdBy: 'Sarah Chen',
-                            });
-                            setShowAptForm(false);
-                            setAptForm({ title: '', date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' });
-                          }}
-                          className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
-                          Termin speichern
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Appointment list */}
-                  {leadAppointments.length === 0 && !showAptForm && (
-                    <p className="text-sm text-muted-foreground py-8 text-center">Noch keine Termine für diesen Lead</p>
-                  )}
-                  <div className="space-y-2">
-                    {leadAppointments.map(apt => {
-                      const TypeIcon = appointmentTypeConfig[apt.type].icon;
-                      const isPast = new Date(`${apt.date}T${apt.time}`) < new Date();
-                      const methodLabels: Record<string, string> = { email: 'E-Mail', sms: 'SMS', whatsapp: 'WhatsApp' };
-                      return (
-                        <div key={apt.id} className={cn("rounded-lg border p-3 space-y-2 transition-colors", isPast ? 'opacity-60 bg-muted/30' : 'bg-card hover:bg-muted/30')}>
-                          <div className="flex items-start gap-3">
-                            <div className={cn("mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full", isPast ? 'bg-muted' : 'bg-primary/10')}>
-                              <TypeIcon className={cn("h-4 w-4", isPast ? 'text-muted-foreground' : 'text-primary')} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium">{apt.title}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {new Date(apt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} • {apt.time} Uhr • {apt.duration} Min. • {appointmentTypeConfig[apt.type].label}
-                              </p>
-                              {apt.notes && <p className="text-xs mt-1 text-muted-foreground">{apt.notes}</p>}
-                            </div>
-                            <button onClick={() => removeAppointment(apt.id)}
-                              className="shrink-0 rounded-md p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                              <Trash2 className="h-3.5 w-3.5" />
+                          <div className="flex gap-2">
+                            <input value={noteText} onChange={e => setNoteText(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && addNote()}
+                              placeholder="Notiz schreiben..." className={inputCls + ' flex-1'} />
+                            <button onClick={addNote} disabled={!noteText.trim()}
+                              className="rounded-md bg-primary px-3 py-1 text-[11px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                              +
                             </button>
                           </div>
-                          {/* Video link + send */}
-                          {apt.meetingLink && (
-                            <div className="ml-11 space-y-1.5">
-                              <div className="flex items-center gap-2">
-                                <Link2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                                <span className="text-xs text-primary truncate">{apt.meetingLink}</span>
-                                <button onClick={() => { navigator.clipboard.writeText(apt.meetingLink!); toast({ title: 'Kopiert', description: 'Link in die Zwischenablage kopiert' }); }}
-                                  className="shrink-0 rounded p-1 hover:bg-muted transition-colors" title="Link kopieren">
-                                  <Copy className="h-3 w-3 text-muted-foreground" />
-                                </button>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button onClick={() => setActiveCallAptId(apt.id)}
-                                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-emerald-700 shadow-sm transition-colors">
-                                  <Video className="h-3.5 w-3.5" /> Jetzt starten
-                                </button>
-                                <button onClick={() => { sendAppointmentNotification(apt.id); toast({ title: 'Einladung gesendet', description: `Link per ${methodLabels[appointmentSettings.notificationMethod]} an ${selectedLead?.name} gesendet` }); }}
-                                  className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-medium hover:bg-primary/20 transition-colors">
-                                  <Send className="h-3 w-3" /> Per {methodLabels[appointmentSettings.notificationMethod]} senden
-                                </button>
-                              </div>
-                            </div>
-                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </TabsContent>
-
-
-                <TabsContent value="status" className="mt-4 space-y-6">
-                  <section>
-                    <h4 className="text-sm font-semibold mb-2">Status ändern</h4>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      Admin/Superadmin: freie Statuswahl · Mitarbeiter: gemäss Prozessablauf
-                    </p>
-                    {/* Admin view: all statuses */}
-                    <div className="mb-3">
-                      <p className="text-xs font-medium text-muted-foreground mb-1.5">Admin-Ansicht (frei wählbar)</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {statusKeys.map(s => (
-                          <button key={s} onClick={() => changeStatus(s)}
-                            className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${
-                              selectedLead.status === s
-                                ? 'bg-primary text-primary-foreground border-primary'
-                                : 'bg-secondary text-secondary-foreground border-transparent hover:border-primary/30'
-                            }`}>
-                            {statusConfig[s].label}
-                          </button>
-                        ))}
+                        <div className="space-y-0">
+                          {leadActivities.length === 0 && (
+                            <p className="text-xs text-muted-foreground py-4 text-center">Noch keine Aktivitäten</p>
+                          )}
+                          {leadActivities.map((act, i) => {
+                            const Icon = activityIcon[act.type];
+                            return (
+                              <div key={act.id} className="relative flex gap-2.5 pb-3">
+                                {i < leadActivities.length - 1 && (
+                                  <div className="absolute left-[11px] top-6 bottom-0 w-px bg-border" />
+                                )}
+                                <div className="relative z-10 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary">
+                                  <Icon className="h-3 w-3 text-muted-foreground" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs">{act.description}</p>
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                                    {act.user} • {new Date(act.timestamp).toLocaleString('de-CH')}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                    {/* Employee view: process-based */}
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1.5">Mitarbeiter-Ansicht (nächster Schritt)</p>
-                      {(() => {
-                        const allowed = getAllowedNextStatuses(selectedLead.status, false);
-                        return allowed.length > 0 ? (
-                          <div className="flex flex-wrap gap-1.5">
-                            {allowed.map(s => (
-                              <button key={s} onClick={() => changeStatus(s)}
-                                className="rounded-full px-3 py-1.5 text-xs font-medium border border-primary/30 bg-primary/5 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors">
-                                → {statusConfig[s].label}
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-xs text-muted-foreground italic">Keine weiteren Statusänderungen möglich (Endstatus erreicht)</p>
-                        );
-                      })()}
-                    </div>
-                  </section>
-
-                  {/* Zuweisung wurde in Details-Tab verschoben */}
-                </TabsContent>
-
-                {/* Tab: Activity */}
-                <TabsContent value="activity" className="mt-4 space-y-4">
-                  {/* Add Note */}
-                  <div>
-                    <h4 className="text-sm font-semibold mb-2">Notiz hinzufügen</h4>
-                    <div className="flex gap-2">
-                      <input value={noteText} onChange={e => setNoteText(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && addNote()}
-                        placeholder="Notiz schreiben..." className={inputCls + ' flex-1'} />
-                      <button onClick={addNote} disabled={!noteText.trim()}
-                        className="rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
-                        Hinzufügen
-                      </button>
-                    </div>
+                    )}
                   </div>
-
-                  {/* Timeline */}
-                  <div>
-                    <h4 className="text-sm font-semibold mb-3">Aktivitätsverlauf</h4>
-                    <div className="space-y-0">
-                      {leadActivities.length === 0 && (
-                        <p className="text-sm text-muted-foreground py-4 text-center">Noch keine Aktivitäten</p>
-                      )}
-                      {leadActivities.map((act, i) => {
-                        const Icon = activityIcon[act.type];
-                        return (
-                          <div key={act.id} className="relative flex gap-3 pb-4">
-                            {i < leadActivities.length - 1 && (
-                              <div className="absolute left-[13px] top-7 bottom-0 w-px bg-border" />
-                            )}
-                            <div className="relative z-10 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary">
-                              <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm">{act.description}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {act.user} • {new Date(act.timestamp).toLocaleString('de-CH')}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </TabsContent>
-
+                </div>
               </div>
-            </Tabs>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
-    {/* Video Call Dialog */}
-    {(() => {
-      const activeApt = appointments.find(a => a.id === activeCallAptId);
-      if (!activeApt?.meetingLink) return null;
-      return (
-        <VideoCallDialog
-          open={!!activeCallAptId}
-          onOpenChange={(v) => { if (!v) setActiveCallAptId(null); }}
-          meetingLink={activeApt.meetingLink}
-          title={activeApt.title}
-          leadName={selectedLead?.name ?? ''}
-        />
-      );
-    })()}
+      {/* Video Call Dialog */}
+      {(() => {
+        const activeApt = appointments.find(a => a.id === activeCallAptId);
+        if (!activeApt?.meetingLink) return null;
+        return (
+          <VideoCallDialog
+            open={!!activeCallAptId}
+            onOpenChange={(v) => { if (!v) setActiveCallAptId(null); }}
+            meetingLink={activeApt.meetingLink}
+            title={activeApt.title}
+            leadName={selectedLead?.name ?? ''}
+          />
+        );
+      })()}
     </>
   );
 }
