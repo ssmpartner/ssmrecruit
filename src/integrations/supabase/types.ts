@@ -52,6 +52,7 @@ export type Database = {
       agencies: {
         Row: {
           allowed_cantons: string[]
+          color: string
           contact_email: string
           created_at: string
           id: string
@@ -62,6 +63,7 @@ export type Database = {
         }
         Insert: {
           allowed_cantons?: string[]
+          color?: string
           contact_email: string
           created_at?: string
           id: string
@@ -72,6 +74,7 @@ export type Database = {
         }
         Update: {
           allowed_cantons?: string[]
+          color?: string
           contact_email?: string
           created_at?: string
           id?: string
