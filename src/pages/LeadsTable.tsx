@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadSource, type LeadLifecycle, statusConfig, sourceConfig } from '@/lib/mock-data';
@@ -12,9 +12,11 @@ import AddLeadDialog from '@/components/AddLeadDialog';
 import LeadActions from '@/components/LeadActions';
 import DuplicateLeads from '@/components/DuplicateLeads';
 import CsvImportDialog from '@/components/CsvImportDialog';
+import BulkActionsBar from '@/components/BulkActionsBar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 
 type TabKey = 'active' | 'archived' | 'deleted' | 'duplicates';
@@ -23,6 +25,7 @@ export default function LeadsTable() {
   const { leads, employees, agencies, setSelectedLead } = useLeads();
   const { isSuperadmin } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>('active');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
   const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
   const [agencyFilter, setAgencyFilter] = useState('');
@@ -67,6 +70,18 @@ export default function LeadsTable() {
   const clearFilters = () => {
     setStatusFilter(''); setSourceFilter(''); setAgencyFilter(''); setEmployeeFilter(''); setCantonFilter(''); setSearch(''); setDateFrom(undefined); setDateTo(undefined);
   };
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    if (selectedIds.length === filtered.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filtered.map(l => l.id));
+    }
+  }, [selectedIds.length, filtered]);
 
   const exportCSV = () => {
     const header = 'Name,Email,Telefon,Adresse,PLZ,Ort,Kanton,Position,Quelle,Status,Agentur,Mitarbeiter,Datum\n';
@@ -149,6 +164,7 @@ export default function LeadsTable() {
       {/* Table Tabs */}
       {activeTab !== 'duplicates' && (
         <>
+          {isSuperadmin && <BulkActionsBar selectedIds={selectedIds} onClear={() => setSelectedIds([])} />}
           <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4 shadow-sm">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <input
@@ -213,6 +229,14 @@ export default function LeadsTable() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
+                  {isSuperadmin && (
+                    <th className="px-3 py-3 w-10">
+                      <Checkbox
+                        checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </th>
+                  )}
                   <th className="px-5 py-3 font-medium">Name</th>
                   <th className="px-5 py-3 font-medium">Telefon</th>
                   <th className="px-5 py-3 font-medium">Ort</th>
@@ -228,7 +252,7 @@ export default function LeadsTable() {
               <tbody>
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="px-5 py-12 text-center text-muted-foreground">
+                    <td colSpan={isSuperadmin ? 11 : 10} className="px-5 py-12 text-center text-muted-foreground">
                       {activeTab === 'archived' ? 'Keine archivierten Leads vorhanden.' : activeTab === 'deleted' ? 'Keine gelöschten Leads vorhanden.' : 'Keine Leads gefunden.'}
                     </td>
                   </tr>
@@ -240,8 +264,19 @@ export default function LeadsTable() {
                     <tr
                       key={lead.id}
                       onClick={() => setSelectedLead(lead)}
-                      className="cursor-pointer border-b last:border-0 hover:bg-muted/50 transition-colors"
+                      className={cn(
+                        "cursor-pointer border-b last:border-0 hover:bg-muted/50 transition-colors",
+                        selectedIds.includes(lead.id) && "bg-primary/5"
+                      )}
                     >
+                      {isSuperadmin && (
+                        <td className="px-3 py-3" onClick={e => e.stopPropagation()}>
+                          <Checkbox
+                            checked={selectedIds.includes(lead.id)}
+                            onCheckedChange={() => toggleSelect(lead.id)}
+                          />
+                        </td>
+                      )}
                       <td className="px-5 py-3">
                         <p className="font-medium">{lead.name}</p>
                         <p className="text-xs text-muted-foreground">{lead.position}</p>
