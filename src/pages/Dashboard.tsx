@@ -173,6 +173,15 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-3">
+        <QuickAction icon={UserPlus} label="Neuer Lead" onClick={() => setShowAddLead(true)} />
+        <QuickAction icon={ClipboardList} label="Tasks" onClick={() => navigate('/tasks')} />
+        <QuickAction icon={CalendarDays} label="Kalender" onClick={() => navigate('/calendar')} />
+        <QuickAction icon={Building2} label="Agenturen" onClick={() => navigate('/agencies')} />
+        <QuickAction icon={BarChart3} label="Analytics" onClick={() => navigate('/analytics')} />
+      </div>
+
       {/* KPI Row */}
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         <MiniStat icon={Users} label="Leads gesamt" value={activeLeads.length} />
