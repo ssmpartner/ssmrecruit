@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy } from 'lucide-react';
+import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadSource, type LeadLifecycle, statusConfig, sourceConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
@@ -20,6 +20,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 
 type TabKey = 'active' | 'archived' | 'deleted' | 'duplicates';
+type PageSize = 10 | 20 | 30 | 50 | 100 | 'all';
+
+const PAGE_SIZES: { value: PageSize; label: string }[] = [
+  { value: 10, label: '10' },
+  { value: 20, label: '20' },
+  { value: 30, label: '30' },
+  { value: 50, label: '50' },
+  { value: 100, label: '100' },
+  { value: 'all', label: 'Alle' },
+];
 
 export default function LeadsTable() {
   const { leads, employees, agencies, setSelectedLead } = useLeads();
@@ -34,6 +44,8 @@ export default function LeadsTable() {
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<PageSize>(20);
 
   const lifecycleLeads = useMemo(() => {
     const lifecycle: LeadLifecycle = activeTab === 'active' ? 'active' : activeTab === 'archived' ? 'archived' : 'deleted';
@@ -65,6 +77,22 @@ export default function LeadsTable() {
     });
   }, [lifecycleLeads, statusFilter, sourceFilter, agencyFilter, employeeFilter, cantonFilter, search, dateFrom, dateTo]);
 
+  // Pagination
+  const totalItems = filtered.length;
+  const totalPages = pageSize === 'all' ? 1 : Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+
+  const paginatedLeads = useMemo(() => {
+    if (pageSize === 'all') return filtered;
+    const start = (safePage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, safePage, pageSize]);
+
+  // Reset page when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [statusFilter, sourceFilter, agencyFilter, employeeFilter, cantonFilter, search, dateFrom, dateTo, activeTab, pageSize]);
+
   const hasFilters = statusFilter || sourceFilter || agencyFilter || employeeFilter || cantonFilter || search || dateFrom || dateTo;
 
   const clearFilters = () => {
@@ -76,12 +104,12 @@ export default function LeadsTable() {
   }, []);
 
   const toggleSelectAll = useCallback(() => {
-    if (selectedIds.length === filtered.length) {
+    if (selectedIds.length === paginatedLeads.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filtered.map(l => l.id));
+      setSelectedIds(paginatedLeads.map(l => l.id));
     }
-  }, [selectedIds.length, filtered]);
+  }, [selectedIds.length, paginatedLeads]);
 
   const exportCSV = () => {
     const header = 'Name,Email,Telefon,Adresse,PLZ,Ort,Kanton,Position,Quelle,Status,Agentur,Mitarbeiter,Datum\n';
@@ -109,6 +137,23 @@ export default function LeadsTable() {
     { key: 'deleted', label: 'Gelöscht', icon: <Trash2 className="h-3.5 w-3.5" />, count: deletedCount, superadminOnly: true },
     { key: 'duplicates', label: 'Doppelte Leads', icon: <Copy className="h-3.5 w-3.5" />, count: 0 },
   ];
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (safePage > 3) pages.push('ellipsis');
+      for (let i = Math.max(2, safePage - 1); i <= Math.min(totalPages - 1, safePage + 1); i++) {
+        pages.push(i);
+      }
+      if (safePage < totalPages - 2) pages.push('ellipsis');
+      pages.push(totalPages);
+    }
+    return pages;
+  };
 
   return (
     <div className="space-y-6">
@@ -232,7 +277,7 @@ export default function LeadsTable() {
                   {isSuperadmin && (
                     <th className="px-3 py-3 w-10">
                       <Checkbox
-                        checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                        checked={paginatedLeads.length > 0 && selectedIds.length === paginatedLeads.length}
                         onCheckedChange={toggleSelectAll}
                       />
                     </th>
@@ -250,14 +295,14 @@ export default function LeadsTable() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 && (
+                {paginatedLeads.length === 0 && (
                   <tr>
                     <td colSpan={isSuperadmin ? 11 : 10} className="px-5 py-12 text-center text-muted-foreground">
                       {activeTab === 'archived' ? 'Keine archivierten Leads vorhanden.' : activeTab === 'deleted' ? 'Keine gelöschten Leads vorhanden.' : 'Keine Leads gefunden.'}
                     </td>
                   </tr>
                 )}
-                {filtered.map(lead => {
+                {paginatedLeads.map(lead => {
                   const emp = employees.find(e => e.id === lead.employeeId);
                   const agency = agencies.find(a => a.id === lead.agencyId);
                   return (
@@ -309,6 +354,68 @@ export default function LeadsTable() {
                 })}
               </tbody>
             </table>
+
+            {/* Pagination Footer */}
+            <div className="flex items-center justify-between border-t px-5 py-3">
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <span>Zeilen pro Seite:</span>
+                <select
+                  value={pageSize}
+                  onChange={e => {
+                    const v = e.target.value;
+                    setPageSize(v === 'all' ? 'all' : Number(v) as PageSize);
+                  }}
+                  className="h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {PAGE_SIZES.map(ps => (
+                    <option key={ps.label} value={ps.value}>{ps.label}</option>
+                  ))}
+                </select>
+                <span>
+                  {pageSize === 'all'
+                    ? `${totalItems} Einträge`
+                    : `${Math.min((safePage - 1) * pageSize + 1, totalItems)}–${Math.min(safePage * pageSize, totalItems)} von ${totalItems}`
+                  }
+                </span>
+              </div>
+
+              {pageSize !== 'all' && totalPages > 1 && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={safePage <= 1}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border bg-background text-sm disabled:opacity-40 hover:bg-muted transition-colors"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  {getPageNumbers().map((p, i) =>
+                    p === 'ellipsis' ? (
+                      <span key={`e${i}`} className="px-1 text-muted-foreground">…</span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => setCurrentPage(p)}
+                        className={cn(
+                          'inline-flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium transition-colors',
+                          safePage === p
+                            ? 'bg-primary text-primary-foreground shadow-sm'
+                            : 'border bg-background hover:bg-muted'
+                        )}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={safePage >= totalPages}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border bg-background text-sm disabled:opacity-40 hover:bg-muted transition-colors"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}
