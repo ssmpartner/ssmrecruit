@@ -376,9 +376,9 @@ export default function Tasks() {
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className={cn('font-medium text-sm', task.status === 'done' && 'line-through text-muted-foreground')}>{task.title}</h3>
-                            {task.source === 'ai' && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 border border-violet-200 px-1.5 py-px text-[9px] font-semibold text-violet-700">
-                                <Sparkles className="h-2.5 w-2.5" /> KI
+                            {task.source === 'system' && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-1.5 py-px text-[9px] font-semibold text-primary">
+                                System
                               </span>
                             )}
                           </div>
