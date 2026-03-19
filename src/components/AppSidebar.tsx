@@ -104,12 +104,6 @@ export default function AppSidebar() {
           </button>
         )}
 
-        {!collapsed && (
-          <div className="mt-2 border-t border-sidebar-border pt-2 px-1">
-            <p className="text-xs text-sidebar-foreground/60 truncate">{profile?.display_name || user?.email}</p>
-            <p className="text-[10px] text-sidebar-foreground/40 truncate">{user?.email}</p>
-          </div>
-        )}
 
         <button
           onClick={toggle}
