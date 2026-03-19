@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -51,6 +52,7 @@ export default function LeadDetailSheet() {
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'status'>('info');
+  const [confirmReset, setConfirmReset] = useState(false);
 
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
@@ -596,9 +598,38 @@ export default function LeadDetailSheet() {
                               );
                             })()}
                           </div>
-                        </section>
+                         </section>
+
+                         {isSuperadmin && selectedLead.status !== 'new' && (
+                           <section className="pt-3 border-t border-border">
+                             <button
+                               onClick={() => setConfirmReset(true)}
+                               className="w-full rounded-md px-3 py-2 text-sm font-medium border border-destructive/30 text-destructive bg-destructive/5 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                             >
+                               ↺ Auf «Neuer Lead» zurücksetzen
+                             </button>
+                           </section>
+                         )}
                       </div>
                     )}
+
+                    {/* Reset Confirmation */}
+                    <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Lead zurücksetzen?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Der Status von «{selectedLead.name}» wird auf «Neuer Lead» zurückgesetzt. Alle bisherigen Aktivitäten bleiben erhalten.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => { changeStatus('new'); setConfirmReset(false); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Zurücksetzen
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
 
                     {/* Activity Tab */}
                     {rightTab === 'activity' && (
