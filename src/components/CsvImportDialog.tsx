@@ -31,7 +31,7 @@ const FIELD_LABELS: Record<string, string> = {
   name: 'Name', email: 'E-Mail', phone: 'Telefon', address: 'Adresse',
   plz: 'PLZ', city: 'Ort', canton: 'Kanton', cantonCode: 'Kanton-Code',
   position: 'Position', source: 'Quelle', notes: 'Notizen',
-  createdAt: 'Lead-Datum', status: 'Status', employeeId: 'Berater / Zugewiesen an',
+  createdAt: 'Lead-Datum', status: 'Status', employeeId: 'Mitarbeiter',
   agencyId: 'Agentur', campaign: 'Kampagne',
 };
 
