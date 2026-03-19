@@ -515,6 +515,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
     setEditId(source.id);
     setEditLabel(source.label);
     setEditIcon(source.icon);
+    setEditColor(source.color);
   };
 
   const cancelEdit = () => { setEditId(null); setEditLabel(''); setEditIcon('Globe'); };
