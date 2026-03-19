@@ -176,6 +176,7 @@ export default function Analytics() {
   const sourceData = leadSources.map(src => ({
     name: src.label,
     value: filtered.filter(l => l.source === src.id).length,
+    fill: src.color || '#6B7280',
   })).filter(d => d.value > 0);
 
   const statusData = Object.entries(statusConfig).map(([key, cfg]) => ({
