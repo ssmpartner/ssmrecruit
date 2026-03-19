@@ -1,4 +1,4 @@
-export type LeadStatus = 'new' | 'contacted' | 'appointment' | 'interview_1' | 'insights' | 'interview_2' | 'hired' | 'rejected';
+export type LeadStatus = 'new' | 'contacted' | 'appointment' | 'follow_up' | 'hired' | 'rejected';
 
 export type DiscDimension = 'D' | 'I' | 'S' | 'C';
 
