@@ -106,6 +106,8 @@ function dbToDiscResult(row: any): DiscResult {
 
 export function LeadsProvider({ children }: { children: ReactNode }) {
   const { addNotification } = useNotifications();
+  const { profile } = useAuth();
+  const currentUserName = profile?.display_name || 'System';
   const [leads, setLeads] = useState<Lead[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [agencies, setAgencies] = useState<Agency[]>([]);
