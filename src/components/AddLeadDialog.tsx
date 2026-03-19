@@ -359,16 +359,22 @@ export default function AddLeadDialog() {
                 </p>
               </div>
               <p className="text-sm text-center text-muted-foreground">
-                Möchten Sie gleich einen Termin für diesen Lead erstellen?
+                Was möchten Sie als Nächstes tun?
               </p>
-              <div className="flex justify-center gap-3">
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex gap-3">
+                  <button onClick={() => { setForm(emptyForm); setErrors({}); setStep('lead'); }}
+                    className="inline-flex items-center gap-2 rounded-lg border bg-card px-5 py-2.5 text-sm font-medium hover:bg-secondary transition-colors">
+                    <Plus className="h-4 w-4" /> Weiteren Lead erfassen
+                  </button>
+                  <button onClick={() => setStep('appointment')}
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                    <CalendarIcon className="h-4 w-4" /> Termin erstellen
+                  </button>
+                </div>
                 <button onClick={resetAndClose}
-                  className="rounded-lg border bg-card px-5 py-2.5 text-sm font-medium hover:bg-secondary transition-colors">
-                  Speichern & Beenden
-                </button>
-                <button onClick={() => setStep('appointment')}
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-                  <CalendarIcon className="h-4 w-4" /> Termin erstellen
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors mt-1">
+                  Fertig
                 </button>
               </div>
             </div>
