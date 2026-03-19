@@ -46,6 +46,17 @@ interface DocumentUpload {
   uploaded_at: string;
 }
 
+interface AppointmentSuggestion {
+  id: string;
+  lead_id: string;
+  suggested_date: string;
+  suggested_time: string;
+  status: string;
+  response_note: string;
+  created_at: string;
+  responded_at: string | null;
+}
+
 const documentTypeLabels: Record<string, string> = {
   cv: 'Lebenslauf',
   certificate: 'Zertifikat',
