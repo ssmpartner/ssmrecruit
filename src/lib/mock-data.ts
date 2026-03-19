@@ -264,7 +264,7 @@ const swissLeadData = [
 
 const positions = ['Frontend Entwickler', 'Backend Ingenieur', 'Projektleiter', 'UX Designer', 'Datenanalyst', 'DevOps Ingenieur', 'QA Ingenieur', 'Fullstack Entwickler', 'Marketing Manager', 'Verkaufsberater'];
 
-const statuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'interview_2', 'hired', 'rejected'];
+const statuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 const sources: LeadSource[] = ['website', 'tiktok', 'meta', 'linkedin', 'csv_import'];
 
 export const leads: Lead[] = swissNames.map((name, i) => {
