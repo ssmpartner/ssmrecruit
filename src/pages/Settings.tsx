@@ -562,7 +562,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
       return;
     }
     toast({ title: 'Erstellt', description: `Quelle "${newLabel.trim()}" wurde hinzugefügt.` });
-    setNewId(''); setNewLabel(''); setNewIcon('Globe'); setShowAdd(false);
+    setNewId(''); setNewLabel(''); setNewIcon('Globe'); setNewColor('#22C55E'); setShowAdd(false);
     reloadLeadSources();
   };
 
