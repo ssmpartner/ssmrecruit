@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Brain, FileText, Send, Copy, Check, Loader2, Clock, CheckCircle2, File, Download, ChevronDown, ChevronUp, Upload, AlertCircle } from 'lucide-react';
+import { Brain, FileText, Send, Copy, Check, Loader2, Clock, CheckCircle2, File, Download, ChevronDown, ChevronUp, Upload, AlertCircle, CalendarPlus, CalendarCheck, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import InsightsTab from './InsightsTab';
 import StepActionsPanel from './StepActionsPanel';
@@ -46,6 +46,17 @@ interface DocumentUpload {
   uploaded_at: string;
 }
 
+interface AppointmentSuggestion {
+  id: string;
+  lead_id: string;
+  suggested_date: string;
+  suggested_time: string;
+  status: string;
+  response_note: string;
+  created_at: string;
+  responded_at: string | null;
+}
+
 const documentTypeLabels: Record<string, string> = {
   cv: 'Lebenslauf',
   certificate: 'Zertifikat',
@@ -65,18 +76,20 @@ const insightsQuestionLabels: Record<string, string> = {
 
 // Combined component with step actions panel - shown directly in lead detail
 export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus, onScheduleAppointment }: PropsWithActions) {
-  const { discResults } = useLeads();
+  const { discResults, addActivity } = useLeads();
   const { toast } = useToast();
   const [processData, setProcessData] = useState({ insightsSent: false, insightsCompleted: false, docsCompleted: false });
   const [loading, setLoading] = useState(true);
   const [insightsRequests, setInsightsRequests] = useState<InsightsRequest[]>([]);
   const [docRequests, setDocRequests] = useState<DocumentRequest[]>([]);
   const [docUploads, setDocUploads] = useState<DocumentUpload[]>([]);
+  const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
   const [sendingInsights, setSendingInsights] = useState(false);
   const [sendingDocs, setSendingDocs] = useState(false);
   const [copiedToken, setCopiedToken] = useState('');
   const [expandedInsights, setExpandedInsights] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [newInsightsLink, setNewInsightsLink] = useState('');
   
   // Auto-expand details when DISC or insights are completed
   const hasDiscResult = discResults.some(d => d.leadId === leadId);
@@ -97,14 +110,16 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
   }, [leadId]);
 
   async function loadData() {
-    const [insRes, docRes, uploadsRes] = await Promise.all([
+    const [insRes, docRes, uploadsRes, suggestionsRes] = await Promise.all([
       supabase.from('insights_requests').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }),
       supabase.from('document_requests').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }),
       supabase.from('document_uploads').select('*').eq('lead_id', leadId).order('uploaded_at', { ascending: false }),
+      supabase.from('appointment_suggestions').select('*').eq('lead_id', leadId).order('suggested_date', { ascending: true }),
     ]);
     if (insRes.data) setInsightsRequests(insRes.data as any[]);
     if (docRes.data) setDocRequests(docRes.data as any[]);
     if (uploadsRes.data) setDocUploads(uploadsRes.data as any[]);
+    if (suggestionsRes.data) setAppointmentSuggestions(suggestionsRes.data as any[]);
     
     setProcessData({
       insightsSent: !!(insRes.data && insRes.data.length > 0),
@@ -139,6 +154,7 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
 
     const url = getPublicUrl('insights', (data as any).token);
     await navigator.clipboard.writeText(url);
+    setNewInsightsLink(url);
     toast({ title: '✅ Link erstellt', description: 'Der Insights & DISC-Link wurde in die Zwischenablage kopiert.' });
     setSendingInsights(false);
     loadData();
@@ -188,6 +204,29 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
       a.click();
     }
   }
+  async function handleSuggestionAction(id: string, action: 'accepted' | 'declined') {
+    await supabase.from('appointment_suggestions').update({
+      status: action,
+      responded_at: new Date().toISOString(),
+    }).eq('id', id);
+
+    if (action === 'accepted') {
+      const suggestion = appointmentSuggestions.find(s => s.id === id);
+      if (suggestion) {
+        addActivity(leadId, 'appointment', `Terminvorschlag angenommen: ${new Date(suggestion.suggested_date).toLocaleDateString('de-CH')} um ${suggestion.suggested_time}`);
+        // Decline all other pending suggestions
+        const otherPending = appointmentSuggestions.filter(s => s.id !== id && s.status === 'pending');
+        for (const other of otherPending) {
+          await supabase.from('appointment_suggestions').update({ status: 'declined', responded_at: new Date().toISOString() }).eq('id', other.id);
+        }
+      }
+    } else {
+      addActivity(leadId, 'note', 'Terminvorschlag abgelehnt');
+    }
+    
+    toast({ title: action === 'accepted' ? '✅ Termin angenommen' : '❌ Termin abgelehnt' });
+    loadData();
+  }
 
   const hasDisc = discResults.some(d => d.leadId === leadId);
   const latestInsights = insightsRequests[0];
@@ -214,8 +253,39 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
         insightsSent={processData.insightsSent}
       />
 
+      {/* Show newly created link prominently */}
+      {newInsightsLink && (
+        <div className="rounded-lg border border-violet-200 bg-violet-50 p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-violet-600" />
+              <span className="text-xs font-semibold text-violet-800">Insights & DISC-Link erstellt</span>
+            </div>
+            <button onClick={() => setNewInsightsLink('')} className="text-xs text-violet-400 hover:text-violet-600">✕</button>
+          </div>
+          <div className="flex gap-2">
+            <input
+              readOnly
+              value={newInsightsLink}
+              className="flex-1 h-8 rounded-md border border-violet-200 bg-white px-2 text-xs text-violet-900 outline-none"
+              onClick={e => (e.target as HTMLInputElement).select()}
+            />
+            <button
+              onClick={async () => {
+                await navigator.clipboard.writeText(newInsightsLink);
+                toast({ title: 'Kopiert!', description: 'Link in der Zwischenablage.' });
+              }}
+              className="inline-flex items-center gap-1 rounded-md bg-violet-600 px-3 py-1 text-xs font-medium text-white hover:bg-violet-700 transition-colors"
+            >
+              <Copy className="h-3 w-3" /> Kopieren
+            </button>
+          </div>
+          <p className="text-[11px] text-violet-600">Diesen Link an den Kandidaten senden. Er enthält Fragen, DISC-Test und Terminvorschläge.</p>
+        </div>
+      )}
+
       {/* Compact status indicators for sent links / completed items */}
-      {(insightsRequests.length > 0 || docUploads.length > 0 || hasDisc) && (
+      {(insightsRequests.length > 0 || docUploads.length > 0 || hasDisc || appointmentSuggestions.length > 0) && (
         <div className="space-y-2">
           <button
             onClick={() => setShowDetails(!showDetails)}
@@ -271,7 +341,53 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
                 </div>
               ))}
 
-              {/* Pending links */}
+              {/* Appointment Suggestions */}
+              {appointmentSuggestions.length > 0 && (
+                <div className="rounded-lg border bg-card p-3 space-y-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CalendarPlus className="h-4 w-4 text-primary" />
+                    <h5 className="text-xs font-semibold">Terminvorschläge vom Kandidaten</h5>
+                  </div>
+                  {appointmentSuggestions.map(s => {
+                    const dateStr = new Date(s.suggested_date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+                    return (
+                      <div key={s.id} className={`flex items-center gap-3 rounded-lg border p-2.5 ${
+                        s.status === 'accepted' ? 'bg-primary/5 border-primary/30' :
+                        s.status === 'declined' ? 'bg-muted/30 border-muted opacity-60' :
+                        'bg-background border-border'
+                      }`}>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium ${s.status === 'declined' ? 'line-through text-muted-foreground' : ''}`}>
+                            {dateStr} um {s.suggested_time} Uhr
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {s.status === 'pending' && 'Ausstehend'}
+                            {s.status === 'accepted' && '✅ Angenommen'}
+                            {s.status === 'declined' && '❌ Abgelehnt'}
+                          </p>
+                        </div>
+                        {s.status === 'pending' && (
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={() => handleSuggestionAction(s.id, 'accepted')}
+                              className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+                            >
+                              <CalendarCheck className="h-3 w-3" /> Annehmen
+                            </button>
+                            <button
+                              onClick={() => handleSuggestionAction(s.id, 'declined')}
+                              className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+                            >
+                              <X className="h-3 w-3" /> Ablehnen
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               {insightsRequests.filter(r => r.status !== 'completed').map(req => (
                 <div key={req.id} className="flex items-center justify-between rounded-lg border bg-card p-3">
                   <div className="flex items-center gap-2">
