@@ -22,7 +22,7 @@ export default function Agencies() {
   const handleAdd = () => {
     if (!form.name.trim() || !form.contactEmail.trim()) return;
     addAgency(form);
-    setForm({ name: '', contactEmail: '', region: 'Deutschschweiz', language: 'de', allowedCantons: [] });
+    setForm({ name: '', contactEmail: '', region: 'Deutschschweiz', language: 'de', allowedCantons: [], color: AGENCY_COLORS[0] });
     setOpen(false);
   };
 
