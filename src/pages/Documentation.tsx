@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import { FileText, Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2 } from 'lucide-react';
 
-const APP_VERSION = '2.9.0';
+const APP_VERSION = '2.10.0';
 
 const versionHistory = [
+  { version: '2.10.0', date: '19.03.2026', changes: [
+    'CSV-Import: Leads per CSV-Datei hochladen mit automatischer Spalten-Erkennung (DE/EN), Vorschau und Validierung',
+    'CSV-Export nur für Superadmins – Zugriffskontrolle für sensible Datenexporte',
+    'Microsoft 365 als Integrations-Platzhalter (Coming Soon) auf der Einstellungen-Seite',
+    'API-Dokumentation v1.1 mit CSV Import/Export-Endpunkten',
+  ]},
   { version: '2.9.0', date: '18.03.2026', changes: [
     'Datenbank bereinigt: Alle Test-/Mock-Leads entfernt für den Produktivbetrieb',
     'Integrationen (TikTok, Meta, LinkedIn, Webhooks) mit DB-Persistenz – Konfigurationen werden dauerhaft gespeichert',
@@ -39,6 +45,8 @@ const appFeatures = [
     { name: 'Lead hinzufügen', desc: 'Neue Leads manuell erfassen mit PLZ-Validierung (Schweizer Format).' },
     { name: 'Archivieren & Löschen', desc: 'Leads archivieren oder löschen (Superadmin) mit Bestätigungsdialog und Wiederherstellung.' },
     { name: 'KI-Duplikaterkennung', desc: 'Automatische Erkennung doppelter Leads per KI mit Konfidenz-Score, Vergleich und Zusammenführung.' },
+    { name: 'CSV-Import', desc: 'Leads per CSV-Datei importieren mit automatischer Spalten-Zuordnung, Vorschau und Validierung.' },
+    { name: 'CSV-Export (Superadmin)', desc: 'Alle Leads als CSV exportieren – nur für Benutzer mit Superadmin-Rolle verfügbar.' },
   ]},
   { category: 'Kommunikation', icon: '📞', features: [
     { name: 'Video-Calls', desc: 'Integrierte Video-Anrufe direkt aus der Anwendung starten.' },
