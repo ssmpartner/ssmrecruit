@@ -218,7 +218,7 @@ export default function Tasks() {
           </p>
         </div>
         <div className="flex gap-2">
-          {isBackoffice && (
+          {(
             <Button onClick={generateAllTasks} variant="outline" className="gap-2" disabled={!!generating}>
               <Sparkles className="h-4 w-4" /> Tasks generieren
             </Button>
