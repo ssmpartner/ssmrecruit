@@ -4,22 +4,22 @@ import { useAuth } from '@/context/AuthContext';
 import { useSidebarState } from '@/context/SidebarContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/pipeline', icon: Kanban, label: 'Pipeline' },
-  { to: '/leads', icon: Table, label: 'Leads' },
-  { to: '/tasks', icon: CheckSquare, label: 'Aufgaben' },
-  { to: '/calendar', icon: CalendarDays, label: 'Kalender' },
-  { to: '/agencies', icon: Building2, label: 'Agenturen' },
-  { to: '/employees', icon: UserCog, label: 'Mitarbeiter' },
-  { to: '/analytics', icon: BarChart3, label: 'Statistik' },
-  { to: '/processes', icon: Workflow, label: 'Prozesse' },
+const allNavItems = [
+  { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: null },
+  { to: '/pipeline', icon: Kanban, label: 'Pipeline', roles: null },
+  { to: '/leads', icon: Table, label: 'Leads', roles: null },
+  { to: '/tasks', icon: CheckSquare, label: 'Aufgaben', roles: null },
+  { to: '/calendar', icon: CalendarDays, label: 'Kalender', roles: null },
+  { to: '/agencies', icon: Building2, label: 'Agenturen', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[] },
+  { to: '/employees', icon: UserCog, label: 'Mitarbeiter', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[] },
+  { to: '/analytics', icon: BarChart3, label: 'Statistik', roles: null },
+  { to: '/processes', icon: Workflow, label: 'Prozesse', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[] },
 ];
 
-const bottomItems = [
-  { to: '/settings', icon: Settings, label: 'Einstellungen' },
-  { to: '/api-docs', icon: Code2, label: 'API-Dokumentation' },
-  { to: '/documentation', icon: FileText, label: 'Dokumentation' },
+const allBottomItems = [
+  { to: '/settings', icon: Settings, label: 'Einstellungen', roles: null },
+  { to: '/api-docs', icon: Code2, label: 'API-Dokumentation', roles: ['superadmin', 'admin'] as string[] },
+  { to: '/documentation', icon: FileText, label: 'Dokumentation', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[] },
 ];
 
 function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed }: { to: string; icon: React.ElementType; label: string; isActive: boolean; collapsed: boolean }) {
@@ -54,8 +54,11 @@ function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed }: { to: st
 export default function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut, profile, user } = useAuth();
+  const { signOut, profile, user, role } = useAuth();
   const { collapsed, toggle } = useSidebarState();
+
+  const navItems = allNavItems.filter(item => !item.roles || (role && item.roles.includes(role)));
+  const bottomItems = allBottomItems.filter(item => !item.roles || (role && item.roles.includes(role)));
 
   const handleLogout = async () => {
     await signOut();

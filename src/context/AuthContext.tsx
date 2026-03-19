@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
-type AppRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst';
+type AppRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter';
 
 interface Profile {
   id: string;
@@ -24,6 +24,7 @@ interface AuthContextType {
   updatePassword: (newPassword: string) => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   isSuperadmin: boolean;
+  isTeamleiter: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -141,6 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user, session, profile, role, loading,
       isSuperadmin: role === 'superadmin',
+      isTeamleiter: role === 'teamleiter',
       signUp, signIn, signOut,
       updateProfile, updateEmail, updatePassword, resetPassword,
     }}>

@@ -119,7 +119,7 @@ const appFeatures = [
   ]},
   { category: 'Administration', icon: '⚙️', features: [
     { name: 'Benutzerverwaltung', desc: 'Superadmins können Benutzer erstellen, Rollen zuweisen und Konten löschen.' },
-    { name: 'Rollensystem', desc: 'Vier Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Backoffice, Analyst.' },
+    { name: 'Rollensystem', desc: 'Fünf Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Teamleiter, Backoffice, Analyst.' },
     { name: 'Einstellungen', desc: 'Zentrale Konfiguration für Benachrichtigungen, Termine, Integrationen und API.' },
     { name: 'Profilverwaltung', desc: 'Benutzer können Name, E-Mail und Passwort in den Profileinstellungen ändern.' },
   ]},
