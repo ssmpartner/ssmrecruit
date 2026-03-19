@@ -2,9 +2,17 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.10.0';
+const APP_VERSION = '2.11.0';
 
 const versionHistory = [
+  { version: '2.11.0', date: '19.03.2026', changes: [
+    'Mehrfachauswahl in der Lead-Tabelle: Superadmins können mehrere Leads per Checkbox auswählen',
+    'Bulk-Zuweisung: Ausgewählte Leads einem Mitarbeiter oder einer Agentur zuweisen',
+    'Bulk-Aktionen: Mehrere Leads gleichzeitig archivieren oder löschen',
+    'CSV-Import: Erweiterte Felder – Lead-Datum, Quelle, Mitarbeiter, Agentur, Status und Kampagne',
+    'Kampagne als eigenständiges Datenbankfeld für präzise Marketing-Zuordnung',
+    'Feldbezeichnung vereinheitlicht: "Berater" und "Zugewiesen an" zusammengeführt zu "Mitarbeiter"',
+  ]},
   { version: '2.10.0', date: '19.03.2026', changes: [
     'CSV-Import: Leads per CSV-Datei hochladen mit automatischer Spalten-Erkennung (DE/EN), Vorschau und Validierung',
     'CSV-Export nur für Superadmins – Zugriffskontrolle für sensible Datenexporte',
