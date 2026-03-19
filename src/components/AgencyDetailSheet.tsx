@@ -36,6 +36,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
         region: agency.region || '',
         language: agency.language || 'de',
         allowedCantons: [...(agency.allowedCantons || [])],
+        color: agency.color || '#6B7280',
       });
       setDirty(false);
     }
