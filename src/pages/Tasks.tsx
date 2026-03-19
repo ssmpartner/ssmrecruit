@@ -306,7 +306,7 @@ export default function Tasks() {
           <p className="text-xs text-muted-foreground mb-4">
             Klicke auf "Tasks generieren" um Aufgaben für deine Leads zu erstellen
           </p>
-          {isBackoffice && (
+          {(
             <Button onClick={generateAllTasks} className="gap-2" disabled={!!generating}>
               <Sparkles className="h-4 w-4" /> Jetzt generieren
             </Button>
