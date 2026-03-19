@@ -705,7 +705,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
       <div className="space-y-3">
         {integrations.map((integration: any) => {
           const isExpanded = expandedId === integration.id;
-          const isLinkedIn = integration.id === 'linkedin';
+          const isComingSoon = integration.id === 'linkedin' || integration.id === 'microsoft365';
           return (
             <div key={integration.id} className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <button onClick={() => !isLinkedIn && setExpandedId(isExpanded ? null : integration.id)}
