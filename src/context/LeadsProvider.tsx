@@ -16,6 +16,7 @@ import {
 import { LeadsContext, type ActivityEntry, type LeadSourceConfig } from './leads-context';
 import { useNotifications } from './useNotifications';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
 
 // Map DB row to app Lead type
 function dbToLead(row: any): Lead {
@@ -105,6 +106,8 @@ function dbToDiscResult(row: any): DiscResult {
 
 export function LeadsProvider({ children }: { children: ReactNode }) {
   const { addNotification } = useNotifications();
+  const { profile } = useAuth();
+  const currentUserName = profile?.display_name || 'System';
   const [leads, setLeads] = useState<Lead[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [agencies, setAgencies] = useState<Agency[]>([]);
@@ -179,7 +182,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       leadId,
       type,
       description,
-      user: 'Sarah Chen',
+      user: currentUserName,
       timestamp: new Date().toISOString(),
     };
     setActivities((prev) => [entry, ...prev]);
@@ -188,9 +191,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       lead_id: leadId,
       type,
       description,
-      user: 'Sarah Chen',
+      user: currentUserName,
     });
-  }, []);
+  }, [currentUserName]);
 
   const updateLead = useCallback(async (id: string, updates: Partial<Lead>) => {
     const updatedAt = new Date().toISOString();

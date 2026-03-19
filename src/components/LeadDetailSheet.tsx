@@ -41,7 +41,7 @@ const appointmentTypeConfig = {
 export default function LeadDetailSheet() {
   const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings, leads, leadSources } = useLeads();
   const { toast } = useToast();
-  const { isSuperadmin } = useAuth();
+  const { isSuperadmin, profile } = useAuth();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
@@ -503,7 +503,7 @@ export default function LeadDetailSheet() {
                               <button disabled={!aptForm.title.trim() || !aptForm.date}
                                 onClick={() => {
                                   if (!aptForm.title.trim() || !aptForm.date || !selectedLead) return;
-                                  addAppointment({ leadId: selectedLead.id, title: aptForm.title.trim(), date: format(aptForm.date, 'yyyy-MM-dd'), time: aptForm.time, duration: aptForm.duration, type: aptForm.type, notes: aptForm.notes.trim(), createdBy: 'Sarah Chen' });
+                                  addAppointment({ leadId: selectedLead.id, title: aptForm.title.trim(), date: format(aptForm.date, 'yyyy-MM-dd'), time: aptForm.time, duration: aptForm.duration, type: aptForm.type, notes: aptForm.notes.trim(), createdBy: profile?.display_name || 'System' });
                                   setShowAptForm(false);
                                   setAptForm({ title: '', date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' });
                                 }}

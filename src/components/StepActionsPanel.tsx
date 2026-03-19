@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   Phone, PhoneOff, PhoneForwarded, UserX, Building2, ArrowRight, 
   CalendarPlus, Brain, Send, CheckCircle2, Clock, FileText, Upload, 
-  Shield, Sparkles, AlertCircle
+  Shield, Sparkles, AlertCircle, Ban, ThumbsDown
 } from 'lucide-react';
 import { type LeadStatus, statusConfig } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
@@ -20,13 +20,15 @@ interface StepActionsPanelProps {
   insightsSent: boolean;
 }
 
-type ContactOutcome = 'contacted' | 'callback' | 'not_reached' | 'not_interested' | 'internal';
+type ContactOutcome = 'contacted' | 'callback' | 'not_reached' | 'not_interested' | 'no_need' | 'not_suitable' | 'internal';
 
 const contactOutcomes: { key: ContactOutcome; label: string; icon: typeof Phone; description: string; color: string; action: 'advance' | 'log' | 'reject' | 'special' }[] = [
   { key: 'contacted', label: 'Kontaktiert', icon: Phone, description: 'Erfolgreich erreicht – weiter zum nächsten Schritt', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100', action: 'advance' },
   { key: 'callback', label: 'Rückruf gewünscht', icon: PhoneForwarded, description: 'Lead möchte zurückgerufen werden', color: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100', action: 'log' },
   { key: 'not_reached', label: 'Nicht erreicht', icon: PhoneOff, description: 'Erneuten Kontaktversuch planen', color: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100', action: 'log' },
   { key: 'not_interested', label: 'Nicht interessiert', icon: UserX, description: 'Lead hat kein Interesse – ablehnen', color: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100', action: 'reject' },
+  { key: 'no_need', label: 'Kein Bedarf', icon: Ban, description: 'Lead hat aktuell keinen Bedarf – ablehnen', color: 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100', action: 'reject' },
+  { key: 'not_suitable', label: 'Nicht Passend', icon: ThumbsDown, description: 'Lead passt nicht zum Profil – ablehnen', color: 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100', action: 'reject' },
   { key: 'internal', label: 'Interne Stelle', icon: Building2, description: 'Für interne Position markieren', color: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100', action: 'special' },
 ];
 
@@ -59,6 +61,16 @@ export default function StepActionsPanel({
         updateLead(leadId, { status: 'rejected' });
         addActivity(leadId, 'status_change', 'Lead nicht interessiert – abgelehnt');
         toast({ title: '❌ Abgelehnt', description: `${leadName} wurde als "Nicht interessiert" markiert.` });
+        break;
+      case 'no_need':
+        updateLead(leadId, { status: 'rejected' });
+        addActivity(leadId, 'status_change', 'Kein Bedarf – abgelehnt');
+        toast({ title: '🚫 Kein Bedarf', description: `${leadName} wurde als "Kein Bedarf" markiert.` });
+        break;
+      case 'not_suitable':
+        updateLead(leadId, { status: 'rejected' });
+        addActivity(leadId, 'status_change', 'Nicht passend – abgelehnt');
+        toast({ title: '👎 Nicht Passend', description: `${leadName} wurde als "Nicht Passend" markiert.` });
         break;
       case 'internal':
         addActivity(leadId, 'note', 'Für interne Stelle markiert');

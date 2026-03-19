@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { useLeads } from '@/context/useLeads';
 import { lookupPlz } from '@/lib/swiss-plz';
 import { type LeadStatus } from '@/lib/mock-data';
+import { useAuth } from '@/context/AuthContext';
 
 const SWISS_PHONE_REGEX = /^\+41\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
@@ -42,6 +43,7 @@ const appointmentTypeConfig = {
 
 export default function AddLeadDialog() {
   const { addLead, agencies, employees, addAppointment, leads, leadSources } = useLeads();
+  const { profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>('lead');
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -124,7 +126,7 @@ export default function AddLeadDialog() {
       duration: aptForm.duration,
       type: aptForm.type,
       notes: aptForm.notes.trim(),
-      createdBy: 'Sarah Chen',
+      createdBy: profile?.display_name || 'System',
     });
     resetAndClose();
   };
