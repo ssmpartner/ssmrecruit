@@ -9,6 +9,13 @@ import type {
   InsightsSettings,
 } from '@/lib/mock-data';
 
+export interface LeadSourceConfig {
+  id: string;
+  label: string;
+  icon: string;
+  sortOrder: number;
+}
+
 export interface ActivityEntry {
   id: string;
   leadId: string;
@@ -27,6 +34,8 @@ export interface LeadsContextType {
   discResults: DiscResult[];
   appointmentSettings: AppointmentSettings;
   insightsSettings: InsightsSettings;
+  leadSources: LeadSourceConfig[];
+  reloadLeadSources: () => Promise<void>;
   updateAppointmentSettings: (updates: Partial<AppointmentSettings>) => void;
   updateInsightsSettings: (updates: Partial<InsightsSettings>) => void;
   updateLead: (id: string, updates: Partial<Lead>) => void;

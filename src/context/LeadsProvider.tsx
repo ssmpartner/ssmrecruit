@@ -13,7 +13,7 @@ import {
   defaultInsightsSettings,
   statusConfig,
 } from '@/lib/mock-data';
-import { LeadsContext, type ActivityEntry } from './leads-context';
+import { LeadsContext, type ActivityEntry, type LeadSourceConfig } from './leads-context';
 import { useNotifications } from './useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 
