@@ -210,6 +210,42 @@ const apiSections: ApiSection[] = [
     ],
   },
   {
+    title: 'CSV Import / Export',
+    description: 'Leads per CSV-Datei importieren oder exportieren.',
+    endpoints: [
+      {
+        method: 'POST', path: '/api/v1/leads/import/csv', summary: 'Leads per CSV importieren', auth: true,
+        description: 'Importiert Leads aus einer CSV-Datei. Unterstützt Komma-, Semikolon- und Tab-getrennte Dateien. Automatische Spalten-Zuordnung für deutsche und englische Feldnamen.',
+        body: [
+          { name: 'file', type: 'file (multipart)', required: true, description: 'CSV-Datei (.csv)' },
+          { name: 'mapping', type: 'object', required: false, description: 'Manuelle Spalten-Zuordnung (Spaltenindex → Feldname)' },
+          { name: 'skipDuplicates', type: 'boolean', required: false, description: 'Duplikate anhand E-Mail überspringen (Standard: false)' },
+        ],
+        response: `{
+  "imported": 15,
+  "skipped": 2,
+  "errors": [
+    { "row": 8, "reason": "E-Mail fehlt" }
+  ]
+}`,
+      },
+      {
+        method: 'GET', path: '/api/v1/leads/export/csv', summary: 'Leads als CSV exportieren', auth: true,
+        description: 'Exportiert alle Leads als CSV-Datei. Nur für Superadmins verfügbar. Unterstützt Filter nach Status und Zeitraum.',
+        params: [
+          { name: 'status', type: 'string', required: false, description: 'Filter nach Status' },
+          { name: 'from', type: 'string', required: false, description: 'Startdatum (YYYY-MM-DD)' },
+          { name: 'to', type: 'string', required: false, description: 'Enddatum (YYYY-MM-DD)' },
+        ],
+        response: `Content-Type: text/csv
+Content-Disposition: attachment; filename="leads-export-2026-03-19.csv"
+
+Name,E-Mail,Telefon,PLZ,Ort,Kanton,Status,Quelle,Position
+Lukas Müller,lukas@email.ch,+41 44 123 45 67,8001,Zürich,ZH,new,meta,Frontend Entwickler`,
+      },
+    ],
+  },
+  {
     title: 'Webhooks',
     description: 'Eingehende Webhooks für externe Lead-Quellen.',
     endpoints: [
