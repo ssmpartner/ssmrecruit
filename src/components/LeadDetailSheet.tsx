@@ -17,7 +17,6 @@ import { useAuth } from '@/context/AuthContext';
 import VideoCallDialog from './VideoCallDialog';
 import ProcessStepper from './ProcessStepper';
 import { LeadInsightsDocumentsWithActions } from './LeadInsightsDocuments';
-import StepActionsPanel from './StepActionsPanel';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
