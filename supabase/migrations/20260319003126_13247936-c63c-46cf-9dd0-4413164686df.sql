@@ -1,0 +1,1 @@
+ALTER TABLE public.leads ADD COLUMN campaign text NOT NULL DEFAULT ''::text;
