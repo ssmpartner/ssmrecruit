@@ -16,6 +16,7 @@ export default function Agencies() {
     region: 'Deutschschweiz',
     language: 'de',
     allowedCantons: [] as string[],
+    color: AGENCY_COLORS[0],
   });
 
   const handleAdd = () => {
