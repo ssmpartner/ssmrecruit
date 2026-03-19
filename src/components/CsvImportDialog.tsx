@@ -16,16 +16,23 @@ interface CsvRow {
   position?: string;
   source?: string;
   notes?: string;
+  createdAt?: string;
+  status?: string;
+  employeeId?: string;
+  agencyId?: string;
+  campaign?: string;
 }
 
 const REQUIRED_FIELDS = ['name', 'email'];
-const OPTIONAL_FIELDS = ['phone', 'address', 'plz', 'city', 'canton', 'cantonCode', 'position', 'source', 'notes'];
+const OPTIONAL_FIELDS = ['phone', 'address', 'plz', 'city', 'canton', 'cantonCode', 'position', 'source', 'notes', 'createdAt', 'status', 'employeeId', 'agencyId', 'campaign'];
 const ALL_FIELDS = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
 
 const FIELD_LABELS: Record<string, string> = {
   name: 'Name', email: 'E-Mail', phone: 'Telefon', address: 'Adresse',
   plz: 'PLZ', city: 'Ort', canton: 'Kanton', cantonCode: 'Kanton-Code',
   position: 'Position', source: 'Quelle', notes: 'Notizen',
+  createdAt: 'Lead-Datum', status: 'Status', employeeId: 'Berater / Zugewiesen an',
+  agencyId: 'Agentur', campaign: 'Kampagne',
 };
 
 function parseCsv(text: string): { headers: string[]; rows: string[][] } {
@@ -54,7 +61,7 @@ function parseCsv(text: string): { headers: string[]; rows: string[][] } {
 function autoMapHeaders(csvHeaders: string[]): Record<number, string> {
   const mapping: Record<number, string> = {};
   const aliases: Record<string, string[]> = {
-    name: ['name', 'vorname', 'nachname', 'full_name', 'fullname', 'vor- und nachname'],
+    name: ['name', 'vorname', 'nachname', 'full_name', 'fullname', 'vor- und nachname', 'kandidat'],
     email: ['email', 'e-mail', 'mail', 'e_mail', 'email_address'],
     phone: ['phone', 'telefon', 'tel', 'phone_number', 'mobiltelefon', 'handy'],
     address: ['address', 'adresse', 'strasse', 'street'],
@@ -63,8 +70,13 @@ function autoMapHeaders(csvHeaders: string[]): Record<number, string> {
     canton: ['canton', 'kanton', 'state', 'province'],
     cantonCode: ['canton_code', 'kanton_code', 'cantoncode', 'kantoncode'],
     position: ['position', 'job', 'job_title', 'stelle', 'beruf'],
-    source: ['source', 'quelle', 'herkunft', 'lead_source'],
+    source: ['source', 'quelle', 'herkunft', 'lead_source', 'leadquelle', 'lead_quelle'],
     notes: ['notes', 'notizen', 'bemerkungen', 'kommentar', 'comment'],
+    createdAt: ['created_at', 'createdat', 'datum', 'date', 'lead_datum', 'leaddatum', 'erstelldatum', 'eingangsdatum', 'erfasst_am'],
+    status: ['status', 'lead_status', 'leadstatus', 'phase', 'stufe'],
+    employeeId: ['employee', 'berater', 'zugewiesen', 'assigned', 'assigned_to', 'assignedto', 'mitarbeiter', 'betreuer', 'zugewiesen_an'],
+    agencyId: ['agency', 'agentur', 'niederlassung', 'filiale', 'standort', 'agency_id'],
+    campaign: ['campaign', 'kampagne', 'werbekampagne', 'utm_campaign', 'marketing_campaign'],
   };
   csvHeaders.forEach((h, i) => {
     const lower = h.toLowerCase().replace(/[^a-zäöü0-9_]/g, '');
@@ -144,8 +156,28 @@ export default function CsvImportDialog() {
     let count = 0;
     const validRows = mappedRows.filter(r => r.name?.trim() && r.email?.trim());
 
+    const resolveEmployee = (val?: string) => {
+      if (!val) return defaultEmployee;
+      const match = employees.find(e => e.name.toLowerCase() === val.toLowerCase() || e.id === val || e.email.toLowerCase() === val.toLowerCase());
+      return match?.id || defaultEmployee;
+    };
+    const resolveAgency = (val?: string) => {
+      if (!val) return defaultAgency;
+      const match = agencies.find(a => a.name.toLowerCase() === val.toLowerCase() || a.id === val);
+      return match?.id || defaultAgency;
+    };
+    const validStatuses = ['new', 'contacted', 'appointment', 'interview_1', 'insights', 'interview_2', 'hired', 'rejected'];
+    const resolveStatus = (val?: string) => {
+      if (!val) return 'new';
+      const lower = val.toLowerCase().trim();
+      return validStatuses.includes(lower) ? lower : 'new';
+    };
+
     for (const row of validRows) {
       try {
+        const campaignNote = row.campaign ? `Kampagne: ${row.campaign}` : '';
+        const combinedNotes = [row.notes, campaignNote].filter(Boolean).join(' | ');
+
         await addLead({
           name: row.name,
           email: row.email,
@@ -156,11 +188,11 @@ export default function CsvImportDialog() {
           canton: row.canton || '',
           cantonCode: row.cantonCode || '',
           position: row.position || '',
-          source: (row.source as any) || 'website',
-          status: 'new',
-          agencyId: defaultAgency,
-          employeeId: defaultEmployee,
-          notes: row.notes || '',
+          source: (row.source as any) || 'csv_import',
+          status: resolveStatus(row.status) as any,
+          agencyId: resolveAgency(row.agencyId),
+          employeeId: resolveEmployee(row.employeeId),
+          notes: combinedNotes,
           lifecycle: 'active',
         });
         count++;
