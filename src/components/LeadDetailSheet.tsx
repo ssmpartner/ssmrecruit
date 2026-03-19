@@ -218,7 +218,7 @@ export default function LeadDetailSheet() {
               {/* Two Column Layout */}
               <div className="flex-1 flex overflow-hidden">
                 {/* LEFT: Step Actions + Workflow */}
-                <div className="w-[380px] shrink-0 border-r overflow-y-auto bg-muted/20">
+                <div className="w-[400px] shrink-0 border-r overflow-y-auto bg-muted/20">
                   <div className="p-4">
                     <LeadInsightsDocumentsWithActions
                       leadId={selectedLead.id}
