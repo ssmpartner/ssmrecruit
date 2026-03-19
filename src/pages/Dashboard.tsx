@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Users, UserCheck, Clock, Target, CalendarDays, ListTodo, Cloud, Sun, CloudRain, CloudSnow, CloudLightning, Cloudy } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, UserCheck, Clock, Target, CalendarDays, ListTodo, Cloud, Sun, CloudRain, CloudSnow, CloudLightning, Cloudy, UserPlus, ClipboardList, Building2, BarChart3, Plus, Sparkles } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import AddLeadDialog from '@/components/AddLeadDialog';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
@@ -42,9 +44,12 @@ function WeatherIcon({ icon }: { icon: string }) {
   return <Cloud className={cls} />;
 }
 
-function MiniStat({ icon: Icon, label, value, color }: { icon: any; label: string; value: number | string; color?: string }) {
+function MiniStat({ icon: Icon, label, value, color, onClick }: { icon: any; label: string; value: number | string; color?: string; onClick?: () => void }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm">
+    <div
+      className={`flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       <div className="rounded-lg bg-muted p-2.5">
         <Icon className="h-4 w-4 text-secondary" />
       </div>
@@ -56,9 +61,25 @@ function MiniStat({ icon: Icon, label, value, color }: { icon: any; label: strin
   );
 }
 
+function QuickAction({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-2.5 rounded-xl border bg-card px-4 py-3 shadow-sm text-sm font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5"
+    >
+      <div className="rounded-lg bg-primary/10 p-1.5">
+        <Icon className="h-4 w-4 text-primary" />
+      </div>
+      {label}
+    </button>
+  );
+}
+
 export default function Dashboard() {
   const { leads, employees, agencies, appointments, leadSources, setSelectedLead } = useLeads();
   const { profile } = useAuth();
+  const navigate = useNavigate();
+  const [showAddLead, setShowAddLead] = useState(false);
   const [now, setNow] = useState(new Date());
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [openTaskCount, setOpenTaskCount] = useState(0);
@@ -152,14 +173,23 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-3">
+        <QuickAction icon={UserPlus} label="Neuer Lead" onClick={() => setShowAddLead(true)} />
+        <QuickAction icon={ClipboardList} label="Tasks" onClick={() => navigate('/tasks')} />
+        <QuickAction icon={CalendarDays} label="Kalender" onClick={() => navigate('/calendar')} />
+        <QuickAction icon={Building2} label="Agenturen" onClick={() => navigate('/agencies')} />
+        <QuickAction icon={BarChart3} label="Analytics" onClick={() => navigate('/analytics')} />
+      </div>
+
       {/* KPI Row */}
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-        <MiniStat icon={Users} label="Leads gesamt" value={activeLeads.length} />
-        <MiniStat icon={UserCheck} label="Neue Leads" value={newCount} />
+        <MiniStat icon={Users} label="Leads gesamt" value={activeLeads.length} onClick={() => navigate('/leads')} />
+        <MiniStat icon={Sparkles} label="Neue Leads" value={newCount} onClick={() => navigate('/leads')} />
         <MiniStat icon={UserCheck} label="Eingestellt" value={hiredCount} />
-        <MiniStat icon={Target} label="Konversion" value={`${conversionRate}%`} />
-        <MiniStat icon={ListTodo} label="Offene Tasks" value={openTaskCount} />
-        <MiniStat icon={CalendarDays} label="Anst. Termine" value={upcomingAppointments.length} />
+        <MiniStat icon={Target} label="Konversion" value={`${conversionRate}%`} onClick={() => navigate('/analytics')} />
+        <MiniStat icon={ListTodo} label="Offene Tasks" value={openTaskCount} onClick={() => navigate('/tasks')} />
+        <MiniStat icon={CalendarDays} label="Anst. Termine" value={upcomingAppointments.length} onClick={() => navigate('/calendar')} />
       </div>
 
       {/* Charts */}
@@ -265,6 +295,7 @@ export default function Dashboard() {
       </div>
 
       <LeadDetailSheet />
+      <AddLeadDialog open={showAddLead} onOpenChange={setShowAddLead} />
     </div>
   );
 }
