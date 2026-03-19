@@ -2,16 +2,25 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.14.0';
+const APP_VERSION = '2.16.0';
 
 const versionHistory = [
-  { version: '2.14.0', date: '19.03.2026', changes: [
+  { version: '2.16.0', date: '19.03.2026', changes: [
+    'Aktivitäten zeigen jetzt den Namen des eingeloggten Benutzers statt "Sarah Chen"',
+    'Erstkontakt: Neue Optionen «Kein Bedarf» und «Nicht Passend» als Ablehnungsgründe',
+    'Persönlichkeitsfragen (Insights & DISC) in den Einstellungen verwalten, hinzufügen und bearbeiten',
+    'DISC-/Insights-Ergebnisse werden automatisch im Lead-Detailfenster angezeigt nach Abschluss',
+    'Kandidaten-Formular Teil 3: Follow-Up Terminvorschläge durch den Kandidaten',
+    'Insights-Link sofort sichtbar nach Erstellung mit Kopier-Funktion',
+    'Terminvorschläge annehmen/ablehnen direkt im Lead-Detailfenster',
+  ]},
+  { version: '2.15.0', date: '19.03.2026', changes: [
     'Lead-Quellen-Verwaltung: Quellen in Einstellungen hinzufügen, bearbeiten und löschen (Superadmin)',
     'Dynamische Lead-Quellen aus der Datenbank statt fest codierter Konfiguration',
     'Bulk-Aktion «Quelle ändern»: Mehrere Leads gleichzeitig einer neuen Quelle zuweisen',
     'Icon-Auswahl pro Quelle mit 6 vordefinierten Icons (Globe, Music, Facebook, LinkedIn, CSV, Tag)',
   ]},
-  { version: '2.13.0', date: '19.03.2026', changes: [
+  { version: '2.14.0', date: '19.03.2026', changes: [
     'Pagination in der Lead-Tabelle mit konfigurierbarer Seitengrösse (10, 20, 30, 50, 100, Alle)',
     'Seitennavigation mit Vor-/Zurück-Buttons und dynamischen Seitenzahlen',
     'Eintragsanzeige (z.B. «1–20 von 100») für bessere Übersicht',
