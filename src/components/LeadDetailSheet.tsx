@@ -112,15 +112,34 @@ export default function LeadDetailSheet() {
 
   const saveEdit = () => {
     if (!selectedLead) return;
+    const errors: Record<string, string> = {};
+
+    // Validate phone
     const phoneClean = form.phone.replace(/\s/g, '');
     if (phoneClean && !phoneClean.startsWith('+41') && !phoneClean.startsWith('041') && !phoneClean.startsWith('0')) {
+      errors.phone = 'Ungültige Schweizer Nummer';
+    }
+
+    // Validate email
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      errors.email = 'Ungültige E-Mail-Adresse';
+    }
+
+    // Validate name
+    if (!form.name.trim()) {
+      errors.name = 'Name ist erforderlich';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       toast({
-        title: '⚠️ Ungültige Telefonnummer',
-        description: 'Bitte eine gültige Schweizer Nummer eingeben (z.B. +41 44 123 45 67) oder das Feld leer lassen.',
+        title: '⚠️ Validierungsfehler',
+        description: Object.values(errors).join(', '),
         variant: 'destructive',
       });
       return;
     }
+    setFieldErrors({});
 
     const changes: string[] = [];
     if (form.name !== selectedLead.name) changes.push(`Name → "${form.name}"`);
