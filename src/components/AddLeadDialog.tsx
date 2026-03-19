@@ -125,7 +125,7 @@ export default function AddLeadDialog() {
       duration: aptForm.duration,
       type: aptForm.type,
       notes: aptForm.notes.trim(),
-      createdBy: 'Sarah Chen',
+      createdBy: profile?.display_name || 'System',
     });
     resetAndClose();
   };
