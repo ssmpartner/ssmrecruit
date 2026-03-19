@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { useLeads } from '@/context/useLeads';
 import { lookupPlz } from '@/lib/swiss-plz';
-import { type LeadSource, type LeadStatus, sourceConfig } from '@/lib/mock-data';
+import { type LeadStatus } from '@/lib/mock-data';
 
 const SWISS_PHONE_REGEX = /^\+41\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
