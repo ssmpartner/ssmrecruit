@@ -61,6 +61,7 @@ function dbToAgency(row: any): Agency {
     region: row.region || '',
     language: row.language || 'de',
     allowedCantons: row.allowed_cantons || [],
+    color: row.color || '#6B7280',
   };
 }
 
