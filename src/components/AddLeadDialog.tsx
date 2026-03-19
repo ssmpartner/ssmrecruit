@@ -267,19 +267,43 @@ export default function AddLeadDialog() {
                 <input value={form.address} onChange={e => set('address', e.target.value)} className={inputCls('address')} placeholder="Bahnhofstrasse 1" maxLength={200} />
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <div>
+                <div className="relative">
                   <label className="text-xs font-medium text-muted-foreground">PLZ *</label>
-                  <input value={form.plz} onChange={e => handlePlzChange(e.target.value)} className={inputCls('plz')} placeholder="8001" maxLength={4} />
+                  <input value={form.plz} onChange={e => handlePlzChange(e.target.value)}
+                    onFocus={() => setPlzFocused(true)} onBlur={() => setTimeout(() => setPlzFocused(false), 150)}
+                    className={inputCls('plz')} placeholder="8001" maxLength={4} autoComplete="off" />
                   {errors.plz && <p className="text-xs text-destructive mt-0.5">{errors.plz}</p>}
+                  <SuggestionDropdown visible={plzFocused && plzSuggestions.length > 0 && form.plz.length >= 1 && form.plz.length < 4}
+                    items={plzSuggestions.map(s => ({ label: `${s.plz} ${s.city}`, sub: s.cantonCode }))}
+                    onSelect={(i) => handlePlzSelect(plzSuggestions[i])} />
                 </div>
-                <div>
+                <div className="relative">
                   <label className="text-xs font-medium text-muted-foreground">Ort</label>
-                  <input value={form.city} onChange={e => set('city', e.target.value)} className={inputCls('city')} placeholder="Zürich" maxLength={100} />
+                  <input value={form.city} onChange={e => set('city', e.target.value)}
+                    onFocus={() => setCityFocused(true)} onBlur={() => setTimeout(() => setCityFocused(false), 150)}
+                    className={inputCls('city')} placeholder="Zürich" maxLength={100} autoComplete="off" />
                   {errors.city && <p className="text-xs text-destructive mt-0.5">{errors.city}</p>}
+                  <SuggestionDropdown visible={cityFocused && citySuggestions.length > 0 && form.city.length >= 1}
+                    items={citySuggestions.map(s => ({ label: s.city, sub: `${s.plz} ${s.cantonCode}` }))}
+                    onSelect={(i) => {
+                      const s = citySuggestions[i];
+                      setForm(prev => ({ ...prev, city: s.city, plz: s.plz, canton: s.canton, cantonCode: s.cantonCode }));
+                      setCityFocused(false);
+                    }} />
                 </div>
-                <div>
+                <div className="relative">
                   <label className="text-xs font-medium text-muted-foreground">Kanton</label>
-                  <input value={form.canton} onChange={e => set('canton', e.target.value)} className={inputCls('canton')} placeholder="Zürich" maxLength={50} />
+                  <input value={form.canton} onChange={e => set('canton', e.target.value)}
+                    onFocus={() => setCantonFocused(true)} onBlur={() => setTimeout(() => setCantonFocused(false), 150)}
+                    className={inputCls('canton')} placeholder="Zürich" maxLength={50} autoComplete="off" />
+                  <SuggestionDropdown visible={cantonFocused && cantonSuggestions.length > 0 && form.canton.length >= 1}
+                    items={cantonSuggestions.map(c => ({ label: c }))}
+                    onSelect={(i) => {
+                      const canton = cantonSuggestions[i];
+                      const loc = swissLocations.find(l => l.canton === canton);
+                      setForm(prev => ({ ...prev, canton, cantonCode: loc?.cantonCode || prev.cantonCode }));
+                      setCantonFocused(false);
+                    }} />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
