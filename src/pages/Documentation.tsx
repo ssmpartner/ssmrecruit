@@ -2,9 +2,21 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.16.0';
+const APP_VERSION = '2.17.0';
 
 const versionHistory = [
+  { version: '2.17.0', date: '19.03.2026', changes: [
+    'Dashboard komplett überarbeitet: Begrüssung mit Benutzername, Uhrzeit und Live-Wetter',
+    'Dashboard KPI-Karten: Leads gesamt, neue Leads, eingestellt, Konversionsrate, offene Tasks, anstehende Termine',
+    'Dashboard Schnellzugriff: «+ Neu» Dropdown-Button für Lead, Task, Termin und Agentur',
+    'Leads nach Kanal: Balkendiagramm mit dynamischen Quellfarben aus der Datenbank',
+    'Anstehende Termine und neueste Leads direkt auf dem Dashboard',
+    'Duplikaterkennung komplett clientseitig (regelbasiert, ohne KI) – spart Kosten und verhindert Timeout-Fehler',
+    'Lead-Erfassung mit intelligenter PLZ-/Ort-/Kanton-Autovervollständigung aus DB und Schweizer PLZ-Daten',
+    'Mehrere Leads nacheinander erfassen ohne Dialog zu schliessen',
+    'Benachrichtigungen erweitert: Tasks, Prozess-Schritte, Insights, Dokument-Upload, Duplikate',
+    'Aufgabensystem komplett regelbasiert (System-Tasks pro Lead-Status statt KI-Generierung)',
+  ]},
   { version: '2.16.0', date: '19.03.2026', changes: [
     'Aktivitäten zeigen jetzt den Namen des eingeloggten Benutzers statt "Sarah Chen"',
     'Erstkontakt: Neue Optionen «Kein Bedarf» und «Nicht Passend» als Ablehnungsgründe',
@@ -63,9 +75,9 @@ const versionHistory = [
     'Superadmin-Konto mit vollständiger Benutzerverwaltung (Erstellen, Rollen, Löschen)',
     'Authentifizierung mit E-Mail-Auto-Confirm für internes System',
   ]},
-  { version: '2.7.0', date: '18.03.2026', changes: ['Lead-Lifecycle: Archivieren, Löschen und Wiederherstellen mit Bestätigungsdialogen', 'KI-Duplikaterkennung mit Vergleichs- und Zusammenführungsfunktion', 'Untermenüs Aktiv/Archiviert/Gelöscht/Doppelte Leads in der Lead-Tabelle', 'KI-generierte Richtlinien & Regeln im Prozess-Verzeichnis', 'Geltungsbereich für Automatisierungen (Global, Agentur, Mitarbeiter)'] },
+  { version: '2.7.0', date: '18.03.2026', changes: ['Lead-Lifecycle: Archivieren, Löschen und Wiederherstellen mit Bestätigungsdialogen', 'Systembasierte Duplikaterkennung mit Konfidenz-Score, Vergleich und Zusammenführung', 'Untermenüs Aktiv/Archiviert/Gelöscht/Doppelte Leads in der Lead-Tabelle', 'KI-generierte Richtlinien & Regeln im Prozess-Verzeichnis', 'Geltungsbereich für Automatisierungen (Global, Agentur, Mitarbeiter)'] },
   { version: '2.6.0', date: '18.03.2026', changes: ['Agentur-Detailansicht mit bearbeitbaren Einstellungen (Name, E-Mail, Region, Sprache, Kantone)', 'Regionale Agentur-Einstellungen (Region, Sprache, erlaubte Kantone)', 'Kontextmenü updateAgency für persistente Agentur-Änderungen'] },
-  { version: '2.5.0', date: '18.03.2026', changes: ['Vollständiges Backend mit Lovable Cloud (Datenbank-Persistenz)', 'KI-gestützte Aufgabengenerierung pro Lead-Phase', 'Aufgaben-Management mit System- & KI-Tasks', 'Echtzeit-Datensynchronisation über alle Module'] },
+  { version: '2.5.0', date: '18.03.2026', changes: ['Vollständiges Backend mit Lovable Cloud (Datenbank-Persistenz)', 'Regelbasierte Aufgabengenerierung pro Lead-Phase', 'Aufgaben-Management mit System-Tasks', 'Echtzeit-Datensynchronisation über alle Module'] },
   { version: '2.4.0', date: '18.03.2026', changes: ['API-Modul mit Schlüsselverwaltung & Dokumentation', 'Dokumentationsbereich als eigene Seite', 'Erweiterte Berechtigungsscopes für API-Keys'] },
   { version: '2.3.0', date: '10.03.2026', changes: ['Prozesse-Seite mit Stepper-Ansicht', 'Video-Call-Integration für Termine', 'DISC-Persönlichkeitstest für Leads'] },
   { version: '2.2.0', date: '25.02.2026', changes: ['Kalender-Ansicht mit Terminverwaltung', 'Benachrichtigungscenter mit Echtzeit-Alerts', 'Erweiterte Filteroptionen in der Lead-Tabelle'] },
@@ -79,16 +91,16 @@ const appFeatures = [
     { name: 'Lead-Tabelle', desc: 'Alle Leads in einer filterbaren, sortierbaren Tabelle mit Tabs für Aktiv, Archiviert, Gelöscht und Doppelte Leads.' },
     { name: 'Pipeline-Board', desc: 'Kanban-Board zur visuellen Verwaltung des Lead-Status mit Drag & Drop.' },
     { name: 'Lead-Detail-Ansicht', desc: 'Detaillierte Ansicht mit Kontaktdaten, Notizen, Status-Historie und Dokumenten.' },
-    { name: 'Lead hinzufügen', desc: 'Neue Leads manuell erfassen mit PLZ-Validierung (Schweizer Format).' },
+    { name: 'Lead hinzufügen', desc: 'Neue Leads manuell erfassen mit PLZ-Autovervollständigung (Schweizer PLZ-Daten + DB-Lerneffekt), automatischer Ort-/Kanton-Befüllung und Mehrfacherfassung ohne Dialog-Schliessung.' },
     { name: 'Archivieren & Löschen', desc: 'Leads archivieren oder löschen (Superadmin) mit Bestätigungsdialog und Wiederherstellung.' },
-    { name: 'KI-Duplikaterkennung', desc: 'Automatische Erkennung doppelter Leads per KI mit Konfidenz-Score, Vergleich und Zusammenführung.' },
+    { name: 'Systembasierte Duplikaterkennung', desc: 'Automatische Erkennung doppelter Leads per Regelwerk (E-Mail, Telefon, Name, PLZ) mit Konfidenz-Score, Vergleich und Zusammenführung – ohne KI.' },
     { name: 'CSV-Import', desc: 'Leads per CSV-Datei importieren mit automatischer Spalten-Zuordnung (inkl. Lead-Datum, Quelle, Mitarbeiter, Agentur, Status, Kampagne), Vorschau und Validierung.' },
     { name: 'CSV-Export (Superadmin)', desc: 'Alle Leads als CSV exportieren – nur für Benutzer mit Superadmin-Rolle verfügbar.' },
     { name: 'Mehrfachauswahl & Bulk-Aktionen', desc: 'Superadmins können mehrere Leads auswählen und gesammelt Mitarbeiter/Agentur zuweisen, archivieren oder löschen.' },
   ]},
   { category: 'Kommunikation', icon: '📞', features: [
     { name: 'Video-Calls', desc: 'Integrierte Video-Anrufe direkt aus der Anwendung starten.' },
-    { name: 'Benachrichtigungen', desc: 'Echtzeit In-App-Benachrichtigungen für Lead-Änderungen, Termine und Automatisierungen.' },
+    { name: 'Benachrichtigungen', desc: 'Echtzeit In-App-Benachrichtigungen für Leads, Termine, Tasks, Prozess-Schritte, DISC, Insights, Dokument-Uploads, Duplikate und Automatisierungen – individuell konfigurierbar.' },
     { name: 'Termin-Erinnerungen', desc: 'Automatische Erinnerungen vor anstehenden Terminen.' },
   ]},
   { category: 'Terminplanung', icon: '📅', features: [
@@ -103,14 +115,14 @@ const appFeatures = [
     { name: 'Prozesse', desc: 'Mehrstufige Recruiting-Prozesse mit Stepper-Ansicht, KI-generierten Richtlinien und Geltungsbereichen für Automatisierungen (Global/Agentur/Mitarbeiter).' },
   ]},
   { category: 'Analyse & Insights', icon: '📊', features: [
-    { name: 'Dashboard', desc: 'Übersicht mit KPIs, Lead-Statistiken und Performance-Metriken.' },
+    { name: 'Dashboard', desc: 'Übersicht mit Begrüssung, Uhrzeit, Wetter, 6 KPI-Karten, Leads nach Kanal, Pipeline-Verteilung, anstehende Termine und Schnellzugriff (+ Neu Dropdown).' },
     { name: 'Analytics', desc: 'Detaillierte Auswertungen mit interaktiven Charts (Recharts).' },
     { name: 'DISC-Persönlichkeitstest', desc: 'Automatisierte Persönlichkeitsanalyse für Kandidaten mit automatischer Ergebnisanzeige.' },
     { name: 'Insights-Fragebogen', desc: 'Anpassbare Fragen (Teil 1: Insights, Teil 2: DISC, Teil 3: Terminvorschläge) – konfigurierbar in den Einstellungen.' },
   ]},
   { category: 'Aufgaben & KI', icon: '🤖', features: [
-    { name: 'Phasen-Tasks', desc: 'Automatische Pflichtaufgaben basierend auf dem aktuellen Lead-Status.' },
-    { name: 'KI-Tasks', desc: 'Kontextbezogene Zusatzaufgaben per KI-Generierung (Gemini).' },
+    { name: 'Phasen-Tasks', desc: 'Automatische Pflichtaufgaben basierend auf dem aktuellen Lead-Status (regelbasiert, ohne KI).' },
+    { name: 'Task-Benachrichtigungen', desc: 'Benachrichtigungen bei neuen und überfälligen Aufgaben.' },
     { name: 'KI-Richtlinien', desc: 'Automatische Generierung von Prozess-Richtlinien und Regeln per KI für jeden Prozessschritt.' },
     { name: 'Task-Management', desc: 'Aufgaben zuweisen, priorisieren und Status tracken (offen/in Bearbeitung/erledigt).' },
   ]},

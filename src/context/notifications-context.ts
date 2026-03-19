@@ -10,6 +10,11 @@ export type NotificationType =
   | 'disc_completed'
   | 'automation_triggered'
   | 'duplicate_detected'
+  | 'task_created'
+  | 'task_overdue'
+  | 'insights_completed'
+  | 'document_uploaded'
+  | 'process_step_changed'
   | 'system';
 
 export interface AppNotification {
@@ -33,6 +38,12 @@ export interface NotificationPreferences {
   appointmentCancelled: boolean;
   discCompleted: boolean;
   automationTriggered: boolean;
+  duplicateDetected: boolean;
+  taskCreated: boolean;
+  taskOverdue: boolean;
+  insightsCompleted: boolean;
+  documentUploaded: boolean;
+  processStepChanged: boolean;
 }
 
 export const defaultNotificationPreferences: NotificationPreferences = {
@@ -46,6 +57,12 @@ export const defaultNotificationPreferences: NotificationPreferences = {
   appointmentCancelled: true,
   discCompleted: true,
   automationTriggered: true,
+  duplicateDetected: true,
+  taskCreated: true,
+  taskOverdue: true,
+  insightsCompleted: true,
+  documentUploaded: true,
+  processStepChanged: true,
 };
 
 export interface NotificationsContextType {

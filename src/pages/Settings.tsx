@@ -264,10 +264,27 @@ function NotificationsTab({ notifPrefs, updateNotifPrefs, toast }: any) {
       </div>
 
       <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+        <h3 className="text-sm font-semibold">Aufgaben & Prozesse</h3>
+        <ToggleRow label="Neue Aufgabe erstellt" description="Benachrichtigung wenn eine neue Aufgabe zugewiesen wird"
+          checked={notifPrefs.taskCreated} onChange={(v: boolean) => { updateNotifPrefs({ taskCreated: v }); toast({ title: 'Gespeichert' }); }}
+          icon={<ClipboardList className="h-4 w-4" />} />
+        <ToggleRow label="Aufgabe überfällig" description="Benachrichtigung wenn eine Aufgabe das Fälligkeitsdatum überschreitet"
+          checked={notifPrefs.taskOverdue} onChange={(v: boolean) => { updateNotifPrefs({ taskOverdue: v }); toast({ title: 'Gespeichert' }); }} />
+        <ToggleRow label="Prozess-Schritt geändert" description="Benachrichtigung wenn ein Lead in eine neue Prozessphase wechselt"
+          checked={notifPrefs.processStepChanged} onChange={(v: boolean) => { updateNotifPrefs({ processStepChanged: v }); toast({ title: 'Gespeichert' }); }} />
+      </div>
+
+      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
         <h3 className="text-sm font-semibold">Weitere Benachrichtigungen</h3>
         <ToggleRow label="DISC-Test abgeschlossen" description="Benachrichtigung wenn ein Kandidat den Persönlichkeitstest abschliesst"
           checked={notifPrefs.discCompleted} onChange={(v: boolean) => { updateNotifPrefs({ discCompleted: v }); toast({ title: 'Gespeichert' }); }}
           icon={<Brain className="h-4 w-4" />} />
+        <ToggleRow label="Insights-Formular abgeschlossen" description="Benachrichtigung wenn ein Kandidat das Insights-Formular ausfüllt"
+          checked={notifPrefs.insightsCompleted} onChange={(v: boolean) => { updateNotifPrefs({ insightsCompleted: v }); toast({ title: 'Gespeichert' }); }} />
+        <ToggleRow label="Dokument hochgeladen" description="Benachrichtigung wenn ein Kandidat Dokumente über den Upload-Link einreicht"
+          checked={notifPrefs.documentUploaded} onChange={(v: boolean) => { updateNotifPrefs({ documentUploaded: v }); toast({ title: 'Gespeichert' }); }} />
+        <ToggleRow label="Duplikat erkannt" description="Benachrichtigung wenn ein mögliches Duplikat erkannt wird"
+          checked={notifPrefs.duplicateDetected} onChange={(v: boolean) => { updateNotifPrefs({ duplicateDetected: v }); toast({ title: 'Gespeichert' }); }} />
         <ToggleRow label="Automatisierungen" description="Benachrichtigung wenn eine Automatisierung ausgelöst wird"
           checked={notifPrefs.automationTriggered} onChange={(v: boolean) => { updateNotifPrefs({ automationTriggered: v }); toast({ title: 'Gespeichert' }); }} />
       </div>

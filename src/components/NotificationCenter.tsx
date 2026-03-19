@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Check, CheckCheck, Trash2, UserPlus, CalendarDays, ArrowRightLeft, Brain, Zap, Info, X, Copy } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2, UserPlus, CalendarDays, ArrowRightLeft, Brain, Zap, Info, X, Copy, ClipboardList, AlertTriangle, FileText, Upload, GitBranch } from 'lucide-react';
 import { useNotifications } from '@/context/useNotifications';
 import { type NotificationType } from '@/context/notifications-context';
 import { formatDistanceToNow } from 'date-fns';
@@ -15,6 +15,11 @@ const typeConfig: Record<NotificationType, { icon: typeof Bell; color: string }>
   disc_completed: { icon: Brain, color: 'text-pink-500 bg-pink-500/10' },
   automation_triggered: { icon: Zap, color: 'text-yellow-500 bg-yellow-500/10' },
   duplicate_detected: { icon: Copy, color: 'text-red-500 bg-red-500/10' },
+  task_created: { icon: ClipboardList, color: 'text-indigo-500 bg-indigo-500/10' },
+  task_overdue: { icon: AlertTriangle, color: 'text-red-600 bg-red-600/10' },
+  insights_completed: { icon: FileText, color: 'text-teal-500 bg-teal-500/10' },
+  document_uploaded: { icon: Upload, color: 'text-cyan-500 bg-cyan-500/10' },
+  process_step_changed: { icon: GitBranch, color: 'text-purple-500 bg-purple-500/10' },
   system: { icon: Info, color: 'text-muted-foreground bg-muted' },
 };
 
