@@ -526,6 +526,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
     const { error } = await supabase.from('lead_sources').update({
       label: editLabel.trim(),
       icon: editIcon,
+      color: editColor,
     }).eq('id', editId);
     setSaving(false);
     if (error) {
