@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Building2, Plus, Globe, MapPin, Languages } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, type Agency } from '@/lib/mock-data';
+import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, AGENCY_COLORS, type Agency } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 import AgencyDetailSheet from '@/components/AgencyDetailSheet';
 
