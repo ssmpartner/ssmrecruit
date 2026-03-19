@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Search, Loader2, GitMerge, Eye } from 'lucide-react';
+import { Search, Loader2, GitMerge } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import type { Lead } from '@/lib/mock-data';
+import { detectDuplicates, type DuplicatePair } from '@/lib/duplicate-detection';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,13 +16,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-
-interface DuplicatePair {
-  leadId1: string;
-  leadId2: string;
-  confidence: number;
-  reason: string;
-}
 
 export default function DuplicateLeads() {
   const { leads, mergeLead, agencies, employees } = useLeads();
@@ -40,7 +33,7 @@ export default function DuplicateLeads() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const scanForDuplicates = async () => {
+  const scanForDuplicates = () => {
     setLoading(true);
     try {
       const leadsForScan = activeLeads.map(l => ({
@@ -48,17 +41,13 @@ export default function DuplicateLeads() {
         plz: l.plz, city: l.city, position: l.position,
       }));
 
-      const { data, error } = await supabase.functions.invoke('detect-duplicates', {
-        body: { leads: leadsForScan },
-      });
-
-      if (error) throw error;
-      setDuplicates(data?.duplicates || []);
+      const results = detectDuplicates(leadsForScan);
+      setDuplicates(results);
       setScanned(true);
-      if (!data?.duplicates?.length) {
+      if (!results.length) {
         toast.success('Keine Duplikate gefunden!');
       } else {
-        toast.info(`${data.duplicates.length} potenzielle Duplikat(e) gefunden`);
+        toast.info(`${results.length} potenzielle Duplikat(e) gefunden`);
       }
     } catch (e: any) {
       console.error(e);
