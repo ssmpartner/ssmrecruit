@@ -159,7 +159,7 @@ export default function Dashboard() {
           </h1>
           <p className="text-muted-foreground">{formatDate(now)}</p>
         </div>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 shadow-sm">
             <Clock className="h-4 w-4" />
             <span className="font-medium tabular-nums">{formatTime(now)}</span>
@@ -171,6 +171,33 @@ export default function Dashboard() {
               <span className="hidden sm:inline text-xs">{weather.description}</span>
             </div>
           )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors">
+                <Plus className="h-4 w-4" />
+                Neu
+                <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => setShowAddLead(true)} className="cursor-pointer">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Neuer Lead
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/tasks')} className="cursor-pointer">
+                <ClipboardList className="mr-2 h-4 w-4" />
+                Neuer Task
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/calendar')} className="cursor-pointer">
+                <CalendarDays className="mr-2 h-4 w-4" />
+                Neuer Termin
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/agencies')} className="cursor-pointer">
+                <Building2 className="mr-2 h-4 w-4" />
+                Neue Agentur
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
