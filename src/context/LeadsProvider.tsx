@@ -487,7 +487,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       dominant_type: dominantType,
       answers: answers as any,
     });
-  }, [addActivity, addNotification, leads]);
+  }, [addActivity, addNotification, leads, updateLead]);
 
   const sendAppointmentNotification = useCallback((appointmentId: string) => {
     const appointment = appointments.find((entry) => entry.id === appointmentId);
