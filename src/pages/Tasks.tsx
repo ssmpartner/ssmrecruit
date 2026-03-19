@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLeads } from '@/context/useLeads';
 import { statusConfig } from '@/lib/mock-data';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import {
   CheckSquare, Clock, User, Filter, AlertCircle,
@@ -31,16 +32,13 @@ const taskStatusConfig: Record<string, { label: string; color: string }> = {
 
 export default function Tasks() {
   const { leads, employees, agencies } = useLeads();
+  const { profile } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState<string | null>(null); // leadId being generated
+  const [generating, setGenerating] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
-
-  // Simulate current user as "Sarah Chen" (e1, admin/backoffice, agency a1)
-  const currentUser = employees.find(e => e.id === 'e1')!;
-  const isBackoffice = currentUser?.role === 'admin' || currentUser?.role === 'agency_manager';
 
   // Load tasks from DB
   const fetchTasks = useCallback(async () => {
