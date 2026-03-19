@@ -16,16 +16,23 @@ interface CsvRow {
   position?: string;
   source?: string;
   notes?: string;
+  createdAt?: string;
+  status?: string;
+  employeeId?: string;
+  agencyId?: string;
+  campaign?: string;
 }
 
 const REQUIRED_FIELDS = ['name', 'email'];
-const OPTIONAL_FIELDS = ['phone', 'address', 'plz', 'city', 'canton', 'cantonCode', 'position', 'source', 'notes'];
+const OPTIONAL_FIELDS = ['phone', 'address', 'plz', 'city', 'canton', 'cantonCode', 'position', 'source', 'notes', 'createdAt', 'status', 'employeeId', 'agencyId', 'campaign'];
 const ALL_FIELDS = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
 
 const FIELD_LABELS: Record<string, string> = {
   name: 'Name', email: 'E-Mail', phone: 'Telefon', address: 'Adresse',
   plz: 'PLZ', city: 'Ort', canton: 'Kanton', cantonCode: 'Kanton-Code',
   position: 'Position', source: 'Quelle', notes: 'Notizen',
+  createdAt: 'Lead-Datum', status: 'Status', employeeId: 'Berater / Zugewiesen an',
+  agencyId: 'Agentur', campaign: 'Kampagne',
 };
 
 function parseCsv(text: string): { headers: string[]; rows: string[][] } {
