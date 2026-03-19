@@ -192,7 +192,8 @@ export default function CsvImportDialog() {
           status: resolveStatus(row.status) as any,
           agencyId: resolveAgency(row.agencyId),
           employeeId: resolveEmployee(row.employeeId),
-          notes: combinedNotes,
+          notes: row.notes || '',
+          campaign: row.campaign || '',
           lifecycle: 'active',
         });
         count++;
