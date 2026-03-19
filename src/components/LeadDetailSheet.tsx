@@ -134,6 +134,12 @@ export default function LeadDetailSheet() {
     updateLead(selectedLead.id, updates);
     if (changes.length > 0) addActivity(selectedLead.id, 'edit', changes.join(', '));
     setEditing(false);
+    toast({
+      title: '✅ Gespeichert',
+      description: changes.length > 0
+        ? `${changes.length} Änderung${changes.length > 1 ? 'en' : ''} erfolgreich gespeichert.`
+        : 'Keine Änderungen erkannt.',
+    });
   };
 
   const changeStatus = (newStatus: LeadStatus) => {
