@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserCheck, Clock, Target, CalendarDays, ListTodo, Cloud, Sun, CloudRain, CloudSnow, CloudLightning, Cloudy, UserPlus, ClipboardList, Building2, BarChart3, Plus, Sparkles } from 'lucide-react';
+import { Users, UserCheck, Clock, Target, CalendarDays, ListTodo, Cloud, Sun, CloudRain, CloudSnow, CloudLightning, Cloudy, UserPlus, ClipboardList, Building2, BarChart3, Plus, Sparkles, ChevronDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AddLeadDialog from '@/components/AddLeadDialog';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
@@ -61,19 +62,7 @@ function MiniStat({ icon: Icon, label, value, color, onClick }: { icon: any; lab
   );
 }
 
-function QuickAction({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-2.5 rounded-xl border bg-card px-4 py-3 shadow-sm text-sm font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5"
-    >
-      <div className="rounded-lg bg-primary/10 p-1.5">
-        <Icon className="h-4 w-4 text-primary" />
-      </div>
-      {label}
-    </button>
-  );
-}
+
 
 export default function Dashboard() {
   const { leads, employees, agencies, appointments, leadSources, setSelectedLead } = useLeads();
@@ -158,7 +147,7 @@ export default function Dashboard() {
           </h1>
           <p className="text-muted-foreground">{formatDate(now)}</p>
         </div>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 shadow-sm">
             <Clock className="h-4 w-4" />
             <span className="font-medium tabular-nums">{formatTime(now)}</span>
@@ -170,16 +159,34 @@ export default function Dashboard() {
               <span className="hidden sm:inline text-xs">{weather.description}</span>
             </div>
           )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors">
+                <Plus className="h-4 w-4" />
+                Neu
+                <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => setShowAddLead(true)} className="cursor-pointer">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Neuer Lead
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/tasks')} className="cursor-pointer">
+                <ClipboardList className="mr-2 h-4 w-4" />
+                Neuer Task
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/calendar')} className="cursor-pointer">
+                <CalendarDays className="mr-2 h-4 w-4" />
+                Neuer Termin
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/agencies')} className="cursor-pointer">
+                <Building2 className="mr-2 h-4 w-4" />
+                Neue Agentur
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="flex flex-wrap gap-3">
-        <QuickAction icon={UserPlus} label="Neuer Lead" onClick={() => setShowAddLead(true)} />
-        <QuickAction icon={ClipboardList} label="Tasks" onClick={() => navigate('/tasks')} />
-        <QuickAction icon={CalendarDays} label="Kalender" onClick={() => navigate('/calendar')} />
-        <QuickAction icon={Building2} label="Agenturen" onClick={() => navigate('/agencies')} />
-        <QuickAction icon={BarChart3} label="Analytics" onClick={() => navigate('/analytics')} />
       </div>
 
       {/* KPI Row */}
