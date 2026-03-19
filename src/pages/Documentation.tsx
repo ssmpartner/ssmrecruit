@@ -2,9 +2,17 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.10.0';
+const APP_VERSION = '2.11.0';
 
 const versionHistory = [
+  { version: '2.11.0', date: '19.03.2026', changes: [
+    'Mehrfachauswahl in der Lead-Tabelle: Superadmins können mehrere Leads per Checkbox auswählen',
+    'Bulk-Zuweisung: Ausgewählte Leads einem Mitarbeiter oder einer Agentur zuweisen',
+    'Bulk-Aktionen: Mehrere Leads gleichzeitig archivieren oder löschen',
+    'CSV-Import: Erweiterte Felder – Lead-Datum, Quelle, Mitarbeiter, Agentur, Status und Kampagne',
+    'Kampagne als eigenständiges Datenbankfeld für präzise Marketing-Zuordnung',
+    'Feldbezeichnung vereinheitlicht: "Berater" und "Zugewiesen an" zusammengeführt zu "Mitarbeiter"',
+  ]},
   { version: '2.10.0', date: '19.03.2026', changes: [
     'CSV-Import: Leads per CSV-Datei hochladen mit automatischer Spalten-Erkennung (DE/EN), Vorschau und Validierung',
     'CSV-Export nur für Superadmins – Zugriffskontrolle für sensible Datenexporte',
@@ -46,8 +54,9 @@ const appFeatures = [
     { name: 'Lead hinzufügen', desc: 'Neue Leads manuell erfassen mit PLZ-Validierung (Schweizer Format).' },
     { name: 'Archivieren & Löschen', desc: 'Leads archivieren oder löschen (Superadmin) mit Bestätigungsdialog und Wiederherstellung.' },
     { name: 'KI-Duplikaterkennung', desc: 'Automatische Erkennung doppelter Leads per KI mit Konfidenz-Score, Vergleich und Zusammenführung.' },
-    { name: 'CSV-Import', desc: 'Leads per CSV-Datei importieren mit automatischer Spalten-Zuordnung, Vorschau und Validierung.' },
+    { name: 'CSV-Import', desc: 'Leads per CSV-Datei importieren mit automatischer Spalten-Zuordnung (inkl. Lead-Datum, Quelle, Mitarbeiter, Agentur, Status, Kampagne), Vorschau und Validierung.' },
     { name: 'CSV-Export (Superadmin)', desc: 'Alle Leads als CSV exportieren – nur für Benutzer mit Superadmin-Rolle verfügbar.' },
+    { name: 'Mehrfachauswahl & Bulk-Aktionen', desc: 'Superadmins können mehrere Leads auswählen und gesammelt Mitarbeiter/Agentur zuweisen, archivieren oder löschen.' },
   ]},
   { category: 'Kommunikation', icon: '📞', features: [
     { name: 'Video-Calls', desc: 'Integrierte Video-Anrufe direkt aus der Anwendung starten.' },
@@ -111,7 +120,7 @@ const techStack = [
 ];
 
 const roles = [
-  { role: 'Superadmin', color: 'bg-destructive/10 text-destructive', permissions: ['Vollzugriff auf alle Module', 'Benutzerverwaltung (erstellen, löschen)', 'Rollen zuweisen', 'Integrationen konfigurieren', 'CSV-Export', 'Leads dauerhaft löschen', 'App-Einstellungen ändern'] },
+  { role: 'Superadmin', color: 'bg-destructive/10 text-destructive', permissions: ['Vollzugriff auf alle Module', 'Benutzerverwaltung (erstellen, löschen)', 'Rollen zuweisen', 'Integrationen konfigurieren', 'CSV-Export', 'Leads dauerhaft löschen', 'Mehrfachauswahl & Bulk-Zuweisung', 'App-Einstellungen ändern'] },
   { role: 'Admin', color: 'bg-primary/10 text-primary', permissions: ['Lead-Management (CRUD)', 'Mitarbeiter & Agenturen verwalten', 'Termine & Kalender', 'Analytics einsehen', 'Aufgaben verwalten'] },
   { role: 'Backoffice', color: 'bg-accent/50 text-accent-foreground', permissions: ['Leads einsehen & bearbeiten', 'Termine erstellen', 'Aufgaben bearbeiten', 'CSV-Import'] },
   { role: 'Analyst', color: 'bg-muted text-muted-foreground', permissions: ['Dashboard & Analytics (nur lesen)', 'Lead-Daten einsehen', 'Berichte exportieren'] },
