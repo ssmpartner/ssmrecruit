@@ -155,7 +155,7 @@ export default function Analytics() {
     const agencyLeads = filtered.filter(l => l.agencyId === a.id);
     const hired = agencyLeads.filter(l => l.status === 'hired').length;
     const contacted = agencyLeads.filter(l => l.status === 'contacted').length;
-    const interview = agencyLeads.filter(l => l.status === 'interview_1' || l.status === 'interview_2').length;
+    const interview = agencyLeads.filter(l => l.status === 'appointment' || l.status === 'follow_up').length;
     const rejected = agencyLeads.filter(l => l.status === 'rejected').length;
     return {
       id: a.id,
