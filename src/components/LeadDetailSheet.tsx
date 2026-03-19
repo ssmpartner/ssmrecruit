@@ -176,21 +176,49 @@ export default function LeadDetailSheet() {
         {selectedLead && (
           <>
             {/* Header */}
-            <div className="border-b bg-card px-6 pt-6 pb-4">
-              <DialogHeader>
-                <DialogTitle className="text-xl">{selectedLead.name}</DialogTitle>
-                <DialogDescription className="text-sm text-muted-foreground">{selectedLead.position}</DialogDescription>
-              </DialogHeader>
+            <div className="border-b bg-primary/5 px-6 pt-5 pb-4">
+              {/* Navigation + Title row */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <button
+                    onClick={goToPrev}
+                    disabled={!hasPrev}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-background text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    title="Vorheriger Lead"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={goToNext}
+                    disabled={!hasNext}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-background text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    title="Nächster Lead"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                  <div className="min-w-0 ml-1">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-bold">{selectedLead.name}</DialogTitle>
+                      <DialogDescription className="text-sm text-muted-foreground">{selectedLead.position || 'Kein Titel'}</DialogDescription>
+                    </DialogHeader>
+                  </div>
+                </div>
+                {currentIndex >= 0 && (
+                  <span className="shrink-0 text-xs text-muted-foreground font-medium tabular-nums mt-1">
+                    {currentIndex + 1} / {activeLeads.length}
+                  </span>
+                )}
+              </div>
               <div className="mt-3 flex items-center gap-2 flex-wrap">
                 <LeadStatusBadge status={selectedLead.status} />
                 <SourceBadge source={selectedLead.source} />
-                <span className="inline-flex items-center gap-1 rounded-md bg-gray-50 border border-gray-200 px-2 py-1 text-xs font-medium text-gray-600">
-                  <MapPin className="h-3 w-3" /> {selectedLead.plz} {selectedLead.city} ({selectedLead.cantonCode})
+                <span className="inline-flex items-center gap-1 rounded-md bg-background border px-2 py-1 text-xs font-medium text-muted-foreground">
+                  <MapPin className="h-3 w-3" /> {selectedLead.plz} {selectedLead.city} {selectedLead.cantonCode ? `(${selectedLead.cantonCode})` : ''}
                 </span>
               </div>
 
               {/* Process Stepper */}
-              <div className="mt-4 rounded-xl border bg-muted/20 px-4 py-3">
+              <div className="mt-4 rounded-xl border bg-background/60 px-4 py-3">
                 <ProcessStepper currentStatus={selectedLead.status} compact />
               </div>
 
