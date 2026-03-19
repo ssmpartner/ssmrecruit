@@ -10,7 +10,7 @@ import ProcessStepper from '@/components/ProcessStepper';
 import { supabase } from '@/integrations/supabase/client';
 
 // ── Types ──
-export type AutomationTrigger = 'status_change' | 'lead_created' | 'disc_completed' | 'insights_form_completed' | 'documents_uploaded' | 'time_in_status';
+export type AutomationTrigger = 'status_change' | 'lead_created' | 'disc_completed' | 'documents_uploaded' | 'time_in_status';
 export type AutomationAction = 'change_status' | 'assign_employee' | 'send_notification';
 
 export type AutomationScope = 'global' | 'agency' | 'employee';
