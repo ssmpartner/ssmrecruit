@@ -493,9 +493,11 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
   const [editId, setEditId] = useState<string | null>(null);
   const [editLabel, setEditLabel] = useState('');
   const [editIcon, setEditIcon] = useState('Globe');
+  const [editColor, setEditColor] = useState('#6B7280');
   const [newId, setNewId] = useState('');
   const [newLabel, setNewLabel] = useState('');
   const [newIcon, setNewIcon] = useState('Globe');
+  const [newColor, setNewColor] = useState('#22C55E');
   const [saving, setSaving] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
 
@@ -513,9 +515,10 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
     setEditId(source.id);
     setEditLabel(source.label);
     setEditIcon(source.icon);
+    setEditColor(source.color);
   };
 
-  const cancelEdit = () => { setEditId(null); setEditLabel(''); setEditIcon('Globe'); };
+  const cancelEdit = () => { setEditId(null); setEditLabel(''); setEditIcon('Globe'); setEditColor('#6B7280'); };
 
   const saveEdit = async () => {
     if (!editId || !editLabel.trim()) return;
@@ -523,6 +526,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
     const { error } = await supabase.from('lead_sources').update({
       label: editLabel.trim(),
       icon: editIcon,
+      color: editColor,
     }).eq('id', editId);
     setSaving(false);
     if (error) {
@@ -549,6 +553,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
       id,
       label: newLabel.trim(),
       icon: newIcon,
+      color: newColor,
       sort_order: leadSources.length + 1,
     });
     setSaving(false);
@@ -557,7 +562,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
       return;
     }
     toast({ title: 'Erstellt', description: `Quelle "${newLabel.trim()}" wurde hinzugefügt.` });
-    setNewId(''); setNewLabel(''); setNewIcon('Globe'); setShowAdd(false);
+    setNewId(''); setNewLabel(''); setNewIcon('Globe'); setNewColor('#22C55E'); setShowAdd(false);
     reloadLeadSources();
   };
 
@@ -591,7 +596,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
       {showAdd && (
         <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
           <h3 className="text-sm font-semibold">Neue Quelle hinzufügen</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div>
               <label className="text-xs font-medium text-muted-foreground">ID (eindeutig)</label>
               <input value={newId} onChange={e => setNewId(e.target.value)}
@@ -610,6 +615,15 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
                 className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
                 {SOURCE_ICONS.map(ic => <option key={ic.value} value={ic.value}>{ic.label}</option>)}
               </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Farbe</label>
+              <div className="mt-1 flex items-center gap-2">
+                <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)}
+                  className="h-9 w-12 rounded-lg border bg-background cursor-pointer" />
+                <input value={newColor} onChange={e => setNewColor(e.target.value)}
+                  className="h-9 flex-1 rounded-lg border bg-background px-3 text-sm font-mono outline-none focus:ring-2 focus:ring-ring" />
+              </div>
             </div>
           </div>
           <div className="flex gap-2">
@@ -631,6 +645,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
             <tr className="border-b text-left text-muted-foreground">
               <th className="px-5 py-3 font-medium">Quelle</th>
               <th className="px-5 py-3 font-medium">ID</th>
+              <th className="px-5 py-3 font-medium">Farbe</th>
               <th className="px-5 py-3 font-medium">Icon</th>
               <th className="px-5 py-3 font-medium w-32">Aktionen</th>
             </tr>
@@ -647,6 +662,21 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
                   )}
                 </td>
                 <td className="px-5 py-3 text-xs text-muted-foreground font-mono">{source.id}</td>
+                <td className="px-5 py-3">
+                  {editId === source.id ? (
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={editColor} onChange={e => setEditColor(e.target.value)}
+                        className="h-8 w-10 rounded border bg-background cursor-pointer" />
+                      <input value={editColor} onChange={e => setEditColor(e.target.value)}
+                        className="h-8 w-24 rounded-lg border bg-background px-2 text-xs font-mono outline-none focus:ring-2 focus:ring-ring" />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="h-5 w-5 rounded-full border" style={{ backgroundColor: source.color }} />
+                      <span className="text-xs text-muted-foreground font-mono">{source.color}</span>
+                    </div>
+                  )}
+                </td>
                 <td className="px-5 py-3">
                   {editId === source.id ? (
                     <select value={editIcon} onChange={e => setEditIcon(e.target.value)}
@@ -688,7 +718,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
             ))}
             {leadSources.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-5 py-8 text-center text-muted-foreground">Keine Quellen konfiguriert.</td>
+                <td colSpan={5} className="px-5 py-8 text-center text-muted-foreground">Keine Quellen konfiguriert.</td>
               </tr>
             )}
           </tbody>

@@ -13,6 +13,7 @@ export interface LeadSourceConfig {
   id: string;
   label: string;
   icon: string;
+  color: string;
   sortOrder: number;
 }
 

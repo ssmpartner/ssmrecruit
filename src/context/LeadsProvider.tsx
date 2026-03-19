@@ -119,7 +119,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
 
   const reloadLeadSources = useCallback(async () => {
     const { data } = await supabase.from('lead_sources').select('*').order('sort_order');
-    if (data) setLeadSources(data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, sortOrder: r.sort_order })));
+    if (data) setLeadSources(data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, color: r.color || '#6B7280', sortOrder: r.sort_order })));
   }, []);
 
   // Load all data from Supabase on mount
@@ -143,7 +143,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         if (activitiesRes.data) setActivities(activitiesRes.data.map(dbToActivity));
         if (appointmentsRes.data) setAppointments(appointmentsRes.data.map(dbToAppointment));
         if (discRes.data) setDiscResults(discRes.data.map(dbToDiscResult));
-        if (sourcesRes.data) setLeadSources(sourcesRes.data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, sortOrder: r.sort_order })));
+        if (sourcesRes.data) setLeadSources(sourcesRes.data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, color: r.color || '#6B7280', sortOrder: r.sort_order })));
 
         if (settingsRes.data) {
           const aptSetting = settingsRes.data.find(s => s.key === 'appointment');
