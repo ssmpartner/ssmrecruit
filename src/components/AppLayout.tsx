@@ -3,9 +3,11 @@ import AppSidebar from './AppSidebar';
 import { Search } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
 import { useAuth } from '@/context/AuthContext';
+import { useSidebarState } from '@/context/SidebarContext';
 
 export default function AppLayout() {
   const { profile, user } = useAuth();
+  const { collapsed } = useSidebarState();
 
   const initials = (profile?.display_name || user?.email || 'U')
     .split(' ')
@@ -17,7 +19,7 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background">
       <AppSidebar />
-      <div className="pl-64">
+      <div className={`transition-all duration-300 ${collapsed ? 'pl-[68px]' : 'pl-64'}`}>
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-card/90 backdrop-blur-md px-8">
           <div className="relative w-80">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
