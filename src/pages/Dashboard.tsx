@@ -295,6 +295,7 @@ export default function Dashboard() {
       </div>
 
       <LeadDetailSheet />
+      <AddLeadDialog open={showAddLead} onOpenChange={setShowAddLead} />
     </div>
   );
 }
