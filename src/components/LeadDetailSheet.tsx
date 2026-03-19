@@ -42,6 +42,7 @@ export default function LeadDetailSheet() {
   const [noteText, setNoteText] = useState('');
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
   const [showPlzDropdown, setShowPlzDropdown] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({ name: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '' });
 
   // Appointment form
@@ -111,15 +112,34 @@ export default function LeadDetailSheet() {
 
   const saveEdit = () => {
     if (!selectedLead) return;
+    const errors: Record<string, string> = {};
+
+    // Validate phone
     const phoneClean = form.phone.replace(/\s/g, '');
     if (phoneClean && !phoneClean.startsWith('+41') && !phoneClean.startsWith('041') && !phoneClean.startsWith('0')) {
+      errors.phone = 'Ungültige Schweizer Nummer';
+    }
+
+    // Validate email
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      errors.email = 'Ungültige E-Mail-Adresse';
+    }
+
+    // Validate name
+    if (!form.name.trim()) {
+      errors.name = 'Name ist erforderlich';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       toast({
-        title: '⚠️ Ungültige Telefonnummer',
-        description: 'Bitte eine gültige Schweizer Nummer eingeben (z.B. +41 44 123 45 67) oder das Feld leer lassen.',
+        title: '⚠️ Validierungsfehler',
+        description: Object.values(errors).join(', '),
         variant: 'destructive',
       });
       return;
     }
+    setFieldErrors({});
 
     const changes: string[] = [];
     if (form.name !== selectedLead.name) changes.push(`Name → "${form.name}"`);
@@ -181,6 +201,7 @@ export default function LeadDetailSheet() {
 
   const leadActivities = selectedLead ? activities.filter(a => a.leadId === selectedLead.id) : [];
   const inputCls = "h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
+  const inputErr = (field: string) => fieldErrors[field] ? inputCls + ' border-destructive ring-1 ring-destructive/30' : inputCls;
 
   return (
     <>
@@ -324,19 +345,22 @@ export default function LeadDetailSheet() {
                       <div className="grid grid-cols-2 gap-3">
                         {(['name', 'position'] as const).map(field => (
                           <div key={field}>
-                            <label className="text-xs font-medium text-muted-foreground">{field === 'name' ? 'Name' : 'Position'}</label>
-                            <input value={form[field]} onChange={e => setForm(prev => ({ ...prev, [field]: e.target.value }))} className={inputCls} />
+                            <label className={`text-xs font-medium ${fieldErrors[field] ? 'text-destructive' : 'text-muted-foreground'}`}>{field === 'name' ? 'Name *' : 'Position'}</label>
+                            <input value={form[field]} onChange={e => { setForm(prev => ({ ...prev, [field]: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n[field]; return n; }); }} className={inputErr(field)} />
+                            {fieldErrors[field] && <p className="text-xs text-destructive mt-1">{fieldErrors[field]}</p>}
                           </div>
                         ))}
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs font-medium text-muted-foreground">E-Mail</label>
-                          <input value={form.email} onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))} className={inputCls} />
+                          <label className={`text-xs font-medium ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail</label>
+                          <input value={form.email} onChange={e => { setForm(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.email; return n; }); }} className={inputErr('email')} />
+                          {fieldErrors.email && <p className="text-xs text-destructive mt-1">{fieldErrors.email}</p>}
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-muted-foreground">Telefon (+41)</label>
-                          <input value={form.phone} onChange={e => setForm(prev => ({ ...prev, phone: e.target.value }))} placeholder="+41 44 123 45 67" className={inputCls} />
+                          <label className={`text-xs font-medium ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon (+41)</label>
+                          <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
+                          {fieldErrors.phone && <p className="text-xs text-destructive mt-1">{fieldErrors.phone}</p>}
                         </div>
                       </div>
                       <div>
