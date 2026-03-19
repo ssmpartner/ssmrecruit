@@ -182,17 +182,15 @@ export interface Employee {
 }
 
 // Ordered status flow for employees
-export const statusFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'interview_1', 'insights', 'interview_2', 'hired', 'rejected'];
+export const statusFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
 export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boolean): LeadStatus[] {
   if (isAdmin) return statusFlow;
   const flowMap: Record<LeadStatus, LeadStatus[]> = {
     new: ['contacted'],
     contacted: ['appointment'],
-    appointment: ['interview_1', 'rejected'],
-    interview_1: ['insights', 'rejected'],
-    insights: ['interview_2', 'rejected'],
-    interview_2: ['hired', 'rejected'],
+    appointment: ['follow_up', 'rejected'],
+    follow_up: ['hired', 'rejected'],
     hired: [],
     rejected: [],
   };
