@@ -32,7 +32,7 @@ export default function Login() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-foreground" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-            RecruitFlow
+            SSM Recruit
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">Melden Sie sich an, um fortzufahren</p>
         </div>

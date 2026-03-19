@@ -5,9 +5,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Full RecruitFlow capabilities context for AI
+// Full SSM Recruit capabilities context for AI
 const RECRUITFLOW_CONTEXT = `
-RecruitFlow ist ein Recruiting-Management-System mit folgenden Funktionen:
+SSM Recruit ist ein Recruiting-Management-System mit folgenden Funktionen:
 - Lead-Erfassung über Webhooks/API (TikTok, Meta, LinkedIn, Website, CSV-Import)
 - Automatische Kanton-Zuweisung basierend auf PLZ (Schweizer Kantone)
 - Multi-Agentur-Verwaltung mit regionalen Einschränkungen (erlaubte Kantone pro Agentur)
@@ -51,7 +51,7 @@ serve(async (req) => {
 
     const existingTexts = (existingGuidelines || []).map((g: any) => g.text).join("\n- ");
 
-    const prompt = `Du bist ein Experte für Recruiting-Prozesse und kennst das RecruitFlow-System im Detail.
+    const prompt = `Du bist ein Experte für Recruiting-Prozesse und kennst das SSM Recruit-System im Detail.
 
 ${RECRUITFLOW_CONTEXT}
 
@@ -60,7 +60,7 @@ Phasenbeschreibung: ${stepDescription}
 
 ${existingTexts ? `Bereits vorhandene Richtlinien:\n- ${existingTexts}\n\nErstelle NUR neue, noch nicht vorhandene Richtlinien.` : "Es gibt noch keine Richtlinien für diese Phase."}
 
-Berücksichtige ALLE Szenarien die mit RecruitFlow in dieser Phase möglich sind:
+Berücksichtige ALLE Szenarien die mit SSM Recruit in dieser Phase möglich sind:
 - Datenqualität und Vollständigkeit
 - Zeitliche Vorgaben und Fristen
 - Kommunikationsregeln
