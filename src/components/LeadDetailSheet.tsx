@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { type ActivityEntry } from '@/context/leads-context';
 import { useLeads } from '@/context/useLeads';
-import { statusConfig, getAllowedNextStatuses, type LeadStatus, type LeadSource, sourceConfig } from '@/lib/mock-data';
+import { statusConfig, getAllowedNextStatuses, type LeadStatus } from '@/lib/mock-data';
 import { lookupPlz, searchPlz, cantons, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
@@ -35,7 +35,7 @@ const appointmentTypeConfig = {
 } as const;
 
 export default function LeadDetailSheet() {
-  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings, leads } = useLeads();
+  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings, leads, leadSources } = useLeads();
   const { toast } = useToast();
   const { isSuperadmin } = useAuth();
   const [editing, setEditing] = useState(false);
@@ -149,7 +149,7 @@ export default function LeadDetailSheet() {
     if (form.address !== selectedLead.address) changes.push(`Adresse aktualisiert`);
     if (form.plz !== selectedLead.plz) changes.push(`PLZ → ${form.plz} ${form.city}`);
     if (form.notes !== selectedLead.notes) changes.push(`Notizen aktualisiert`);
-    if (isSuperadmin && form.source !== selectedLead.source) changes.push(`Quelle → "${sourceConfig[form.source as LeadSource]?.label || form.source}"`);
+    if (isSuperadmin && form.source !== selectedLead.source) changes.push(`Quelle → "${leadSources.find(s => s.id === form.source)?.label || form.source}"`);
     if (isSuperadmin && form.createdAt !== selectedLead.createdAt) changes.push(`Erstelldatum geändert`);
 
     const updates: Partial<Record<string, any>> = { ...form };
@@ -411,7 +411,7 @@ export default function LeadDetailSheet() {
                           <div>
                             <label className="text-xs font-medium text-muted-foreground">Quelle</label>
                             <select value={form.source} onChange={e => setForm(prev => ({ ...prev, source: e.target.value }))} className={inputCls}>
-                              {Object.entries(sourceConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                              {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                             </select>
                           </div>
                           <div>

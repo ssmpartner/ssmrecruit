@@ -6,7 +6,7 @@ import {
   PieChart, Pie, Cell, Legend, AreaChart, Area, RadialBarChart, RadialBar,
 } from 'recharts';
 import { useLeads } from '@/context/useLeads';
-import { sourceConfig, statusConfig, type LeadSource, type LeadStatus } from '@/lib/mock-data';
+import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -101,9 +101,9 @@ function ChartCard({ title, subtitle, icon: Icon, children, className }: { title
 }
 
 export default function Analytics() {
-  const { leads, agencies, employees } = useLeads();
+  const { leads, agencies, employees, leadSources } = useLeads();
   const [cantonFilter, setCantonFilter] = useState('');
-  const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
+  const [sourceFilter, setSourceFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
   const [agencyFilter, setAgencyFilter] = useState('');
   const [employeeFilter, setEmployeeFilter] = useState('');
@@ -173,9 +173,9 @@ export default function Analytics() {
     hired: filtered.filter(l => l.employeeId === e.id && l.status === 'hired').length,
   }));
 
-  const sourceData = Object.entries(sourceConfig).map(([key, cfg]) => ({
-    name: cfg.label,
-    value: filtered.filter(l => l.source === key).length,
+  const sourceData = leadSources.map(src => ({
+    name: src.label,
+    value: filtered.filter(l => l.source === src.id).length,
   })).filter(d => d.value > 0);
 
   const statusData = Object.entries(statusConfig).map(([key, cfg]) => ({
@@ -242,9 +242,9 @@ export default function Analytics() {
             <option value="">Alle Kantone</option>
             {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
           </select>
-          <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value as LeadSource | '')} className={selectCls}>
+          <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className={selectCls}>
             <option value="">Alle Quellen</option>
-            {Object.entries(sourceConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | '')} className={selectCls}>
             <option value="">Alle Status</option>

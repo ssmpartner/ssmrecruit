@@ -13,7 +13,7 @@ import {
   defaultInsightsSettings,
   statusConfig,
 } from '@/lib/mock-data';
-import { LeadsContext, type ActivityEntry } from './leads-context';
+import { LeadsContext, type ActivityEntry, type LeadSourceConfig } from './leads-context';
 import { useNotifications } from './useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -111,16 +111,22 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [discResults, setDiscResults] = useState<DiscResult[]>([]);
+  const [leadSources, setLeadSources] = useState<LeadSourceConfig[]>([]);
   const [appointmentSettings, setAppointmentSettings] = useState<AppointmentSettings>(defaultAppointmentSettings);
   const [insightsSettings, setInsightsSettings] = useState<InsightsSettings>(defaultInsightsSettings);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const reloadLeadSources = useCallback(async () => {
+    const { data } = await supabase.from('lead_sources').select('*').order('sort_order');
+    if (data) setLeadSources(data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, sortOrder: r.sort_order })));
+  }, []);
+
   // Load all data from Supabase on mount
   useEffect(() => {
     async function loadData() {
       try {
-        const [leadsRes, employeesRes, agenciesRes, activitiesRes, appointmentsRes, discRes, settingsRes] = await Promise.all([
+        const [leadsRes, employeesRes, agenciesRes, activitiesRes, appointmentsRes, discRes, settingsRes, sourcesRes] = await Promise.all([
           supabase.from('leads').select('*').order('created_at', { ascending: false }),
           supabase.from('employees').select('*'),
           supabase.from('agencies').select('*'),
@@ -128,6 +134,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
           supabase.from('appointments').select('*').order('created_at', { ascending: false }),
           supabase.from('disc_results').select('*'),
           supabase.from('app_settings').select('*'),
+          supabase.from('lead_sources').select('*').order('sort_order'),
         ]);
 
         if (leadsRes.data) setLeads(leadsRes.data.map(dbToLead));
@@ -136,6 +143,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         if (activitiesRes.data) setActivities(activitiesRes.data.map(dbToActivity));
         if (appointmentsRes.data) setAppointments(appointmentsRes.data.map(dbToAppointment));
         if (discRes.data) setDiscResults(discRes.data.map(dbToDiscResult));
+        if (sourcesRes.data) setLeadSources(sourcesRes.data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, sortOrder: r.sort_order })));
 
         if (settingsRes.data) {
           const aptSetting = settingsRes.data.find(s => s.key === 'appointment');
@@ -499,6 +507,8 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         discResults,
         appointmentSettings,
         insightsSettings,
+        leadSources,
+        reloadLeadSources,
         updateAppointmentSettings,
         updateInsightsSettings,
         updateLead,

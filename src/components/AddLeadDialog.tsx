@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { useLeads } from '@/context/useLeads';
 import { lookupPlz } from '@/lib/swiss-plz';
-import { type LeadSource, type LeadStatus, sourceConfig } from '@/lib/mock-data';
+import { type LeadStatus } from '@/lib/mock-data';
 
 const SWISS_PHONE_REGEX = /^\+41\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
@@ -21,7 +21,7 @@ interface FormState {
   canton: string;
   cantonCode: string;
   position: string;
-  source: LeadSource;
+  source: string;
   notes: string;
   agencyId: string;
   employeeId: string;
@@ -41,7 +41,7 @@ const appointmentTypeConfig = {
 } as const;
 
 export default function AddLeadDialog() {
-  const { addLead, agencies, employees, addAppointment, leads } = useLeads();
+  const { addLead, agencies, employees, addAppointment, leads, leadSources } = useLeads();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>('lead');
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -95,7 +95,7 @@ export default function AddLeadDialog() {
       canton: form.canton,
       cantonCode: form.cantonCode,
       position: form.position.trim(),
-      source: form.source,
+      source: form.source as any,
       status: 'new' as LeadStatus,
       agencyId: form.agencyId,
       employeeId: form.employeeId,
@@ -204,7 +204,7 @@ export default function AddLeadDialog() {
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Quelle</label>
                   <select value={form.source} onChange={e => set('source', e.target.value)} className="h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none">
-                    {Object.entries(sourceConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                    {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                   </select>
                 </div>
                 <div>

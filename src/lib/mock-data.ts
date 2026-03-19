@@ -32,7 +32,7 @@ export const discQuestions: { text: string; dimension: DiscDimension }[] = [
   { text: 'Konflikte versuche ich zu vermeiden und Harmonie zu bewahren.', dimension: 'S' },
   { text: 'Ich hinterfrage Dinge kritisch und prüfe Fakten.', dimension: 'C' },
 ];
-export type LeadSource = 'website' | 'tiktok' | 'meta' | 'linkedin' | 'csv_import';
+export type LeadSource = string;
 
 export type LeadLifecycle = 'active' | 'archived' | 'deleted';
 

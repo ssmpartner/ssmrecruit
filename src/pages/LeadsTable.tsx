@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
-import { type LeadStatus, type LeadSource, type LeadLifecycle, statusConfig, sourceConfig } from '@/lib/mock-data';
+import { type LeadStatus, type LeadLifecycle, statusConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
 import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
@@ -32,12 +32,12 @@ const PAGE_SIZES: { value: PageSize; label: string }[] = [
 ];
 
 export default function LeadsTable() {
-  const { leads, employees, agencies, setSelectedLead } = useLeads();
+  const { leads, employees, agencies, leadSources, setSelectedLead } = useLeads();
   const { isSuperadmin } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
-  const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
+  const [sourceFilter, setSourceFilter] = useState('');
   const [agencyFilter, setAgencyFilter] = useState('');
   const [cantonFilter, setCantonFilter] = useState('');
   const [employeeFilter, setEmployeeFilter] = useState('');
@@ -222,9 +222,9 @@ export default function LeadsTable() {
               <option value="">Alle Status</option>
               {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
             </select>
-            <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value as LeadSource | '')} className={selectCls}>
+            <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className={selectCls}>
               <option value="">Alle Quellen</option>
-              {Object.entries(sourceConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+              {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
             </select>
             <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className={selectCls}>
               <option value="">Alle Agenturen</option>
