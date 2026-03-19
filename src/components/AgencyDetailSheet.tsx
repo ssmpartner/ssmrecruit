@@ -24,6 +24,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
     region: '',
     language: 'de',
     allowedCantons: [] as string[],
+    color: '#6B7280',
   });
   const [dirty, setDirty] = useState(false);
 
