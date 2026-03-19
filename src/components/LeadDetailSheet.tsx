@@ -37,11 +37,12 @@ const appointmentTypeConfig = {
 export default function LeadDetailSheet() {
   const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings } = useLeads();
   const { toast } = useToast();
+  const { isSuperadmin } = useAuth();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
   const [showPlzDropdown, setShowPlzDropdown] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '' });
 
   // Appointment form
   const [showAptForm, setShowAptForm] = useState(false);
