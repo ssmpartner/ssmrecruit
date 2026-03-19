@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import VideoCallDialog from './VideoCallDialog';
 import ProcessStepper from './ProcessStepper';
-import LeadInsightsDocuments from './LeadInsightsDocuments';
+import { LeadInsightsDocumentsWithActions } from './LeadInsightsDocuments';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
@@ -711,9 +711,18 @@ export default function LeadDetailSheet() {
                   </div>
                 </TabsContent>
 
-                {/* Tab: Prozesse (Insights-Formular, DISC, Dokumente) */}
-                <TabsContent value="prozesse" className="mt-4">
-                  <LeadInsightsDocuments leadId={selectedLead.id} leadName={selectedLead.name} leadStatus={selectedLead.status} />
+                {/* Tab: Prozesse (Step Actions + Insights/DISC/Dokumente) */}
+                <TabsContent value="prozesse" className="mt-4 space-y-6">
+                  <LeadInsightsDocumentsWithActions
+                    leadId={selectedLead.id}
+                    leadName={selectedLead.name}
+                    leadStatus={selectedLead.status}
+                    onScheduleAppointment={() => {
+                      const aptTab = document.querySelector('[data-value="appointments"]') as HTMLButtonElement;
+                      if (aptTab) aptTab.click();
+                      setTimeout(() => setShowAptForm(true), 100);
+                    }}
+                  />
                 </TabsContent>
               </div>
             </Tabs>

@@ -1,13 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Brain, FileText, Send, Copy, Check, Loader2, Clock, CheckCircle2, File, Download, ChevronDown, ChevronUp, ClipboardList, Upload, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import InsightsTab from './InsightsTab';
+import StepActionsPanel from './StepActionsPanel';
+import { useLeads } from '@/context/useLeads';
+import { type LeadStatus } from '@/lib/mock-data';
 
 interface Props {
   leadId: string;
   leadName: string;
   leadStatus: string;
+}
+
+interface PropsWithActions extends Props {
+  onScheduleAppointment: () => void;
 }
 
 interface InsightsRequest {
@@ -177,8 +184,8 @@ export default function LeadInsightsDocuments({ leadId, leadName, leadStatus }: 
   const insightsCompleted = latestInsights?.status === 'completed';
   const docsCompleted = latestDocReq?.status === 'completed';
 
-  const canSendInsights = ['appointment'].includes(leadStatus);
-  const canRequestDocs = ['appointment', 'follow_up'].includes(leadStatus);
+  const canSendInsights = ['contacted', 'appointment'].includes(leadStatus);
+  const canRequestDocs = ['contacted', 'appointment', 'follow_up'].includes(leadStatus);
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
@@ -453,6 +460,59 @@ export default function LeadInsightsDocuments({ leadId, leadName, leadStatus }: 
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+// Combined component with step actions panel
+export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus, onScheduleAppointment }: PropsWithActions) {
+  const { discResults } = useLeads();
+  const [processData, setProcessData] = useState({ insightsSent: false, insightsCompleted: false, docsCompleted: false });
+  const insightsRef = useRef<HTMLDivElement>(null);
+  const docsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    async function check() {
+      const [insRes, docRes] = await Promise.all([
+        supabase.from('insights_requests').select('status').eq('lead_id', leadId).order('created_at', { ascending: false }).limit(1),
+        supabase.from('document_requests').select('status').eq('lead_id', leadId).order('created_at', { ascending: false }).limit(1),
+      ]);
+      setProcessData({
+        insightsSent: !!(insRes.data && insRes.data.length > 0),
+        insightsCompleted: insRes.data?.[0]?.status === 'completed',
+        docsCompleted: docRes.data?.[0]?.status === 'completed',
+      });
+    }
+    check();
+    const ch = supabase.channel(`step-actions-${leadId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'insights_requests', filter: `lead_id=eq.${leadId}` }, () => check())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'document_requests', filter: `lead_id=eq.${leadId}` }, () => check())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [leadId]);
+
+  const hasDisc = discResults.some(d => d.leadId === leadId);
+
+  return (
+    <div className="space-y-6">
+      <StepActionsPanel
+        leadId={leadId}
+        leadName={leadName}
+        leadStatus={leadStatus as LeadStatus}
+        onScheduleAppointment={onScheduleAppointment}
+        onOpenInsights={() => insightsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+        onOpenDocuments={() => docsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+        discCompleted={hasDisc || processData.insightsCompleted}
+        documentsCompleted={processData.docsCompleted}
+        insightsSent={processData.insightsSent}
+      />
+
+      <div className="border-t pt-4" ref={insightsRef}>
+        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Prozess-Tools</h4>
+        <div ref={docsRef}>
+          <LeadInsightsDocuments leadId={leadId} leadName={leadName} leadStatus={leadStatus} />
+        </div>
+      </div>
     </div>
   );
 }

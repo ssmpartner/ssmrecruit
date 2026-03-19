@@ -187,8 +187,8 @@ export const statusFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'fol
 export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boolean): LeadStatus[] {
   if (isAdmin) return statusFlow;
   const flowMap: Record<LeadStatus, LeadStatus[]> = {
-    new: ['contacted'],
-    contacted: ['appointment'],
+    new: ['contacted', 'rejected'],
+    contacted: ['appointment', 'rejected'],
     appointment: ['follow_up', 'rejected'],
     follow_up: ['hired', 'rejected'],
     hired: [],
