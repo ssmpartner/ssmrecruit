@@ -72,26 +72,28 @@ const initialSteps: ProcessStep[] = [
   },
   {
     status: 'contacted', icon: '📞', title: 'Kontaktiert',
-    description: 'Der zugewiesene Mitarbeiter nimmt den ersten Kontakt mit dem Kandidaten auf – per Telefon, E-Mail oder WhatsApp.',
-    features: ['Kontaktversuch wird protokolliert', 'Notizen hinterlegbar', 'Zuweisung änderbar', 'Erinnerung bei Inaktivität'],
+    description: 'Der zugewiesene Mitarbeiter nimmt den ersten Kontakt auf. In dieser Phase kann das Insights-Formular an den Kandidaten versendet werden.',
+    features: ['Kontaktversuch wird protokolliert', 'Notizen hinterlegbar', '📋 Insights-Formular senden (Link per Email/SMS/WhatsApp)', 'Erinnerung bei Inaktivität', 'Auto-Erinnerung nach 24h wenn Formular nicht ausgefüllt'],
     guidelines: [
       { id: 'g3', text: 'Mindestens 3 Kontaktversuche bevor der Lead abgelehnt wird', type: 'rule' },
-      { id: 'g4', text: 'Kontaktversuche im Abstand von min. 24h durchführen', type: 'guideline' },
+      { id: 'g4', text: 'Insights-Formular sollte nach erfolgreichem Erstkontakt versendet werden', type: 'guideline' },
+      { id: 'g4b', text: 'Kontaktversuche im Abstand von min. 24h durchführen', type: 'guideline' },
     ],
   },
   {
     status: 'appointment', icon: '📅', title: 'Terminiert',
-    description: 'Ein Termin wurde mit dem Kandidaten vereinbart. Das System unterstützt Telefon-, Video- und Vor-Ort-Termine.',
-    features: ['Termin mit Datum, Uhrzeit & Typ', 'Video-Link (Jitsi) automatisch', 'Einladung per E-Mail/SMS/WhatsApp', 'Auto-Status «Terminiert»'],
+    description: 'Ein Termin wurde mit dem Kandidaten vereinbart. Dokumente können in dieser Phase bereits angefordert werden.',
+    features: ['Termin mit Datum, Uhrzeit & Typ', 'Video-Link (Jitsi) automatisch', 'Einladung per E-Mail/SMS/WhatsApp', '📄 Dokumente anfordern (Upload-Link)', 'Auto-Status «Terminiert»'],
     guidelines: [
       { id: 'g5', text: 'Termin muss innerhalb von 5 Werktagen nach Kontakt vereinbart werden', type: 'rule' },
       { id: 'g6', text: 'Video-Call ist bevorzugte Terminart für Erstgespräche', type: 'guideline' },
+      { id: 'g6b', text: 'Dokumente (CV, Zeugnisse) frühzeitig anfordern um Prozess zu beschleunigen', type: 'guideline' },
     ],
   },
   {
     status: 'interview_1', icon: '🎤', title: 'Gespräch 1',
-    description: 'Das erste persönliche oder virtuelle Gespräch. Eignung und Motivation des Kandidaten werden geprüft.',
-    features: ['Video-Call aus dem System starten', 'Gesprächsnotizen protokollieren', 'Bewertung hinterlegen', 'Ablehnung bei Nicht-Eignung'],
+    description: 'Das erste persönliche oder virtuelle Gespräch. Eignung und Motivation werden geprüft. Insights-Formular und Dokumente können auch hier angefordert werden.',
+    features: ['Video-Call aus dem System starten', 'Gesprächsnotizen protokollieren', '📋 Insights-Formular senden (falls noch nicht geschehen)', '📄 Dokumente anfordern', 'Ablehnung bei Nicht-Eignung'],
     guidelines: [
       { id: 'g7', text: 'Strukturierter Interviewleitfaden muss verwendet werden', type: 'rule' },
       { id: 'g8', text: 'Gesprächsbewertung innerhalb 1h nach dem Gespräch eintragen', type: 'guideline' },
@@ -99,26 +101,28 @@ const initialSteps: ProcessStep[] = [
   },
   {
     status: 'insights', icon: '🧠', title: 'Insights (DISC-Test)',
-    description: 'Der Kandidat füllt einen DISC-Persönlichkeitstest aus. Die Ergebnisse zeigen Verhaltenspräferenzen.',
-    features: ['12-Fragen DISC-Test', 'Automatische Auswertung D/I/S/C', 'Grafische Visualisierung', 'Pflicht vor Gespräch 2 konfigurierbar'],
+    description: 'Der Kandidat füllt den DISC-Persönlichkeitstest aus. Die Ergebnisse zeigen Verhaltenspräferenzen. Dokumente werden in dieser Phase ebenfalls geprüft.',
+    features: ['12-Fragen DISC-Test', 'Automatische Auswertung D/I/S/C', 'Grafische Visualisierung', 'Pflicht vor Gespräch 2 konfigurierbar', '📄 Dokumenten-Status prüfen', 'Auto-Erinnerung nach 48h für fehlende Dokumente'],
     guidelines: [
       { id: 'g9', text: 'DISC-Test muss abgeschlossen sein, bevor Gespräch 2 stattfindet', type: 'rule' },
+      { id: 'g9b', text: 'Insights-Formular-Antworten vor DISC-Test durchlesen', type: 'guideline' },
       { id: 'g10', text: 'Ergebnisse werden dem Interviewer vor Gespräch 2 zur Verfügung gestellt', type: 'guideline' },
     ],
   },
   {
     status: 'interview_2', icon: '🤝', title: 'Gespräch 2',
-    description: 'Das zweite, vertiefende Gespräch – oft mit Teamleitung oder Management. Basierend auf Insights-Ergebnissen.',
-    features: ['DISC als Gesprächsgrundlage', 'Detaillierte Bewertung', 'Finale Entscheidung', 'Ablehnung oder Einstellung'],
+    description: 'Das zweite, vertiefende Gespräch – oft mit Teamleitung oder Management. Basierend auf Insights-Ergebnissen und eingereichten Dokumenten.',
+    features: ['DISC & Insights-Formular als Gesprächsgrundlage', 'Eingereichte Dokumente prüfen', 'Detaillierte Bewertung', 'Finale Entscheidung', '📄 Fehlende Dokumente nachfordern'],
     guidelines: [
       { id: 'g11', text: 'Mindestens 2 Interviewer müssen am Zweitgespräch teilnehmen', type: 'rule' },
+      { id: 'g11b', text: 'Alle Dokumente müssen vor finaler Entscheidung vollständig vorliegen', type: 'rule' },
       { id: 'g12', text: 'Entscheidung (Zusage/Absage) muss innerhalb von 48h kommuniziert werden', type: 'guideline' },
     ],
   },
   {
     status: 'hired', icon: '✅', title: 'Eingestellt',
     description: 'Der Kandidat hat den gesamten Prozess durchlaufen und wurde erfolgreich eingestellt.',
-    features: ['Vollständige Prozess-Historie', 'Notizen & DISC archiviert', 'Konversionsrate', 'Pipeline-Abschluss'],
+    features: ['Vollständige Prozess-Historie', 'Insights-Formular & DISC archiviert', 'Alle Dokumente archiviert', 'Konversionsrate', 'Pipeline-Abschluss'],
     guidelines: [
       { id: 'g13', text: 'Willkommens-E-Mail wird automatisch nach Einstellung versendet', type: 'guideline' },
     ],
