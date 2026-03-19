@@ -74,6 +74,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
       region: form.region,
       language: form.language,
       allowedCantons: form.allowedCantons,
+      color: form.color,
     });
     setDirty(false);
     toast.success('Agentur erfolgreich aktualisiert');
