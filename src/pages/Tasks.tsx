@@ -32,13 +32,19 @@ const taskStatusConfig: Record<string, { label: string; color: string }> = {
 
 export default function Tasks() {
   const { leads, employees, agencies } = useLeads();
-  const { profile } = useAuth();
+  const { profile, user, isSuperadmin } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+
+  // Match logged-in user to an employee by email
+  const currentEmployee = useMemo(() => {
+    if (!user?.email) return null;
+    return employees.find(e => e.email.toLowerCase() === user.email!.toLowerCase()) || null;
+  }, [user, employees]);
 
   // Load tasks from DB
   const fetchTasks = useCallback(async () => {
