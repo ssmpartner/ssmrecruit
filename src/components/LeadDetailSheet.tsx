@@ -282,14 +282,23 @@ export default function LeadDetailSheet() {
               })()}
             </div>
 
+            {/* Step Actions - always visible */}
+            <div className="mx-6 mt-4">
+              <LeadInsightsDocumentsWithActions
+                leadId={selectedLead.id}
+                leadName={selectedLead.name}
+                leadStatus={selectedLead.status}
+                onScheduleAppointment={() => {
+                  setShowAptForm(true);
+                }}
+              />
+            </div>
+
             {/* Tabs */}
             <Tabs defaultValue="details" className="flex-1 overflow-hidden flex flex-col">
               <TabsList className="mx-6 mt-4 w-fit">
                 <TabsTrigger value="details" className="gap-1.5">
                   <User className="h-3.5 w-3.5" /> Details
-                </TabsTrigger>
-                <TabsTrigger value="prozesse" className="gap-1.5">
-                  <Workflow className="h-3.5 w-3.5" /> Prozesse
                 </TabsTrigger>
                 <TabsTrigger value="appointments" className="gap-1.5">
                   <CalendarIcon className="h-3.5 w-3.5" /> Termine
