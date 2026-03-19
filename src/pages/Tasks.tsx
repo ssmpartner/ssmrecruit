@@ -341,7 +341,7 @@ export default function Tasks() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {allDone && isBackoffice && (
+                {allDone && (
                   <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => generateTasksForLead(leadId)} disabled={generating === leadId}>
                     {generating === leadId ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                     Neue Tasks
