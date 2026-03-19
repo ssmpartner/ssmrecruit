@@ -74,7 +74,7 @@ function autoMapHeaders(csvHeaders: string[]): Record<number, string> {
     notes: ['notes', 'notizen', 'bemerkungen', 'kommentar', 'comment'],
     createdAt: ['created_at', 'createdat', 'datum', 'date', 'lead_datum', 'leaddatum', 'erstelldatum', 'eingangsdatum', 'erfasst_am'],
     status: ['status', 'lead_status', 'leadstatus', 'phase', 'stufe'],
-    employeeId: ['employee', 'berater', 'zugewiesen', 'assigned', 'assigned_to', 'assignedto', 'mitarbeiter', 'betreuer', 'zugewiesen_an'],
+    employeeId: ['employee', 'berater', 'zugewiesen', 'assigned', 'assigned_to', 'assignedto', 'mitarbeiter', 'betreuer', 'zugewiesen_an', 'consultant'],
     agencyId: ['agency', 'agentur', 'niederlassung', 'filiale', 'standort', 'agency_id'],
     campaign: ['campaign', 'kampagne', 'werbekampagne', 'utm_campaign', 'marketing_campaign'],
   };
