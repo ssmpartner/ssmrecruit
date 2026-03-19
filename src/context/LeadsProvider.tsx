@@ -429,6 +429,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.region !== undefined) dbUpdates.region = updates.region;
     if (updates.language !== undefined) dbUpdates.language = updates.language;
     if (updates.allowedCantons !== undefined) dbUpdates.allowed_cantons = updates.allowedCantons;
+    if (updates.color !== undefined) dbUpdates.color = updates.color;
     await supabase.from('agencies').update(dbUpdates).eq('id', id);
   }, []);
 

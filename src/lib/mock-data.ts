@@ -219,13 +219,13 @@ export const sourceConfig: Record<LeadSource, { label: string; icon: string }> =
 };
 
 export const agencies: Agency[] = [
-  { id: 'a1', name: 'Agentur Unteren-Schönbühl', contactEmail: 'info@agentur-schoenbuehl.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['BE', 'SO'] },
-  { id: 'a2', name: 'Agentur Rothenburg', contactEmail: 'info@agentur-rothenburg.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['LU', 'NW', 'OW'] },
-  { id: 'a3', name: 'Agentur Regensdorf', contactEmail: 'info@agentur-regensdorf.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['ZH', 'AG'] },
-  { id: 'a4', name: 'Agentur Spreitenbach', contactEmail: 'info@agentur-spreitenbach.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['AG', 'ZH'] },
-  { id: 'a5', name: 'Agentur Adliswil', contactEmail: 'info@agentur-adliswil.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['ZH', 'ZG', 'SZ'] },
-  { id: 'a6', name: 'Agentur Olten', contactEmail: 'info@agentur-olten.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['SO', 'BE', 'AG'] },
-  { id: 'a7', name: 'Agentur Lugano', contactEmail: 'info@agentur-lugano.ch', region: 'Tessin', language: 'it', allowedCantons: ['TI'] },
+  { id: 'a1', name: 'Agentur Unteren-Schönbühl', contactEmail: 'info@agentur-schoenbuehl.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['BE', 'SO'], color: '#3B82F6' },
+  { id: 'a2', name: 'Agentur Rothenburg', contactEmail: 'info@agentur-rothenburg.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['LU', 'NW', 'OW'], color: '#10B981' },
+  { id: 'a3', name: 'Agentur Regensdorf', contactEmail: 'info@agentur-regensdorf.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['ZH', 'AG'], color: '#F59E0B' },
+  { id: 'a4', name: 'Agentur Spreitenbach', contactEmail: 'info@agentur-spreitenbach.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['AG', 'ZH'], color: '#EF4444' },
+  { id: 'a5', name: 'Agentur Adliswil', contactEmail: 'info@agentur-adliswil.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['ZH', 'ZG', 'SZ'], color: '#8B5CF6' },
+  { id: 'a6', name: 'Agentur Olten', contactEmail: 'info@agentur-olten.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['SO', 'BE', 'AG'], color: '#EC4899' },
+  { id: 'a7', name: 'Agentur Lugano', contactEmail: 'info@agentur-lugano.ch', region: 'Tessin', language: 'it', allowedCantons: ['TI'], color: '#06B6D4' },
 ];
 
 export const employees: Employee[] = [
