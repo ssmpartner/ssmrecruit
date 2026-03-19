@@ -92,6 +92,7 @@ export default function Dashboard() {
             <tbody>
               {leads.slice(0, 5).map(lead => {
                 const emp = employees.find(e => e.id === lead.employeeId);
+                const ag = agencies.find(a => a.id === lead.agencyId);
                 return (
                   <tr
                     key={lead.id}
