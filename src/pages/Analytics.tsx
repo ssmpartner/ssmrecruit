@@ -173,9 +173,9 @@ export default function Analytics() {
     hired: filtered.filter(l => l.employeeId === e.id && l.status === 'hired').length,
   }));
 
-  const sourceData = Object.entries(sourceConfig).map(([key, cfg]) => ({
-    name: cfg.label,
-    value: filtered.filter(l => l.source === key).length,
+  const sourceData = leadSources.map(src => ({
+    name: src.label,
+    value: filtered.filter(l => l.source === src.id).length,
   })).filter(d => d.value > 0);
 
   const statusData = Object.entries(statusConfig).map(([key, cfg]) => ({
