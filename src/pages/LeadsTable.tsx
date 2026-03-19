@@ -37,7 +37,7 @@ export default function LeadsTable() {
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
-  const [sourceFilter, setSourceFilter] = useState<LeadSource | ''>('');
+  const [sourceFilter, setSourceFilter] = useState('');
   const [agencyFilter, setAgencyFilter] = useState('');
   const [cantonFilter, setCantonFilter] = useState('');
   const [employeeFilter, setEmployeeFilter] = useState('');
