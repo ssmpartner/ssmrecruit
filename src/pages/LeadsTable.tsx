@@ -252,7 +252,7 @@ export default function LeadsTable() {
               <tbody>
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="px-5 py-12 text-center text-muted-foreground">
+                    <td colSpan={isSuperadmin ? 11 : 10} className="px-5 py-12 text-center text-muted-foreground">
                       {activeTab === 'archived' ? 'Keine archivierten Leads vorhanden.' : activeTab === 'deleted' ? 'Keine gelöschten Leads vorhanden.' : 'Keine Leads gefunden.'}
                     </td>
                   </tr>
