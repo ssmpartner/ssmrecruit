@@ -32,7 +32,7 @@ const PAGE_SIZES: { value: PageSize; label: string }[] = [
 ];
 
 export default function LeadsTable() {
-  const { leads, employees, agencies, setSelectedLead } = useLeads();
+  const { leads, employees, agencies, leadSources, setSelectedLead } = useLeads();
   const { isSuperadmin } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
