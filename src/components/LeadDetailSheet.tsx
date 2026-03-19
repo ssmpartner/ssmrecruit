@@ -345,20 +345,22 @@ export default function LeadDetailSheet() {
                       <div className="grid grid-cols-2 gap-3">
                         {(['name', 'position'] as const).map(field => (
                           <div key={field}>
-                            <label className="text-xs font-medium text-muted-foreground">{field === 'name' ? 'Name' : 'Position'}</label>
-                            <input value={form[field]} onChange={e => setForm(prev => ({ ...prev, [field]: e.target.value }))} className={inputCls} />
+                            <label className={`text-xs font-medium ${fieldErrors[field] ? 'text-destructive' : 'text-muted-foreground'}`}>{field === 'name' ? 'Name *' : 'Position'}</label>
+                            <input value={form[field]} onChange={e => { setForm(prev => ({ ...prev, [field]: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n[field]; return n; }); }} className={inputErr(field)} />
+                            {fieldErrors[field] && <p className="text-xs text-destructive mt-1">{fieldErrors[field]}</p>}
                           </div>
                         ))}
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs font-medium text-muted-foreground">E-Mail</label>
-                          <input value={form.email} onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))} className={inputCls} />
+                          <label className={`text-xs font-medium ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail</label>
+                          <input value={form.email} onChange={e => { setForm(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.email; return n; }); }} className={inputErr('email')} />
+                          {fieldErrors.email && <p className="text-xs text-destructive mt-1">{fieldErrors.email}</p>}
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-muted-foreground">Telefon (+41)</label>
-                          <input value={form.phone} onChange={e => setForm(prev => ({ ...prev, phone: e.target.value }))} placeholder="+41 44 123 45 67" className={inputCls} />
-                        </div>
+                          <label className={`text-xs font-medium ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon (+41)</label>
+                          <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
+                          {fieldErrors.phone && <p className="text-xs text-destructive mt-1">{fieldErrors.phone}</p>}
                       </div>
                       <div>
                         <label className="text-xs font-medium text-muted-foreground">Strasse & Nr.</label>
