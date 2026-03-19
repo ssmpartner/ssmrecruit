@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FileText, Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2 } from 'lucide-react';
+import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const APP_VERSION = '2.10.0';
 
@@ -96,109 +97,209 @@ const appFeatures = [
   ]},
 ];
 
-export default function Documentation() {
+const techStack = [
+  { name: 'React 18', desc: 'UI-Framework', icon: '⚛️' },
+  { name: 'TypeScript', desc: 'Typsicherheit', icon: '🔷' },
+  { name: 'Vite', desc: 'Build-Tool', icon: '⚡' },
+  { name: 'Tailwind CSS', desc: 'Styling', icon: '🎨' },
+  { name: 'Lovable Cloud', desc: 'Backend & DB', icon: '☁️' },
+  { name: 'Edge Functions', desc: 'Serverless', icon: '🚀' },
+  { name: 'Recharts', desc: 'Diagramme', icon: '📈' },
+  { name: 'React Router', desc: 'Navigation', icon: '🧭' },
+  { name: 'Radix UI', desc: 'Komponenten', icon: '🧩' },
+  { name: 'TanStack Query', desc: 'Daten-Management', icon: '🔄' },
+];
+
+const roles = [
+  { role: 'Superadmin', color: 'bg-destructive/10 text-destructive', permissions: ['Vollzugriff auf alle Module', 'Benutzerverwaltung (erstellen, löschen)', 'Rollen zuweisen', 'Integrationen konfigurieren', 'CSV-Export', 'Leads dauerhaft löschen', 'App-Einstellungen ändern'] },
+  { role: 'Admin', color: 'bg-primary/10 text-primary', permissions: ['Lead-Management (CRUD)', 'Mitarbeiter & Agenturen verwalten', 'Termine & Kalender', 'Analytics einsehen', 'Aufgaben verwalten'] },
+  { role: 'Backoffice', color: 'bg-accent/50 text-accent-foreground', permissions: ['Leads einsehen & bearbeiten', 'Termine erstellen', 'Aufgaben bearbeiten', 'CSV-Import'] },
+  { role: 'Analyst', color: 'bg-muted text-muted-foreground', permissions: ['Dashboard & Analytics (nur lesen)', 'Lead-Daten einsehen', 'Berichte exportieren'] },
+];
+
+function VersionHistoryTab() {
+  return (
+    <div className="space-y-3">
+      {versionHistory.map((v, i) => (
+        <div key={v.version} className={`rounded-lg border p-4 transition-colors ${i === 0 ? 'border-primary/30 bg-primary/5' : 'bg-card hover:bg-muted/30'}`}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className={`rounded-md px-2 py-0.5 text-xs font-bold ${i === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                v{v.version}
+              </span>
+              {i === 0 && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">Aktuell</span>}
+            </div>
+            <span className="text-xs text-muted-foreground">{v.date}</span>
+          </div>
+          <ul className="space-y-1.5 mt-3">
+            {v.changes.map((c, ci) => (
+              <li key={ci} className="text-xs text-muted-foreground flex items-start gap-2">
+                <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary" />
+                <span>{c}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FeaturesTab() {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const totalFeatures = appFeatures.reduce((sum, cat) => sum + cat.features.length, 0);
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Dokumentation</h1>
-        <p className="text-muted-foreground">Versionierung, Updates und Funktionsübersicht von RecruitFlow</p>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 rounded-lg border bg-muted/30 px-4 py-3">
+        <Layers className="h-5 w-5 text-primary" />
+        <div>
+          <p className="text-sm font-medium">{totalFeatures} Funktionen</p>
+          <p className="text-xs text-muted-foreground">in {appFeatures.length} Kategorien</p>
+        </div>
       </div>
-
-      <div className="max-w-2xl space-y-6">
-        {/* Current Version */}
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Aktuelle Version</p>
-              <p className="text-3xl font-bold tracking-tight mt-1">v{APP_VERSION}</p>
-            </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Zap className="h-6 w-6 text-primary" />
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">Letzte Aktualisierung: {versionHistory[0].date}</p>
-        </div>
-
-        {/* Version History */}
-        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
-          <h3 className="text-sm font-semibold flex items-center gap-2"><RefreshCw className="h-4 w-4 text-muted-foreground" /> Versionshistorie</h3>
-          <div className="space-y-3">
-            {versionHistory.map((v, i) => (
-              <div key={v.version} className={`rounded-lg border p-4 ${i === 0 ? 'border-primary/30 bg-primary/5' : 'bg-muted/30'}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-sm font-bold ${i === 0 ? 'text-primary' : 'text-foreground'}`}>v{v.version}</span>
-                  <span className="text-xs text-muted-foreground">{v.date}</span>
-                </div>
-                <ul className="space-y-1">
-                  {v.changes.map((c, ci) => (
-                    <li key={ci} className="text-xs text-muted-foreground flex items-start gap-2">
-                      <CheckCircle2 className="h-3 w-3 mt-0.5 shrink-0 text-primary" />
-                      {c}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Features Overview */}
-        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
-          <h3 className="text-sm font-semibold flex items-center gap-2"><LayoutGrid className="h-4 w-4 text-muted-foreground" /> Funktionsübersicht</h3>
-          <div className="space-y-2">
-            {appFeatures.map((cat) => (
-              <div key={cat.category} className="rounded-lg border overflow-hidden">
-                <button
-                  onClick={() => setExpandedCategory(expandedCategory === cat.category ? null : cat.category)}
-                  className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/50 transition-colors"
-                >
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    <span>{cat.icon}</span> {cat.category}
-                    <span className="text-xs text-muted-foreground">({cat.features.length})</span>
-                  </span>
-                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expandedCategory === cat.category ? 'rotate-180' : ''}`} />
-                </button>
-                {expandedCategory === cat.category && (
-                  <div className="border-t px-4 py-3 space-y-3 bg-muted/20">
-                    {cat.features.map((f) => (
-                      <div key={f.name}>
-                        <p className="text-sm font-medium">{f.name}</p>
-                        <p className="text-xs text-muted-foreground">{f.desc}</p>
-                      </div>
-                    ))}
+      <div className="space-y-2">
+        {appFeatures.map((cat) => (
+          <div key={cat.category} className="rounded-lg border bg-card overflow-hidden">
+            <button
+              onClick={() => setExpandedCategory(expandedCategory === cat.category ? null : cat.category)}
+              className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/40 transition-colors"
+            >
+              <span className="flex items-center gap-2.5 text-sm font-medium">
+                <span className="text-base">{cat.icon}</span>
+                {cat.category}
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{cat.features.length}</span>
+              </span>
+              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${expandedCategory === cat.category ? 'rotate-180' : ''}`} />
+            </button>
+            {expandedCategory === cat.category && (
+              <div className="border-t bg-muted/10">
+                {cat.features.map((f, fi) => (
+                  <div key={f.name} className={`px-4 py-3 flex items-start gap-3 ${fi > 0 ? 'border-t border-dashed border-muted' : ''}`}>
+                    <div className="mt-0.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium">{f.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{f.desc}</p>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
-            ))}
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TechStackTab() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {techStack.map((t) => (
+        <div key={t.name} className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 hover:bg-muted/30 transition-colors">
+          <span className="text-xl">{t.icon}</span>
+          <div>
+            <p className="text-sm font-medium">{t.name}</p>
+            <p className="text-xs text-muted-foreground">{t.desc}</p>
           </div>
         </div>
+      ))}
+    </div>
+  );
+}
 
-        {/* Tech Stack */}
-        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
-          <h3 className="text-sm font-semibold flex items-center gap-2"><Code2 className="h-4 w-4 text-muted-foreground" /> Technologie-Stack</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { name: 'React 18', desc: 'UI-Framework' },
-              { name: 'TypeScript', desc: 'Typsicherheit' },
-              { name: 'Vite', desc: 'Build-Tool' },
-              { name: 'Tailwind CSS', desc: 'Styling' },
-              { name: 'Lovable Cloud', desc: 'Backend & DB' },
-              { name: 'Edge Functions', desc: 'Serverless' },
-              { name: 'Recharts', desc: 'Diagramme' },
-              { name: 'React Router', desc: 'Navigation' },
-              { name: 'Radix UI', desc: 'Komponenten' },
-              { name: 'TanStack Query', desc: 'Daten-Management' },
-            ].map((t) => (
-              <div key={t.name} className="rounded-lg border bg-muted/30 px-3 py-2">
-                <p className="text-xs font-medium">{t.name}</p>
-                <p className="text-[11px] text-muted-foreground">{t.desc}</p>
-              </div>
-            ))}
+function RolesTab() {
+  return (
+    <div className="space-y-3">
+      {roles.map((r) => (
+        <div key={r.role} className="rounded-lg border bg-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Shield className="h-4 w-4 text-muted-foreground" />
+            <span className={`rounded-md px-2.5 py-0.5 text-xs font-bold ${r.color}`}>{r.role}</span>
           </div>
+          <ul className="space-y-1.5">
+            {r.permissions.map((p, i) => (
+              <li key={i} className="text-xs text-muted-foreground flex items-center gap-2">
+                <CheckCircle2 className="h-3 w-3 shrink-0 text-primary" />
+                {p}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function Documentation() {
+  return (
+    <div>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <BookOpen className="h-6 w-6 text-primary" /> Dokumentation
+          </h1>
+          <p className="text-muted-foreground">Übersicht, Funktionen und Versionshistorie von SSM Recruit</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-bold">v{APP_VERSION}</span>
+          <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">{versionHistory[0].date}</span>
         </div>
       </div>
+
+      {/* Stats row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div className="rounded-xl border bg-card p-4 shadow-sm text-center">
+          <p className="text-2xl font-bold text-primary">{APP_VERSION}</p>
+          <p className="text-xs text-muted-foreground mt-1">Aktuelle Version</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4 shadow-sm text-center">
+          <p className="text-2xl font-bold text-foreground">{appFeatures.reduce((s, c) => s + c.features.length, 0)}</p>
+          <p className="text-xs text-muted-foreground mt-1">Funktionen</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4 shadow-sm text-center">
+          <p className="text-2xl font-bold text-foreground">{techStack.length}</p>
+          <p className="text-xs text-muted-foreground mt-1">Technologien</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4 shadow-sm text-center">
+          <p className="text-2xl font-bold text-foreground">{versionHistory.length}</p>
+          <p className="text-xs text-muted-foreground mt-1">Releases</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <Tabs defaultValue="changelog" className="w-full">
+        <TabsList className="w-full grid grid-cols-4 mb-6">
+          <TabsTrigger value="changelog" className="flex items-center gap-1.5 text-xs">
+            <RefreshCw className="h-3.5 w-3.5" /> Changelog
+          </TabsTrigger>
+          <TabsTrigger value="features" className="flex items-center gap-1.5 text-xs">
+            <LayoutGrid className="h-3.5 w-3.5" /> Funktionen
+          </TabsTrigger>
+          <TabsTrigger value="tech" className="flex items-center gap-1.5 text-xs">
+            <Code2 className="h-3.5 w-3.5" /> Tech-Stack
+          </TabsTrigger>
+          <TabsTrigger value="roles" className="flex items-center gap-1.5 text-xs">
+            <Shield className="h-3.5 w-3.5" /> Rollen
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="changelog">
+          <VersionHistoryTab />
+        </TabsContent>
+
+        <TabsContent value="features">
+          <FeaturesTab />
+        </TabsContent>
+
+        <TabsContent value="tech">
+          <TechStackTab />
+        </TabsContent>
+
+        <TabsContent value="roles">
+          <RolesTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
