@@ -8,6 +8,7 @@ import { LeadsProvider } from "./context/LeadsProvider";
 import { NotificationsProvider } from "./context/NotificationsProvider";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AppLayout from "./components/AppLayout";
+import { SidebarProvider } from "./context/SidebarContext";
 import { Loader2 } from "lucide-react";
 
 // Lazy-loaded pages for code splitting
