@@ -51,7 +51,7 @@ serve(async (req) => {
 
     const existingTexts = (existingGuidelines || []).map((g: any) => g.text).join("\n- ");
 
-    const prompt = `Du bist ein Experte für Recruiting-Prozesse und kennst das RecruitFlow-System im Detail.
+    const prompt = `Du bist ein Experte für Recruiting-Prozesse und kennst das SSM Recruit-System im Detail.
 
 ${RECRUITFLOW_CONTEXT}
 
