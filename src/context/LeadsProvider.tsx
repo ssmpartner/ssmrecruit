@@ -474,6 +474,12 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     addActivity(leadId, 'note', `DISC-Persönlichkeitstest abgeschlossen – Typ: ${dominantType} (D:${normalized.D}% I:${normalized.I}% S:${normalized.S}% C:${normalized.C}%)`);
     addNotification({ type: 'disc_completed', title: 'DISC-Test abgeschlossen', description: `${lead?.name ?? 'Lead'} – Typ: ${dominantType}`, leadId });
 
+    // Auto-update status to follow_up when DISC is completed
+    if (lead && lead.status === 'appointment') {
+      updateLead(leadId, { status: 'follow_up' });
+      addActivity(leadId, 'status_change', 'Status automatisch auf "Follow-up" gesetzt (DISC abgeschlossen)');
+    }
+
     await supabase.from('disc_results').insert({
       id,
       lead_id: leadId,
