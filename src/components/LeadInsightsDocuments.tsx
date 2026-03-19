@@ -1,13 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Brain, FileText, Send, Copy, Check, Loader2, Clock, CheckCircle2, File, Download, ChevronDown, ChevronUp, ClipboardList, Upload, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import InsightsTab from './InsightsTab';
+import StepActionsPanel from './StepActionsPanel';
+import { useLeads } from '@/context/useLeads';
+import { type LeadStatus } from '@/lib/mock-data';
 
 interface Props {
   leadId: string;
   leadName: string;
   leadStatus: string;
+}
+
+interface PropsWithActions extends Props {
+  onScheduleAppointment: () => void;
 }
 
 interface InsightsRequest {
