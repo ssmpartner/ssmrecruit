@@ -69,8 +69,10 @@ export default function InsightsFormPage() {
   const [leadName, setLeadName] = useState('');
   const [requestId, setRequestId] = useState('');
   const [leadId, setLeadId] = useState('');
+  const [insightsQuestions, setInsightsQuestions] = useState<InsightsQuestion[]>(defaultInsightsQuestions);
+  const [discQuestions, setDiscQuestions] = useState<DiscQuestionItem[]>(defaultDiscQuestions);
   const [insightsAnswers, setInsightsAnswers] = useState<Record<string, string>>({});
-  const [discAnswers, setDiscAnswers] = useState<number[]>(new Array(discQuestions.length).fill(0));
+  const [discAnswers, setDiscAnswers] = useState<number[]>([]);
   const [step, setStep] = useState<'insights' | 'disc' | 'appointments'>('insights');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([{ date: '', time: '' }]);
 
@@ -80,6 +82,26 @@ export default function InsightsFormPage() {
   }, [token]);
 
   async function loadRequest() {
+    // Load questions from DB
+    const { data: settingsData } = await supabase
+      .from('app_settings')
+      .select('key,value')
+      .in('key', ['insights_questions', 'disc_questions']);
+
+    let loadedDiscQuestions = defaultDiscQuestions;
+    if (settingsData) {
+      for (const row of settingsData) {
+        if (row.key === 'insights_questions' && Array.isArray(row.value) && row.value.length > 0) {
+          setInsightsQuestions(row.value as unknown as InsightsQuestion[]);
+        }
+        if (row.key === 'disc_questions' && Array.isArray(row.value) && row.value.length > 0) {
+          loadedDiscQuestions = row.value as unknown as DiscQuestionItem[];
+          setDiscQuestions(loadedDiscQuestions);
+        }
+      }
+    }
+    setDiscAnswers(new Array(loadedDiscQuestions.length).fill(0));
+
     const { data, error: err } = await supabase
       .from('insights_requests')
       .select('*')
