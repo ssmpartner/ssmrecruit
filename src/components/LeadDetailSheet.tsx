@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { type ActivityEntry } from '@/context/leads-context';
 import { useLeads } from '@/context/useLeads';
-import { statusConfig, getAllowedNextStatuses, type LeadStatus, type LeadSource, sourceConfig } from '@/lib/mock-data';
+import { statusConfig, getAllowedNextStatuses, type LeadStatus } from '@/lib/mock-data';
 import { lookupPlz, searchPlz, cantons, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
