@@ -182,12 +182,12 @@ export default function LeadDetailSheet() {
               <div className="border-b px-5 py-3 flex items-center gap-3 shrink-0" style={{ background: 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--background)))' }}>
                 <div className="flex items-center gap-1.5">
                   <button onClick={goToPrev} disabled={!hasPrev}
-                    className="flex h-7 w-7 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
-                    <ChevronLeft className="h-3.5 w-3.5" />
+                    className="flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                    <ChevronLeft className="h-4 w-4" />
                   </button>
                   <button onClick={goToNext} disabled={!hasNext}
-                    className="flex h-7 w-7 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    className="flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                    <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
                 <div className="min-w-0 flex-1">
