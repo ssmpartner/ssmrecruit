@@ -35,6 +35,7 @@ function dbToLead(row: any): Lead {
     employeeId: row.employee_id,
     position: row.position,
     notes: row.notes,
+    campaign: row.campaign || '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     lifecycle: row.lead_lifecycle || 'active',
