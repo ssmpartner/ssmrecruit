@@ -413,7 +413,7 @@ export function ApiDocsContent() {
           <p className="text-muted-foreground">Vollständige REST API Referenz für RecruitFlow</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-bold">v1.0</span>
+          <span className="rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-bold">v1.1</span>
           <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">REST / JSON</span>
         </div>
       </div>

@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import { FileText, Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2 } from 'lucide-react';
 
-const APP_VERSION = '2.9.0';
+const APP_VERSION = '2.10.0';
 
 const versionHistory = [
+  { version: '2.10.0', date: '19.03.2026', changes: [
+    'CSV-Import: Leads per CSV-Datei hochladen mit automatischer Spalten-Erkennung (DE/EN), Vorschau und Validierung',
+    'CSV-Export nur für Superadmins – Zugriffskontrolle für sensible Datenexporte',
+    'Microsoft 365 als Integrations-Platzhalter (Coming Soon) auf der Einstellungen-Seite',
+    'API-Dokumentation v1.1 mit CSV Import/Export-Endpunkten',
+  ]},
   { version: '2.9.0', date: '18.03.2026', changes: [
     'Datenbank bereinigt: Alle Test-/Mock-Leads entfernt für den Produktivbetrieb',
     'Integrationen (TikTok, Meta, LinkedIn, Webhooks) mit DB-Persistenz – Konfigurationen werden dauerhaft gespeichert',
