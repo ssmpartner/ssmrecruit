@@ -229,6 +229,14 @@ export default function LeadsTable() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
+                  {isSuperadmin && (
+                    <th className="px-3 py-3 w-10">
+                      <Checkbox
+                        checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </th>
+                  )}
                   <th className="px-5 py-3 font-medium">Name</th>
                   <th className="px-5 py-3 font-medium">Telefon</th>
                   <th className="px-5 py-3 font-medium">Ort</th>
