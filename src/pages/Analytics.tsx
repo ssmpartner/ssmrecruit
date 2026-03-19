@@ -336,8 +336,8 @@ export default function Analytics() {
                 strokeWidth={2}
                 stroke="hsl(0,0%,100%)"
               >
-                {sourceData.map((_, i) => (
-                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                {sourceData.map((entry, i) => (
+                  <Cell key={i} fill={entry.fill} />
                 ))}
               </Pie>
               <Tooltip content={<PieTooltip />} />
