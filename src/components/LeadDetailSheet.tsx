@@ -315,7 +315,13 @@ export default function LeadDetailSheet() {
                         <div>
                           <label className="text-xs font-medium text-muted-foreground">Kanton</label>
                           {isSuperadmin ? (
-                            <input value={form.canton} onChange={e => setForm(prev => ({ ...prev, canton: e.target.value }))} placeholder="Kanton" className={inputCls} />
+                            <select value={form.cantonCode} onChange={e => {
+                              const c = cantons.find(ct => ct.code === e.target.value);
+                              if (c) setForm(prev => ({ ...prev, canton: c.name, cantonCode: c.code }));
+                            }} className={inputCls}>
+                              <option value="">— Kanton wählen —</option>
+                              {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
+                            </select>
                           ) : (
                             <input value={form.canton ? `${form.canton} (${form.cantonCode})` : ''} readOnly className="h-9 w-full rounded-lg border bg-muted px-3 text-sm" />
                           )}
