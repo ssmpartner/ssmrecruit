@@ -228,7 +228,7 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
     loadData();
   }
 
-
+  const hasDisc = discResults.some(d => d.leadId === leadId);
   const latestInsights = insightsRequests[0];
   const latestDocReq = docRequests[0];
   const insightsCompleted = latestInsights?.status === 'completed';
