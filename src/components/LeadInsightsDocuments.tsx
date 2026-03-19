@@ -83,6 +83,7 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
   const [insightsRequests, setInsightsRequests] = useState<InsightsRequest[]>([]);
   const [docRequests, setDocRequests] = useState<DocumentRequest[]>([]);
   const [docUploads, setDocUploads] = useState<DocumentUpload[]>([]);
+  const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
   const [sendingInsights, setSendingInsights] = useState(false);
   const [sendingDocs, setSendingDocs] = useState(false);
   const [copiedToken, setCopiedToken] = useState('');
