@@ -41,7 +41,7 @@ const appointmentTypeConfig = {
 export default function LeadDetailSheet() {
   const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings, leads, leadSources } = useLeads();
   const { toast } = useToast();
-  const { isSuperadmin } = useAuth();
+  const { isSuperadmin, profile } = useAuth();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);

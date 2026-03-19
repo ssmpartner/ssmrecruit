@@ -43,6 +43,7 @@ const appointmentTypeConfig = {
 
 export default function AddLeadDialog() {
   const { addLead, agencies, employees, addAppointment, leads, leadSources } = useLeads();
+  const { profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>('lead');
   const [form, setForm] = useState<FormState>(emptyForm);
