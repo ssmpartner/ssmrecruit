@@ -54,6 +54,19 @@ export default function LeadDetailSheet() {
     [selectedLead, appointments]
   );
 
+  // Lead navigation
+  const activeLeads = useMemo(() => leads.filter(l => l.lifecycle === 'active'), [leads]);
+  const currentIndex = useMemo(() => selectedLead ? activeLeads.findIndex(l => l.id === selectedLead.id) : -1, [selectedLead, activeLeads]);
+  const hasPrev = currentIndex > 0;
+  const hasNext = currentIndex >= 0 && currentIndex < activeLeads.length - 1;
+
+  const goToPrev = () => {
+    if (hasPrev) { setEditing(false); setSelectedLead(activeLeads[currentIndex - 1]); }
+  };
+  const goToNext = () => {
+    if (hasNext) { setEditing(false); setSelectedLead(activeLeads[currentIndex + 1]); }
+  };
+
   const open = !!selectedLead;
 
   const onOpenChange = (isOpen: boolean) => {
