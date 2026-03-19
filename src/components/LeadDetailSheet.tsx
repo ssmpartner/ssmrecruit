@@ -317,6 +317,36 @@ export default function LeadDetailSheet() {
                           <input value={form.canton ? `${form.canton} (${form.cantonCode})` : ''} readOnly className="h-9 w-full rounded-lg border bg-muted px-3 text-sm" />
                         </div>
                       </div>
+                      {/* Superadmin-only: Quelle, Datum */}
+                      {isSuperadmin && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground">Quelle</label>
+                            <select value={form.source} onChange={e => setForm(prev => ({ ...prev, source: e.target.value }))} className={inputCls}>
+                              {Object.entries(sourceConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-muted-foreground">Erstelldatum</label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button className={cn(inputCls, 'flex items-center gap-2 text-left')}>
+                                  <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                                  {form.createdAt ? new Date(form.createdAt).toLocaleDateString('de-CH') : 'Datum wählen'}
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={form.createdAt ? new Date(form.createdAt) : undefined}
+                                  onSelect={(date) => date && setForm(prev => ({ ...prev, createdAt: date.toISOString() }))}
+                                  className={cn("p-3 pointer-events-auto")}
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        </div>
+                      )}
                       <div>
                         <label className="text-xs font-medium text-muted-foreground">Notizen</label>
                         <textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3}
