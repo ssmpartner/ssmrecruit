@@ -51,8 +51,8 @@ function MiniStat({ icon: Icon, label, value, color, onClick }: { icon: any; lab
       className={`flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${onClick ? 'cursor-pointer' : ''}`}
       onClick={onClick}
     >
-      <div className="rounded-lg bg-muted p-2.5">
-        <Icon className="h-4 w-4 text-secondary" />
+      <div className="rounded-lg bg-primary/10 p-2.5">
+        <Icon className="h-4 w-4 text-primary" />
       </div>
       <div>
         <p className="text-2xl font-bold tracking-tight" style={color ? { color } : undefined}>{value}</p>
