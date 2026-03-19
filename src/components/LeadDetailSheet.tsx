@@ -70,7 +70,8 @@ export default function LeadDetailSheet() {
       name: selectedLead.name, email: selectedLead.email, phone: selectedLead.phone,
       position: selectedLead.position, address: selectedLead.address, plz: selectedLead.plz,
       city: selectedLead.city, canton: selectedLead.canton, cantonCode: selectedLead.cantonCode,
-      notes: selectedLead.notes,
+      notes: selectedLead.notes, source: selectedLead.source,
+      createdAt: selectedLead.createdAt,
     });
     setEditing(true);
   };
