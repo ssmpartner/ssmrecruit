@@ -61,6 +61,7 @@ function dbToAgency(row: any): Agency {
     region: row.region || '',
     language: row.language || 'de',
     allowedCantons: row.allowed_cantons || [],
+    color: row.color || '#6B7280',
   };
 }
 
@@ -417,6 +418,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       region: agency.region || '',
       language: agency.language || 'de',
       allowed_cantons: agency.allowedCantons || [],
+      color: agency.color || '#6B7280',
     });
   }, []);
 
@@ -428,6 +430,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.region !== undefined) dbUpdates.region = updates.region;
     if (updates.language !== undefined) dbUpdates.language = updates.language;
     if (updates.allowedCantons !== undefined) dbUpdates.allowed_cantons = updates.allowedCantons;
+    if (updates.color !== undefined) dbUpdates.color = updates.color;
     await supabase.from('agencies').update(dbUpdates).eq('id', id);
   }, []);
 

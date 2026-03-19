@@ -10,7 +10,7 @@ import { statusConfig } from '@/lib/mock-data';
 const PIE_COLORS = ['hsl(168, 17%, 23%)', 'hsl(162, 17%, 50%)', 'hsl(67, 16%, 66%)', 'hsl(38, 80%, 50%)', 'hsl(200, 70%, 50%)', 'hsl(162, 40%, 42%)', 'hsl(0, 65%, 51%)'];
 
 export default function Dashboard() {
-  const { leads, employees, setSelectedLead } = useLeads();
+  const { leads, employees, agencies, setSelectedLead } = useLeads();
 
   const sourceData = [
     { name: 'Webseite', value: leads.filter(l => l.source === 'website').length },
@@ -84,6 +84,7 @@ export default function Dashboard() {
                 <th className="px-6 py-3 font-medium">Position</th>
                 <th className="px-6 py-3 font-medium">Quelle</th>
                 <th className="px-6 py-3 font-medium">Status</th>
+                <th className="px-6 py-3 font-medium">Agentur</th>
                 <th className="px-6 py-3 font-medium">Zugewiesen</th>
                 <th className="px-6 py-3 font-medium">Datum</th>
               </tr>
@@ -91,6 +92,7 @@ export default function Dashboard() {
             <tbody>
               {leads.slice(0, 5).map(lead => {
                 const emp = employees.find(e => e.id === lead.employeeId);
+                const ag = agencies.find(a => a.id === lead.agencyId);
                 return (
                   <tr
                     key={lead.id}
@@ -101,6 +103,12 @@ export default function Dashboard() {
                     <td className="px-6 py-3 text-muted-foreground">{lead.position}</td>
                     <td className="px-6 py-3"><SourceBadge source={lead.source} /></td>
                     <td className="px-6 py-3"><LeadStatusBadge status={lead.status} /></td>
+                    <td className="px-6 py-3">
+                      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: ag?.color || '#6B7280' }} />
+                        {ag?.name ?? '—'}
+                      </span>
+                    </td>
                     <td className="px-6 py-3 text-muted-foreground">{emp?.name ?? '—'}</td>
                     <td className="px-6 py-3 text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString('de-CH')}</td>
                   </tr>

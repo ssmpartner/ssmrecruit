@@ -7,7 +7,7 @@ import LeadDetailSheet from '@/components/LeadDetailSheet';
 const pipelineStatuses: LeadStatus[] = statusFlow;
 
 export default function Pipeline() {
-  const { leads, employees, updateLead, addActivity, setSelectedLead } = useLeads();
+  const { leads, employees, agencies, updateLead, addActivity, setSelectedLead } = useLeads();
 
   const moveStatus = (leadId: string, newStatus: LeadStatus, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -42,6 +42,7 @@ export default function Pipeline() {
               <div className="flex-1 space-y-2 p-3 pt-1 overflow-y-auto max-h-[calc(100vh-260px)] scrollbar-thin">
                 {columnLeads.map(lead => {
                   const emp = employees.find(e => e.id === lead.employeeId);
+                  const ag = agencies.find(a => a.id === lead.agencyId);
                   return (
                     <div
                       key={lead.id}
@@ -55,7 +56,10 @@ export default function Pipeline() {
                         <SourceBadge source={lead.source} />
                       </div>
                       <div className="mt-2 flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">{emp?.name}</span>
+                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: ag?.color || '#6B7280' }} />
+                          {emp?.name}
+                        </span>
                         <div className="flex gap-1">
                           {idx > 0 && status !== 'rejected' && (
                             <button

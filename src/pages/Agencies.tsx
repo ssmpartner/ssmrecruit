@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Building2, Plus, Globe, MapPin, Languages } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, type Agency } from '@/lib/mock-data';
+import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, AGENCY_COLORS, type Agency } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 import AgencyDetailSheet from '@/components/AgencyDetailSheet';
 
@@ -16,12 +16,13 @@ export default function Agencies() {
     region: 'Deutschschweiz',
     language: 'de',
     allowedCantons: [] as string[],
+    color: AGENCY_COLORS[0],
   });
 
   const handleAdd = () => {
     if (!form.name.trim() || !form.contactEmail.trim()) return;
     addAgency(form);
-    setForm({ name: '', contactEmail: '', region: 'Deutschschweiz', language: 'de', allowedCantons: [] });
+    setForm({ name: '', contactEmail: '', region: 'Deutschschweiz', language: 'de', allowedCantons: [], color: AGENCY_COLORS[0] });
     setOpen(false);
   };
 
@@ -134,11 +135,14 @@ export default function Agencies() {
             >
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="rounded-lg bg-accent p-2.5">
-                    <Building2 className="h-5 w-5 text-accent-foreground" />
+                  <div className="rounded-lg p-2.5" style={{ backgroundColor: agency.color + '20' }}>
+                    <Building2 className="h-5 w-5" style={{ color: agency.color }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold truncate">{agency.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold truncate">{agency.name}</h3>
+                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: agency.color }} />
+                    </div>
                     <p className="text-xs text-muted-foreground truncate">{agency.contactEmail}</p>
                   </div>
                 </div>

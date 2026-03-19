@@ -293,7 +293,12 @@ export default function LeadsTable() {
                       </td>
                       <td className="px-5 py-3"><SourceBadge source={lead.source} /></td>
                       <td className="px-5 py-3"><LeadStatusBadge status={lead.status} /></td>
-                      <td className="px-5 py-3 text-xs text-muted-foreground">{agency?.name}</td>
+                      <td className="px-5 py-3">
+                        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: agency?.color || '#6B7280' }} />
+                          {agency?.name}
+                        </span>
+                      </td>
                       <td className="px-5 py-3 text-xs text-muted-foreground">{emp?.name}</td>
                       <td className="px-5 py-3 text-xs text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString('de-CH')}</td>
                       <td className="px-5 py-3">

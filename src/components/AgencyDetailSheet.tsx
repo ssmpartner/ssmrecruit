@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, Save } from 'lucide-react';
-import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, type Agency } from '@/lib/mock-data';
+import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, Save, Palette } from 'lucide-react';
+import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, AGENCY_COLORS, type Agency } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
 import { toast } from 'sonner';
 
@@ -24,6 +24,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
     region: '',
     language: 'de',
     allowedCantons: [] as string[],
+    color: '#6B7280',
   });
   const [dirty, setDirty] = useState(false);
 
@@ -35,6 +36,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
         region: agency.region || '',
         language: agency.language || 'de',
         allowedCantons: [...(agency.allowedCantons || [])],
+        color: agency.color || '#6B7280',
       });
       setDirty(false);
     }
@@ -72,6 +74,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
       region: form.region,
       language: form.language,
       allowedCantons: form.allowedCantons,
+      color: form.color,
     });
     setDirty(false);
     toast.success('Agentur erfolgreich aktualisiert');
@@ -84,8 +87,8 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-primary/10 p-3">
-              <Building2 className="h-6 w-6 text-primary" />
+            <div className="rounded-xl p-3" style={{ backgroundColor: form.color + '20' }}>
+              <Building2 className="h-6 w-6" style={{ color: form.color }} />
             </div>
             <div>
               <SheetTitle className="text-xl">{agency.name}</SheetTitle>
@@ -142,6 +145,25 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
               onChange={e => update('contactEmail', e.target.value)}
               placeholder="kontakt@agentur.ch"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              <Palette className="h-3.5 w-3.5" /> Agenturfarbe
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {AGENCY_COLORS.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => update('color', c)}
+                  className={`h-8 w-8 rounded-full border-2 transition-all ${
+                    form.color === c ? 'border-foreground scale-110 ring-2 ring-ring ring-offset-2 ring-offset-background' : 'border-transparent hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
           </div>
 
           <Separator />

@@ -1,0 +1,1 @@
+ALTER TABLE public.agencies ADD COLUMN color text NOT NULL DEFAULT '#6B7280';
