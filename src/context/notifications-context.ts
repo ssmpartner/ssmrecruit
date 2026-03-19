@@ -10,6 +10,11 @@ export type NotificationType =
   | 'disc_completed'
   | 'automation_triggered'
   | 'duplicate_detected'
+  | 'task_created'
+  | 'task_overdue'
+  | 'insights_completed'
+  | 'document_uploaded'
+  | 'process_step_changed'
   | 'system';
 
 export interface AppNotification {

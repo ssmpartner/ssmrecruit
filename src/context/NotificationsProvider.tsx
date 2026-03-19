@@ -45,6 +45,12 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         appointment_cancelled: 'appointmentCancelled',
         disc_completed: 'discCompleted',
         automation_triggered: 'automationTriggered',
+        duplicate_detected: 'duplicateDetected',
+        task_created: 'taskCreated',
+        task_overdue: 'taskOverdue',
+        insights_completed: 'insightsCompleted',
+        document_uploaded: 'documentUploaded',
+        process_step_changed: 'processStepChanged',
       };
 
       const prefKey = typeMap[data.type];
