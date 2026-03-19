@@ -54,8 +54,11 @@ function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed }: { to: st
 export default function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut, profile, user } = useAuth();
+  const { signOut, profile, user, role } = useAuth();
   const { collapsed, toggle } = useSidebarState();
+
+  const navItems = allNavItems.filter(item => !item.roles || (role && item.roles.includes(role)));
+  const bottomItems = allBottomItems.filter(item => !item.roles || (role && item.roles.includes(role)));
 
   const handleLogout = async () => {
     await signOut();
