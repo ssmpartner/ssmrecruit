@@ -226,8 +226,11 @@ export default function Tasks() {
             <h1 className="text-2xl font-bold tracking-tight">Aufgaben</h1>
           </div>
           <p className="text-sm text-muted-foreground ml-[52px]">
-            Systemgenerierte Aufgaben mit KI-Unterstützung
-            {' · '} Angemeldet als <span className="font-medium text-foreground">{profile.display_name}</span>
+            {isSuperadmin
+              ? 'Alle Aufgaben · Superadmin-Ansicht'
+              : currentEmployee
+                ? `Meine Aufgaben · ${currentEmployee.name}`
+                : 'Kein Mitarbeiter-Profil zugeordnet'}
           </p>
         </div>
         <div className="flex gap-2">
