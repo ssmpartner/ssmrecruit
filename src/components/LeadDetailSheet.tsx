@@ -288,6 +288,9 @@ export default function LeadDetailSheet() {
                 <TabsTrigger value="details" className="gap-1.5">
                   <User className="h-3.5 w-3.5" /> Details
                 </TabsTrigger>
+                <TabsTrigger value="prozesse" className="gap-1.5">
+                  <Workflow className="h-3.5 w-3.5" /> Prozesse
+                </TabsTrigger>
                 <TabsTrigger value="appointments" className="gap-1.5">
                   <CalendarIcon className="h-3.5 w-3.5" /> Termine
                   {leadAppointments.length > 0 && (
@@ -299,12 +302,6 @@ export default function LeadDetailSheet() {
                 </TabsTrigger>
                 <TabsTrigger value="activity" className="gap-1.5">
                   <Activity className="h-3.5 w-3.5" /> Aktivität
-                </TabsTrigger>
-                <TabsTrigger value="insights" className="gap-1.5">
-                  <Brain className="h-3.5 w-3.5" /> Insights
-                </TabsTrigger>
-                <TabsTrigger value="prozesse" className="gap-1.5">
-                  <FolderOpen className="h-3.5 w-3.5" /> Prozesse
                 </TabsTrigger>
               </TabsList>
 
