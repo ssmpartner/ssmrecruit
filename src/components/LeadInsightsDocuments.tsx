@@ -76,7 +76,7 @@ const insightsQuestionLabels: Record<string, string> = {
 
 // Combined component with step actions panel - shown directly in lead detail
 export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus, onScheduleAppointment }: PropsWithActions) {
-  const { discResults } = useLeads();
+  const { discResults, addActivity } = useLeads();
   const { toast } = useToast();
   const [processData, setProcessData] = useState({ insightsSent: false, insightsCompleted: false, docsCompleted: false });
   const [loading, setLoading] = useState(true);
