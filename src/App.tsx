@@ -88,7 +88,9 @@ const App = () => (
                 <ProtectedRoute>
                   <NotificationsProvider>
                     <LeadsProvider>
-                      <AppLayout />
+                      <SidebarProvider>
+                        <AppLayout />
+                      </SidebarProvider>
                     </LeadsProvider>
                   </NotificationsProvider>
                 </ProtectedRoute>
