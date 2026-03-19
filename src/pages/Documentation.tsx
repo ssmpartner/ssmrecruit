@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.11.0';
+const APP_VERSION = '2.12.0';
 
 const versionHistory = [
+  { version: '2.12.0', date: '19.03.2026', changes: [
+    'Agenturfarben: Jeder Agentur kann eine individuelle Farbe zugewiesen werden für bessere visuelle Erkennung',
+    'Farbige Agentur-Kennzeichnung in Leads-Tabelle, Pipeline, Dashboard und Agentur-Übersicht',
+    'Farbauswahl-Palette im Agentur-Detailfenster mit 12 vordefinierten Farben',
+    'Lead-Formular-Validierung: Ungültige Felder (Name, E-Mail, Telefon) werden rot markiert mit Fehlermeldungen',
+    'Verbesserte Fehler-Toasts beim Speichern von Leads mit detaillierter Fehlerbeschreibung',
+  ]},
   { version: '2.11.0', date: '19.03.2026', changes: [
     'Mehrfachauswahl in der Lead-Tabelle: Superadmins können mehrere Leads per Checkbox auswählen',
     'Bulk-Zuweisung: Ausgewählte Leads einem Mitarbeiter oder einer Agentur zuweisen',
