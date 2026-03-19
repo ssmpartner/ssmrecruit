@@ -197,12 +197,12 @@ export default function AddLeadDialog() {
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Ort</label>
-                  <input value={form.city} readOnly className="h-9 w-full rounded-lg border bg-muted px-3 text-sm outline-none" />
+                  <input value={form.city} onChange={e => set('city', e.target.value)} className={inputCls('city')} placeholder="Zürich" maxLength={100} />
                   {errors.city && <p className="text-xs text-destructive mt-0.5">{errors.city}</p>}
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Kanton</label>
-                  <input value={form.cantonCode ? `${form.canton} (${form.cantonCode})` : ''} readOnly className="h-9 w-full rounded-lg border bg-muted px-3 text-sm outline-none" />
+                  <input value={form.canton} onChange={e => set('canton', e.target.value)} className={inputCls('canton')} placeholder="Zürich" maxLength={50} />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
