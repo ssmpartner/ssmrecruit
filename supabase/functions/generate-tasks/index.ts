@@ -5,41 +5,38 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Predefined mandatory tasks per lead status phase
+// Mandatory tasks aligned with the 5-step recruiting process
 const PHASE_TASKS: Record<string, { title: string; description: string; priority: string }[]> = {
   new: [
-    { title: "Bewerbungsunterlagen sichten", description: "Lebenslauf und Zeugnisse des Kandidaten prüfen", priority: "high" },
-    { title: "Erstkontakt herstellen", description: "Kandidaten telefonisch oder per E-Mail kontaktieren", priority: "high" },
+    { title: "Lead-Daten prüfen & vervollständigen", description: "Kontaktdaten, PLZ/Ort und Agentur-Zuweisung überprüfen", priority: "high" },
+    { title: "Erstkontakt herstellen", description: "Kandidaten telefonisch kontaktieren und Interesse klären", priority: "urgent" },
+    { title: "Kontaktergebnis dokumentieren", description: "Ergebnis des Erstkontakts im System festhalten", priority: "high" },
   ],
   contacted: [
     { title: "Termin für Erstgespräch vereinbaren", description: "Geeigneten Zeitslot für das erste Interview finden", priority: "high" },
+    { title: "DISC/Insights-Test versenden", description: "Persönlichkeitstest-Link an den Kandidaten senden", priority: "high" },
     { title: "Gesprächsleitfaden vorbereiten", description: "Fragen und Themen für das Gespräch zusammenstellen", priority: "medium" },
   ],
   appointment: [
     { title: "Erstgespräch durchführen", description: "Strukturiertes Interview mit dem Kandidaten führen", priority: "urgent" },
-    { title: "Gesprächsnotizen dokumentieren", description: "Eindrücke und Bewertung festhalten", priority: "high" },
+    { title: "Gesprächsnotizen dokumentieren", description: "Eindrücke und Bewertung unmittelbar festhalten", priority: "high" },
+    { title: "DISC-Test Status prüfen", description: "Prüfen ob der Kandidat den Persönlichkeitstest bereits ausgefüllt hat", priority: "medium" },
+    { title: "Dokumente vorab anfordern", description: "CV, Zeugnisse und Zertifikate beim Kandidaten anfragen", priority: "medium" },
   ],
-  interview_1: [
-    { title: "DISC-Test vorbereiten", description: "Persönlichkeitstest für den Kandidaten einleiten", priority: "high" },
-    { title: "Referenzen anfragen", description: "Referenzkontakte beim Kandidaten einholen", priority: "medium" },
-  ],
-  insights: [
-    { title: "DISC-Ergebnisse auswerten", description: "Persönlichkeitsprofil analysieren und dokumentieren", priority: "high" },
-    { title: "Zweites Gespräch terminieren", description: "Termin für vertiefendes Gespräch vereinbaren", priority: "high" },
-  ],
-  interview_2: [
-    { title: "Vertiefungsgespräch führen", description: "Detailliertes Gespräch zu Rolle und Erwartungen", priority: "urgent" },
-    { title: "Gehaltsvorstellung besprechen", description: "Konditionen und Vergütung klären", priority: "high" },
-    { title: "Entscheidung vorbereiten", description: "Bewertungsbogen ausfüllen und Empfehlung abgeben", priority: "high" },
+  follow_up: [
+    { title: "DISC-Ergebnisse auswerten & besprechen", description: "Persönlichkeitsprofil als Gesprächsgrundlage nutzen", priority: "high" },
+    { title: "Eingereichte Dokumente prüfen", description: "Vollständigkeit und Qualität der Unterlagen validieren", priority: "high" },
+    { title: "Follow-up Termin vereinbaren", description: "Folgegespräch zur Vertiefung terminieren", priority: "high" },
+    { title: "Interne Freigabe einholen", description: "Bewertung und Empfehlung für Entscheidungsträger vorbereiten", priority: "urgent" },
   ],
   hired: [
-    { title: "Arbeitsvertrag erstellen", description: "Vertragsentwurf vorbereiten und prüfen lassen", priority: "urgent" },
-    { title: "Onboarding planen", description: "Einarbeitungsplan und Starttermin festlegen", priority: "high" },
-    { title: "Team informieren", description: "Kollegen über neuen Mitarbeiter informieren", priority: "medium" },
+    { title: "Willkommensnachricht senden", description: "Kandidaten über erfolgreiche Einstellung informieren", priority: "urgent" },
+    { title: "Onboarding vorbereiten", description: "Einarbeitungsplan und Starttermin festlegen", priority: "high" },
+    { title: "Vertragsdokumente erstellen", description: "Arbeitsvertrag vorbereiten und zur Unterschrift senden", priority: "urgent" },
   ],
   rejected: [
     { title: "Absage kommunizieren", description: "Kandidaten respektvoll über die Entscheidung informieren", priority: "high" },
-    { title: "Feedback dokumentieren", description: "Ablehnungsgründe für zukünftige Referenz festhalten", priority: "low" },
+    { title: "Ablehnungsgrund dokumentieren", description: "Gründe für zukünftige Referenz und Analyse festhalten", priority: "medium" },
   ],
 };
 
@@ -79,9 +76,9 @@ serve(async (req) => {
 
     if (LOVABLE_API_KEY) {
       try {
-        const prompt = `Du bist ein Recruiting-Experte. Ein Lead befindet sich in der Phase "${leadStatus}".
+        const prompt = `Du bist ein Recruiting-Experte für den Schweizer Markt. Ein Lead befindet sich in der Phase "${leadStatus}".
 Lead-Name: ${leadName || "Unbekannt"}
-Position: ${leadPosition || "Nicht angegeben"}
+Position/Anrede: ${leadPosition || "Nicht angegeben"}
 Bereits vorhandene Aufgaben: ${[...existingTitles, ...newPhaseTasks.map(t => t.title)].join(", ") || "Keine"}
 
 Erstelle genau 2 zusätzliche, kontextbezogene Aufgaben die über die Standard-Prozessschritte hinausgehen.
@@ -110,7 +107,6 @@ Prioritäten: low, medium, high, urgent. Keine anderen Felder.`;
         if (response.ok) {
           const data = await response.json();
           const content = data.choices?.[0]?.message?.content || "";
-          // Extract JSON array from response
           const jsonMatch = content.match(/\[[\s\S]*\]/);
           if (jsonMatch) {
             const parsed = JSON.parse(jsonMatch[0]);
@@ -133,7 +129,6 @@ Prioritäten: low, medium, high, urgent. Keine anderen Felder.`;
         }
       } catch (aiError) {
         console.error("AI task generation failed:", aiError);
-        // Continue without AI tasks
       }
     }
 

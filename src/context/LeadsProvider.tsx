@@ -198,13 +198,14 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const updateLead = useCallback(async (id: string, updates: Partial<Lead>) => {
     const updatedAt = new Date().toISOString();
 
+    let oldLead: Lead | undefined;
     setLeads((prev) => {
-      const old = prev.find((l) => l.id === id);
-      if (old && updates.status && updates.status !== old.status) {
+      oldLead = prev.find((l) => l.id === id);
+      if (oldLead && updates.status && updates.status !== oldLead.status) {
         addNotification({
           type: 'lead_status_change',
           title: 'Status geändert',
-          description: `${old.name}: "${statusConfig[old.status].label}" → "${statusConfig[updates.status].label}"`,
+          description: `${oldLead.name}: "${statusConfig[oldLead.status].label}" → "${statusConfig[updates.status].label}"`,
           leadId: id,
         });
       }
@@ -232,6 +233,45 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     dbUpdates.updated_at = updatedAt;
 
     await supabase.from('leads').update(dbUpdates).eq('id', id);
+
+    // Auto-generate tasks when status changes
+    if (updates.status && oldLead && updates.status !== oldLead.status) {
+      try {
+        // Fetch existing tasks for this lead
+        const { data: existingTasks } = await supabase.from('tasks').select('title').eq('lead_id', id);
+
+        const { data, error } = await supabase.functions.invoke('generate-tasks', {
+          body: {
+            leadId: id,
+            leadName: oldLead.name,
+            leadStatus: updates.status,
+            leadPosition: oldLead.position,
+            assignedTo: updates.employeeId || oldLead.employeeId,
+            agencyId: updates.agencyId || oldLead.agencyId,
+            existingTasks: existingTasks || [],
+          },
+        });
+
+        if (!error && data?.tasks?.length > 0) {
+          await supabase.from('tasks').insert(
+            data.tasks.map((t: any) => ({
+              title: t.title,
+              description: t.description,
+              lead_id: t.lead_id,
+              assigned_to: t.assigned_to,
+              agency_id: t.agency_id,
+              priority: t.priority,
+              source: t.source,
+              lead_status: t.lead_status,
+              status: 'open',
+            }))
+          );
+          console.log(`Auto-generated ${data.tasks.length} tasks for lead ${id} (status: ${updates.status})`);
+        }
+      } catch (err) {
+        console.error('Auto task generation failed:', err);
+      }
+    }
   }, [addNotification]);
 
   const checkForDuplicates = useCallback(async (newLead: Lead, allLeads: Lead[]) => {

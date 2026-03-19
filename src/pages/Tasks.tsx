@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLeads } from '@/context/useLeads';
 import { statusConfig } from '@/lib/mock-data';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import {
   CheckSquare, Clock, User, Filter, AlertCircle,
@@ -31,16 +32,13 @@ const taskStatusConfig: Record<string, { label: string; color: string }> = {
 
 export default function Tasks() {
   const { leads, employees, agencies } = useLeads();
+  const { profile } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState<string | null>(null); // leadId being generated
+  const [generating, setGenerating] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
-
-  // Simulate current user as "Sarah Chen" (e1, admin/backoffice, agency a1)
-  const currentUser = employees.find(e => e.id === 'e1')!;
-  const isBackoffice = currentUser?.role === 'admin' || currentUser?.role === 'agency_manager';
 
   // Load tasks from DB
   const fetchTasks = useCallback(async () => {
@@ -159,19 +157,9 @@ export default function Tasks() {
     toast.success('Aufgabe neu zugewiesen');
   }, []);
 
-  const agencyColleagues = useMemo(() =>
-    employees.filter(e => e.agencyId === currentUser?.agencyId),
-    [employees, currentUser]
-  );
-
-  // Filter tasks
+  // Filter tasks - show all for authenticated user (no employee-based filtering since we use auth user)
   const visibleTasks = useMemo(() => {
     let result = tasks;
-    if (!isBackoffice) {
-      result = result.filter(t => t.assigned_to === currentUser?.id);
-    } else {
-      result = result.filter(t => t.agency_id === currentUser?.agencyId || t.assigned_to === currentUser?.id);
-    }
     if (statusFilter !== 'all') result = result.filter(t => t.status === statusFilter);
     if (employeeFilter) result = result.filter(t => t.assigned_to === employeeFilter);
     if (priorityFilter !== 'all') result = result.filter(t => t.priority === priorityFilter);
@@ -181,7 +169,7 @@ export default function Tasks() {
       if ((so[a.status] ?? 2) !== (so[b.status] ?? 2)) return (so[a.status] ?? 2) - (so[b.status] ?? 2);
       return (po[a.priority] ?? 3) - (po[b.priority] ?? 3);
     });
-  }, [tasks, statusFilter, employeeFilter, priorityFilter, currentUser, isBackoffice]);
+  }, [tasks, statusFilter, employeeFilter, priorityFilter]);
 
   const openCount = visibleTasks.filter(t => t.status === 'open').length;
   const inProgressCount = visibleTasks.filter(t => t.status === 'in_progress').length;
@@ -211,7 +199,7 @@ export default function Tasks() {
     return map;
   }, [visibleTasks]);
 
-  if (!currentUser) return null;
+  if (!profile) return null;
 
   return (
     <div className="space-y-6">
@@ -226,11 +214,11 @@ export default function Tasks() {
           </div>
           <p className="text-sm text-muted-foreground ml-[52px]">
             Systemgenerierte Aufgaben mit KI-Unterstützung
-            {' · '} Angemeldet als <span className="font-medium text-foreground">{currentUser.name}</span>
+            {' · '} Angemeldet als <span className="font-medium text-foreground">{profile.display_name}</span>
           </p>
         </div>
         <div className="flex gap-2">
-          {isBackoffice && (
+          {(
             <Button onClick={generateAllTasks} variant="outline" className="gap-2" disabled={!!generating}>
               <Sparkles className="h-4 w-4" /> Tasks generieren
             </Button>
@@ -285,17 +273,15 @@ export default function Tasks() {
               ))}
             </SelectContent>
           </Select>
-          {isBackoffice && (
-            <Select value={employeeFilter || 'all'} onValueChange={(v) => setEmployeeFilter(v === 'all' ? '' : v)}>
-              <SelectTrigger className="h-9 w-[180px]"><SelectValue placeholder="Mitarbeiter" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle Mitarbeiter</SelectItem>
-                {agencyColleagues.map(e => (
-                  <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          <Select value={employeeFilter || 'all'} onValueChange={(v) => setEmployeeFilter(v === 'all' ? '' : v)}>
+            <SelectTrigger className="h-9 w-[180px]"><SelectValue placeholder="Mitarbeiter" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Mitarbeiter</SelectItem>
+              {employees.map(e => (
+                <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {hasFilters && (
             <button onClick={() => { setStatusFilter('all'); setEmployeeFilter(''); setPriorityFilter('all'); }} className="inline-flex items-center gap-1.5 rounded-lg bg-destructive/10 text-destructive px-3 py-1.5 text-xs font-semibold hover:bg-destructive/20 transition-colors">
               <X className="h-3 w-3" /> Zurücksetzen
@@ -320,7 +306,7 @@ export default function Tasks() {
           <p className="text-xs text-muted-foreground mb-4">
             Klicke auf "Tasks generieren" um Aufgaben für deine Leads zu erstellen
           </p>
-          {isBackoffice && (
+          {(
             <Button onClick={generateAllTasks} className="gap-2" disabled={!!generating}>
               <Sparkles className="h-4 w-4" /> Jetzt generieren
             </Button>
@@ -355,7 +341,7 @@ export default function Tasks() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {allDone && isBackoffice && (
+                {allDone && (
                   <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => generateTasksForLead(leadId)} disabled={generating === leadId}>
                     {generating === leadId ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                     Neue Tasks
@@ -418,13 +404,13 @@ export default function Tasks() {
                         )}
                       </div>
 
-                      {/* Backoffice reassign */}
-                      {isBackoffice && task.status !== 'done' && (
+                      {/* Reassign */}
+                      {task.status !== 'done' && (
                         <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Select value={task.assigned_to} onValueChange={(v) => reassignTask(task.id, v)}>
                             <SelectTrigger className="h-7 text-xs w-[160px]"><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              {agencyColleagues.map(e => (
+                              {employees.map(e => (
                                 <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
                               ))}
                             </SelectContent>
