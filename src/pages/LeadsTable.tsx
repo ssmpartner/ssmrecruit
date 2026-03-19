@@ -264,8 +264,19 @@ export default function LeadsTable() {
                     <tr
                       key={lead.id}
                       onClick={() => setSelectedLead(lead)}
-                      className="cursor-pointer border-b last:border-0 hover:bg-muted/50 transition-colors"
+                      className={cn(
+                        "cursor-pointer border-b last:border-0 hover:bg-muted/50 transition-colors",
+                        selectedIds.includes(lead.id) && "bg-primary/5"
+                      )}
                     >
+                      {isSuperadmin && (
+                        <td className="px-3 py-3" onClick={e => e.stopPropagation()}>
+                          <Checkbox
+                            checked={selectedIds.includes(lead.id)}
+                            onCheckedChange={() => toggleSelect(lead.id)}
+                          />
+                        </td>
+                      )}
                       <td className="px-5 py-3">
                         <p className="font-medium">{lead.name}</p>
                         <p className="text-xs text-muted-foreground">{lead.position}</p>
