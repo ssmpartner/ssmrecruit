@@ -418,6 +418,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       region: agency.region || '',
       language: agency.language || 'de',
       allowed_cantons: agency.allowedCantons || [],
+      color: agency.color || '#6B7280',
     });
   }, []);
 
