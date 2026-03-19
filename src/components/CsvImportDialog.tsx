@@ -156,8 +156,28 @@ export default function CsvImportDialog() {
     let count = 0;
     const validRows = mappedRows.filter(r => r.name?.trim() && r.email?.trim());
 
+    const resolveEmployee = (val?: string) => {
+      if (!val) return defaultEmployee;
+      const match = employees.find(e => e.name.toLowerCase() === val.toLowerCase() || e.id === val || e.email.toLowerCase() === val.toLowerCase());
+      return match?.id || defaultEmployee;
+    };
+    const resolveAgency = (val?: string) => {
+      if (!val) return defaultAgency;
+      const match = agencies.find(a => a.name.toLowerCase() === val.toLowerCase() || a.id === val);
+      return match?.id || defaultAgency;
+    };
+    const validStatuses = ['new', 'contacted', 'appointment', 'interview_1', 'insights', 'interview_2', 'hired', 'rejected'];
+    const resolveStatus = (val?: string) => {
+      if (!val) return 'new';
+      const lower = val.toLowerCase().trim();
+      return validStatuses.includes(lower) ? lower : 'new';
+    };
+
     for (const row of validRows) {
       try {
+        const campaignNote = row.campaign ? `Kampagne: ${row.campaign}` : '';
+        const combinedNotes = [row.notes, campaignNote].filter(Boolean).join(' | ');
+
         await addLead({
           name: row.name,
           email: row.email,
@@ -168,11 +188,11 @@ export default function CsvImportDialog() {
           canton: row.canton || '',
           cantonCode: row.cantonCode || '',
           position: row.position || '',
-          source: (row.source as any) || 'website',
-          status: 'new',
-          agencyId: defaultAgency,
-          employeeId: defaultEmployee,
-          notes: row.notes || '',
+          source: (row.source as any) || 'csv_import',
+          status: resolveStatus(row.status) as any,
+          agencyId: resolveAgency(row.agencyId),
+          employeeId: resolveEmployee(row.employeeId),
+          notes: combinedNotes,
           lifecycle: 'active',
         });
         count++;
