@@ -119,7 +119,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
 
   const reloadLeadSources = useCallback(async () => {
     const { data } = await supabase.from('lead_sources').select('*').order('sort_order');
-    if (data) setLeadSources(data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, sortOrder: r.sort_order })));
+    if (data) setLeadSources(data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, color: r.color || '#6B7280', sortOrder: r.sort_order })));
   }, []);
 
   // Load all data from Supabase on mount
