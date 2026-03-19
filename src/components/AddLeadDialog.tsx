@@ -204,7 +204,7 @@ export default function AddLeadDialog() {
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Quelle</label>
                   <select value={form.source} onChange={e => set('source', e.target.value)} className="h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none">
-                    {Object.entries(sourceConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                    {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                   </select>
                 </div>
                 <div>

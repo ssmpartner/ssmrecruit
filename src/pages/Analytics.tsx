@@ -242,9 +242,9 @@ export default function Analytics() {
             <option value="">Alle Kantone</option>
             {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
           </select>
-          <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value as LeadSource | '')} className={selectCls}>
+          <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className={selectCls}>
             <option value="">Alle Quellen</option>
-            {Object.entries(sourceConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | '')} className={selectCls}>
             <option value="">Alle Status</option>

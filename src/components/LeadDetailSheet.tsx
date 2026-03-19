@@ -411,7 +411,7 @@ export default function LeadDetailSheet() {
                           <div>
                             <label className="text-xs font-medium text-muted-foreground">Quelle</label>
                             <select value={form.source} onChange={e => setForm(prev => ({ ...prev, source: e.target.value }))} className={inputCls}>
-                              {Object.entries(sourceConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                              {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                             </select>
                           </div>
                           <div>
