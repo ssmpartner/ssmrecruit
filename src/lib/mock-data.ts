@@ -201,9 +201,7 @@ export const statusConfig: Record<LeadStatus, { label: string; color: string }> 
   new: { label: 'Neuer Lead', color: 'bg-blue-50 text-blue-700 border border-blue-200' },
   contacted: { label: 'Kontaktiert', color: 'bg-amber-50 text-amber-700 border border-amber-200' },
   appointment: { label: 'Terminiert', color: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
-  interview_1: { label: 'Gespräch 1', color: 'bg-violet-50 text-violet-700 border border-violet-200' },
-  insights: { label: 'Insights', color: 'bg-orange-50 text-orange-700 border border-orange-200' },
-  interview_2: { label: 'Gespräch 2', color: 'bg-indigo-50 text-indigo-700 border border-indigo-200' },
+  follow_up: { label: 'Follow-up', color: 'bg-violet-50 text-violet-700 border border-violet-200' },
   hired: { label: 'Eingestellt', color: 'bg-green-50 text-green-700 border border-green-200' },
   rejected: { label: 'Abgelehnt', color: 'bg-red-50 text-red-700 border border-red-200' },
 };
