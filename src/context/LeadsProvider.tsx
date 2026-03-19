@@ -217,6 +217,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.position !== undefined) dbUpdates.position = updates.position;
     if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
     if (updates.createdAt !== undefined) dbUpdates.created_at = updates.createdAt;
+    dbUpdates.updated_at = updatedAt;
 
     await supabase.from('leads').update(dbUpdates).eq('id', id);
   }, [addNotification]);
