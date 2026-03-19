@@ -284,6 +284,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       employee_id: leadData.employeeId,
       position: leadData.position,
       notes: leadData.notes,
+      campaign: leadData.campaign || '',
       lead_lifecycle: leadData.lifecycle || 'active',
     });
   }, [addActivity, addNotification, checkForDuplicates]);

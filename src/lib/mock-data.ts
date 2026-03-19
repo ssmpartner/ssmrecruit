@@ -54,6 +54,7 @@ export interface Lead {
   createdAt: string;
   updatedAt: string;
   notes: string;
+  campaign: string;
   lifecycle: LeadLifecycle;
 }
 
