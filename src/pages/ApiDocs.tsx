@@ -410,7 +410,7 @@ export function ApiDocsContent() {
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <Code2 className="h-6 w-6 text-primary" /> API-Dokumentation
           </h1>
-          <p className="text-muted-foreground">Vollständige REST API Referenz für RecruitFlow</p>
+          <p className="text-muted-foreground">Vollständige REST API Referenz für SSM Recruit</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-bold">v1.1</span>
