@@ -887,14 +887,113 @@ function AppointmentsTab({ appointmentSettings, updateAppointmentSettings, toast
   );
 }
 
+interface InsightsQuestion { key: string; label: string; question: string }
+interface DiscQuestion { text: string; dimension: 'D' | 'I' | 'S' | 'C' }
+
 function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
+  const [iq, setIq] = useState<InsightsQuestion[]>([]);
+  const [dq, setDq] = useState<DiscQuestion[]>([]);
+  const [loadingQ, setLoadingQ] = useState(true);
+  const [savingIq, setSavingIq] = useState(false);
+  const [savingDq, setSavingDq] = useState(false);
+  const [editIqIdx, setEditIqIdx] = useState<number | null>(null);
+  const [editDqIdx, setEditDqIdx] = useState<number | null>(null);
+  const [iqForm, setIqForm] = useState<InsightsQuestion>({ key: '', label: '', question: '' });
+  const [dqForm, setDqForm] = useState<DiscQuestion>({ text: '', dimension: 'D' });
+  const [addingIq, setAddingIq] = useState(false);
+  const [addingDq, setAddingDq] = useState(false);
+
+  const loadQuestions = useCallback(async () => {
+    setLoadingQ(true);
+    const { data } = await supabase.from('app_settings').select('key,value').in('key', ['insights_questions', 'disc_questions']);
+    if (data) {
+      for (const row of data) {
+        if (row.key === 'insights_questions') setIq(row.value as unknown as InsightsQuestion[]);
+        if (row.key === 'disc_questions') setDq(row.value as unknown as DiscQuestion[]);
+      }
+    }
+    setLoadingQ(false);
+  }, []);
+
+  useEffect(() => { loadQuestions(); }, [loadQuestions]);
+
+  const saveIqToDb = async (questions: InsightsQuestion[]) => {
+    setSavingIq(true);
+    await supabase.from('app_settings').update({ value: questions as unknown as any, updated_at: new Date().toISOString() }).eq('key', 'insights_questions');
+    setSavingIq(false);
+    toast({ title: 'Insights-Fragen gespeichert' });
+  };
+
+  const saveDqToDb = async (questions: DiscQuestion[]) => {
+    setSavingDq(true);
+    await supabase.from('app_settings').update({ value: questions as unknown as any, updated_at: new Date().toISOString() }).eq('key', 'disc_questions');
+    setSavingDq(false);
+    toast({ title: 'DISC-Fragen gespeichert' });
+  };
+
+  const handleAddIq = () => {
+    if (!iqForm.label.trim() || !iqForm.question.trim()) { toast({ title: 'Fehler', description: 'Label und Frage ausfüllen', variant: 'destructive' }); return; }
+    const key = iqForm.key || iqForm.label.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const updated = [...iq, { ...iqForm, key }];
+    setIq(updated);
+    saveIqToDb(updated);
+    setIqForm({ key: '', label: '', question: '' });
+    setAddingIq(false);
+  };
+
+  const handleUpdateIq = (idx: number) => {
+    if (!iqForm.label.trim() || !iqForm.question.trim()) return;
+    const updated = [...iq];
+    updated[idx] = { ...iqForm, key: iqForm.key || iq[idx].key };
+    setIq(updated);
+    saveIqToDb(updated);
+    setEditIqIdx(null);
+  };
+
+  const handleDeleteIq = (idx: number) => {
+    const updated = iq.filter((_, i) => i !== idx);
+    setIq(updated);
+    saveIqToDb(updated);
+  };
+
+  const handleAddDq = () => {
+    if (!dqForm.text.trim()) { toast({ title: 'Fehler', description: 'Fragetext eingeben', variant: 'destructive' }); return; }
+    const updated = [...dq, dqForm];
+    setDq(updated);
+    saveDqToDb(updated);
+    setDqForm({ text: '', dimension: 'D' });
+    setAddingDq(false);
+  };
+
+  const handleUpdateDq = (idx: number) => {
+    if (!dqForm.text.trim()) return;
+    const updated = [...dq];
+    updated[idx] = dqForm;
+    setDq(updated);
+    saveDqToDb(updated);
+    setEditDqIdx(null);
+  };
+
+  const handleDeleteDq = (idx: number) => {
+    const updated = dq.filter((_, i) => i !== idx);
+    setDq(updated);
+    saveDqToDb(updated);
+  };
+
+  const dimColor = (d: string) =>
+    d === 'D' ? 'bg-red-100 text-red-700' :
+    d === 'I' ? 'bg-amber-100 text-amber-700' :
+    d === 'S' ? 'bg-emerald-100 text-emerald-700' :
+    'bg-blue-100 text-blue-700';
+
   return (
     <>
       <div>
         <h2 className="text-lg font-semibold flex items-center gap-2"><Brain className="h-5 w-5" /> Insights / DISC-Persönlichkeitstest</h2>
-        <p className="text-sm text-muted-foreground">Einstellungen für den DISC-Persönlichkeitstest im Recruiting-Prozess.</p>
+        <p className="text-sm text-muted-foreground">Fragen verwalten und Einstellungen konfigurieren.</p>
       </div>
 
+      {/* General Settings */}
       <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
         <h3 className="text-sm font-semibold flex items-center gap-2"><Settings2 className="h-4 w-4 text-muted-foreground" /> Allgemein</h3>
         <ToggleRow label="Status automatisch auf «Insights» setzen" description="Setzt den Lead-Status automatisch auf «Insights» wenn der DISC-Test abgeschlossen wird"
@@ -910,6 +1009,7 @@ function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
           icon={<RefreshCw className="h-4 w-4" />} />
       </div>
 
+      {/* Intro Text */}
       <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
         <h3 className="text-sm font-semibold flex items-center gap-2"><FileText className="h-4 w-4 text-muted-foreground" /> Einleitungstext</h3>
         <p className="text-xs text-muted-foreground">Dieser Text wird dem Kandidaten vor Beginn des Tests angezeigt.</p>
@@ -917,22 +1017,162 @@ function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
           rows={3} className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
       </div>
 
-      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2"><Brain className="h-4 w-4 text-muted-foreground" /> Fragenübersicht ({discQuestions.length} Fragen)</h3>
-        <p className="text-xs text-muted-foreground">Aktuelle DISC-Fragen im Test.</p>
-        <div className="space-y-1">
-          {discQuestions.map((q, i) => (
-            <div key={i} className="flex items-center gap-3 rounded-lg border bg-muted/30 px-3 py-2">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">{i + 1}</span>
-              <span className="text-sm flex-1">{q.text}</span>
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                q.dimension === 'D' ? 'bg-red-100 text-red-700' :
-                q.dimension === 'I' ? 'bg-amber-100 text-amber-700' :
-                q.dimension === 'S' ? 'bg-emerald-100 text-emerald-700' :
-                'bg-blue-100 text-blue-700'
-              }`}>{q.dimension}</span>
+      {/* Insights Questions (Teil 1) */}
+      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-muted-foreground" /> Teil 1: Insights-Fragen ({iq.length})
+          </h3>
+          <button onClick={() => { setAddingIq(true); setIqForm({ key: '', label: '', question: '' }); }}
+            className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+            <Plus className="h-3.5 w-3.5" /> Frage hinzufügen
+          </button>
+        </div>
+
+        {loadingQ ? (
+          <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+        ) : (
+          <div className="space-y-2">
+            {iq.map((q, i) => (
+              <div key={i} className="rounded-lg border bg-muted/30 px-4 py-3">
+                {editIqIdx === i ? (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-3 gap-2">
+                      <input value={iqForm.label} onChange={e => setIqForm(f => ({ ...f, label: e.target.value }))}
+                        placeholder="Label" className="h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                      <input value={iqForm.key} onChange={e => setIqForm(f => ({ ...f, key: e.target.value }))}
+                        placeholder="Key (optional)" className="h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                    </div>
+                    <textarea value={iqForm.question} onChange={e => setIqForm(f => ({ ...f, question: e.target.value }))}
+                      rows={2} placeholder="Fragetext" className="w-full rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+                    <div className="flex gap-2">
+                      <button onClick={() => handleUpdateIq(i)} className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"><Save className="h-3 w-3 inline mr-1" />Speichern</button>
+                      <button onClick={() => setEditIqIdx(null)} className="rounded-md bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80">Abbrechen</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-muted-foreground">{q.label}</span>
+                        <span className="text-[10px] text-muted-foreground/60">({q.key})</span>
+                      </div>
+                      <p className="text-sm mt-0.5">{q.question}</p>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <button onClick={() => { setEditIqIdx(i); setIqForm(q); }}
+                        className="rounded-lg p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => handleDeleteIq(i)}
+                        className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {addingIq && (
+          <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4 space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <input value={iqForm.label} onChange={e => setIqForm(f => ({ ...f, label: e.target.value }))}
+                placeholder="Label (z.B. Motivation)" className="h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+              <input value={iqForm.key} onChange={e => setIqForm(f => ({ ...f, key: e.target.value }))}
+                placeholder="Key (optional, wird generiert)" className="h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
             </div>
-          ))}
+            <textarea value={iqForm.question} onChange={e => setIqForm(f => ({ ...f, question: e.target.value }))}
+              rows={2} placeholder="Fragetext eingeben..." className="w-full rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+            <div className="flex gap-2">
+              <button onClick={handleAddIq} className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"><Plus className="h-3 w-3 inline mr-1" />Hinzufügen</button>
+              <button onClick={() => setAddingIq(false)} className="rounded-md bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80">Abbrechen</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* DISC Questions (Teil 2) */}
+      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Brain className="h-4 w-4 text-muted-foreground" /> Teil 2: DISC-Persönlichkeitsfragen ({dq.length})
+          </h3>
+          <button onClick={() => { setAddingDq(true); setDqForm({ text: '', dimension: 'D' }); }}
+            className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+            <Plus className="h-3.5 w-3.5" /> Frage hinzufügen
+          </button>
+        </div>
+
+        {loadingQ ? (
+          <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+        ) : (
+          <div className="space-y-2">
+            {dq.map((q, i) => (
+              <div key={i} className="rounded-lg border bg-muted/30 px-4 py-3">
+                {editDqIdx === i ? (
+                  <div className="space-y-2">
+                    <textarea value={dqForm.text} onChange={e => setDqForm(f => ({ ...f, text: e.target.value }))}
+                      rows={2} placeholder="Fragetext" className="w-full rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+                    <div className="flex items-center gap-3">
+                      <label className="text-xs font-medium text-muted-foreground">Dimension:</label>
+                      {(['D', 'I', 'S', 'C'] as const).map(d => (
+                        <button key={d} onClick={() => setDqForm(f => ({ ...f, dimension: d }))}
+                          className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${dqForm.dimension === d ? dimColor(d) : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}>
+                          {d}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleUpdateDq(i)} className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"><Save className="h-3 w-3 inline mr-1" />Speichern</button>
+                      <button onClick={() => setEditDqIdx(null)} className="rounded-md bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80">Abbrechen</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">{i + 1}</span>
+                    <span className="text-sm flex-1">{q.text}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${dimColor(q.dimension)}`}>{q.dimension}</span>
+                    <div className="flex gap-1 shrink-0">
+                      <button onClick={() => { setEditDqIdx(i); setDqForm(q); }}
+                        className="rounded-lg p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => handleDeleteDq(i)}
+                        className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {addingDq && (
+          <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4 space-y-2">
+            <textarea value={dqForm.text} onChange={e => setDqForm(f => ({ ...f, text: e.target.value }))}
+              rows={2} placeholder="Aussage eingeben (z.B. 'Ich treffe Entscheidungen schnell.')" className="w-full rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+            <div className="flex items-center gap-3">
+              <label className="text-xs font-medium text-muted-foreground">Dimension:</label>
+              {(['D', 'I', 'S', 'C'] as const).map(d => (
+                <button key={d} onClick={() => setDqForm(f => ({ ...f, dimension: d }))}
+                  className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${dqForm.dimension === d ? dimColor(d) : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}>
+                  {d}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={handleAddDq} className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"><Plus className="h-3 w-3 inline mr-1" />Hinzufügen</button>
+              <button onClick={() => setAddingDq(false)} className="rounded-md bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80">Abbrechen</button>
+            </div>
+          </div>
+        )}
+
+        <div className="rounded-lg bg-muted/50 p-3">
+          <p className="text-xs text-muted-foreground">
+            <strong>DISC-Dimensionen:</strong>{' '}
+            <span className="text-red-600 font-semibold">D</span> = Dominanz · 
+            <span className="text-amber-600 font-semibold"> I</span> = Initiative · 
+            <span className="text-emerald-600 font-semibold"> S</span> = Stetigkeit · 
+            <span className="text-blue-600 font-semibold"> C</span> = Gewissenhaftigkeit
+          </p>
         </div>
       </div>
     </>
