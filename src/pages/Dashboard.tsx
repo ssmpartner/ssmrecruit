@@ -78,6 +78,8 @@ function QuickAction({ icon: Icon, label, onClick }: { icon: any; label: string;
 export default function Dashboard() {
   const { leads, employees, agencies, appointments, leadSources, setSelectedLead } = useLeads();
   const { profile } = useAuth();
+  const navigate = useNavigate();
+  const [showAddLead, setShowAddLead] = useState(false);
   const [now, setNow] = useState(new Date());
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [openTaskCount, setOpenTaskCount] = useState(0);
