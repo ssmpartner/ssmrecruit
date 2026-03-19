@@ -276,6 +276,7 @@ export type Database = {
         Row: {
           address: string
           agency_id: string
+          campaign: string
           canton: string
           canton_code: string
           city: string
@@ -296,6 +297,7 @@ export type Database = {
         Insert: {
           address?: string
           agency_id: string
+          campaign?: string
           canton?: string
           canton_code?: string
           city?: string
@@ -316,6 +318,7 @@ export type Database = {
         Update: {
           address?: string
           agency_id?: string
+          campaign?: string
           canton?: string
           canton_code?: string
           city?: string
