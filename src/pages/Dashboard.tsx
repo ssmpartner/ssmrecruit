@@ -184,12 +184,12 @@ export default function Dashboard() {
 
       {/* KPI Row */}
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-        <MiniStat icon={Users} label="Leads gesamt" value={activeLeads.length} />
-        <MiniStat icon={UserCheck} label="Neue Leads" value={newCount} />
+        <MiniStat icon={Users} label="Leads gesamt" value={activeLeads.length} onClick={() => navigate('/leads')} />
+        <MiniStat icon={Sparkles} label="Neue Leads" value={newCount} onClick={() => navigate('/leads')} />
         <MiniStat icon={UserCheck} label="Eingestellt" value={hiredCount} />
-        <MiniStat icon={Target} label="Konversion" value={`${conversionRate}%`} />
-        <MiniStat icon={ListTodo} label="Offene Tasks" value={openTaskCount} />
-        <MiniStat icon={CalendarDays} label="Anst. Termine" value={upcomingAppointments.length} />
+        <MiniStat icon={Target} label="Konversion" value={`${conversionRate}%`} onClick={() => navigate('/analytics')} />
+        <MiniStat icon={ListTodo} label="Offene Tasks" value={openTaskCount} onClick={() => navigate('/tasks')} />
+        <MiniStat icon={CalendarDays} label="Anst. Termine" value={upcomingAppointments.length} onClick={() => navigate('/calendar')} />
       </div>
 
       {/* Charts */}
