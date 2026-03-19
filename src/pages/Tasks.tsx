@@ -404,13 +404,13 @@ export default function Tasks() {
                         )}
                       </div>
 
-                      {/* Backoffice reassign */}
-                      {isBackoffice && task.status !== 'done' && (
+                      {/* Reassign */}
+                      {task.status !== 'done' && (
                         <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Select value={task.assigned_to} onValueChange={(v) => reassignTask(task.id, v)}>
                             <SelectTrigger className="h-7 text-xs w-[160px]"><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              {agencyColleagues.map(e => (
+                              {employees.map(e => (
                                 <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
                               ))}
                             </SelectContent>
