@@ -553,6 +553,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
       id,
       label: newLabel.trim(),
       icon: newIcon,
+      color: newColor,
       sort_order: leadSources.length + 1,
     });
     setSaving(false);
