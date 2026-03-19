@@ -110,14 +110,16 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
   }, [leadId]);
 
   async function loadData() {
-    const [insRes, docRes, uploadsRes] = await Promise.all([
+    const [insRes, docRes, uploadsRes, suggestionsRes] = await Promise.all([
       supabase.from('insights_requests').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }),
       supabase.from('document_requests').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }),
       supabase.from('document_uploads').select('*').eq('lead_id', leadId).order('uploaded_at', { ascending: false }),
+      supabase.from('appointment_suggestions').select('*').eq('lead_id', leadId).order('suggested_date', { ascending: true }),
     ]);
     if (insRes.data) setInsightsRequests(insRes.data as any[]);
     if (docRes.data) setDocRequests(docRes.data as any[]);
     if (uploadsRes.data) setDocUploads(uploadsRes.data as any[]);
+    if (suggestionsRes.data) setAppointmentSuggestions(suggestionsRes.data as any[]);
     
     setProcessData({
       insightsSent: !!(insRes.data && insRes.data.length > 0),
