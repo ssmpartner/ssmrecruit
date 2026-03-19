@@ -258,7 +258,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const addLead = useCallback(async (leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
     const id = `l${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const now = new Date().toISOString();
-    const newLead: Lead = { ...leadData, id, createdAt: now, updatedAt: now, lifecycle: leadData.lifecycle || 'active' };
+    const newLead: Lead = { ...leadData, id, createdAt: now, updatedAt: now, campaign: leadData.campaign || '', lifecycle: leadData.lifecycle || 'active' };
     setLeads((prev) => {
       const updated = [newLead, ...prev];
       // Run duplicate check asynchronously after state update
