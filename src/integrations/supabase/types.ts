@@ -277,6 +277,7 @@ export type Database = {
       }
       lead_sources: {
         Row: {
+          color: string
           created_at: string
           icon: string
           id: string
@@ -284,6 +285,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          color?: string
           created_at?: string
           icon?: string
           id: string
@@ -291,6 +293,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          color?: string
           created_at?: string
           icon?: string
           id?: string
