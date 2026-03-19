@@ -38,9 +38,9 @@ interface TimeSlot {
   time: string;
 }
 
-function computeDiscScores(answers: number[]) {
+function computeDiscScores(answers: number[], questions: DiscQuestionItem[]) {
   const dims: Record<'D' | 'I' | 'S' | 'C', number[]> = { D: [], I: [], S: [], C: [] };
-  discQuestions.forEach((q, i) => {
+  questions.forEach((q, i) => {
     if (answers[i] > 0) dims[q.dimension].push(answers[i]);
   });
   const scores: Record<string, number> = {};
