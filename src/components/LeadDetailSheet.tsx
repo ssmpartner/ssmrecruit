@@ -277,12 +277,12 @@ export default function LeadDetailSheet() {
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-semibold">Lead-Informationen</h4>
                     {!editing ? (
-                      <button onClick={startEdit} className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
+                      <button onClick={startEdit} className="inline-flex items-center gap-1.5 rounded-lg border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
                         <Edit3 className="h-3 w-3" /> Bearbeiten
                       </button>
                     ) : (
-                      <button onClick={saveEdit} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-                        <Save className="h-3 w-3" /> Speichern
+                      <button onClick={saveEdit} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-md hover:opacity-90 transition-all animate-in fade-in">
+                        <Save className="h-4 w-4" /> Änderungen speichern
                       </button>
                     )}
                   </div>
