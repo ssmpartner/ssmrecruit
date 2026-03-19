@@ -160,7 +160,7 @@ export default function InsightsFormPage() {
     setSubmitting(true);
     setError('');
 
-    const { scores, dominant } = computeDiscScores(discAnswers);
+    const { scores, dominant } = computeDiscScores(discAnswers, discQuestions);
 
     // Save insights responses
     const { error: updateErr } = await supabase
