@@ -2,9 +2,21 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.16.0';
+const APP_VERSION = '2.17.0';
 
 const versionHistory = [
+  { version: '2.17.0', date: '19.03.2026', changes: [
+    'Dashboard komplett überarbeitet: Begrüssung mit Benutzername, Uhrzeit und Live-Wetter',
+    'Dashboard KPI-Karten: Leads gesamt, neue Leads, eingestellt, Konversionsrate, offene Tasks, anstehende Termine',
+    'Dashboard Schnellzugriff: «+ Neu» Dropdown-Button für Lead, Task, Termin und Agentur',
+    'Leads nach Kanal: Balkendiagramm mit dynamischen Quellfarben aus der Datenbank',
+    'Anstehende Termine und neueste Leads direkt auf dem Dashboard',
+    'Duplikaterkennung komplett clientseitig (regelbasiert, ohne KI) – spart Kosten und verhindert Timeout-Fehler',
+    'Lead-Erfassung mit intelligenter PLZ-/Ort-/Kanton-Autovervollständigung aus DB und Schweizer PLZ-Daten',
+    'Mehrere Leads nacheinander erfassen ohne Dialog zu schliessen',
+    'Benachrichtigungen erweitert: Tasks, Prozess-Schritte, Insights, Dokument-Upload, Duplikate',
+    'Aufgabensystem komplett regelbasiert (System-Tasks pro Lead-Status statt KI-Generierung)',
+  ]},
   { version: '2.16.0', date: '19.03.2026', changes: [
     'Aktivitäten zeigen jetzt den Namen des eingeloggten Benutzers statt "Sarah Chen"',
     'Erstkontakt: Neue Optionen «Kein Bedarf» und «Nicht Passend» als Ablehnungsgründe',
@@ -63,9 +75,9 @@ const versionHistory = [
     'Superadmin-Konto mit vollständiger Benutzerverwaltung (Erstellen, Rollen, Löschen)',
     'Authentifizierung mit E-Mail-Auto-Confirm für internes System',
   ]},
-  { version: '2.7.0', date: '18.03.2026', changes: ['Lead-Lifecycle: Archivieren, Löschen und Wiederherstellen mit Bestätigungsdialogen', 'KI-Duplikaterkennung mit Vergleichs- und Zusammenführungsfunktion', 'Untermenüs Aktiv/Archiviert/Gelöscht/Doppelte Leads in der Lead-Tabelle', 'KI-generierte Richtlinien & Regeln im Prozess-Verzeichnis', 'Geltungsbereich für Automatisierungen (Global, Agentur, Mitarbeiter)'] },
+  { version: '2.7.0', date: '18.03.2026', changes: ['Lead-Lifecycle: Archivieren, Löschen und Wiederherstellen mit Bestätigungsdialogen', 'Systembasierte Duplikaterkennung mit Konfidenz-Score, Vergleich und Zusammenführung', 'Untermenüs Aktiv/Archiviert/Gelöscht/Doppelte Leads in der Lead-Tabelle', 'KI-generierte Richtlinien & Regeln im Prozess-Verzeichnis', 'Geltungsbereich für Automatisierungen (Global, Agentur, Mitarbeiter)'] },
   { version: '2.6.0', date: '18.03.2026', changes: ['Agentur-Detailansicht mit bearbeitbaren Einstellungen (Name, E-Mail, Region, Sprache, Kantone)', 'Regionale Agentur-Einstellungen (Region, Sprache, erlaubte Kantone)', 'Kontextmenü updateAgency für persistente Agentur-Änderungen'] },
-  { version: '2.5.0', date: '18.03.2026', changes: ['Vollständiges Backend mit Lovable Cloud (Datenbank-Persistenz)', 'KI-gestützte Aufgabengenerierung pro Lead-Phase', 'Aufgaben-Management mit System- & KI-Tasks', 'Echtzeit-Datensynchronisation über alle Module'] },
+  { version: '2.5.0', date: '18.03.2026', changes: ['Vollständiges Backend mit Lovable Cloud (Datenbank-Persistenz)', 'Regelbasierte Aufgabengenerierung pro Lead-Phase', 'Aufgaben-Management mit System-Tasks', 'Echtzeit-Datensynchronisation über alle Module'] },
   { version: '2.4.0', date: '18.03.2026', changes: ['API-Modul mit Schlüsselverwaltung & Dokumentation', 'Dokumentationsbereich als eigene Seite', 'Erweiterte Berechtigungsscopes für API-Keys'] },
   { version: '2.3.0', date: '10.03.2026', changes: ['Prozesse-Seite mit Stepper-Ansicht', 'Video-Call-Integration für Termine', 'DISC-Persönlichkeitstest für Leads'] },
   { version: '2.2.0', date: '25.02.2026', changes: ['Kalender-Ansicht mit Terminverwaltung', 'Benachrichtigungscenter mit Echtzeit-Alerts', 'Erweiterte Filteroptionen in der Lead-Tabelle'] },
