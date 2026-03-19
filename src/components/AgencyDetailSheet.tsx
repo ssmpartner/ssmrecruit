@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, Save } from 'lucide-react';
-import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, type Agency } from '@/lib/mock-data';
+import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, Save, Palette } from 'lucide-react';
+import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, AGENCY_COLORS, type Agency } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
 import { toast } from 'sonner';
 
