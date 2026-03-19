@@ -201,6 +201,7 @@ export default function LeadDetailSheet() {
 
   const leadActivities = selectedLead ? activities.filter(a => a.leadId === selectedLead.id) : [];
   const inputCls = "h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
+  const inputErr = (field: string) => fieldErrors[field] ? inputCls + ' border-destructive ring-1 ring-destructive/30' : inputCls;
 
   return (
     <>
