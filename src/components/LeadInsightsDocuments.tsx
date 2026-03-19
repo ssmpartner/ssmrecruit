@@ -58,9 +58,8 @@ const insightsQuestionLabels: Record<string, string> = {
 
 // Process phase config to show contextual guidance
 const processPhases = [
-  { key: 'insights_form', label: 'Insights-Formular', icon: ClipboardList, statuses: ['contacted', 'appointment', 'interview_1'] },
-  { key: 'disc_test', label: 'DISC-Persönlichkeitstest', icon: Brain, statuses: ['interview_1', 'insights'] },
-  { key: 'documents', label: 'Dokumente', icon: FileText, statuses: ['insights', 'interview_1', 'interview_2', 'appointment'] },
+  { key: 'disc_test', label: 'DISC-Persönlichkeitstest', icon: Brain, statuses: ['appointment', 'follow_up'] },
+  { key: 'documents', label: 'Dokumente', icon: FileText, statuses: ['appointment', 'follow_up'] },
 ] as const;
 
 export default function LeadInsightsDocuments({ leadId, leadName, leadStatus }: Props) {
