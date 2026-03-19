@@ -285,7 +285,7 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
       )}
 
       {/* Compact status indicators for sent links / completed items */}
-      {(insightsRequests.length > 0 || docUploads.length > 0 || hasDisc) && (
+      {(insightsRequests.length > 0 || docUploads.length > 0 || hasDisc || appointmentSuggestions.length > 0) && (
         <div className="space-y-2">
           <button
             onClick={() => setShowDetails(!showDetails)}
