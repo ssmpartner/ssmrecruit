@@ -691,7 +691,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
           <div className="rounded-lg bg-accent p-2"><Globe className="h-4 w-4 text-accent-foreground" /></div>
           <div className="flex-1">
             <h3 className="font-semibold text-sm">Ihr Eingangs-Webhook-Endpunkt</h3>
-            <p className="text-xs text-muted-foreground mt-1">Verwenden Sie diese URL in Zapier oder Ihrer Werbeplattform, um Leads an RecruitFlow zu senden.</p>
+            <p className="text-xs text-muted-foreground mt-1">Verwenden Sie diese URL in Zapier oder Ihrer Werbeplattform, um Leads an SSM Recruit zu senden.</p>
             <div className="mt-3 flex items-center gap-2">
               <code className="flex-1 rounded-lg bg-secondary px-3 py-2 text-xs font-mono text-secondary-foreground break-all">{window.location.origin}/api/webhook/leads</code>
               <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/api/webhook/leads`); toast({ title: 'Kopiert', description: 'Webhook-URL in die Zwischenablage kopiert' }); }}
