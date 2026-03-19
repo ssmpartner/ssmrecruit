@@ -718,7 +718,7 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
             ))}
             {leadSources.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-5 py-8 text-center text-muted-foreground">Keine Quellen konfiguriert.</td>
+                <td colSpan={5} className="px-5 py-8 text-center text-muted-foreground">Keine Quellen konfiguriert.</td>
               </tr>
             )}
           </tbody>
