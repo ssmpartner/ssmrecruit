@@ -10,7 +10,7 @@ import { statusConfig } from '@/lib/mock-data';
 const PIE_COLORS = ['hsl(168, 17%, 23%)', 'hsl(162, 17%, 50%)', 'hsl(67, 16%, 66%)', 'hsl(38, 80%, 50%)', 'hsl(200, 70%, 50%)', 'hsl(162, 40%, 42%)', 'hsl(0, 65%, 51%)'];
 
 export default function Dashboard() {
-  const { leads, employees, setSelectedLead } = useLeads();
+  const { leads, employees, agencies, setSelectedLead } = useLeads();
 
   const sourceData = [
     { name: 'Webseite', value: leads.filter(l => l.source === 'website').length },
