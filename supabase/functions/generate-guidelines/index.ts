@@ -60,7 +60,7 @@ Phasenbeschreibung: ${stepDescription}
 
 ${existingTexts ? `Bereits vorhandene Richtlinien:\n- ${existingTexts}\n\nErstelle NUR neue, noch nicht vorhandene Richtlinien.` : "Es gibt noch keine Richtlinien für diese Phase."}
 
-Berücksichtige ALLE Szenarien die mit RecruitFlow in dieser Phase möglich sind:
+Berücksichtige ALLE Szenarien die mit SSM Recruit in dieser Phase möglich sind:
 - Datenqualität und Vollständigkeit
 - Zeitliche Vorgaben und Fristen
 - Kommunikationsregeln

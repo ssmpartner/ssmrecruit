@@ -893,7 +893,7 @@ function ApiKeysTab({ toast }: any) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2"><Key className="h-5 w-5" /> API-Schlüssel</h2>
-          <p className="text-sm text-muted-foreground">Erstellen und verwalten Sie API-Schlüssel für den Zugriff auf die RecruitFlow REST API.</p>
+          <p className="text-sm text-muted-foreground">Erstellen und verwalten Sie API-Schlüssel für den Zugriff auf die SSM Recruit REST API.</p>
         </div>
         <Dialog open={newKeyDialog} onOpenChange={(open) => { setNewKeyDialog(open); if (!open) { setGeneratedKey(null); setNewKeyForm({ name: '', permissions: ['leads:read'] }); } }}>
           <DialogTrigger asChild>
