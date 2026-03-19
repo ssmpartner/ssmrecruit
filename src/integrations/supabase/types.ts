@@ -103,6 +103,50 @@ export type Database = {
         }
         Relationships: []
       }
+      appointment_suggestions: {
+        Row: {
+          created_at: string
+          id: string
+          insights_request_id: string | null
+          lead_id: string
+          responded_at: string | null
+          response_note: string | null
+          status: string
+          suggested_date: string
+          suggested_time: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          insights_request_id?: string | null
+          lead_id: string
+          responded_at?: string | null
+          response_note?: string | null
+          status?: string
+          suggested_date: string
+          suggested_time: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          insights_request_id?: string | null
+          lead_id?: string
+          responded_at?: string | null
+          response_note?: string | null
+          status?: string
+          suggested_date?: string
+          suggested_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_suggestions_insights_request_id_fkey"
+            columns: ["insights_request_id"]
+            isOneToOne: false
+            referencedRelation: "insights_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           created_at: string
