@@ -361,6 +361,7 @@ export default function LeadDetailSheet() {
                           <label className={`text-xs font-medium ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon (+41)</label>
                           <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
                           {fieldErrors.phone && <p className="text-xs text-destructive mt-1">{fieldErrors.phone}</p>}
+                        </div>
                       </div>
                       <div>
                         <label className="text-xs font-medium text-muted-foreground">Strasse & Nr.</label>
