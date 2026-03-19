@@ -56,7 +56,10 @@ export default function Pipeline() {
                         <SourceBadge source={lead.source} />
                       </div>
                       <div className="mt-2 flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">{emp?.name}</span>
+                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: ag?.color || '#6B7280' }} />
+                          {emp?.name}
+                        </span>
                         <div className="flex gap-1">
                           {idx > 0 && status !== 'rejected' && (
                             <button
