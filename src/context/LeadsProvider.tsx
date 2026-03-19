@@ -111,10 +111,16 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [discResults, setDiscResults] = useState<DiscResult[]>([]);
+  const [leadSources, setLeadSources] = useState<LeadSourceConfig[]>([]);
   const [appointmentSettings, setAppointmentSettings] = useState<AppointmentSettings>(defaultAppointmentSettings);
   const [insightsSettings, setInsightsSettings] = useState<InsightsSettings>(defaultInsightsSettings);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const reloadLeadSources = useCallback(async () => {
+    const { data } = await supabase.from('lead_sources').select('*').order('sort_order');
+    if (data) setLeadSources(data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, sortOrder: r.sort_order })));
+  }, []);
 
   // Load all data from Supabase on mount
   useEffect(() => {
