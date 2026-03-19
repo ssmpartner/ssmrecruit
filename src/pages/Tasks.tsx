@@ -214,7 +214,7 @@ export default function Tasks() {
           </div>
           <p className="text-sm text-muted-foreground ml-[52px]">
             Systemgenerierte Aufgaben mit KI-Unterstützung
-            {' · '} Angemeldet als <span className="font-medium text-foreground">{currentUser.name}</span>
+            {' · '} Angemeldet als <span className="font-medium text-foreground">{profile.display_name}</span>
           </p>
         </div>
         <div className="flex gap-2">
