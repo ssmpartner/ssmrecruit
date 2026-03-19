@@ -6,7 +6,7 @@ import {
   PieChart, Pie, Cell, Legend, AreaChart, Area, RadialBarChart, RadialBar,
 } from 'recharts';
 import { useLeads } from '@/context/useLeads';
-import { sourceConfig, statusConfig, type LeadSource, type LeadStatus } from '@/lib/mock-data';
+import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
