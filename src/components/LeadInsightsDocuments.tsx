@@ -140,6 +140,7 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
 
     const url = getPublicUrl('insights', (data as any).token);
     await navigator.clipboard.writeText(url);
+    setNewInsightsLink(url);
     toast({ title: '✅ Link erstellt', description: 'Der Insights & DISC-Link wurde in die Zwischenablage kopiert.' });
     setSendingInsights(false);
     loadData();
