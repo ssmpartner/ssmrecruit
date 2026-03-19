@@ -42,6 +42,7 @@ export default function Pipeline() {
               <div className="flex-1 space-y-2 p-3 pt-1 overflow-y-auto max-h-[calc(100vh-260px)] scrollbar-thin">
                 {columnLeads.map(lead => {
                   const emp = employees.find(e => e.id === lead.employeeId);
+                  const ag = agencies.find(a => a.id === lead.agencyId);
                   return (
                     <div
                       key={lead.id}
