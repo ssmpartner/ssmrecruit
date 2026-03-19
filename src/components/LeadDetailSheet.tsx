@@ -598,9 +598,38 @@ export default function LeadDetailSheet() {
                               );
                             })()}
                           </div>
-                        </section>
+                         </section>
+
+                         {isSuperadmin && selectedLead.status !== 'new' && (
+                           <section className="pt-3 border-t border-border">
+                             <button
+                               onClick={() => setConfirmReset(true)}
+                               className="w-full rounded-md px-3 py-2 text-sm font-medium border border-destructive/30 text-destructive bg-destructive/5 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                             >
+                               ↺ Auf «Neuer Lead» zurücksetzen
+                             </button>
+                           </section>
+                         )}
                       </div>
                     )}
+
+                    {/* Reset Confirmation */}
+                    <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Lead zurücksetzen?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Der Status von «{selectedLead.name}» wird auf «Neuer Lead» zurückgesetzt. Alle bisherigen Aktivitäten bleiben erhalten.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => { changeStatus('new'); setConfirmReset(false); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Zurücksetzen
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
 
                     {/* Activity Tab */}
                     {rightTab === 'activity' && (
