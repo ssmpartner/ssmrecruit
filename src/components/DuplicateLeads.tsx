@@ -33,7 +33,7 @@ export default function DuplicateLeads() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const scanForDuplicates = async () => {
+  const scanForDuplicates = () => {
     setLoading(true);
     try {
       const leadsForScan = activeLeads.map(l => ({
@@ -41,17 +41,13 @@ export default function DuplicateLeads() {
         plz: l.plz, city: l.city, position: l.position,
       }));
 
-      const { data, error } = await supabase.functions.invoke('detect-duplicates', {
-        body: { leads: leadsForScan },
-      });
-
-      if (error) throw error;
-      setDuplicates(data?.duplicates || []);
+      const results = detectDuplicates(leadsForScan);
+      setDuplicates(results);
       setScanned(true);
-      if (!data?.duplicates?.length) {
+      if (!results.length) {
         toast.success('Keine Duplikate gefunden!');
       } else {
-        toast.info(`${data.duplicates.length} potenzielle Duplikat(e) gefunden`);
+        toast.info(`${results.length} potenzielle Duplikat(e) gefunden`);
       }
     } catch (e: any) {
       console.error(e);
