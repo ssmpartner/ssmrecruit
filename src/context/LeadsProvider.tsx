@@ -182,7 +182,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       leadId,
       type,
       description,
-      user: 'Sarah Chen',
+      user: currentUserName,
       timestamp: new Date().toISOString(),
     };
     setActivities((prev) => [entry, ...prev]);
@@ -191,9 +191,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       lead_id: leadId,
       type,
       description,
-      user: 'Sarah Chen',
+      user: currentUserName,
     });
-  }, []);
+  }, [currentUserName]);
 
   const updateLead = useCallback(async (id: string, updates: Partial<Lead>) => {
     const updatedAt = new Date().toISOString();

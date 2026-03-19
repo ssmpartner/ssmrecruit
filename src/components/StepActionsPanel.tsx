@@ -62,6 +62,16 @@ export default function StepActionsPanel({
         addActivity(leadId, 'status_change', 'Lead nicht interessiert – abgelehnt');
         toast({ title: '❌ Abgelehnt', description: `${leadName} wurde als "Nicht interessiert" markiert.` });
         break;
+      case 'no_need':
+        updateLead(leadId, { status: 'rejected' });
+        addActivity(leadId, 'status_change', 'Kein Bedarf – abgelehnt');
+        toast({ title: '🚫 Kein Bedarf', description: `${leadName} wurde als "Kein Bedarf" markiert.` });
+        break;
+      case 'not_suitable':
+        updateLead(leadId, { status: 'rejected' });
+        addActivity(leadId, 'status_change', 'Nicht passend – abgelehnt');
+        toast({ title: '👎 Nicht Passend', description: `${leadName} wurde als "Nicht Passend" markiert.` });
+        break;
       case 'internal':
         addActivity(leadId, 'note', 'Für interne Stelle markiert');
         updateLead(leadId, { notes: `[INTERN] ${leadName}` });
