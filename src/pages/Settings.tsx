@@ -664,6 +664,21 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
                 <td className="px-5 py-3 text-xs text-muted-foreground font-mono">{source.id}</td>
                 <td className="px-5 py-3">
                   {editId === source.id ? (
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={editColor} onChange={e => setEditColor(e.target.value)}
+                        className="h-8 w-10 rounded border bg-background cursor-pointer" />
+                      <input value={editColor} onChange={e => setEditColor(e.target.value)}
+                        className="h-8 w-24 rounded-lg border bg-background px-2 text-xs font-mono outline-none focus:ring-2 focus:ring-ring" />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="h-5 w-5 rounded-full border" style={{ backgroundColor: source.color }} />
+                      <span className="text-xs text-muted-foreground font-mono">{source.color}</span>
+                    </div>
+                  )}
+                </td>
+                <td className="px-5 py-3">
+                  {editId === source.id ? (
                     <select value={editIcon} onChange={e => setEditIcon(e.target.value)}
                       className="h-8 rounded-lg border bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-ring">
                       {SOURCE_ICONS.map(ic => <option key={ic.value} value={ic.value}>{ic.label}</option>)}
