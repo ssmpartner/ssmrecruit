@@ -204,8 +204,31 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
       a.click();
     }
   }
+  async function handleSuggestionAction(id: string, action: 'accepted' | 'declined') {
+    await supabase.from('appointment_suggestions').update({
+      status: action,
+      responded_at: new Date().toISOString(),
+    }).eq('id', id);
 
-  const hasDisc = discResults.some(d => d.leadId === leadId);
+    if (action === 'accepted') {
+      const suggestion = appointmentSuggestions.find(s => s.id === id);
+      if (suggestion) {
+        addActivity(leadId, 'appointment', `Terminvorschlag angenommen: ${new Date(suggestion.suggested_date).toLocaleDateString('de-CH')} um ${suggestion.suggested_time}`);
+        // Decline all other pending suggestions
+        const otherPending = appointmentSuggestions.filter(s => s.id !== id && s.status === 'pending');
+        for (const other of otherPending) {
+          await supabase.from('appointment_suggestions').update({ status: 'declined', responded_at: new Date().toISOString() }).eq('id', other.id);
+        }
+      }
+    } else {
+      addActivity(leadId, 'note', 'Terminvorschlag abgelehnt');
+    }
+    
+    toast({ title: action === 'accepted' ? '✅ Termin angenommen' : '❌ Termin abgelehnt' });
+    loadData();
+  }
+
+
   const latestInsights = insightsRequests[0];
   const latestDocReq = docRequests[0];
   const insightsCompleted = latestInsights?.status === 'completed';
