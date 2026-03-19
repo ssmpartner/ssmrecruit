@@ -507,6 +507,8 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         discResults,
         appointmentSettings,
         insightsSettings,
+        leadSources,
+        reloadLeadSources,
         updateAppointmentSettings,
         updateInsightsSettings,
         updateLead,
