@@ -85,6 +85,10 @@ const App = () => (
               <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
               <Route path="/reset-password" element={<ResetPassword />} />
 
+              {/* Public lead forms (no auth required) */}
+              <Route path="/insights-form" element={<Suspense fallback={<FullScreenLoader />}><InsightsFormPage /></Suspense>} />
+              <Route path="/document-upload" element={<Suspense fallback={<FullScreenLoader />}><DocumentUploadPage /></Suspense>} />
+
               {/* Protected routes – providers inside so DB queries only run when authenticated */}
               <Route element={
                 <ProtectedRoute>
