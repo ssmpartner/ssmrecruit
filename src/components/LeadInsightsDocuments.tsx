@@ -77,6 +77,7 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
   const [copiedToken, setCopiedToken] = useState('');
   const [expandedInsights, setExpandedInsights] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [newInsightsLink, setNewInsightsLink] = useState('');
   
   // Auto-expand details when DISC or insights are completed
   const hasDiscResult = discResults.some(d => d.leadId === leadId);
