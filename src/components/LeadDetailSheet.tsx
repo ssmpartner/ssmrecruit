@@ -304,6 +304,9 @@ export default function LeadDetailSheet() {
                 <TabsTrigger value="insights" className="gap-1.5">
                   <Brain className="h-3.5 w-3.5" /> Insights
                 </TabsTrigger>
+                <TabsTrigger value="prozesse" className="gap-1.5">
+                  <FolderOpen className="h-3.5 w-3.5" /> Prozesse
+                </TabsTrigger>
               </TabsList>
 
               <div className="flex-1 overflow-y-auto px-6 pb-6">
