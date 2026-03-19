@@ -158,16 +158,19 @@ export default function AddLeadDialog() {
               <DialogTitle>Lead manuell erfassen</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-2">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-[120px_1fr] gap-3">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Anrede</label>
+                  <select value={form.position} onChange={e => set('position', e.target.value)} className="h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">–</option>
+                    <option value="Herr">Herr</option>
+                    <option value="Frau">Frau</option>
+                  </select>
+                </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Name *</label>
                   <input value={form.name} onChange={e => set('name', e.target.value)} className={inputCls('name')} placeholder="Max Muster" maxLength={100} />
                   {errors.name && <p className="text-xs text-destructive mt-0.5">{errors.name}</p>}
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground">Position *</label>
-                  <input value={form.position} onChange={e => set('position', e.target.value)} className={inputCls('position')} placeholder="z.B. Pflegefachperson" maxLength={100} />
-                  {errors.position && <p className="text-xs text-destructive mt-0.5">{errors.position}</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
