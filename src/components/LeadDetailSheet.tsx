@@ -175,7 +175,7 @@ export default function LeadDetailSheet() {
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-[95vw] w-[95vw] max-h-[92vh] h-[92vh] overflow-hidden flex flex-col p-0 gap-0">
+        <DialogContent className="max-w-6xl w-[85vw] max-h-[85vh] h-[85vh] overflow-hidden flex flex-col p-0 gap-0">
           {selectedLead && (
             <>
               {/* Compact Header */}
