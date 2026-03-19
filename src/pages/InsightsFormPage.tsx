@@ -3,7 +3,11 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckCircle2, Loader2, AlertCircle, Send, Brain, ClipboardList, CalendarPlus, Plus, Trash2 } from 'lucide-react';
 
-const insightsQuestions = [
+interface InsightsQuestion { key: string; label: string; question: string }
+interface DiscQuestionItem { text: string; dimension: 'D' | 'I' | 'S' | 'C' }
+
+// Fallbacks if DB is empty
+const defaultInsightsQuestions: InsightsQuestion[] = [
   { key: 'motivation', label: 'Motivation', question: 'Was motiviert Sie, eine neue berufliche Herausforderung zu suchen?' },
   { key: 'experience', label: 'Erfahrung', question: 'Beschreiben Sie Ihre relevanteste berufliche Erfahrung.' },
   { key: 'availability', label: 'Verfügbarkeit', question: 'Ab wann sind Sie verfügbar und wie flexibel sind Sie bezüglich Arbeitszeiten?' },
@@ -12,7 +16,7 @@ const insightsQuestions = [
   { key: 'salary', label: 'Gehaltsvorstellung', question: 'Was sind Ihre Gehaltsvorstellungen?' },
 ];
 
-const discQuestions: { text: string; dimension: 'D' | 'I' | 'S' | 'C' }[] = [
+const defaultDiscQuestions: DiscQuestionItem[] = [
   { text: 'Ich treffe Entscheidungen schnell und entschlossen.', dimension: 'D' },
   { text: 'Ich arbeite gerne mit anderen Menschen zusammen und bin gesellig.', dimension: 'I' },
   { text: 'Ich bevorzuge ein stabiles und vorhersehbares Arbeitsumfeld.', dimension: 'S' },
@@ -34,9 +38,9 @@ interface TimeSlot {
   time: string;
 }
 
-function computeDiscScores(answers: number[]) {
+function computeDiscScores(answers: number[], questions: DiscQuestionItem[]) {
   const dims: Record<'D' | 'I' | 'S' | 'C', number[]> = { D: [], I: [], S: [], C: [] };
-  discQuestions.forEach((q, i) => {
+  questions.forEach((q, i) => {
     if (answers[i] > 0) dims[q.dimension].push(answers[i]);
   });
   const scores: Record<string, number> = {};
@@ -65,8 +69,10 @@ export default function InsightsFormPage() {
   const [leadName, setLeadName] = useState('');
   const [requestId, setRequestId] = useState('');
   const [leadId, setLeadId] = useState('');
+  const [insightsQuestions, setInsightsQuestions] = useState<InsightsQuestion[]>(defaultInsightsQuestions);
+  const [discQuestions, setDiscQuestions] = useState<DiscQuestionItem[]>(defaultDiscQuestions);
   const [insightsAnswers, setInsightsAnswers] = useState<Record<string, string>>({});
-  const [discAnswers, setDiscAnswers] = useState<number[]>(new Array(discQuestions.length).fill(0));
+  const [discAnswers, setDiscAnswers] = useState<number[]>([]);
   const [step, setStep] = useState<'insights' | 'disc' | 'appointments'>('insights');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([{ date: '', time: '' }]);
 
@@ -76,6 +82,26 @@ export default function InsightsFormPage() {
   }, [token]);
 
   async function loadRequest() {
+    // Load questions from DB
+    const { data: settingsData } = await supabase
+      .from('app_settings')
+      .select('key,value')
+      .in('key', ['insights_questions', 'disc_questions']);
+
+    let loadedDiscQuestions = defaultDiscQuestions;
+    if (settingsData) {
+      for (const row of settingsData) {
+        if (row.key === 'insights_questions' && Array.isArray(row.value) && row.value.length > 0) {
+          setInsightsQuestions(row.value as unknown as InsightsQuestion[]);
+        }
+        if (row.key === 'disc_questions' && Array.isArray(row.value) && row.value.length > 0) {
+          loadedDiscQuestions = row.value as unknown as DiscQuestionItem[];
+          setDiscQuestions(loadedDiscQuestions);
+        }
+      }
+    }
+    setDiscAnswers(new Array(loadedDiscQuestions.length).fill(0));
+
     const { data, error: err } = await supabase
       .from('insights_requests')
       .select('*')
@@ -134,7 +160,7 @@ export default function InsightsFormPage() {
     setSubmitting(true);
     setError('');
 
-    const { scores, dominant } = computeDiscScores(discAnswers);
+    const { scores, dominant } = computeDiscScores(discAnswers, discQuestions);
 
     // Save insights responses
     const { error: updateErr } = await supabase
