@@ -216,6 +216,37 @@ export function LeadInsightsDocumentsWithActions({ leadId, leadName, leadStatus,
         insightsSent={processData.insightsSent}
       />
 
+      {/* Show newly created link prominently */}
+      {newInsightsLink && (
+        <div className="rounded-lg border border-violet-200 bg-violet-50 p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-violet-600" />
+              <span className="text-xs font-semibold text-violet-800">Insights & DISC-Link erstellt</span>
+            </div>
+            <button onClick={() => setNewInsightsLink('')} className="text-xs text-violet-400 hover:text-violet-600">✕</button>
+          </div>
+          <div className="flex gap-2">
+            <input
+              readOnly
+              value={newInsightsLink}
+              className="flex-1 h-8 rounded-md border border-violet-200 bg-white px-2 text-xs text-violet-900 outline-none"
+              onClick={e => (e.target as HTMLInputElement).select()}
+            />
+            <button
+              onClick={async () => {
+                await navigator.clipboard.writeText(newInsightsLink);
+                toast({ title: 'Kopiert!', description: 'Link in der Zwischenablage.' });
+              }}
+              className="inline-flex items-center gap-1 rounded-md bg-violet-600 px-3 py-1 text-xs font-medium text-white hover:bg-violet-700 transition-colors"
+            >
+              <Copy className="h-3 w-3" /> Kopieren
+            </button>
+          </div>
+          <p className="text-[11px] text-violet-600">Diesen Link an den Kandidaten senden. Er enthält Fragen, DISC-Test und Terminvorschläge.</p>
+        </div>
+      )}
+
       {/* Compact status indicators for sent links / completed items */}
       {(insightsRequests.length > 0 || docUploads.length > 0 || hasDisc) && (
         <div className="space-y-2">
