@@ -493,9 +493,11 @@ function LeadSourcesTab({ isSuperadmin }: { isSuperadmin: boolean }) {
   const [editId, setEditId] = useState<string | null>(null);
   const [editLabel, setEditLabel] = useState('');
   const [editIcon, setEditIcon] = useState('Globe');
+  const [editColor, setEditColor] = useState('#6B7280');
   const [newId, setNewId] = useState('');
   const [newLabel, setNewLabel] = useState('');
   const [newIcon, setNewIcon] = useState('Globe');
+  const [newColor, setNewColor] = useState('#22C55E');
   const [saving, setSaving] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
 
