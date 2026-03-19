@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { type ActivityEntry } from '@/context/leads-context';
 import { useLeads } from '@/context/useLeads';
 import { statusConfig, getAllowedNextStatuses, type LeadStatus, type LeadSource, sourceConfig } from '@/lib/mock-data';
-import { lookupPlz, searchPlz, type SwissLocation } from '@/lib/swiss-plz';
+import { lookupPlz, searchPlz, cantons, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import { Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User, FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus, Link2, Send, Copy, ExternalLink, Brain } from 'lucide-react';
