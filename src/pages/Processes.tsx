@@ -48,8 +48,7 @@ interface ProcessStep {
 const triggerOptions: Record<AutomationTrigger, { label: string; icon: typeof Zap; desc: string }> = {
   status_change: { label: 'Status-Wechsel', icon: ArrowRight, desc: 'Wenn ein Lead einen bestimmten Status erreicht' },
   lead_created: { label: 'Lead erstellt', icon: Users, desc: 'Wenn ein neuer Lead erfasst wird' },
-  disc_completed: { label: 'DISC-Test fertig', icon: Brain, desc: 'Wenn der Persönlichkeitstest abgeschlossen wird' },
-  insights_form_completed: { label: 'Insights-Formular', icon: ClipboardList, desc: 'Wenn der Kandidat das Insights-Formular ausgefüllt hat' },
+  disc_completed: { label: 'DISC-Test fertig', icon: Brain, desc: 'Wenn der DISC-Persönlichkeitstest abgeschlossen wird → Auto-Status Follow-up' },
   documents_uploaded: { label: 'Dokumente erhalten', icon: Upload, desc: 'Wenn der Kandidat Dokumente hochgeladen hat' },
   time_in_status: { label: 'Verweildauer', icon: Bell, desc: 'Wenn ein Lead zu lange in einem Status bleibt' },
 };
