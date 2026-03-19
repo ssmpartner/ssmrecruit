@@ -95,7 +95,7 @@ export default function AddLeadDialog() {
       canton: form.canton,
       cantonCode: form.cantonCode,
       position: form.position.trim(),
-      source: form.source,
+      source: form.source as any,
       status: 'new' as LeadStatus,
       agencyId: form.agencyId,
       employeeId: form.employeeId,
