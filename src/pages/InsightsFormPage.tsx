@@ -620,7 +620,7 @@ export default function InsightsFormPage() {
             {/* ── STEP 6: Termine ── */}
             {step === 'appointments' && (
               <>
-                <p className="text-sm text-slate-500">Schlagen Sie bis zu 5 Termine vor, an denen Sie für ein Gespräch verfügbar wären.</p>
+                <p className="text-sm text-muted-foreground">Schlagen Sie bis zu 5 Termine vor, an denen Sie für ein Gespräch verfügbar wären.</p>
                 <div className="space-y-3">
                   {timeSlots.map((slot, i) => (
                     <div key={i} className="flex items-end gap-3">
