@@ -2,9 +2,19 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.18.0';
+const APP_VERSION = '2.19.0';
 
 const versionHistory = [
+  { version: '2.19.0', date: '23.03.2026', changes: [
+    'Analytics komplett überarbeitet: 4 Tabs – Übersicht (KPIs), Marketing, Geschäftsleitung und Flow-Analyse',
+    'Marketing-Tab: Quellen-Performance, Kampagnen-Analyse, Kanal-Konversionsraten und Marketing-Funnel',
+    'Geschäftsleitung-Tab: Agentur-Performance mit Problemanalyse (stagnierende Leads, Verzögerungen, Neuzuweisungen)',
+    'Flow-Analyse-Tab: Verweildauer pro Phase, Bottleneck-Erkennung und Status-Übergangs-Häufigkeiten',
+    'Übersicht-Tab: KPI-Karten, Funnel-Visualisierung und Leads nach Zeitraum (Monat/Quartal/Jahr)',
+    'CSV-Export mit Excel-kompatiblem BOM-Encoding und Semikolon-Trennung',
+    'PDF-Export für formatierte Berichte mit Charts und KPIs',
+    'Agentur-Detailanalyse: Klick auf Agentur zeigt Problemhäufigkeiten (stagnierende Leads, Reaktionszeiten)',
+  ]},
   { version: '2.18.0', date: '23.03.2026', changes: [
     'Meta Leads Import: Historische Leads aus Meta/Facebook CSV-Dateien importieren mit automatischer Duplikaterkennung',
     'Automatische Agentur- und Mitarbeiter-Zuweisung beim CSV-Import (Hauptsitz als Standard)',
