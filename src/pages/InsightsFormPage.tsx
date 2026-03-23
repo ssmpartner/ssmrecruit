@@ -481,20 +481,96 @@ export default function InsightsFormPage() {
               </>
             )}
 
-            {/* ── STEP 3: Motivatoren ── */}
-            {step === 'motivators' && (
-              <>
-                <p className="text-sm text-slate-500">Bewerten Sie die folgenden Aussagen zu Ihren Werten und Motivatoren.</p>
-                {motivatorQuestions.map((q, i) => (
-                  <div key={i} className={`rounded-xl border p-4 transition-colors ${motivatorAnswers[i] > 0 ? 'bg-slate-50 border-slate-200' : 'bg-white'}`}>
-                    <p className="text-sm font-medium text-slate-800 mb-3">
-                      <span className="text-slate-400 mr-1.5">{i + 1}.</span>{q.text}
-                    </p>
-                    <ScaleRow value={motivatorAnswers[i]} onChange={v => { const n = [...motivatorAnswers]; n[i] = v; setMotivatorAnswers(n); }} />
+            {/* ── STEP 3: Motivatoren (paginated, color-coded) ── */}
+            {step === 'motivators' && (() => {
+              const questionsPerPage = 2;
+              const totalPages = Math.ceil(motivatorQuestions.length / questionsPerPage);
+              const pageQuestions = motivatorQuestions.slice(motivatorPage * questionsPerPage, (motivatorPage + 1) * questionsPerPage);
+              const globalOffset = motivatorPage * questionsPerPage;
+              const answeredOnPage = pageQuestions.every((_, qi) => motivatorAnswers[globalOffset + qi] > 0);
+
+              return (
+                <>
+                  <div className="text-center space-y-1">
+                    <h2 className="text-lg font-bold text-slate-800">Was motiviert dich wirklich?</h2>
+                    <p className="text-sm text-slate-500">Beantworte die folgenden Aussagen ehrlich – es gibt keine richtigen oder falschen Antworten.</p>
                   </div>
-                ))}
-              </>
-            )}
+
+                  {/* Sub-progress */}
+                  <div className="flex items-center gap-1.5">
+                    {Array.from({ length: totalPages }).map((_, pi) => {
+                      const pageStart = pi * questionsPerPage;
+                      const pageEnd = Math.min(pageStart + questionsPerPage, motivatorQuestions.length);
+                      const allAnswered = motivatorAnswers.slice(pageStart, pageEnd).every(a => a > 0);
+                      return (
+                        <button key={pi} type="button" onClick={() => setMotivatorPage(pi)}
+                          className={`h-2 flex-1 rounded-full transition-all ${
+                            pi === motivatorPage ? 'bg-emerald-500' : allAnswered ? 'bg-emerald-300' : 'bg-slate-200'
+                          }`} />
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-slate-400 text-center">{motivatorPage + 1} / {totalPages}</p>
+
+                  {/* Questions */}
+                  <div className="space-y-4">
+                    {pageQuestions.map((q, qi) => {
+                      const idx = globalOffset + qi;
+                      const meta = motivatorMeta[q.dimension] || motivatorMeta.traditionell;
+                      return (
+                        <div key={idx} className={`rounded-xl border-2 p-5 transition-all ${meta.bg} ${motivatorAnswers[idx] > 0 ? meta.border : 'border-transparent'}`}>
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${meta.text} ${meta.bg}`} style={{ backgroundColor: meta.color + '20' }}>
+                              {meta.label}
+                            </span>
+                            <span className="text-xs text-slate-400">Frage {idx + 1} von {motivatorQuestions.length}</span>
+                          </div>
+                          <p className="text-sm font-medium text-slate-800 mb-4">{q.text}</p>
+
+                          {/* Likert scale buttons */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-1.5">
+                              {[1, 2, 3, 4, 5].map(val => (
+                                <button key={val} type="button"
+                                  onClick={() => { const n = [...motivatorAnswers]; n[idx] = val; setMotivatorAnswers(n); }}
+                                  className={`flex-1 rounded-lg py-2.5 text-sm font-semibold border-2 transition-all ${
+                                    motivatorAnswers[idx] === val
+                                      ? 'text-white shadow-md scale-105'
+                                      : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                  }`}
+                                  style={motivatorAnswers[idx] === val ? { backgroundColor: meta.color, borderColor: meta.color } : {}}
+                                >{val}</button>
+                              ))}
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[10px] text-slate-400">Trifft nicht zu</span>
+                              <span className="text-[10px] text-slate-400">Trifft voll zu</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Page navigation */}
+                  <div className="flex items-center justify-between pt-2">
+                    {motivatorPage > 0 ? (
+                      <button type="button" onClick={() => setMotivatorPage(p => p - 1)}
+                        className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-800">
+                        <ChevronLeft className="h-4 w-4" /> Vorherige
+                      </button>
+                    ) : <div />}
+                    {motivatorPage < totalPages - 1 ? (
+                      <button type="button" onClick={() => { if (answeredOnPage) setMotivatorPage(p => p + 1); }}
+                        disabled={!answeredOnPage}
+                        className={`flex items-center gap-1 text-sm font-medium ${answeredOnPage ? 'text-emerald-600 hover:text-emerald-700' : 'text-slate-300 cursor-not-allowed'}`}>
+                        Nächste <ChevronRight className="h-4 w-4" />
+                      </button>
+                    ) : <div />}
+                  </div>
+                </>
+              );
+            })()}
 
             {/* ── STEP 4: Arbeitsstil & Ziele ── */}
             {step === 'workstyle' && (
