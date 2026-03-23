@@ -14,7 +14,7 @@ import SourceBadge from './SourceBadge';
 import {
   Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
   FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus,
-  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Wand2
+  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Wand2, Brain, Upload
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -23,6 +23,8 @@ import ProcessStepper from './ProcessStepper';
 import { LeadInsightsDocumentsWithActions } from './LeadInsightsDocuments';
 import LeadFlowTimeline from './LeadFlowTimeline';
 import WizardHistoryPanel from './WizardHistoryPanel';
+import LeadInsightsTab from './LeadInsightsTab';
+import LeadDocumentsTab from './LeadDocumentsTab';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
@@ -53,7 +55,7 @@ export default function LeadDetailSheet() {
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
-  const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'wizard'>('info');
+  const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'wizard' | 'insights' | 'documents'>('info');
   const [confirmReset, setConfirmReset] = useState(false);
 
   const leadAppointments = useMemo(() =>
@@ -171,6 +173,8 @@ export default function LeadDetailSheet() {
 
   const rightTabs = [
     { key: 'info' as const, label: 'Info', icon: User },
+    { key: 'insights' as const, label: 'Insights', icon: Brain },
+    { key: 'documents' as const, label: 'Dokumente', icon: Upload },
     { key: 'flow' as const, label: 'Flow', icon: Workflow },
     { key: 'wizard' as const, label: 'Wizards', icon: Wand2 },
     { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length },
@@ -564,6 +568,16 @@ export default function LeadDetailSheet() {
                           })}
                         </div>
                       </div>
+                    )}
+
+                    {/* Insights Tab */}
+                    {rightTab === 'insights' && (
+                      <LeadInsightsTab leadId={selectedLead.id} leadName={selectedLead.name} />
+                    )}
+
+                    {/* Documents Tab */}
+                    {rightTab === 'documents' && (
+                      <LeadDocumentsTab leadId={selectedLead.id} />
                     )}
 
                     {/* Flow Tab */}
