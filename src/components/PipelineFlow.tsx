@@ -1,8 +1,10 @@
 import { useMemo, useState, useCallback } from 'react';
-import { ArrowRight, AlertTriangle, Clock, TrendingUp, Users, Settings2, Bell, UserCog, ArrowRightLeft, Plus, Trash2, Save, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, AlertTriangle, Clock, TrendingUp, Users, Settings2, Bell, UserCog, ArrowRightLeft, Plus, Trash2, Save, X, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { statusConfig, type LeadStatus, type Lead, type Employee } from '@/lib/mock-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import LeadStatusBadge from './LeadStatusBadge';
+import SourceBadge from './SourceBadge';
 import { useToast } from '@/hooks/use-toast';
 
 const mainFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired'];
