@@ -66,6 +66,15 @@ const selfAssessmentQuestions = [
 
 const scaleLabels = ['Trifft nicht zu', 'Trifft kaum zu', 'Neutral', 'Trifft eher zu', 'Trifft voll zu'];
 
+const motivatorMeta: Record<string, { label: string; color: string; bg: string; border: string; text: string }> = {
+  individualistisch: { label: 'Individualistisch', color: '#8B5CF6', bg: 'bg-violet-50', border: 'border-violet-300', text: 'text-violet-700' },
+  oekonomisch: { label: 'Ökonomisch', color: '#F97316', bg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-700' },
+  theoretisch: { label: 'Theoretisch', color: '#3B82F6', bg: 'bg-blue-50', border: 'border-blue-300', text: 'text-blue-700' },
+  sozial: { label: 'Sozial', color: '#22C55E', bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700' },
+  aesthetisch: { label: 'Ästhetisch', color: '#EC4899', bg: 'bg-pink-50', border: 'border-pink-300', text: 'text-pink-700' },
+  traditionell: { label: 'Traditionell', color: '#6B7280', bg: 'bg-gray-50', border: 'border-gray-300', text: 'text-gray-700' },
+};
+
 type WizardStep = 'basics' | 'disc' | 'motivators' | 'workstyle' | 'selfassessment' | 'appointments';
 
 const stepConfig: { key: WizardStep; label: string; shortLabel: string; icon: any }[] = [
