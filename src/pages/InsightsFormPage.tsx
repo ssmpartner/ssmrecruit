@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle2, Loader2, AlertCircle, Send, Brain, ClipboardList, CalendarPlus, Plus, Trash2 } from 'lucide-react';
+import {
+  CheckCircle2, Loader2, AlertCircle, Brain, ClipboardList,
+  CalendarPlus, Plus, Trash2, Target, User, Sparkles, ChevronRight, ChevronLeft,
+} from 'lucide-react';
 
+/* ───── types ───── */
 interface InsightsQuestion { key: string; label: string; question: string }
 interface DiscQuestionItem { text: string; dimension: 'D' | 'I' | 'S' | 'C' }
+interface MotivatorQuestion { text: string; dimension: string }
+interface TimeSlot { date: string; time: string }
 
-// Fallbacks if DB is empty
+/* ───── defaults ───── */
 const defaultInsightsQuestions: InsightsQuestion[] = [
   { key: 'motivation', label: 'Motivation', question: 'Was motiviert Sie, eine neue berufliche Herausforderung zu suchen?' },
   { key: 'experience', label: 'Erfahrung', question: 'Beschreiben Sie Ihre relevanteste berufliche Erfahrung.' },
@@ -15,7 +21,6 @@ const defaultInsightsQuestions: InsightsQuestion[] = [
   { key: 'strengths', label: 'Stärken', question: 'Was sind Ihre grössten Stärken und wie setzen Sie diese im Beruf ein?' },
   { key: 'salary', label: 'Gehaltsvorstellung', question: 'Was sind Ihre Gehaltsvorstellungen?' },
 ];
-
 const defaultDiscQuestions: DiscQuestionItem[] = [
   { text: 'Ich treffe Entscheidungen schnell und entschlossen.', dimension: 'D' },
   { text: 'Ich arbeite gerne mit anderen Menschen zusammen und bin gesellig.', dimension: 'I' },
@@ -30,19 +35,51 @@ const defaultDiscQuestions: DiscQuestionItem[] = [
   { text: 'Konflikte versuche ich zu vermeiden und Harmonie zu bewahren.', dimension: 'S' },
   { text: 'Ich hinterfrage Dinge kritisch und prüfe Fakten.', dimension: 'C' },
 ];
+const defaultMotivatorQuestions: MotivatorQuestion[] = [
+  { text: 'Unabhängigkeit und persönliche Freiheit sind mir im Beruf sehr wichtig.', dimension: 'individualistisch' },
+  { text: 'Ich möchte durch meine Arbeit Einfluss und Entscheidungsmacht haben.', dimension: 'individualistisch' },
+  { text: 'Ich lerne gerne Neues und bilde mich ständig weiter.', dimension: 'theoretisch' },
+  { text: 'Ich analysiere Probleme lieber gründlich, bevor ich handle.', dimension: 'theoretisch' },
+  { text: 'Finanzieller Erfolg und Rendite motivieren mich stark.', dimension: 'oekonomisch' },
+  { text: 'Effizienz und Ergebnisorientierung stehen bei mir im Vordergrund.', dimension: 'oekonomisch' },
+  { text: 'Bewährte Werte und Traditionen geben mir Sicherheit.', dimension: 'traditionell' },
+  { text: 'Verlässlichkeit und Beständigkeit sind mir wichtiger als ständiger Wandel.', dimension: 'traditionell' },
+  { text: 'Kreativität und Gestaltungsmöglichkeiten inspirieren mich.', dimension: 'aesthetisch' },
+  { text: 'Mir ist die Qualität und Ästhetik meiner Arbeit sehr wichtig.', dimension: 'aesthetisch' },
+  { text: 'Anderen zu helfen gibt mir berufliche Erfüllung.', dimension: 'sozial' },
+  { text: 'Ein harmonisches Arbeitsumfeld ist mir wichtiger als hohes Gehalt.', dimension: 'sozial' },
+];
+const workstyleQuestions = [
+  { key: 'work_experience', label: 'Berufserfahrung', question: 'Wie viele Jahre Berufserfahrung haben Sie in Ihrem Fachgebiet?', type: 'select' as const, options: ['< 1 Jahr', '1-3 Jahre', '3-5 Jahre', '5-10 Jahre', '10+ Jahre'] },
+  { key: 'career_goal', label: 'Karriereziel', question: 'Was ist Ihr wichtigstes berufliches Ziel?', type: 'select' as const, options: ['Karriereaufstieg', 'Finanzielle Sicherheit', 'Work-Life-Balance', 'Fachliche Expertise', 'Eigenes Unternehmen'] },
+  { key: 'work_style', label: 'Arbeitsstil', question: 'Wie arbeiten Sie am liebsten?', type: 'select' as const, options: ['Im Team', 'Alleine', 'Flexibel – je nach Aufgabe', 'In Führungsrolle'] },
+  { key: 'change_readiness', label: 'Veränderungsbereitschaft', question: 'Wie stehen Sie zu Veränderungen im Beruf?', type: 'select' as const, options: ['Ich liebe Veränderung', 'Offen, wenn begründet', 'Eher vorsichtig', 'Bevorzuge Stabilität'] },
+  { key: 'communication_style', label: 'Kommunikation', question: 'Wie würden Sie Ihren Kommunikationsstil beschreiben?', type: 'select' as const, options: ['Direkt und klar', 'Diplomatisch und einfühlsam', 'Analytisch und sachlich', 'Begeisternd und motivierend'] },
+  { key: 'availability', label: 'Verfügbarkeit', question: 'Wie schnell könnten Sie eine neue Stelle antreten?', type: 'select' as const, options: ['Sofort', 'In 1-2 Wochen', 'In 1 Monat', 'In 2-3 Monaten', 'Ab einem bestimmten Datum'] },
+];
+const selfAssessmentQuestions = [
+  { key: 'self_strength', label: 'Grösste Stärke', question: 'Was ist Ihre grösste berufliche Stärke?', type: 'text' as const },
+  { key: 'self_weakness', label: 'Entwicklungsfeld', question: 'In welchem Bereich möchten Sie sich am meisten verbessern?', type: 'text' as const },
+  { key: 'ideal_role', label: 'Idealrolle', question: 'Beschreiben Sie Ihre ideale berufliche Rolle in einem Satz.', type: 'text' as const },
+  { key: 'team_contribution', label: 'Teamwert', question: 'Was bringen Sie in ein Team ein, das andere nicht haben?', type: 'text' as const },
+];
 
 const scaleLabels = ['Trifft nicht zu', 'Trifft kaum zu', 'Neutral', 'Trifft eher zu', 'Trifft voll zu'];
 
-interface TimeSlot {
-  date: string;
-  time: string;
-}
+type WizardStep = 'basics' | 'disc' | 'motivators' | 'workstyle' | 'selfassessment' | 'appointments';
+
+const stepConfig: { key: WizardStep; label: string; shortLabel: string; icon: any }[] = [
+  { key: 'basics', label: 'Basisdaten', shortLabel: '1', icon: ClipboardList },
+  { key: 'disc', label: 'DISC Verhalten', shortLabel: '2', icon: Brain },
+  { key: 'motivators', label: 'Motivatoren', shortLabel: '3', icon: Target },
+  { key: 'workstyle', label: 'Arbeitsstil & Ziele', shortLabel: '4', icon: Sparkles },
+  { key: 'selfassessment', label: 'Selbstbild', shortLabel: '5', icon: User },
+  { key: 'appointments', label: 'Abschluss', shortLabel: '6', icon: CalendarPlus },
+];
 
 function computeDiscScores(answers: number[], questions: DiscQuestionItem[]) {
   const dims: Record<'D' | 'I' | 'S' | 'C', number[]> = { D: [], I: [], S: [], C: [] };
-  questions.forEach((q, i) => {
-    if (answers[i] > 0) dims[q.dimension].push(answers[i]);
-  });
+  questions.forEach((q, i) => { if (answers[i] > 0) dims[q.dimension].push(answers[i]); });
   const scores: Record<string, number> = {};
   for (const [dim, vals] of Object.entries(dims)) {
     const avg = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
@@ -52,12 +89,46 @@ function computeDiscScores(answers: number[], questions: DiscQuestionItem[]) {
   return { scores, dominant };
 }
 
+function computeMotivatorScores(answers: number[], questions: MotivatorQuestion[]) {
+  const dims: Record<string, number[]> = {};
+  questions.forEach((q, i) => {
+    if (!dims[q.dimension]) dims[q.dimension] = [];
+    if (answers[i] > 0) dims[q.dimension].push(answers[i]);
+  });
+  const scores: Record<string, number> = {};
+  for (const [dim, vals] of Object.entries(dims)) {
+    const avg = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+    scores[dim] = Math.round((avg / 5) * 100);
+  }
+  return scores;
+}
+
 function getMinDate() {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
+  const d = new Date(); d.setDate(d.getDate() + 1);
   return d.toISOString().split('T')[0];
 }
 
+/* ───── scale button row ───── */
+function ScaleRow({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div>
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map(val => (
+          <button key={val} type="button" onClick={() => onChange(val)}
+            className={`flex-1 rounded-lg py-2 text-xs font-medium border transition-all ${
+              value === val
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+            }`}
+          >{val}</button>
+        ))}
+      </div>
+      <div className="flex justify-between mt-1"><span className="text-[10px] text-slate-400">{scaleLabels[0]}</span><span className="text-[10px] text-slate-400">{scaleLabels[4]}</span></div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════ */
 export default function InsightsFormPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
@@ -69,12 +140,21 @@ export default function InsightsFormPage() {
   const [leadName, setLeadName] = useState('');
   const [requestId, setRequestId] = useState('');
   const [leadId, setLeadId] = useState('');
+
+  // questions from DB or defaults
   const [insightsQuestions, setInsightsQuestions] = useState<InsightsQuestion[]>(defaultInsightsQuestions);
   const [discQuestions, setDiscQuestions] = useState<DiscQuestionItem[]>(defaultDiscQuestions);
+  const [motivatorQuestions, setMotivatorQuestions] = useState<MotivatorQuestion[]>(defaultMotivatorQuestions);
+
+  // answers
   const [insightsAnswers, setInsightsAnswers] = useState<Record<string, string>>({});
   const [discAnswers, setDiscAnswers] = useState<number[]>([]);
-  const [step, setStep] = useState<'insights' | 'disc' | 'appointments'>('insights');
+  const [motivatorAnswers, setMotivatorAnswers] = useState<number[]>([]);
+  const [workstyleAnswers, setWorkstyleAnswers] = useState<Record<string, string>>({});
+  const [selfAssessmentAnswers, setSelfAssessmentAnswers] = useState<Record<string, string>>({});
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([{ date: '', time: '' }]);
+
+  const [step, setStep] = useState<WizardStep>('basics');
 
   useEffect(() => {
     if (!token) { setError('Ungültiger Link.'); setLoading(false); return; }
@@ -82,100 +162,115 @@ export default function InsightsFormPage() {
   }, [token]);
 
   async function loadRequest() {
-    // Load questions from DB
     const { data: settingsData } = await supabase
-      .from('app_settings')
-      .select('key,value')
-      .in('key', ['insights_questions', 'disc_questions']);
+      .from('app_settings').select('key,value')
+      .in('key', ['insights_questions', 'disc_questions', 'motivator_questions']);
 
-    let loadedDiscQuestions = defaultDiscQuestions;
+    let loadedDisc = defaultDiscQuestions;
+    let loadedMotivators = defaultMotivatorQuestions;
     if (settingsData) {
       for (const row of settingsData) {
-        if (row.key === 'insights_questions' && Array.isArray(row.value) && row.value.length > 0) {
+        if (row.key === 'insights_questions' && Array.isArray(row.value) && row.value.length > 0)
           setInsightsQuestions(row.value as unknown as InsightsQuestion[]);
-        }
         if (row.key === 'disc_questions' && Array.isArray(row.value) && row.value.length > 0) {
-          loadedDiscQuestions = row.value as unknown as DiscQuestionItem[];
-          setDiscQuestions(loadedDiscQuestions);
+          loadedDisc = row.value as unknown as DiscQuestionItem[];
+          setDiscQuestions(loadedDisc);
+        }
+        if (row.key === 'motivator_questions' && Array.isArray(row.value) && row.value.length > 0) {
+          loadedMotivators = row.value as unknown as MotivatorQuestion[];
+          setMotivatorQuestions(loadedMotivators);
         }
       }
     }
-    setDiscAnswers(new Array(loadedDiscQuestions.length).fill(0));
+    setDiscAnswers(new Array(loadedDisc.length).fill(0));
+    setMotivatorAnswers(new Array(loadedMotivators.length).fill(0));
 
     const { data, error: err } = await supabase
-      .from('insights_requests')
-      .select('*')
-      .eq('token', token!)
-      .single();
-
+      .from('insights_requests').select('*').eq('token', token!).single();
     if (err || !data) { setError('Dieser Link ist ungültig oder abgelaufen.'); setLoading(false); return; }
     if (data.status === 'completed') { setAlreadyDone(true); setLoading(false); return; }
 
     setRequestId(data.id);
     setLeadId(data.lead_id);
-
     const { data: lead } = await supabase.from('leads').select('name').eq('id', data.lead_id).single();
     if (lead) setLeadName(lead.name);
-
     setLoading(false);
   }
 
-  function goToDisc() {
-    const unanswered = insightsQuestions.filter(q => !insightsAnswers[q.key]?.trim());
-    if (unanswered.length > 0) { setError('Bitte beantworten Sie alle Fragen.'); return; }
+  /* ── navigation helpers ── */
+  const stepIndex = stepConfig.findIndex(s => s.key === step);
+
+  function validateStep(s: WizardStep): string | null {
+    if (s === 'basics') {
+      const unanswered = insightsQuestions.filter(q => !insightsAnswers[q.key]?.trim());
+      return unanswered.length > 0 ? 'Bitte beantworten Sie alle Fragen.' : null;
+    }
+    if (s === 'disc') {
+      const missing = discAnswers.filter(a => a === 0).length;
+      return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden DISC-Fragen.` : null;
+    }
+    if (s === 'motivators') {
+      const missing = motivatorAnswers.filter(a => a === 0).length;
+      return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden Motivator-Fragen.` : null;
+    }
+    if (s === 'workstyle') {
+      const missing = workstyleQuestions.filter(q => !workstyleAnswers[q.key]);
+      return missing.length > 0 ? 'Bitte beantworten Sie alle Fragen.' : null;
+    }
+    if (s === 'selfassessment') {
+      const missing = selfAssessmentQuestions.filter(q => !selfAssessmentAnswers[q.key]?.trim());
+      return missing.length > 0 ? 'Bitte beantworten Sie alle Fragen.' : null;
+    }
+    return null;
+  }
+
+  function goNext() {
+    const err = validateStep(step);
+    if (err) { setError(err); return; }
     setError('');
-    setStep('disc');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const next = stepConfig[stepIndex + 1];
+    if (next) { setStep(next.key); window.scrollTo({ top: 0, behavior: 'smooth' }); }
   }
 
-  function goToAppointments() {
-    const unansweredDisc = discAnswers.filter(a => a === 0).length;
-    if (unansweredDisc > 0) { setError(`Bitte beantworten Sie alle ${unansweredDisc} verbleibenden Fragen.`); return; }
+  function goBack() {
     setError('');
-    setStep('appointments');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const prev = stepConfig[stepIndex - 1];
+    if (prev) { setStep(prev.key); window.scrollTo({ top: 0, behavior: 'smooth' }); }
   }
 
-  function addTimeSlot() {
-    if (timeSlots.length < 5) setTimeSlots([...timeSlots, { date: '', time: '' }]);
+  function goToStep(target: WizardStep) {
+    const targetIdx = stepConfig.findIndex(s => s.key === target);
+    // validate all previous steps
+    for (let i = 0; i < targetIdx; i++) {
+      const err = validateStep(stepConfig[i].key);
+      if (err) { setError(`Bitte füllen Sie zuerst "${stepConfig[i].label}" aus.`); return; }
+    }
+    setError('');
+    setStep(target);
   }
 
-  function removeTimeSlot(index: number) {
-    if (timeSlots.length > 1) setTimeSlots(timeSlots.filter((_, i) => i !== index));
-  }
-
-  function updateTimeSlot(index: number, field: 'date' | 'time', value: string) {
-    const updated = [...timeSlots];
-    updated[index] = { ...updated[index], [field]: value };
-    setTimeSlots(updated);
-  }
-
+  /* ── submit ── */
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    // Validate at least one complete time slot
     const validSlots = timeSlots.filter(s => s.date && s.time);
     if (validSlots.length === 0) { setError('Bitte geben Sie mindestens einen Terminvorschlag an.'); return; }
-
     setSubmitting(true);
     setError('');
 
-    const { scores, dominant } = computeDiscScores(discAnswers, discQuestions);
+    const discResult = computeDiscScores(discAnswers, discQuestions);
+    const motivatorScores = computeMotivatorScores(motivatorAnswers, motivatorQuestions);
 
     // Save insights responses
-    const { error: updateErr } = await supabase
-      .from('insights_requests')
+    await supabase.from('insights_requests')
       .update({ status: 'completed', completed_at: new Date().toISOString(), responses: insightsAnswers })
       .eq('id', requestId);
-
-    if (updateErr) { setError('Fehler beim Speichern. Bitte versuchen Sie es erneut.'); setSubmitting(false); return; }
 
     // Save DISC results
     await supabase.from('disc_results').insert({
       id: crypto.randomUUID(),
       lead_id: leadId,
-      dominant_type: dominant,
-      scores,
+      dominant_type: discResult.dominant,
+      scores: discResult.scores,
       answers: discAnswers,
     });
 
@@ -189,23 +284,57 @@ export default function InsightsFormPage() {
       });
     }
 
-    // Update lead status to follow_up
+    // Combine all wizard answers
+    const allWizardAnswers = { ...workstyleAnswers, ...selfAssessmentAnswers };
+
+    // Load SSM criteria from settings
+    const { data: criteriaData } = await supabase
+      .from('app_settings').select('value').eq('key', 'ssm_criteria').single();
+    const ssmCriteria = criteriaData?.value || null;
+
+    // Trigger AI analysis
+    try {
+      const { data: analysisData, error: analysisErr } = await supabase.functions.invoke('analyze-candidate', {
+        body: {
+          disc_scores: discResult.scores,
+          motivator_scores: motivatorScores,
+          wizard_answers: allWizardAnswers,
+          ssm_criteria: ssmCriteria,
+          lead_name: leadName,
+        },
+      });
+
+      if (!analysisErr && analysisData && !analysisData.error) {
+        await supabase.from('assessment_results').insert({
+          lead_id: leadId,
+          disc_scores: discResult.scores,
+          motivator_scores: motivatorScores,
+          wizard_answers: allWizardAnswers,
+          scores: analysisData.scores || {},
+          match_result: analysisData.match_result || {},
+          recommendation: analysisData.recommendation || '',
+          report_sections: analysisData.report_sections || {},
+          summary: analysisData.summary || {},
+          raw_ai_response: analysisData,
+        });
+      }
+    } catch (aiErr) {
+      console.error('AI analysis failed (non-blocking):', aiErr);
+    }
+
+    // Update lead status
     await supabase.from('leads').update({ status: 'follow_up' }).eq('id', leadId);
 
-    // Add activity
+    // Activity + notification
     await supabase.from('activities').insert({
-      id: crypto.randomUUID(),
-      lead_id: leadId,
-      type: 'status_change',
-      description: `Insights, DISC-Test & ${validSlots.length} Terminvorschlag/vorschläge abgeschlossen – Status auf Follow-up gesetzt`,
+      id: crypto.randomUUID(), lead_id: leadId, type: 'status_change',
+      description: `Assessment (6-Step), DISC-Test, Motivatoren & ${validSlots.length} Terminvorschlag/vorschläge abgeschlossen`,
       user: 'System',
     });
-
-    // Create notification
     await supabase.from('notifications').insert({
-      title: 'Insights, DISC & Terminvorschläge eingegangen',
+      title: 'Assessment komplett eingegangen',
       type: 'insights',
-      description: `${leadName || 'Ein Lead'} hat das Formular ausgefüllt und ${validSlots.length} Terminvorschlag/vorschläge gesendet.`,
+      description: `${leadName || 'Ein Lead'} hat das vollständige Assessment ausgefüllt.`,
       lead_id: leadId,
     });
 
@@ -213,12 +342,12 @@ export default function InsightsFormPage() {
     setSubmitting(false);
   }
 
+  /* ── loading / error / done states ── */
   if (loading) return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
     </div>
   );
-
   if (alreadyDone) return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
@@ -228,17 +357,15 @@ export default function InsightsFormPage() {
       </div>
     </div>
   );
-
   if (completed) return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
         <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
         <h1 className="text-2xl font-bold text-slate-900 mb-2">Vielen Dank!</h1>
-        <p className="text-slate-600">Ihre Antworten und Terminvorschläge wurden erfolgreich gespeichert. Wir werden uns bei Ihnen melden.</p>
+        <p className="text-slate-600">Ihre Antworten wurden erfolgreich gespeichert. Wir analysieren Ihr Profil und melden uns bei Ihnen.</p>
       </div>
     </div>
   );
-
   if (error && !requestId) return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
@@ -249,11 +376,15 @@ export default function InsightsFormPage() {
     </div>
   );
 
-  const insightsProgress = insightsQuestions.filter(q => insightsAnswers[q.key]?.trim()).length;
-  const discProgress = discAnswers.filter(a => a > 0).length;
-  const appointmentProgress = timeSlots.filter(s => s.date && s.time).length;
-  const totalProgress = insightsProgress + discProgress + Math.min(appointmentProgress, 1);
-  const totalQuestions = insightsQuestions.length + discQuestions.length + 1;
+  /* ── progress calculation ── */
+  const answeredBasics = insightsQuestions.filter(q => insightsAnswers[q.key]?.trim()).length;
+  const answeredDisc = discAnswers.filter(a => a > 0).length;
+  const answeredMotivators = motivatorAnswers.filter(a => a > 0).length;
+  const answeredWorkstyle = workstyleQuestions.filter(q => workstyleAnswers[q.key]).length;
+  const answeredSelf = selfAssessmentQuestions.filter(q => selfAssessmentAnswers[q.key]?.trim()).length;
+  const answeredAppointments = timeSlots.filter(s => s.date && s.time).length;
+  const totalAnswered = answeredBasics + answeredDisc + answeredMotivators + answeredWorkstyle + answeredSelf + Math.min(answeredAppointments, 1);
+  const totalQuestions = insightsQuestions.length + discQuestions.length + motivatorQuestions.length + workstyleQuestions.length + selfAssessmentQuestions.length + 1;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
@@ -261,272 +392,207 @@ export default function InsightsFormPage() {
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-emerald-700 to-emerald-600 px-8 py-6 text-white">
-            <h1 className="text-2xl font-bold">SSM Recruit – Bewerberfragebogen</h1>
+            <h1 className="text-2xl font-bold">SSM Recruit – Assessment</h1>
             <p className="text-emerald-100 mt-1">
-              {leadName ? `Hallo ${leadName.split(' ')[0]}, b` : 'B'}itte füllen Sie alle drei Teile vollständig aus.
+              {leadName ? `Hallo ${leadName.split(' ')[0]}, b` : 'B'}itte füllen Sie alle Schritte vollständig aus.
             </p>
-            {/* Progress */}
             <div className="mt-4 space-y-1">
               <div className="flex items-center justify-between text-xs text-emerald-200">
                 <span>Fortschritt</span>
-                <span>{totalProgress} / {totalQuestions} beantwortet</span>
+                <span>{Math.round((totalAnswered / totalQuestions) * 100)}%</span>
               </div>
               <div className="h-2 rounded-full bg-emerald-800/50 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-white/80 transition-all duration-300"
-                  style={{ width: `${(totalProgress / totalQuestions) * 100}%` }}
-                />
+                <div className="h-full rounded-full bg-white/80 transition-all duration-300"
+                  style={{ width: `${(totalAnswered / totalQuestions) * 100}%` }} />
               </div>
             </div>
           </div>
 
-          {/* Step Tabs */}
-          <div className="flex border-b">
-            <button
-              onClick={() => setStep('insights')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${
-                step === 'insights'
-                  ? 'border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              <ClipboardList className="h-4 w-4" />
-              Teil 1: Fragen
-              {insightsProgress === insightsQuestions.length && (
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              )}
-            </button>
-            <button
-              onClick={() => {
-                const unanswered = insightsQuestions.filter(q => !insightsAnswers[q.key]?.trim());
-                if (unanswered.length > 0) { setError('Bitte beantworten Sie zuerst alle Fragen in Teil 1.'); return; }
-                setError('');
-                setStep('disc');
-              }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${
-                step === 'disc'
-                  ? 'border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              <Brain className="h-4 w-4" />
-              Teil 2: Persönlichkeit
-              {discProgress === discQuestions.length && (
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              )}
-            </button>
-            <button
-              onClick={() => {
-                const unansweredIns = insightsQuestions.filter(q => !insightsAnswers[q.key]?.trim());
-                if (unansweredIns.length > 0) { setError('Bitte beantworten Sie zuerst alle Fragen in Teil 1.'); return; }
-                const unansweredDisc = discAnswers.filter(a => a === 0).length;
-                if (unansweredDisc > 0) { setError('Bitte beantworten Sie zuerst alle Fragen in Teil 2.'); return; }
-                setError('');
-                setStep('appointments');
-              }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${
-                step === 'appointments'
-                  ? 'border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              <CalendarPlus className="h-4 w-4" />
-              Teil 3: Termine
-              {appointmentProgress > 0 && (
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              )}
-            </button>
+          {/* Step indicators */}
+          <div className="flex border-b overflow-x-auto">
+            {stepConfig.map((s, i) => {
+              const Icon = s.icon;
+              const isActive = step === s.key;
+              const isPast = i < stepIndex;
+              return (
+                <button key={s.key} type="button" onClick={() => goToStep(s.key)}
+                  className={`flex-1 min-w-0 flex items-center justify-center gap-1 py-3 text-xs font-medium transition-colors whitespace-nowrap px-2 ${
+                    isActive ? 'border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50'
+                    : isPast ? 'text-emerald-600' : 'text-slate-400'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden sm:inline">{s.label}</span>
+                  <span className="sm:hidden">{s.shortLabel}</span>
+                  {isPast && <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          {/* Form content */}
+          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 shrink-0" /> {error}
               </div>
             )}
 
-            {/* Part 1: Insights Questions */}
-            {step === 'insights' && (
+            {/* ── STEP 1: Basisdaten ── */}
+            {step === 'basics' && (
               <>
-                <p className="text-sm text-slate-500">Beantworten Sie die folgenden Fragen zu Ihrer beruflichen Situation und Ihren Zielen.</p>
+                <p className="text-sm text-slate-500">Beantworten Sie die folgenden Fragen zu Ihrer beruflichen Situation.</p>
                 {insightsQuestions.map((q, i) => (
                   <div key={q.key} className="space-y-2">
                     <label className="flex items-baseline gap-2">
                       <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">{i + 1}</span>
                       <span className="text-sm font-semibold text-slate-800">{q.question}</span>
                     </label>
-                    <textarea
-                      value={insightsAnswers[q.key] || ''}
+                    <textarea value={insightsAnswers[q.key] || ''}
                       onChange={e => setInsightsAnswers(prev => ({ ...prev, [q.key]: e.target.value }))}
-                      rows={3}
-                      placeholder="Ihre Antwort..."
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none resize-none transition-colors"
-                      maxLength={2000}
-                    />
+                      rows={3} placeholder="Ihre Antwort..." maxLength={2000}
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none resize-none" />
                   </div>
                 ))}
-                <button
-                  type="button"
-                  onClick={goToDisc}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-700 transition-colors"
-                >
-                  Weiter zu Teil 2: Persönlichkeitstest <Brain className="h-4 w-4" />
-                </button>
               </>
             )}
 
-            {/* Part 2: DISC Questions */}
+            {/* ── STEP 2: DISC ── */}
             {step === 'disc' && (
               <>
-                <p className="text-sm text-slate-500">
-                  Bewerten Sie die folgenden Aussagen auf einer Skala von 1 bis 5. Es gibt keine richtigen oder falschen Antworten.
-                </p>
+                <p className="text-sm text-slate-500">Bewerten Sie die folgenden Aussagen zu Ihrem Verhalten. 1 = trifft nicht zu, 5 = trifft voll zu.</p>
                 {discQuestions.map((q, i) => (
-                  <div key={i} className={`rounded-xl border p-4 transition-colors ${discAnswers[i] > 0 ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-200'}`}>
+                  <div key={i} className={`rounded-xl border p-4 transition-colors ${discAnswers[i] > 0 ? 'bg-slate-50 border-slate-200' : 'bg-white'}`}>
                     <p className="text-sm font-medium text-slate-800 mb-3">
-                      <span className="text-slate-400 mr-1.5">{i + 1}.</span>
-                      {q.text}
+                      <span className="text-slate-400 mr-1.5">{i + 1}.</span>{q.text}
                     </p>
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map(val => (
-                        <button
-                          key={val}
-                          type="button"
-                          onClick={() => {
-                            const newAnswers = [...discAnswers];
-                            newAnswers[i] = val;
-                            setDiscAnswers(newAnswers);
-                          }}
-                          className={`flex-1 rounded-lg py-2 text-xs font-medium border transition-all ${
-                            discAnswers[i] === val
-                              ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                              : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    <ScaleRow value={discAnswers[i]} onChange={v => { const n = [...discAnswers]; n[i] = v; setDiscAnswers(n); }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* ── STEP 3: Motivatoren ── */}
+            {step === 'motivators' && (
+              <>
+                <p className="text-sm text-slate-500">Bewerten Sie die folgenden Aussagen zu Ihren Werten und Motivatoren.</p>
+                {motivatorQuestions.map((q, i) => (
+                  <div key={i} className={`rounded-xl border p-4 transition-colors ${motivatorAnswers[i] > 0 ? 'bg-slate-50 border-slate-200' : 'bg-white'}`}>
+                    <p className="text-sm font-medium text-slate-800 mb-3">
+                      <span className="text-slate-400 mr-1.5">{i + 1}.</span>{q.text}
+                    </p>
+                    <ScaleRow value={motivatorAnswers[i]} onChange={v => { const n = [...motivatorAnswers]; n[i] = v; setMotivatorAnswers(n); }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* ── STEP 4: Arbeitsstil & Ziele ── */}
+            {step === 'workstyle' && (
+              <>
+                <p className="text-sm text-slate-500">Wählen Sie die passendste Antwort zu Ihrem Arbeitsstil.</p>
+                {workstyleQuestions.map((q, i) => (
+                  <div key={q.key} className="space-y-2">
+                    <label className="flex items-baseline gap-2">
+                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">{i + 1}</span>
+                      <span className="text-sm font-semibold text-slate-800">{q.question}</span>
+                    </label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {q.options.map(opt => (
+                        <button key={opt} type="button" onClick={() => setWorkstyleAnswers(prev => ({ ...prev, [q.key]: opt }))}
+                          className={`text-left px-4 py-3 rounded-lg border text-sm transition-all ${
+                            workstyleAnswers[q.key] === opt
+                              ? 'bg-emerald-50 border-emerald-400 text-emerald-800 font-medium'
+                              : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                           }`}
-                        >
-                          {val}
-                        </button>
+                        >{opt}</button>
                       ))}
-                    </div>
-                    <div className="flex justify-between mt-1.5">
-                      <span className="text-[10px] text-slate-400">{scaleLabels[0]}</span>
-                      <span className="text-[10px] text-slate-400">{scaleLabels[4]}</span>
                     </div>
                   </div>
                 ))}
-
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setStep('insights')}
-                    className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-                  >
-                    ← Zurück zu Teil 1
-                  </button>
-                  <button
-                    type="button"
-                    onClick={goToAppointments}
-                    className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-700 transition-colors"
-                  >
-                    Weiter zu Teil 3: Termine <CalendarPlus className="h-4 w-4" />
-                  </button>
-                </div>
               </>
             )}
 
-            {/* Part 3: Appointment Suggestions */}
+            {/* ── STEP 5: Selbstbild ── */}
+            {step === 'selfassessment' && (
+              <>
+                <p className="text-sm text-slate-500">Beschreiben Sie sich selbst in eigenen Worten.</p>
+                {selfAssessmentQuestions.map((q, i) => (
+                  <div key={q.key} className="space-y-2">
+                    <label className="flex items-baseline gap-2">
+                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">{i + 1}</span>
+                      <span className="text-sm font-semibold text-slate-800">{q.question}</span>
+                    </label>
+                    <textarea value={selfAssessmentAnswers[q.key] || ''}
+                      onChange={e => setSelfAssessmentAnswers(prev => ({ ...prev, [q.key]: e.target.value }))}
+                      rows={2} placeholder="Ihre Antwort..." maxLength={1000}
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none resize-none" />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* ── STEP 6: Termine ── */}
             {step === 'appointments' && (
               <>
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-500">
-                    Schlagen Sie Termine vor, an denen Sie für ein Follow-up-Gespräch verfügbar wären. 
-                    Ihr Ansprechpartner wird einen der Vorschläge bestätigen oder Ihnen einen alternativen Termin vorschlagen.
-                  </p>
-                </div>
-
+                <p className="text-sm text-slate-500">Schlagen Sie bis zu 5 Termine vor, an denen Sie für ein Gespräch verfügbar wären.</p>
                 <div className="space-y-3">
                   {timeSlots.map((slot, i) => (
-                    <div key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">{i + 1}</span>
-                          Terminvorschlag {i + 1}
-                        </span>
-                        {timeSlots.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeTimeSlot(i)}
-                            className="text-slate-400 hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
+                    <div key={i} className="flex items-end gap-3">
+                      <div className="flex-1 space-y-1">
+                        <label className="text-xs font-medium text-slate-600">Datum</label>
+                        <input type="date" min={getMinDate()} value={slot.date}
+                          onChange={e => { const u = [...timeSlots]; u[i] = { ...u[i], date: e.target.value }; setTimeSlots(u); }}
+                          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none" />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-600">Datum</label>
-                          <input
-                            type="date"
-                            value={slot.date}
-                            min={getMinDate()}
-                            onChange={e => updateTimeSlot(i, 'date', e.target.value)}
-                            className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 transition-colors"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-600">Uhrzeit</label>
-                          <input
-                            type="time"
-                            value={slot.time}
-                            onChange={e => updateTimeSlot(i, 'time', e.target.value)}
-                            className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 transition-colors"
-                          />
-                        </div>
+                      <div className="flex-1 space-y-1">
+                        <label className="text-xs font-medium text-slate-600">Uhrzeit</label>
+                        <input type="time" value={slot.time}
+                          onChange={e => { const u = [...timeSlots]; u[i] = { ...u[i], time: e.target.value }; setTimeSlots(u); }}
+                          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none" />
                       </div>
+                      {timeSlots.length > 1 && (
+                        <button type="button" onClick={() => setTimeSlots(timeSlots.filter((_, j) => j !== i))}
+                          className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-red-600 hover:bg-red-100">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   ))}
-                </div>
-
-                {timeSlots.length < 5 && (
-                  <button
-                    type="button"
-                    onClick={addTimeSlot}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 px-6 py-3 text-sm font-medium text-slate-500 hover:border-emerald-400 hover:text-emerald-600 transition-colors"
-                  >
-                    <Plus className="h-4 w-4" /> Weiteren Vorschlag hinzufügen
-                  </button>
-                )}
-
-                <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
-                  <p className="text-xs text-emerald-700">
-                    💡 <strong>Tipp:</strong> Je mehr Vorschläge Sie angeben, desto schneller können wir einen passenden Termin finden. 
-                    Sie können bis zu 5 Vorschläge machen.
-                  </p>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setStep('disc')}
-                    className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-                  >
-                    ← Zurück zu Teil 2
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-                  >
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                    {submitting ? 'Wird gespeichert...' : 'Alles absenden'}
-                  </button>
+                  {timeSlots.length < 5 && (
+                    <button type="button" onClick={() => setTimeSlots([...timeSlots, { date: '', time: '' }])}
+                      className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 hover:text-emerald-700">
+                      <Plus className="h-4 w-4" /> Weiteren Termin hinzufügen
+                    </button>
+                  )}
                 </div>
               </>
             )}
+
+            {/* ── Navigation ── */}
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+              {stepIndex > 0 ? (
+                <button type="button" onClick={goBack}
+                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  <ChevronLeft className="h-4 w-4" /> Zurück
+                </button>
+              ) : <div />}
+
+              {step === 'appointments' ? (
+                <button type="submit" disabled={submitting}
+                  className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-700 disabled:opacity-50">
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                  {submitting ? 'Wird analysiert...' : 'Assessment abschliessen'}
+                </button>
+              ) : (
+                <button type="button" onClick={goNext}
+                  className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-emerald-700">
+                  Weiter <ChevronRight className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </form>
         </div>
-
-        <p className="text-center text-xs text-slate-400 mt-6">© SSM Recruit • Ihre Daten werden vertraulich behandelt.</p>
       </div>
     </div>
   );

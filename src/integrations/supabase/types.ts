@@ -288,6 +288,54 @@ export type Database = {
           },
         ]
       }
+      assessment_results: {
+        Row: {
+          completed_at: string
+          created_at: string
+          disc_scores: Json
+          id: string
+          lead_id: string
+          match_result: Json
+          motivator_scores: Json
+          raw_ai_response: Json | null
+          recommendation: string
+          report_sections: Json
+          scores: Json
+          summary: Json
+          wizard_answers: Json
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          disc_scores?: Json
+          id?: string
+          lead_id: string
+          match_result?: Json
+          motivator_scores?: Json
+          raw_ai_response?: Json | null
+          recommendation?: string
+          report_sections?: Json
+          scores?: Json
+          summary?: Json
+          wizard_answers?: Json
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          disc_scores?: Json
+          id?: string
+          lead_id?: string
+          match_result?: Json
+          motivator_scores?: Json
+          raw_ai_response?: Json | null
+          recommendation?: string
+          report_sections?: Json
+          scores?: Json
+          summary?: Json
+          wizard_answers?: Json
+        }
+        Relationships: []
+      }
       disc_results: {
         Row: {
           answers: Json
