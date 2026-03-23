@@ -28,7 +28,7 @@ serve(async (req) => {
     console.log('Form webhook payload:', JSON.stringify(body));
 
     // Validate required fields
-    const name = (body.name || body.vorname || body.full_name || '').trim();
+    const name = (body.name || body.vorname || body.full_name || body.fullName || '').trim();
     const email = (body.email || body.e_mail || '').trim();
     const phone = (body.phone || body.telefon || body.phone_number || '').trim();
     const city = (body.city || body.stadt || body.ort || '').trim();
