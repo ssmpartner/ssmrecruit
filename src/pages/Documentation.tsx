@@ -2,9 +2,15 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.17.0';
+const APP_VERSION = '2.18.0';
 
 const versionHistory = [
+  { version: '2.18.0', date: '23.03.2026', changes: [
+    'Meta Leads Import: Historische Leads aus Meta/Facebook CSV-Dateien importieren mit automatischer Duplikaterkennung',
+    'Automatische Agentur- und Mitarbeiter-Zuweisung beim CSV-Import (Hauptsitz als Standard)',
+    'Kampagnen-Feld wird aus CSV-Formularname automatisch befüllt',
+    'E-Mail-basierte Duplikatprüfung beim Import – bestehende Leads werden übersprungen',
+  ]},
   { version: '2.17.0', date: '19.03.2026', changes: [
     'Dashboard komplett überarbeitet: Begrüssung mit Benutzername, Uhrzeit und Live-Wetter',
     'Dashboard KPI-Karten: Leads gesamt, neue Leads, eingestellt, Konversionsrate, offene Tasks, anstehende Termine',
