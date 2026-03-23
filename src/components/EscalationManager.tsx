@@ -247,6 +247,19 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
     await supabase.from('escalation_rules').update({ test_only: !rule.test_only } as any).eq('id', rule.id);
     if (selectedProcess) loadProcessDetails(selectedProcess.id);
   };
+  const moveRule = async (ruleId: string, direction: 'up' | 'down') => {
+    const idx = rules.findIndex(r => r.id === ruleId);
+    if (idx < 0) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= rules.length) return;
+    const current = rules[idx];
+    const swap = rules[swapIdx];
+    await Promise.all([
+      supabase.from('escalation_rules').update({ sort_order: swap.sort_order } as any).eq('id', current.id),
+      supabase.from('escalation_rules').update({ sort_order: current.sort_order } as any).eq('id', swap.id),
+    ]);
+    if (selectedProcess) loadProcessDetails(selectedProcess.id);
+  };
 
   // Wizard links
   const addWizardLink = async (wizardId: string) => {
