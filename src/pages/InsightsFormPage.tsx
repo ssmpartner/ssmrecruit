@@ -658,7 +658,7 @@ export default function InsightsFormPage() {
             <div className="flex items-center justify-between pt-4 border-t border-slate-100">
               {stepIndex > 0 ? (
                 <button type="button" onClick={goBack}
-                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted">
                   <ChevronLeft className="h-4 w-4" /> Zurück
                 </button>
               ) : <div />}
