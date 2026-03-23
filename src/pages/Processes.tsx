@@ -169,6 +169,38 @@ export default function Processes() {
   const [addingGuidelineFor, setAddingGuidelineFor] = useState<LeadStatus | null>(null);
   const [aiLoadingFor, setAiLoadingFor] = useState<LeadStatus | null>(null);
 
+  // ── Fetched automations from DB ──
+  const [emailRules, setEmailRules] = useState<any[]>([]);
+  const [escalationProcesses, setEscalationProcesses] = useState<any[]>([]);
+  const [escalationRules, setEscalationRules] = useState<any[]>([]);
+  const [wizardLinks, setWizardLinks] = useState<any[]>([]);
+  const [wizards, setWizards] = useState<any[]>([]);
+  const [emailTemplates, setEmailTemplates] = useState<any[]>([]);
+  const [automationsLoading, setAutomationsLoading] = useState(false);
+  const [automationsTab, setAutomationsTab] = useState<'all' | 'process' | 'email' | 'escalation' | 'wizard'>('all');
+
+  const loadAllAutomations = useCallback(async () => {
+    setAutomationsLoading(true);
+    const [emailRes, escProcRes, escRulesRes, wizLinksRes, wizRes, templatesRes] = await Promise.all([
+      supabase.from('email_automation_rules').select('*').order('created_at', { ascending: false }),
+      supabase.from('escalation_processes').select('*').order('priority', { ascending: true }),
+      supabase.from('escalation_rules').select('*').order('sort_order', { ascending: true }),
+      supabase.from('escalation_wizard_links').select('*').order('sort_order', { ascending: true }),
+      supabase.from('wizards').select('id, name, type, status'),
+      supabase.from('email_templates').select('id, name'),
+    ]);
+    if (emailRes.data) setEmailRules(emailRes.data);
+    if (escProcRes.data) setEscalationProcesses(escProcRes.data);
+    if (escRulesRes.data) setEscalationRules(escRulesRes.data);
+    if (wizLinksRes.data) setWizardLinks(wizLinksRes.data);
+    if (wizRes.data) setWizards(wizRes.data);
+    if (templatesRes.data) setEmailTemplates(templatesRes.data);
+    setAutomationsLoading(false);
+  }, []);
+
+  useEffect(() => { loadAllAutomations(); }, [loadAllAutomations]);
+  const [aiLoadingFor, setAiLoadingFor] = useState<LeadStatus | null>(null);
+
   // ── AI guideline generation ──
   const generateAiGuidelines = async (step: ProcessStep) => {
     setAiLoadingFor(step.status);
