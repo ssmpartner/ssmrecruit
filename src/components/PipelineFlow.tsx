@@ -1,8 +1,10 @@
 import { useMemo, useState, useCallback } from 'react';
-import { ArrowRight, AlertTriangle, Clock, TrendingUp, Users, Settings2, Bell, UserCog, ArrowRightLeft, Plus, Trash2, Save, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, AlertTriangle, Clock, TrendingUp, Users, Settings2, Bell, UserCog, ArrowRightLeft, Plus, Trash2, Save, X, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { statusConfig, type LeadStatus, type Lead, type Employee } from '@/lib/mock-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import LeadStatusBadge from './LeadStatusBadge';
+import SourceBadge from './SourceBadge';
 import { useToast } from '@/hooks/use-toast';
 
 const mainFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired'];
@@ -236,7 +238,7 @@ function EscalationRuleEditor({
 
 // ── Flow Node ──
 function FlowNode({
-  status, count, escalated, avgDays, isLast, rules, onOpenRules,
+  status, count, escalated, avgDays, isLast, rules, onOpenRules, onClickNode,
 }: {
   status: LeadStatus;
   count: number;
@@ -245,6 +247,7 @@ function FlowNode({
   isLast: boolean;
   rules: EscalationRule[];
   onOpenRules: () => void;
+  onClickNode: () => void;
 }) {
   const config = statusConfig[status];
   const hasEscalation = escalated > 0;
@@ -314,7 +317,7 @@ function FlowNode({
           </div>
 
           <p className="text-xs font-medium text-muted-foreground mb-1 truncate">{config.label}</p>
-          <p className="text-3xl font-bold tracking-tight">{count}</p>
+          <p className="text-3xl font-bold tracking-tight cursor-pointer hover:text-primary transition-colors" onClick={onClickNode} title="Leads anzeigen">{count}</p>
 
           {count > 0 && status !== 'hired' && (
             <div className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -349,12 +352,14 @@ function FlowNode({
 interface PipelineFlowProps {
   leads: Lead[];
   employees?: Employee[];
+  onSelectLead?: (lead: Lead) => void;
 }
 
-export default function PipelineFlow({ leads, employees = [] }: PipelineFlowProps) {
+export default function PipelineFlow({ leads, employees = [], onSelectLead }: PipelineFlowProps) {
   const activeLeads = useMemo(() => leads.filter(l => l.lifecycle === 'active'), [leads]);
   const [escalationRules, setEscalationRules] = useState<EscalationRules>(DEFAULT_RULES);
   const [editingStatus, setEditingStatus] = useState<LeadStatus | null>(null);
+  const [viewingStatus, setViewingStatus] = useState<LeadStatus | null>(null);
 
   const handleSaveRules = useCallback((status: LeadStatus, rules: EscalationRule[]) => {
     setEscalationRules(prev => ({ ...prev, [status]: rules }));
@@ -419,6 +424,7 @@ export default function PipelineFlow({ leads, employees = [] }: PipelineFlowProp
             isLast={i === flowData.length - 1}
             rules={data.rules}
             onOpenRules={() => setEditingStatus(data.status)}
+            onClickNode={() => data.count > 0 && setViewingStatus(data.status)}
           />
         ))}
       </div>
@@ -454,6 +460,60 @@ export default function PipelineFlow({ leads, employees = [] }: PipelineFlowProp
             employees={employees}
           />
         )}
+      </Dialog>
+
+      {/* Leads in Status Dialog */}
+      <Dialog open={viewingStatus !== null} onOpenChange={(open) => !open && setViewingStatus(null)}>
+        {viewingStatus && (() => {
+          const now = Date.now();
+          const inStatus = activeLeads
+            .filter(l => l.status === viewingStatus)
+            .map(l => {
+              const days = (now - new Date(l.updatedAt || l.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+              const rules = escalationRules[viewingStatus] || [];
+              const activeR = rules.filter(r => r.enabled);
+              const minT = activeR.length > 0 ? Math.min(...activeR.map(r => r.thresholdDays)) : Infinity;
+              return { lead: l, days, isEscalated: days > minT };
+            })
+            .sort((a, b) => b.days - a.days);
+
+          return (
+            <DialogContent className="max-w-lg max-h-[70vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  {statusConfig[viewingStatus].label} – {inStatus.length} Lead{inStatus.length !== 1 ? 's' : ''}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2 mt-2">
+                {inStatus.map(({ lead, days, isEscalated }) => (
+                  <div
+                    key={lead.id}
+                    onClick={() => { onSelectLead?.(lead); setViewingStatus(null); }}
+                    className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition-all hover:shadow-sm hover:-translate-y-0.5 ${
+                      isEscalated ? 'border-destructive/30 bg-destructive/5' : 'hover:bg-muted/50'
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{lead.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{lead.position || '—'} · {lead.city || lead.plz || '—'}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <SourceBadge source={lead.source} />
+                      <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                        isEscalated ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {isEscalated && <AlertTriangle className="h-3 w-3" />}
+                        <Clock className="h-3 w-3" />
+                        {Math.floor(days)}d
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </DialogContent>
+          );
+        })()}
       </Dialog>
     </div>
   );

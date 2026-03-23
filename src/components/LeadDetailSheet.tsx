@@ -14,13 +14,14 @@ import SourceBadge from './SourceBadge';
 import {
   Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
   FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus,
-  Link2, Send, Copy, ChevronLeft, ChevronRight, X
+  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import VideoCallDialog from './VideoCallDialog';
 import ProcessStepper from './ProcessStepper';
 import { LeadInsightsDocumentsWithActions } from './LeadInsightsDocuments';
+import LeadFlowTimeline from './LeadFlowTimeline';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
@@ -51,7 +52,7 @@ export default function LeadDetailSheet() {
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
-  const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'status'>('info');
+  const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status'>('info');
   const [confirmReset, setConfirmReset] = useState(false);
 
   const leadAppointments = useMemo(() =>
@@ -169,6 +170,7 @@ export default function LeadDetailSheet() {
 
   const rightTabs = [
     { key: 'info' as const, label: 'Info', icon: User },
+    { key: 'flow' as const, label: 'Flow', icon: Workflow },
     { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length },
     { key: 'activity' as const, label: 'Aktivität', icon: Activity },
     { key: 'status' as const, label: 'Status', icon: FileText },
@@ -560,6 +562,11 @@ export default function LeadDetailSheet() {
                           })}
                         </div>
                       </div>
+                    )}
+
+                    {/* Flow Tab */}
+                    {rightTab === 'flow' && (
+                      <LeadFlowTimeline lead={selectedLead} activities={activities} />
                     )}
 
                     {/* Status Tab */}

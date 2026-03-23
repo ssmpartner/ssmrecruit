@@ -9,6 +9,7 @@ import { cantons } from '@/lib/swiss-plz';
 import { useToast } from '@/hooks/use-toast';
 import ProcessStepper from '@/components/ProcessStepper';
 import { supabase } from '@/integrations/supabase/client';
+import LeadDetailSheet from '@/components/LeadDetailSheet';
 
 // ── Types ──
 export type AutomationTrigger = 'status_change' | 'lead_created' | 'disc_completed' | 'documents_uploaded' | 'time_in_status';
@@ -154,7 +155,7 @@ const mainFlow: LeadStatus[] = statusFlow.filter(s => s !== 'rejected');
 const inputCls = "h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
 
 export default function Processes() {
-  const { leads, employees, agencies } = useLeads();
+  const { leads, employees, agencies, setSelectedLead } = useLeads();
   const { toast } = useToast();
 
   const [rules, setRules] = useState<AutomationRule[]>(defaultRules);
@@ -283,7 +284,7 @@ export default function Processes() {
         {/* ══════════ TAB: Übersicht ══════════ */}
         <TabsContent value="overview" className="space-y-6">
           {/* Pipeline Flow Visualization */}
-          <PipelineFlow leads={leads} employees={employees} />
+          <PipelineFlow leads={leads} employees={employees} onSelectLead={setSelectedLead} />
 
           <div className="rounded-xl border bg-card p-6 shadow-sm space-y-6">
             <div className="flex items-center gap-2">
@@ -687,6 +688,7 @@ export default function Processes() {
           </div>
         </TabsContent>
       </Tabs>
+      <LeadDetailSheet />
     </div>
   );
 }
