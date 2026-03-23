@@ -450,7 +450,8 @@ Neue Leads (Monat);24`,
       "action_value": "Lead seit 3 Tagen unbearbeitet",
       "delay_minutes": 0,
       "is_active": true,
-      "test_only": false
+      "test_only": false,
+      "sort_order": 0
     }
   ]
 }`,
