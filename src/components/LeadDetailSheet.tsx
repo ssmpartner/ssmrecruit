@@ -170,6 +170,7 @@ export default function LeadDetailSheet() {
 
   const rightTabs = [
     { key: 'info' as const, label: 'Info', icon: User },
+    { key: 'flow' as const, label: 'Flow', icon: Workflow },
     { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length },
     { key: 'activity' as const, label: 'Aktivität', icon: Activity },
     { key: 'status' as const, label: 'Status', icon: FileText },
