@@ -424,6 +424,7 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
             isLast={i === flowData.length - 1}
             rules={data.rules}
             onOpenRules={() => setEditingStatus(data.status)}
+            onClickNode={() => data.count > 0 && setViewingStatus(data.status)}
           />
         ))}
       </div>
