@@ -132,7 +132,7 @@ function ScaleRow({ value, onChange }: { value: number; onChange: (v: number) =>
           >{val}</button>
         ))}
       </div>
-      <div className="flex justify-between mt-1"><span className="text-[10px] text-slate-400">{scaleLabels[0]}</span><span className="text-[10px] text-slate-400">{scaleLabels[4]}</span></div>
+      <div className="flex justify-between mt-1"><span className="text-[10px] text-muted-foreground">{scaleLabels[0]}</span><span className="text-[10px] text-muted-foreground">{scaleLabels[4]}</span></div>
     </div>
   );
 }
