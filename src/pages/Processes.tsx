@@ -344,8 +344,8 @@ export default function Processes() {
           <div className="grid grid-cols-3 gap-4">
             <div className="rounded-xl border bg-card p-5 shadow-sm">
               <p className="text-xs font-medium text-muted-foreground">Aktive Automatisierungen</p>
-              <p className="text-3xl font-bold mt-1">{rules.filter(r => r.enabled).length}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">von {rules.length} Regeln</p>
+              <p className="text-3xl font-bold mt-1">{rules.filter(r => r.enabled).length + emailRules.filter(r => r.is_active).length + escalationRules.filter(r => r.is_active).length + wizardLinks.filter(r => r.is_active).length}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">von {rules.length + emailRules.length + escalationRules.length + wizardLinks.length} gesamt</p>
             </div>
             <div className="rounded-xl border bg-card p-5 shadow-sm">
               <p className="text-xs font-medium text-muted-foreground">Definierte Richtlinien</p>
