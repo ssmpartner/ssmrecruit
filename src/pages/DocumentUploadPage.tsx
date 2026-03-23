@@ -46,6 +46,14 @@ export default function DocumentUploadPage() {
 
     if (err || !data) { setError('Dieser Link ist ungültig oder abgelaufen.'); setLoading(false); return; }
 
+    // Check if link is expired (48h)
+    const expiresAt = (data as any).expires_at;
+    if (expiresAt && new Date(expiresAt) <= new Date()) {
+      setError('Dieser Upload-Link ist abgelaufen. Bitte fordern Sie einen neuen Link an.');
+      setLoading(false);
+      return;
+    }
+
     setRequestId(data.id);
     setLeadId(data.lead_id);
 

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, File, Download, Clock, Copy, Check, Loader2, Upload } from 'lucide-react';
+import { FileText, File, Download, Clock, Copy, Check, Loader2, Upload, AlertTriangle, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 interface Props {
   leadId: string;
@@ -12,6 +13,7 @@ interface DocumentRequest {
   token: string;
   status: string;
   sent_at: string;
+  expires_at: string;
 }
 
 interface DocumentUpload {
@@ -21,6 +23,7 @@ interface DocumentUpload {
   file_path: string;
   file_size: number;
   uploaded_at: string;
+  request_id: string;
 }
 
 const documentTypeLabels: Record<string, string> = {
@@ -37,6 +40,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const [docRequests, setDocRequests] = useState<DocumentRequest[]>([]);
   const [docUploads, setDocUploads] = useState<DocumentUpload[]>([]);
   const [copiedToken, setCopiedToken] = useState('');
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -68,6 +72,32 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     toast({ title: 'Kopiert!', description: 'Link in der Zwischenablage.' });
   }
 
+  async function resendLink() {
+    setResending(true);
+    const { data, error } = await supabase
+      .from('document_requests')
+      .insert({ lead_id: leadId, sent_via: 'manual' })
+      .select()
+      .single();
+
+    if (error || !data) {
+      toast({ title: 'Fehler', description: 'Link konnte nicht erstellt werden.', variant: 'destructive' });
+      setResending(false);
+      return;
+    }
+
+    await supabase.from('activities').insert({
+      id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+      description: 'Neuer Dokumenten-Upload-Link erstellt (erneut gesendet)', user: 'System',
+    });
+
+    const url = `${window.location.origin}/document-upload?token=${(data as any).token}`;
+    await navigator.clipboard.writeText(url);
+    toast({ title: '✅ Neuer Link erstellt & kopiert', description: 'Gültig für 48 Stunden.' });
+    setResending(false);
+    loadData();
+  }
+
   async function downloadFile(filePath: string, fileName: string) {
     const { data } = supabase.storage.from('lead-documents').getPublicUrl(filePath);
     if (data?.publicUrl) {
@@ -79,10 +109,30 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     }
   }
 
+  function getRequestStatus(req: DocumentRequest): 'expired' | 'used' | 'pending' {
+    const uploadsForRequest = docUploads.filter(u => u.request_id === req.id);
+    if (uploadsForRequest.length > 0) return 'used';
+    if (req.status === 'completed') return 'used';
+    const now = new Date();
+    const expires = new Date(req.expires_at);
+    if (expires <= now) return 'expired';
+    return 'pending';
+  }
+
+  function formatTimeLeft(expiresAt: string): string {
+    const now = new Date();
+    const expires = new Date(expiresAt);
+    const diff = expires.getTime() - now.getTime();
+    if (diff <= 0) return 'Abgelaufen';
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    if (hours > 0) return `Noch ${hours}h ${mins}m gültig`;
+    return `Noch ${mins}m gültig`;
+  }
+
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
 
-  const pendingRequests = docRequests.filter(r => r.status !== 'completed');
-  const hasContent = docUploads.length > 0 || pendingRequests.length > 0;
+  const hasContent = docUploads.length > 0 || docRequests.length > 0;
 
   if (!hasContent) {
     return (
@@ -93,6 +143,10 @@ export default function LeadDocumentsTab({ leadId }: Props) {
       </div>
     );
   }
+
+  // Check if there's any active (non-expired, non-used) link
+  const hasActiveLink = docRequests.some(r => getRequestStatus(r) === 'pending');
+  const hasExpiredOrUsedAll = docRequests.length > 0 && !hasActiveLink;
 
   return (
     <div className="space-y-4">
@@ -121,27 +175,74 @@ export default function LeadDocumentsTab({ leadId }: Props) {
         </div>
       )}
 
-      {/* Pending Document Requests */}
-      {pendingRequests.length > 0 && (
+      {/* Document Request Links */}
+      {docRequests.length > 0 && (
         <div className="space-y-2">
-          <h5 className="text-sm font-semibold text-muted-foreground">Ausstehende Anfragen</h5>
-          {pendingRequests.map(req => (
-            <div key={req.id} className="flex items-center justify-between rounded-lg border bg-card p-3">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-accent" />
-                <span className="text-xs">Dokument-Upload ausstehend</span>
-                <span className="text-[11px] text-muted-foreground">
-                  {new Date(req.sent_at).toLocaleDateString('de-CH')}
-                </span>
+          <h5 className="text-sm font-semibold text-muted-foreground">Upload-Links</h5>
+          {docRequests.map(req => {
+            const status = getRequestStatus(req);
+            return (
+              <div key={req.id} className={`flex items-center justify-between rounded-lg border p-3 ${
+                status === 'expired' ? 'bg-destructive/5 border-destructive/20' :
+                status === 'used' ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' :
+                'bg-card'
+              }`}>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {status === 'expired' ? (
+                    <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                  ) : status === 'used' ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <Clock className="h-4 w-4 text-amber-500 shrink-0" />
+                  )}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium">
+                        {new Date(req.sent_at).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      {status === 'expired' ? (
+                        <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Abgelaufen</Badge>
+                      ) : status === 'used' ? (
+                        <Badge className="text-[10px] px-1.5 py-0 bg-emerald-600 hover:bg-emerald-600 border-0">
+                          Benutzt ({docUploads.filter(u => u.request_id === req.id).length} Datei(en))
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Ausstehend</Badge>
+                      )}
+                    </div>
+                    {status === 'pending' && req.expires_at && (
+                      <p className="text-[11px] text-muted-foreground">{formatTimeLeft(req.expires_at)}</p>
+                    )}
+                    {status === 'expired' && (
+                      <p className="text-[11px] text-destructive/70">Keine Dokumente hochgeladen</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  {status === 'pending' && (
+                    <button onClick={() => copyLink(req.token)}
+                      className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs hover:bg-muted transition-colors">
+                      {copiedToken === req.token ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
+                      {copiedToken === req.token ? 'Kopiert' : 'Link'}
+                    </button>
+                  )}
+                </div>
               </div>
-              <button onClick={() => copyLink(req.token)}
-                className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs hover:bg-muted transition-colors">
-                {copiedToken === req.token ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
-                {copiedToken === req.token ? 'Kopiert' : 'Link'}
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
+      )}
+
+      {/* Resend button when all links expired or used */}
+      {hasExpiredOrUsedAll && (
+        <button
+          onClick={resendLink}
+          disabled={resending}
+          className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+        >
+          {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          Neuen Upload-Link senden
+        </button>
       )}
     </div>
   );
