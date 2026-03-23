@@ -246,6 +246,8 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
       escalation_process_id: selectedProcess.id,
       wizard_id: wizardId,
       sort_order: wizardLinks.length,
+      delay_minutes: 0,
+      start_step_id: '',
     } as any);
     if (error) { toast({ title: 'Fehler', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Wizard verknüpft' });
@@ -262,6 +264,31 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
   const toggleWizardLinkActive = async (link: EscalationWizardLink) => {
     await supabase.from('escalation_wizard_links').update({ is_active: !link.is_active } as any).eq('id', link.id);
     if (selectedProcess) loadProcessDetails(selectedProcess.id);
+  };
+
+  const updateWizardLink = async (linkId: string, updates: Partial<EscalationWizardLink>) => {
+    await supabase.from('escalation_wizard_links').update(updates as any).eq('id', linkId);
+    if (selectedProcess) loadProcessDetails(selectedProcess.id);
+  };
+
+  const moveWizardLink = async (linkId: string, direction: 'up' | 'down') => {
+    const idx = wizardLinks.findIndex(l => l.id === linkId);
+    if (idx < 0) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= wizardLinks.length) return;
+    const current = wizardLinks[idx];
+    const swap = wizardLinks[swapIdx];
+    await Promise.all([
+      supabase.from('escalation_wizard_links').update({ sort_order: swap.sort_order } as any).eq('id', current.id),
+      supabase.from('escalation_wizard_links').update({ sort_order: current.sort_order } as any).eq('id', swap.id),
+    ]);
+    if (selectedProcess) loadProcessDetails(selectedProcess.id);
+  };
+
+  const getWizardSteps = (wizardId: string): WizardStep[] => {
+    const wizard = wizards.find(w => w.id === wizardId);
+    if (!wizard?.steps || !Array.isArray(wizard.steps)) return [];
+    return (wizard.steps as any[]).map(s => ({ id: s.id || '', title: s.title || '', type: s.type || '' }));
   };
 
   const toggleSourceFilter = (sourceId: string) => {
