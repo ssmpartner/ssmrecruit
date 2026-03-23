@@ -176,7 +176,6 @@ export default function LeadDetailSheet() {
     { key: 'insights' as const, label: 'Insights', icon: Brain },
     { key: 'documents' as const, label: 'Dokumente', icon: Upload },
     { key: 'flow' as const, label: 'Flow', icon: Workflow },
-    { key: 'wizard' as const, label: 'Wizards', icon: Wand2 },
     { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length },
     { key: 'activity' as const, label: 'Aktivität', icon: Activity },
     { key: 'status' as const, label: 'Status', icon: FileText },
