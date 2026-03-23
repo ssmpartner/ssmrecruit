@@ -590,7 +590,6 @@ export default function Analytics() {
                   <React.Fragment key={a.id}>
                     <tr
                       onClick={() => setExpandedAgency(isExpanded ? null : a.id)}
-                      onClick={() => setExpandedAgency(isExpanded ? null : a.id)}
                       className={cn('border-t transition-colors hover:bg-muted/40 cursor-pointer select-none', i % 2 === 0 && 'bg-muted/10', isExpanded && 'bg-primary/5')}
                     >
                       <td className="px-6 py-3.5 font-medium">
