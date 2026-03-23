@@ -215,10 +215,10 @@ export default function LeadDetailSheet() {
                   </DialogHeader>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 mr-8">
                   <LeadStatusBadge status={selectedLead.status} />
                   <SourceBadge source={selectedLead.source} />
-                  <span className="hidden lg:inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                  <span className="hidden xl:inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
                     <MapPin className="h-3 w-3" /> {selectedLead.plz} {selectedLead.city}
                   </span>
                 </div>
