@@ -153,12 +153,23 @@ function EscalationRuleEditor({
             <p className="text-sm text-muted-foreground text-center py-6">Keine Eskalationsregeln definiert.</p>
           )}
 
-          {localRules.map(rule => {
+          {localRules.map((rule, ruleIdx) => {
             const isExpanded = expandedRule === rule.id;
             return (
               <div key={rule.id} className="rounded-xl border bg-muted/20 overflow-hidden">
                 <div className="flex items-center gap-2 p-3 cursor-pointer hover:bg-muted/40 transition-colors"
                   onClick={() => setExpandedRule(isExpanded ? null : rule.id)}>
+                  <div className="flex flex-col gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => moveRule(rule.id, 'up')} disabled={ruleIdx === 0}
+                      className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                      <svg width="10" height="10" viewBox="0 0 12 12"><path d="M6 3L10 8H2L6 3Z" fill="currentColor"/></svg>
+                    </button>
+                    <button onClick={() => moveRule(rule.id, 'down')} disabled={ruleIdx === localRules.length - 1}
+                      className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                      <svg width="10" height="10" viewBox="0 0 12 12"><path d="M6 9L2 4H10L6 9Z" fill="currentColor"/></svg>
+                    </button>
+                  </div>
+                  <span className="text-[10px] font-bold text-muted-foreground bg-muted rounded px-1.5 py-0.5">{ruleIdx + 1}</span>
                   <button onClick={(e) => { e.stopPropagation(); updateRule(rule.id, { enabled: !rule.enabled }); }}
                     className={`h-4 w-4 rounded border-2 shrink-0 transition-colors ${rule.enabled ? 'bg-primary border-primary' : 'border-muted-foreground/40'}`} />
                   <span className={`text-sm font-medium flex-1 truncate ${!rule.enabled ? 'text-muted-foreground line-through' : ''}`}>{rule.name}</span>
