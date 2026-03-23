@@ -460,6 +460,8 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
             employees={employees}
           />
         )}
+      </Dialog>
+
       {/* Leads in Status Dialog */}
       <Dialog open={viewingStatus !== null} onOpenChange={(open) => !open && setViewingStatus(null)}>
         {viewingStatus && (() => {
