@@ -587,9 +587,9 @@ export default function Analytics() {
                 const severityColor = (s: string) => s === 'high' ? 'text-destructive bg-destructive/10' : s === 'medium' ? 'text-[hsl(38,80%,50%)] bg-[hsl(38,80%,50%)]/10' : 'text-[hsl(152,55%,40%)] bg-[hsl(152,55%,40%)]/10';
 
                 return (
-                  <>
+                  <React.Fragment key={a.id}>
                     <tr
-                      key={a.id}
+                      onClick={() => setExpandedAgency(isExpanded ? null : a.id)}
                       onClick={() => setExpandedAgency(isExpanded ? null : a.id)}
                       className={cn('border-t transition-colors hover:bg-muted/40 cursor-pointer select-none', i % 2 === 0 && 'bg-muted/10', isExpanded && 'bg-primary/5')}
                     >
