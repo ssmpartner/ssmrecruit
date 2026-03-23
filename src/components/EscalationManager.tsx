@@ -35,6 +35,7 @@ interface EscalationRule {
   delay_minutes: number;
   is_active: boolean;
   test_only: boolean;
+  sort_order: number;
 }
 
 interface EscalationWizardLink {
@@ -131,7 +132,7 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
 
   const loadProcessDetails = useCallback(async (processId: string) => {
     const [rulesRes, linksRes] = await Promise.all([
-      supabase.from('escalation_rules').select('*').eq('escalation_process_id', processId),
+      supabase.from('escalation_rules').select('*').eq('escalation_process_id', processId).order('sort_order'),
       supabase.from('escalation_wizard_links').select('*').eq('escalation_process_id', processId).order('sort_order'),
     ]);
     setRules((rulesRes.data || []) as EscalationRule[]);
@@ -222,6 +223,7 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
       action_type: ruleForm.action_type,
       action_value: ruleForm.action_value,
       delay_minutes: ruleForm.delay_minutes,
+      sort_order: rules.length,
     } as any);
     if (error) { toast({ title: 'Fehler', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Regel hinzugefügt' });
@@ -243,6 +245,19 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
 
   const toggleRuleTestOnly = async (rule: EscalationRule) => {
     await supabase.from('escalation_rules').update({ test_only: !rule.test_only } as any).eq('id', rule.id);
+    if (selectedProcess) loadProcessDetails(selectedProcess.id);
+  };
+  const moveRule = async (ruleId: string, direction: 'up' | 'down') => {
+    const idx = rules.findIndex(r => r.id === ruleId);
+    if (idx < 0) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= rules.length) return;
+    const current = rules[idx];
+    const swap = rules[swapIdx];
+    await Promise.all([
+      supabase.from('escalation_rules').update({ sort_order: swap.sort_order } as any).eq('id', current.id),
+      supabase.from('escalation_rules').update({ sort_order: current.sort_order } as any).eq('id', swap.id),
+    ]);
     if (selectedProcess) loadProcessDetails(selectedProcess.id);
   };
 
@@ -485,9 +500,24 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
               </div>
             ) : (
               <div className="space-y-2">
-                {processRules.map(rule => (
+                {processRules.map((rule, idx) => (
                   <div key={rule.id} className={`rounded-xl border bg-card p-4 shadow-sm transition-opacity ${!rule.is_active ? 'opacity-60' : ''}`}>
                     <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-0.5">
+                          <button onClick={() => moveRule(rule.id, 'up')} disabled={idx === 0}
+                            className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 3L10 8H2L6 3Z" fill="currentColor"/></svg>
+                          </button>
+                          <button onClick={() => moveRule(rule.id, 'down')} disabled={idx === processRules.length - 1}
+                            className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 9L2 4H10L6 9Z" fill="currentColor"/></svg>
+                          </button>
+                        </div>
+                        <div className="h-6 w-6 rounded-lg bg-muted flex items-center justify-center">
+                          <span className="text-[10px] font-bold text-muted-foreground">{idx + 1}</span>
+                        </div>
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 text-xs flex-wrap">
                           <span className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-1 font-medium">

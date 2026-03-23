@@ -53,7 +53,7 @@ const inputCls = "h-8 w-full rounded-lg border bg-background px-2.5 text-sm outl
 
 // ── Escalation Rule Editor Dialog (with test toggle) ──
 function EscalationRuleEditor({
-  status, rules, wizardLinks, onSave, onSaveWizardLinks, onClose, employees, availableWizards, onAddWizard, onRemoveWizard, onToggleWizardActive, onToggleWizardTest,
+  status, rules, wizardLinks, onSave, onSaveWizardLinks, onClose, employees, availableWizards, onAddWizard, onRemoveWizard, onToggleWizardActive, onToggleWizardTest, onReorderWizards,
 }: {
   status: LeadStatus;
   rules: EscalationRule[];
@@ -67,6 +67,7 @@ function EscalationRuleEditor({
   onRemoveWizard: (linkId: string) => void;
   onToggleWizardActive: (linkId: string) => void;
   onToggleWizardTest: (linkId: string) => void;
+  onReorderWizards?: (reordered: WizardLink[]) => void;
 }) {
   const [localRules, setLocalRules] = useState<EscalationRule[]>(rules);
   const [expandedRule, setExpandedRule] = useState<string | null>(localRules[0]?.id ?? null);
@@ -82,6 +83,31 @@ function EscalationRuleEditor({
 
   const removeRule = (id: string) => setLocalRules(prev => prev.filter(r => r.id !== id));
   const updateRule = (id: string, updates: Partial<EscalationRule>) => setLocalRules(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
+
+  const moveRule = (id: string, direction: 'up' | 'down') => {
+    setLocalRules(prev => {
+      const idx = prev.findIndex(r => r.id === id);
+      if (idx < 0) return prev;
+      const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (swapIdx < 0 || swapIdx >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+      return next;
+    });
+  };
+
+  const moveWizardLink = (linkId: string, direction: 'up' | 'down') => {
+    const idx = wizardLinks.findIndex(l => l.id === linkId);
+    if (idx < 0) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= wizardLinks.length) return;
+    // We need to swap locally since parent manages state
+    const reordered = [...wizardLinks];
+    [reordered[idx], reordered[swapIdx]] = [reordered[swapIdx], reordered[idx]];
+    // Update parent through callbacks - toggle twice to trigger re-render hack
+    // Actually let's just use the onReorderWizards callback
+    onReorderWizards?.(reordered);
+  };
 
   const addAction = (ruleId: string) => {
     setLocalRules(prev => prev.map(r => r.id === ruleId ? { ...r, actions: [...r.actions, { type: 'notify', notificationMessage: '' }] } : r));
@@ -127,12 +153,23 @@ function EscalationRuleEditor({
             <p className="text-sm text-muted-foreground text-center py-6">Keine Eskalationsregeln definiert.</p>
           )}
 
-          {localRules.map(rule => {
+          {localRules.map((rule, ruleIdx) => {
             const isExpanded = expandedRule === rule.id;
             return (
               <div key={rule.id} className="rounded-xl border bg-muted/20 overflow-hidden">
                 <div className="flex items-center gap-2 p-3 cursor-pointer hover:bg-muted/40 transition-colors"
                   onClick={() => setExpandedRule(isExpanded ? null : rule.id)}>
+                  <div className="flex flex-col gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => moveRule(rule.id, 'up')} disabled={ruleIdx === 0}
+                      className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                      <svg width="10" height="10" viewBox="0 0 12 12"><path d="M6 3L10 8H2L6 3Z" fill="currentColor"/></svg>
+                    </button>
+                    <button onClick={() => moveRule(rule.id, 'down')} disabled={ruleIdx === localRules.length - 1}
+                      className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                      <svg width="10" height="10" viewBox="0 0 12 12"><path d="M6 9L2 4H10L6 9Z" fill="currentColor"/></svg>
+                    </button>
+                  </div>
+                  <span className="text-[10px] font-bold text-muted-foreground bg-muted rounded px-1.5 py-0.5">{ruleIdx + 1}</span>
                   <button onClick={(e) => { e.stopPropagation(); updateRule(rule.id, { enabled: !rule.enabled }); }}
                     className={`h-4 w-4 rounded border-2 shrink-0 transition-colors ${rule.enabled ? 'bg-primary border-primary' : 'border-muted-foreground/40'}`} />
                   <span className={`text-sm font-medium flex-1 truncate ${!rule.enabled ? 'text-muted-foreground line-through' : ''}`}>{rule.name}</span>
@@ -244,9 +281,20 @@ function EscalationRuleEditor({
             </div>
           ) : (
             <div className="space-y-2">
-              {wizardLinks.map(link => (
+              {wizardLinks.map((link, wIdx) => (
                 <div key={link.id} className={`rounded-xl border bg-card p-3 shadow-sm transition-opacity ${!link.isActive ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-0.5 shrink-0">
+                      <button onClick={() => moveWizardLink(link.id, 'up')} disabled={wIdx === 0}
+                        className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                        <svg width="10" height="10" viewBox="0 0 12 12"><path d="M6 3L10 8H2L6 3Z" fill="currentColor"/></svg>
+                      </button>
+                      <button onClick={() => moveWizardLink(link.id, 'down')} disabled={wIdx === wizardLinks.length - 1}
+                        className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                        <svg width="10" height="10" viewBox="0 0 12 12"><path d="M6 9L2 4H10L6 9Z" fill="currentColor"/></svg>
+                      </button>
+                    </div>
+                    <span className="text-[10px] font-bold text-muted-foreground bg-muted rounded px-1.5 py-0.5">{wIdx + 1}</span>
                     <Wand2 className="h-4 w-4 text-primary shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{link.wizardName}</p>
@@ -538,6 +586,10 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
     setEditingWizardLinks(prev => prev.map(l => l.id === linkId ? { ...l, testOnly: !l.testOnly } : l));
   };
 
+  const handleReorderWizards = (reordered: WizardLink[]) => {
+    setEditingWizardLinks(reordered);
+  };
+
   const handleSaveWizardLinks = () => {
     if (editingStatus) {
       setWizardLinksMap(prev => ({ ...prev, [editingStatus]: [...editingWizardLinks] }));
@@ -651,6 +703,7 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
             onRemoveWizard={handleRemoveWizard}
             onToggleWizardActive={handleToggleWizardActive}
             onToggleWizardTest={handleToggleWizardTest}
+            onReorderWizards={handleReorderWizards}
           />
         )}
       </Dialog>

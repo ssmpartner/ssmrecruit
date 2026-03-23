@@ -709,6 +709,7 @@ export type Database = {
           escalation_process_id: string
           id: string
           is_active: boolean
+          sort_order: number
           test_only: boolean
           updated_at: string
         }
@@ -722,6 +723,7 @@ export type Database = {
           escalation_process_id: string
           id?: string
           is_active?: boolean
+          sort_order?: number
           test_only?: boolean
           updated_at?: string
         }
@@ -735,6 +737,7 @@ export type Database = {
           escalation_process_id?: string
           id?: string
           is_active?: boolean
+          sort_order?: number
           test_only?: boolean
           updated_at?: string
         }
