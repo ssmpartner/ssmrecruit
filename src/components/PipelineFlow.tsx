@@ -317,7 +317,7 @@ function FlowNode({
           </div>
 
           <p className="text-xs font-medium text-muted-foreground mb-1 truncate">{config.label}</p>
-          <p className="text-3xl font-bold tracking-tight">{count}</p>
+          <p className="text-3xl font-bold tracking-tight cursor-pointer hover:text-primary transition-colors" onClick={onClickNode} title="Leads anzeigen">{count}</p>
 
           {count > 0 && status !== 'hired' && (
             <div className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground">
