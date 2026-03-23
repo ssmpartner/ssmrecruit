@@ -433,7 +433,7 @@ export default function InsightsFormPage() {
                   <Icon className="h-3.5 w-3.5 shrink-0" />
                   <span className="hidden sm:inline">{s.label}</span>
                   <span className="sm:hidden">{s.shortLabel}</span>
-                  {isPast && <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />}
+                  {isPast && <CheckCircle2 className="h-3 w-3 text-ring shrink-0" />}
                 </button>
               );
             })}
