@@ -125,25 +125,45 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (data) setLeadSources(data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, color: r.color || '#6B7280', sortOrder: r.sort_order })));
   }, []);
 
+  // Fetch all rows from a table, paginating past the 1000-row default limit
+  const fetchAll = useCallback(async (table: 'leads' | 'activities', orderCol = 'created_at', ascending = false) => {
+    const PAGE = 1000;
+    let page = 0;
+    let allRows: any[] = [];
+    let done = false;
+    while (!done) {
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .order(orderCol, { ascending })
+        .range(page * PAGE, (page + 1) * PAGE - 1);
+      if (error || !data || data.length === 0) { done = true; break; }
+      allRows = allRows.concat(data);
+      if (data.length < PAGE) done = true;
+      page++;
+    }
+    return allRows;
+  }, []);
+
   // Load all data from Supabase on mount
   useEffect(() => {
     async function loadData() {
       try {
-        const [leadsRes, employeesRes, agenciesRes, activitiesRes, appointmentsRes, discRes, settingsRes, sourcesRes] = await Promise.all([
-          supabase.from('leads').select('*').order('created_at', { ascending: false }),
+        const [leadsData, employeesRes, agenciesRes, activitiesData, appointmentsRes, discRes, settingsRes, sourcesRes] = await Promise.all([
+          fetchAll('leads', 'created_at', false),
           supabase.from('employees').select('*'),
           supabase.from('agencies').select('*'),
-          supabase.from('activities').select('*').order('created_at', { ascending: false }),
+          fetchAll('activities', 'created_at', false),
           supabase.from('appointments').select('*').order('created_at', { ascending: false }),
           supabase.from('disc_results').select('*'),
           supabase.from('app_settings').select('*'),
           supabase.from('lead_sources').select('*').order('sort_order'),
         ]);
 
-        if (leadsRes.data) setLeads(leadsRes.data.map(dbToLead));
+        if (leadsData) setLeads(leadsData.map(dbToLead));
         if (employeesRes.data) setEmployees(employeesRes.data.map(dbToEmployee));
         if (agenciesRes.data) setAgencies(agenciesRes.data.map(dbToAgency));
-        if (activitiesRes.data) setActivities(activitiesRes.data.map(dbToActivity));
+        if (activitiesData) setActivities(activitiesData.map(dbToActivity));
         if (appointmentsRes.data) setAppointments(appointmentsRes.data.map(dbToAppointment));
         if (discRes.data) setDiscResults(discRes.data.map(dbToDiscResult));
         if (sourcesRes.data) setLeadSources(sourcesRes.data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, color: r.color || '#6B7280', sortOrder: r.sort_order })));
