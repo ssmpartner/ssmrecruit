@@ -619,7 +619,7 @@ export default function Analytics() {
                       </td>
                     </tr>
                     {isExpanded && (
-                      <tr key={`${a.id}-detail`} className="border-t bg-muted/20">
+                      <tr className="border-t bg-muted/20">
                         <td colSpan={8} className="px-6 py-5">
                           <div className="grid gap-6 lg:grid-cols-3">
                             {/* Problems */}
