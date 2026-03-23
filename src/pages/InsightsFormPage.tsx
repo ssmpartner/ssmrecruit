@@ -628,13 +628,13 @@ export default function InsightsFormPage() {
                         <label className="text-xs font-medium text-slate-600">Datum</label>
                         <input type="date" min={getMinDate()} value={slot.date}
                           onChange={e => { const u = [...timeSlots]; u[i] = { ...u[i], date: e.target.value }; setTimeSlots(u); }}
-                          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none" />
+                          className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none" />
                       </div>
                       <div className="flex-1 space-y-1">
-                        <label className="text-xs font-medium text-slate-600">Uhrzeit</label>
+                        <label className="text-xs font-medium text-muted-foreground">Uhrzeit</label>
                         <input type="time" value={slot.time}
                           onChange={e => { const u = [...timeSlots]; u[i] = { ...u[i], time: e.target.value }; setTimeSlots(u); }}
-                          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none" />
+                          className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none" />
                       </div>
                       {timeSlots.length > 1 && (
                         <button type="button" onClick={() => setTimeSlots(timeSlots.filter((_, j) => j !== i))}
