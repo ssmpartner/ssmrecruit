@@ -133,7 +133,11 @@ const appFeatures = [
   ]},
   { category: 'Analyse & Insights', icon: '📊', features: [
     { name: 'Dashboard', desc: 'Übersicht mit Begrüssung, Uhrzeit, Wetter, 6 KPI-Karten, Leads nach Kanal, Pipeline-Verteilung, anstehende Termine und Schnellzugriff (+ Neu Dropdown).' },
-    { name: 'Analytics', desc: 'Detaillierte Auswertungen mit interaktiven Charts (Recharts).' },
+    { name: 'Analytics – Übersicht', desc: 'KPI-Karten (Leads, Konversion, Kantone), Funnel-Visualisierung und Leads nach Zeitraum (Monat/Quartal/Jahr) mit Balkendiagramm.' },
+    { name: 'Analytics – Marketing', desc: 'Quellen-Performance, Kampagnen-Analyse, Kanal-Konversionsraten und Marketing-Funnel mit interaktiven Charts.' },
+    { name: 'Analytics – Geschäftsleitung', desc: 'Agentur-Performance mit Problemanalyse (stagnierende Leads, Verzögerungen), Kanton-Verteilung und Mitarbeiter-Effizienz.' },
+    { name: 'Analytics – Flow-Analyse', desc: 'Verweildauer pro Phase, Bottleneck-Erkennung, Status-Übergangs-Häufigkeiten und durchschnittliche Bearbeitungszeiten.' },
+    { name: 'Analytics – Export', desc: 'CSV-Export (Excel-kompatibel mit BOM) und PDF-Export für formatierte Berichte.' },
     { name: 'DISC-Persönlichkeitstest', desc: 'Automatisierte Persönlichkeitsanalyse für Kandidaten mit automatischer Ergebnisanzeige.' },
     { name: 'Insights-Fragebogen', desc: 'Anpassbare Fragen (Teil 1: Insights, Teil 2: DISC, Teil 3: Terminvorschläge) – konfigurierbar in den Einstellungen.' },
   ]},
