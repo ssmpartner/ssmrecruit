@@ -586,6 +586,10 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
     setEditingWizardLinks(prev => prev.map(l => l.id === linkId ? { ...l, testOnly: !l.testOnly } : l));
   };
 
+  const handleReorderWizards = (reordered: WizardLink[]) => {
+    setEditingWizardLinks(reordered);
+  };
+
   const handleSaveWizardLinks = () => {
     if (editingStatus) {
       setWizardLinksMap(prev => ({ ...prev, [editingStatus]: [...editingWizardLinks] }));
