@@ -396,22 +396,22 @@ export default function InsightsFormPage() {
   const totalQuestions = insightsQuestions.length + discQuestions.length + motivatorQuestions.length + workstyleQuestions.length + selfAssessmentQuestions.length + 1;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-emerald-700 to-emerald-600 px-8 py-6 text-white">
+          <div className="px-8 py-6 text-primary-foreground" style={{ background: 'var(--gradient-hero)' }}>
             <h1 className="text-2xl font-bold">SSM Recruit – Assessment</h1>
-            <p className="text-emerald-100 mt-1">
+            <p className="text-primary-foreground/70 mt-1">
               {leadName ? `Hallo ${leadName.split(' ')[0]}, b` : 'B'}itte füllen Sie alle Schritte vollständig aus.
             </p>
             <div className="mt-4 space-y-1">
-              <div className="flex items-center justify-between text-xs text-emerald-200">
+              <div className="flex items-center justify-between text-xs text-primary-foreground/60">
                 <span>Fortschritt</span>
                 <span>{Math.round((totalAnswered / totalQuestions) * 100)}%</span>
               </div>
-              <div className="h-2 rounded-full bg-emerald-800/50 overflow-hidden">
-                <div className="h-full rounded-full bg-white/80 transition-all duration-300"
+              <div className="h-2 rounded-full bg-black/20 overflow-hidden">
+                <div className="h-full rounded-full bg-accent transition-all duration-300"
                   style={{ width: `${(totalAnswered / totalQuestions) * 100}%` }} />
               </div>
             </div>
