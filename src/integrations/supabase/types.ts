@@ -313,6 +313,92 @@ export type Database = {
           },
         ]
       }
+      email_automation_rules: {
+        Row: {
+          created_at: string
+          delay_minutes: number
+          description: string
+          id: string
+          is_active: boolean
+          name: string
+          recipient_type: string
+          template_id: string | null
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delay_minutes?: number
+          description?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          recipient_type?: string
+          template_id?: string | null
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delay_minutes?: number
+          description?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          recipient_type?: string
+          template_id?: string | null
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_automation_rules_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          placeholders: string[]
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          placeholders?: string[]
+          subject?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          placeholders?: string[]
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           agency_id: string

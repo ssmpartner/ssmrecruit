@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList } from 'lucide-react';
+import EmailSettingsTab from '@/components/EmailSettingsTab';
 import ProfileSettings from '@/components/ProfileSettings';
 import { useToast } from '@/hooks/use-toast';
 import { useLeads } from '@/context/useLeads';
@@ -49,7 +50,7 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'profile' | 'notifications' | 'users' | 'sources' | 'appointments' | 'insights' | 'integrations' | 'api';
+type SettingsTab = 'profile' | 'notifications' | 'users' | 'sources' | 'appointments' | 'insights' | 'email' | 'integrations' | 'api';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
   { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name, E-Mail & Passwort' },
@@ -58,6 +59,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[
   { id: 'sources', label: 'Lead-Quellen', icon: Tag, desc: 'Quellen verwalten & anpassen' },
   { id: 'appointments', label: 'Termine & Video', icon: CalendarDays, desc: 'Terminplanung & Video-Calls' },
   { id: 'insights', label: 'Insights / DISC', icon: Brain, desc: 'Persönlichkeitstest-Einstellungen' },
+  { id: 'email', label: 'E-Mail Automationen', icon: Mail, desc: 'Templates & Regeln verwalten' },
   { id: 'integrations', label: 'Integrationen', icon: Plug, desc: 'Lead-Quellen & Webhooks' },
   { id: 'api', label: 'API-Schlüssel', icon: Key, desc: 'API-Keys generieren & verwalten' },
 ];
@@ -203,6 +205,7 @@ export default function Settings() {
           {activeTab === 'sources' && <LeadSourcesTab isSuperadmin={isSuperadmin} />}
           {activeTab === 'appointments' && <AppointmentsTab appointmentSettings={appointmentSettings} updateAppointmentSettings={updateAppointmentSettings} toast={toast} />}
           {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}
+          {activeTab === 'email' && <EmailSettingsTab />}
           {activeTab === 'integrations' && (
             <IntegrationsTab
               integrations={integrations}
