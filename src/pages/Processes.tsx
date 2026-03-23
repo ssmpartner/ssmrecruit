@@ -283,7 +283,7 @@ export default function Processes() {
         {/* ══════════ TAB: Übersicht ══════════ */}
         <TabsContent value="overview" className="space-y-6">
           {/* Pipeline Flow Visualization */}
-          <PipelineFlow leads={leads} employees={employees} />
+          <PipelineFlow leads={leads} employees={employees} onSelectLead={setSelectedLead} />
 
           <div className="rounded-xl border bg-card p-6 shadow-sm space-y-6">
             <div className="flex items-center gap-2">
