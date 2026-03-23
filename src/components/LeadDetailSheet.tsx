@@ -564,6 +564,11 @@ export default function LeadDetailSheet() {
                       </div>
                     )}
 
+                    {/* Flow Tab */}
+                    {rightTab === 'flow' && (
+                      <LeadFlowTimeline lead={selectedLead} activities={activities} />
+                    )}
+
                     {/* Status Tab */}
                     {rightTab === 'status' && (
                       <div className="space-y-4">
