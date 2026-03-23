@@ -522,7 +522,7 @@ export default function Analytics() {
             </div>
             <div>
               <h3 className="text-sm font-semibold">Agentur-Übersicht</h3>
-              <p className="text-xs text-muted-foreground">Detaillierte Aufschlüsselung pro Agentur</p>
+              <p className="text-xs text-muted-foreground">Klicke auf eine Agentur für die Problem-Analyse</p>
             </div>
           </div>
         </div>
@@ -541,29 +541,141 @@ export default function Analytics() {
               </tr>
             </thead>
             <tbody>
-              {agencyData.map((a, i) => (
-                <tr key={a.id} className={cn('border-t transition-colors hover:bg-muted/40', i % 2 === 0 && 'bg-muted/10')}>
-                  <td className="px-6 py-3.5 font-medium">{a.fullName}</td>
-                  <td className="px-6 py-3.5 text-right font-bold">{a.total}</td>
-                  <td className="px-6 py-3.5 text-right">{a.contacted}</td>
-                  <td className="px-6 py-3.5 text-right">{a.interview}</td>
-                  <td className="px-6 py-3.5 text-right">
-                    <span className="inline-flex items-center rounded-full bg-[hsl(152,55%,40%)]/10 px-2 py-0.5 text-xs font-semibold text-[hsl(152,55%,40%)]">{a.hired}</span>
-                  </td>
-                  <td className="px-6 py-3.5 text-right">
-                    <span className="inline-flex items-center rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">{a.rejected}</span>
-                  </td>
-                  <td className="px-6 py-3.5 text-right font-semibold">{a.conversion}%</td>
-                  <td className="px-6 py-3.5">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 flex-1 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${filtered.length > 0 ? (a.total / filtered.length) * 100 : 0}%`, background: 'linear-gradient(90deg, hsl(168,17%,23%), hsl(162,17%,50%))' }} />
-                      </div>
-                      <span className="text-xs font-medium text-muted-foreground w-10 text-right">{filtered.length > 0 ? ((a.total / filtered.length) * 100).toFixed(0) : 0}%</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {agencyData.map((a, i) => {
+                const isExpanded = expandedAgency === a.id;
+                const agencyLeads = filtered.filter(l => l.agencyId === a.id);
+                const agencyActivities = activities.filter(act => agencyLeads.some(l => l.id === act.leadId));
+
+                // Problem metrics
+                const now = new Date();
+                const reassignments = agencyActivities.filter(act => act.type === 'assignment').length;
+                const statusChanges = agencyActivities.filter(act => act.type === 'status_change').length;
+                const rejectedLeads = agencyLeads.filter(l => l.status === 'rejected');
+                const staleLeads = agencyLeads.filter(l => {
+                  const updated = new Date(l.updatedAt);
+                  const days = Math.floor((now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24));
+                  return days > 14 && l.status !== 'hired' && l.status !== 'rejected';
+                });
+                const newUntouched = agencyLeads.filter(l => {
+                  const created = new Date(l.createdAt);
+                  const days = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+                  return l.status === 'new' && days > 3;
+                });
+                const avgDaysInProcess = agencyLeads.length > 0
+                  ? Math.round(agencyLeads.reduce((sum, l) => {
+                      const created = new Date(l.createdAt);
+                      const ref = l.status === 'hired' || l.status === 'rejected' ? new Date(l.updatedAt) : now;
+                      return sum + Math.max(0, Math.floor((ref.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)));
+                    }, 0) / agencyLeads.length)
+                  : 0;
+
+                // Status distribution for this agency
+                const statusDist = Object.entries(statusConfig).map(([key, cfg]) => ({
+                  status: key,
+                  label: cfg.label,
+                  count: agencyLeads.filter(l => l.status === key).length,
+                })).filter(s => s.count > 0);
+
+                // Problem items sorted by severity
+                const problems = [
+                  { icon: Timer, label: 'Inaktive Leads (>14 Tage)', count: staleLeads.length, severity: staleLeads.length > 3 ? 'high' : staleLeads.length > 0 ? 'medium' : 'low' },
+                  { icon: CalendarX, label: 'Nicht kontaktiert (>3 Tage)', count: newUntouched.length, severity: newUntouched.length > 2 ? 'high' : newUntouched.length > 0 ? 'medium' : 'low' },
+                  { icon: UserX, label: 'Abgelehnte Leads', count: rejectedLeads.length, severity: rejectedLeads.length > 5 ? 'high' : rejectedLeads.length > 0 ? 'medium' : 'low' },
+                  { icon: RefreshCw, label: 'Neuzuweisungen', count: reassignments, severity: reassignments > 5 ? 'high' : reassignments > 0 ? 'medium' : 'low' },
+                ].sort((x, y) => y.count - x.count);
+
+                const severityColor = (s: string) => s === 'high' ? 'text-destructive bg-destructive/10' : s === 'medium' ? 'text-[hsl(38,80%,50%)] bg-[hsl(38,80%,50%)]/10' : 'text-[hsl(152,55%,40%)] bg-[hsl(152,55%,40%)]/10';
+
+                return (
+                  <>
+                    <tr
+                      key={a.id}
+                      onClick={() => setExpandedAgency(isExpanded ? null : a.id)}
+                      className={cn('border-t transition-colors hover:bg-muted/40 cursor-pointer select-none', i % 2 === 0 && 'bg-muted/10', isExpanded && 'bg-primary/5')}
+                    >
+                      <td className="px-6 py-3.5 font-medium">
+                        <div className="flex items-center gap-2">
+                          <ChevronDown className={cn('h-3.5 w-3.5 text-muted-foreground transition-transform', isExpanded && 'rotate-180')} />
+                          {a.fullName}
+                        </div>
+                      </td>
+                      <td className="px-6 py-3.5 text-right font-bold">{a.total}</td>
+                      <td className="px-6 py-3.5 text-right">{a.contacted}</td>
+                      <td className="px-6 py-3.5 text-right">{a.interview}</td>
+                      <td className="px-6 py-3.5 text-right">
+                        <span className="inline-flex items-center rounded-full bg-[hsl(152,55%,40%)]/10 px-2 py-0.5 text-xs font-semibold text-[hsl(152,55%,40%)]">{a.hired}</span>
+                      </td>
+                      <td className="px-6 py-3.5 text-right">
+                        <span className="inline-flex items-center rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">{a.rejected}</span>
+                      </td>
+                      <td className="px-6 py-3.5 text-right font-semibold">{a.conversion}%</td>
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 flex-1 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${filtered.length > 0 ? (a.total / filtered.length) * 100 : 0}%`, background: 'linear-gradient(90deg, hsl(168,17%,23%), hsl(162,17%,50%))' }} />
+                          </div>
+                          <span className="text-xs font-medium text-muted-foreground w-10 text-right">{filtered.length > 0 ? ((a.total / filtered.length) * 100).toFixed(0) : 0}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr key={`${a.id}-detail`} className="border-t bg-muted/20">
+                        <td colSpan={8} className="px-6 py-5">
+                          <div className="grid gap-6 lg:grid-cols-3">
+                            {/* Problems */}
+                            <div className="lg:col-span-2 space-y-3">
+                              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                <AlertTriangle className="h-3.5 w-3.5" /> Problem-Analyse
+                              </h4>
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                {problems.map((p, pi) => (
+                                  <div key={pi} className="flex items-center gap-3 rounded-xl border bg-card p-3.5 shadow-sm">
+                                    <div className={cn('rounded-lg p-2', severityColor(p.severity))}>
+                                      <p.icon className="h-4 w-4" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs text-muted-foreground truncate">{p.label}</p>
+                                      <p className="text-lg font-bold">{p.count}</p>
+                                    </div>
+                                    <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold', severityColor(p.severity))}>
+                                      {p.severity === 'high' ? 'Kritisch' : p.severity === 'medium' ? 'Warnung' : 'OK'}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" /> Ø Prozessdauer: <strong className="text-foreground">{avgDaysInProcess} Tage</strong></span>
+                                <span className="flex items-center gap-1.5"><Activity className="h-3 w-3" /> Status-Wechsel: <strong className="text-foreground">{statusChanges}</strong></span>
+                              </div>
+                            </div>
+
+                            {/* Status Distribution */}
+                            <div className="space-y-3">
+                              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status-Verteilung</h4>
+                              <div className="space-y-2">
+                                {statusDist.map(s => {
+                                  const pct = agencyLeads.length > 0 ? (s.count / agencyLeads.length) * 100 : 0;
+                                  return (
+                                    <div key={s.status} className="space-y-1">
+                                      <div className="flex justify-between text-xs">
+                                        <span className="font-medium">{s.label}</span>
+                                        <span className="text-muted-foreground">{s.count} ({pct.toFixed(0)}%)</span>
+                                      </div>
+                                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, hsl(168,17%,23%), hsl(162,17%,50%))' }} />
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                );
+              })}
             </tbody>
           </table>
         </div>
