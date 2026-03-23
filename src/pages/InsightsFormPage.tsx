@@ -126,13 +126,13 @@ function ScaleRow({ value, onChange }: { value: number; onChange: (v: number) =>
           <button key={val} type="button" onClick={() => onChange(val)}
             className={`flex-1 rounded-lg py-2 text-xs font-medium border transition-all ${
               value === val
-                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                : 'bg-white text-muted-foreground border-border hover:border-ring hover:bg-muted'
             }`}
           >{val}</button>
         ))}
       </div>
-      <div className="flex justify-between mt-1"><span className="text-[10px] text-slate-400">{scaleLabels[0]}</span><span className="text-[10px] text-slate-400">{scaleLabels[4]}</span></div>
+      <div className="flex justify-between mt-1"><span className="text-[10px] text-muted-foreground">{scaleLabels[0]}</span><span className="text-[10px] text-muted-foreground">{scaleLabels[4]}</span></div>
     </div>
   );
 }
@@ -353,34 +353,34 @@ export default function InsightsFormPage() {
 
   /* ── loading / error / done states ── */
   if (loading) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
   if (alreadyDone) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-        <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">Bereits ausgefüllt</h1>
-        <p className="text-slate-600">Sie haben dieses Formular bereits ausgefüllt. Vielen Dank!</p>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-card rounded-2xl shadow-lg p-8 text-center">
+        <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-foreground mb-2">Bereits ausgefüllt</h1>
+        <p className="text-muted-foreground">Sie haben dieses Formular bereits ausgefüllt. Vielen Dank!</p>
       </div>
     </div>
   );
   if (completed) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-        <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">Vielen Dank!</h1>
-        <p className="text-slate-600">Ihre Antworten wurden erfolgreich gespeichert. Wir analysieren Ihr Profil und melden uns bei Ihnen.</p>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-card rounded-2xl shadow-lg p-8 text-center">
+        <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-foreground mb-2">Vielen Dank!</h1>
+        <p className="text-muted-foreground">Ihre Antworten wurden erfolgreich gespeichert. Wir analysieren Ihr Profil und melden uns bei Ihnen.</p>
       </div>
     </div>
   );
   if (error && !requestId) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-        <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">Link ungültig</h1>
-        <p className="text-slate-600">{error}</p>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-card rounded-2xl shadow-lg p-8 text-center">
+        <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-foreground mb-2">Link ungültig</h1>
+        <p className="text-muted-foreground">{error}</p>
       </div>
     </div>
   );
@@ -396,22 +396,22 @@ export default function InsightsFormPage() {
   const totalQuestions = insightsQuestions.length + discQuestions.length + motivatorQuestions.length + workstyleQuestions.length + selfAssessmentQuestions.length + 1;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-emerald-700 to-emerald-600 px-8 py-6 text-white">
+          <div className="px-8 py-6 text-primary-foreground" style={{ background: 'var(--gradient-hero)' }}>
             <h1 className="text-2xl font-bold">SSM Recruit – Assessment</h1>
-            <p className="text-emerald-100 mt-1">
+            <p className="text-primary-foreground/70 mt-1">
               {leadName ? `Hallo ${leadName.split(' ')[0]}, b` : 'B'}itte füllen Sie alle Schritte vollständig aus.
             </p>
             <div className="mt-4 space-y-1">
-              <div className="flex items-center justify-between text-xs text-emerald-200">
+              <div className="flex items-center justify-between text-xs text-primary-foreground/60">
                 <span>Fortschritt</span>
                 <span>{Math.round((totalAnswered / totalQuestions) * 100)}%</span>
               </div>
-              <div className="h-2 rounded-full bg-emerald-800/50 overflow-hidden">
-                <div className="h-full rounded-full bg-white/80 transition-all duration-300"
+              <div className="h-2 rounded-full bg-black/20 overflow-hidden">
+                <div className="h-full rounded-full bg-accent transition-all duration-300"
                   style={{ width: `${(totalAnswered / totalQuestions) * 100}%` }} />
               </div>
             </div>
@@ -426,14 +426,14 @@ export default function InsightsFormPage() {
               return (
                 <button key={s.key} type="button" onClick={() => goToStep(s.key)}
                   className={`flex-1 min-w-0 flex items-center justify-center gap-1 py-3 text-xs font-medium transition-colors whitespace-nowrap px-2 ${
-                    isActive ? 'border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50'
-                    : isPast ? 'text-emerald-600' : 'text-slate-400'
+                    isActive ? 'border-b-2 border-primary text-primary bg-primary/5'
+                    : isPast ? 'text-ring' : 'text-muted-foreground'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5 shrink-0" />
                   <span className="hidden sm:inline">{s.label}</span>
                   <span className="sm:hidden">{s.shortLabel}</span>
-                  {isPast && <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />}
+                  {isPast && <CheckCircle2 className="h-3 w-3 text-ring shrink-0" />}
                 </button>
               );
             })}
@@ -442,7 +442,7 @@ export default function InsightsFormPage() {
           {/* Form content */}
           <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 flex items-center gap-2">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-sm text-destructive flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 shrink-0" /> {error}
               </div>
             )}
@@ -450,17 +450,17 @@ export default function InsightsFormPage() {
             {/* ── STEP 1: Basisdaten ── */}
             {step === 'basics' && (
               <>
-                <p className="text-sm text-slate-500">Beantworten Sie die folgenden Fragen zu Ihrer beruflichen Situation.</p>
+                <p className="text-sm text-muted-foreground">Beantworten Sie die folgenden Fragen zu Ihrer beruflichen Situation.</p>
                 {insightsQuestions.map((q, i) => (
                   <div key={q.key} className="space-y-2">
                     <label className="flex items-baseline gap-2">
-                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">{i + 1}</span>
-                      <span className="text-sm font-semibold text-slate-800">{q.question}</span>
+                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{i + 1}</span>
+                      <span className="text-sm font-semibold text-foreground">{q.question}</span>
                     </label>
                     <textarea value={insightsAnswers[q.key] || ''}
                       onChange={e => setInsightsAnswers(prev => ({ ...prev, [q.key]: e.target.value }))}
                       rows={3} placeholder="Ihre Antwort..." maxLength={2000}
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none resize-none" />
+                      className="w-full rounded-lg border border-border bg-muted px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none resize-none" />
                   </div>
                 ))}
               </>
@@ -469,11 +469,11 @@ export default function InsightsFormPage() {
             {/* ── STEP 2: DISC ── */}
             {step === 'disc' && (
               <>
-                <p className="text-sm text-slate-500">Bewerten Sie die folgenden Aussagen zu Ihrem Verhalten. 1 = trifft nicht zu, 5 = trifft voll zu.</p>
+                <p className="text-sm text-muted-foreground">Bewerten Sie die folgenden Aussagen zu Ihrem Verhalten. 1 = trifft nicht zu, 5 = trifft voll zu.</p>
                 {discQuestions.map((q, i) => (
-                  <div key={i} className={`rounded-xl border p-4 transition-colors ${discAnswers[i] > 0 ? 'bg-slate-50 border-slate-200' : 'bg-white'}`}>
-                    <p className="text-sm font-medium text-slate-800 mb-3">
-                      <span className="text-slate-400 mr-1.5">{i + 1}.</span>{q.text}
+                  <div key={i} className={`rounded-xl border p-4 transition-colors ${discAnswers[i] > 0 ? 'bg-muted border-border' : 'bg-card'}`}>
+                    <p className="text-sm font-medium text-foreground mb-3">
+                      <span className="text-muted-foreground mr-1.5">{i + 1}.</span>{q.text}
                     </p>
                     <ScaleRow value={discAnswers[i]} onChange={v => { const n = [...discAnswers]; n[i] = v; setDiscAnswers(n); }} />
                   </div>
@@ -492,8 +492,8 @@ export default function InsightsFormPage() {
               return (
                 <>
                   <div className="text-center space-y-1">
-                    <h2 className="text-lg font-bold text-slate-800">Was motiviert dich wirklich?</h2>
-                    <p className="text-sm text-slate-500">Beantworte die folgenden Aussagen ehrlich – es gibt keine richtigen oder falschen Antworten.</p>
+                    <h2 className="text-lg font-bold text-foreground">Was motiviert dich wirklich?</h2>
+                    <p className="text-sm text-muted-foreground">Beantworte die folgenden Aussagen ehrlich – es gibt keine richtigen oder falschen Antworten.</p>
                   </div>
 
                   {/* Sub-progress */}
@@ -505,12 +505,12 @@ export default function InsightsFormPage() {
                       return (
                         <button key={pi} type="button" onClick={() => setMotivatorPage(pi)}
                           className={`h-2 flex-1 rounded-full transition-all ${
-                            pi === motivatorPage ? 'bg-emerald-500' : allAnswered ? 'bg-emerald-300' : 'bg-slate-200'
+                            pi === motivatorPage ? 'bg-primary' : allAnswered ? 'bg-ring' : 'bg-muted'
                           }`} />
                       );
                     })}
                   </div>
-                  <p className="text-xs text-slate-400 text-center">{motivatorPage + 1} / {totalPages}</p>
+                  <p className="text-xs text-muted-foreground text-center">{motivatorPage + 1} / {totalPages}</p>
 
                   {/* Questions */}
                   <div className="space-y-4">
@@ -523,9 +523,9 @@ export default function InsightsFormPage() {
                             <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${meta.text} ${meta.bg}`} style={{ backgroundColor: meta.color + '20' }}>
                               {meta.label}
                             </span>
-                            <span className="text-xs text-slate-400">Frage {idx + 1} von {motivatorQuestions.length}</span>
+                            <span className="text-xs text-muted-foreground">Frage {idx + 1} von {motivatorQuestions.length}</span>
                           </div>
-                          <p className="text-sm font-medium text-slate-800 mb-4">{q.text}</p>
+                          <p className="text-sm font-medium text-foreground mb-4">{q.text}</p>
 
                           {/* Likert scale buttons */}
                           <div className="space-y-2">
@@ -536,15 +536,15 @@ export default function InsightsFormPage() {
                                   className={`flex-1 rounded-lg py-2.5 text-sm font-semibold border-2 transition-all ${
                                     motivatorAnswers[idx] === val
                                       ? 'text-white shadow-md scale-105'
-                                      : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                      : 'bg-card text-muted-foreground border-border hover:border-ring/50 hover:bg-muted'
                                   }`}
                                   style={motivatorAnswers[idx] === val ? { backgroundColor: meta.color, borderColor: meta.color } : {}}
                                 >{val}</button>
                               ))}
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[10px] text-slate-400">Trifft nicht zu</span>
-                              <span className="text-[10px] text-slate-400">Trifft voll zu</span>
+                              <span className="text-[10px] text-muted-foreground">Trifft nicht zu</span>
+                              <span className="text-[10px] text-muted-foreground">Trifft voll zu</span>
                             </div>
                           </div>
                         </div>
@@ -556,14 +556,14 @@ export default function InsightsFormPage() {
                   <div className="flex items-center justify-between pt-2">
                     {motivatorPage > 0 ? (
                       <button type="button" onClick={() => setMotivatorPage(p => p - 1)}
-                        className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-800">
+                        className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
                         <ChevronLeft className="h-4 w-4" /> Vorherige
                       </button>
                     ) : <div />}
                     {motivatorPage < totalPages - 1 ? (
                       <button type="button" onClick={() => { if (answeredOnPage) setMotivatorPage(p => p + 1); }}
                         disabled={!answeredOnPage}
-                        className={`flex items-center gap-1 text-sm font-medium ${answeredOnPage ? 'text-emerald-600 hover:text-emerald-700' : 'text-slate-300 cursor-not-allowed'}`}>
+                        className={`flex items-center gap-1 text-sm font-medium ${answeredOnPage ? 'text-primary hover:text-primary/80' : 'text-muted-foreground/40 cursor-not-allowed'}`}>
                         Nächste <ChevronRight className="h-4 w-4" />
                       </button>
                     ) : <div />}
@@ -575,20 +575,20 @@ export default function InsightsFormPage() {
             {/* ── STEP 4: Arbeitsstil & Ziele ── */}
             {step === 'workstyle' && (
               <>
-                <p className="text-sm text-slate-500">Wählen Sie die passendste Antwort zu Ihrem Arbeitsstil.</p>
+                <p className="text-sm text-muted-foreground">Wählen Sie die passendste Antwort zu Ihrem Arbeitsstil.</p>
                 {workstyleQuestions.map((q, i) => (
                   <div key={q.key} className="space-y-2">
                     <label className="flex items-baseline gap-2">
-                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">{i + 1}</span>
-                      <span className="text-sm font-semibold text-slate-800">{q.question}</span>
+                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{i + 1}</span>
+                      <span className="text-sm font-semibold text-foreground">{q.question}</span>
                     </label>
                     <div className="grid grid-cols-1 gap-2">
                       {q.options.map(opt => (
                         <button key={opt} type="button" onClick={() => setWorkstyleAnswers(prev => ({ ...prev, [q.key]: opt }))}
                           className={`text-left px-4 py-3 rounded-lg border text-sm transition-all ${
                             workstyleAnswers[q.key] === opt
-                              ? 'bg-emerald-50 border-emerald-400 text-emerald-800 font-medium'
-                              : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
+                              ? 'bg-primary/5 border-ring text-primary font-medium'
+                              : 'bg-card border-border text-foreground hover:border-ring/50'
                           }`}
                         >{opt}</button>
                       ))}
@@ -601,17 +601,17 @@ export default function InsightsFormPage() {
             {/* ── STEP 5: Selbstbild ── */}
             {step === 'selfassessment' && (
               <>
-                <p className="text-sm text-slate-500">Beschreiben Sie sich selbst in eigenen Worten.</p>
+                <p className="text-sm text-muted-foreground">Beschreiben Sie sich selbst in eigenen Worten.</p>
                 {selfAssessmentQuestions.map((q, i) => (
                   <div key={q.key} className="space-y-2">
                     <label className="flex items-baseline gap-2">
-                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">{i + 1}</span>
-                      <span className="text-sm font-semibold text-slate-800">{q.question}</span>
+                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{i + 1}</span>
+                      <span className="text-sm font-semibold text-foreground">{q.question}</span>
                     </label>
                     <textarea value={selfAssessmentAnswers[q.key] || ''}
                       onChange={e => setSelfAssessmentAnswers(prev => ({ ...prev, [q.key]: e.target.value }))}
                       rows={2} placeholder="Ihre Antwort..." maxLength={1000}
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none resize-none" />
+                      className="w-full rounded-lg border border-border bg-muted px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none resize-none" />
                   </div>
                 ))}
               </>
@@ -620,25 +620,25 @@ export default function InsightsFormPage() {
             {/* ── STEP 6: Termine ── */}
             {step === 'appointments' && (
               <>
-                <p className="text-sm text-slate-500">Schlagen Sie bis zu 5 Termine vor, an denen Sie für ein Gespräch verfügbar wären.</p>
+                <p className="text-sm text-muted-foreground">Schlagen Sie bis zu 5 Termine vor, an denen Sie für ein Gespräch verfügbar wären.</p>
                 <div className="space-y-3">
                   {timeSlots.map((slot, i) => (
                     <div key={i} className="flex items-end gap-3">
                       <div className="flex-1 space-y-1">
-                        <label className="text-xs font-medium text-slate-600">Datum</label>
+                        <label className="text-xs font-medium text-muted-foreground">Datum</label>
                         <input type="date" min={getMinDate()} value={slot.date}
                           onChange={e => { const u = [...timeSlots]; u[i] = { ...u[i], date: e.target.value }; setTimeSlots(u); }}
-                          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none" />
+                          className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none" />
                       </div>
                       <div className="flex-1 space-y-1">
-                        <label className="text-xs font-medium text-slate-600">Uhrzeit</label>
+                        <label className="text-xs font-medium text-muted-foreground">Uhrzeit</label>
                         <input type="time" value={slot.time}
                           onChange={e => { const u = [...timeSlots]; u[i] = { ...u[i], time: e.target.value }; setTimeSlots(u); }}
-                          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none" />
+                          className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none" />
                       </div>
                       {timeSlots.length > 1 && (
                         <button type="button" onClick={() => setTimeSlots(timeSlots.filter((_, j) => j !== i))}
-                          className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-red-600 hover:bg-red-100">
+                          className="rounded-lg border border-destructive/20 bg-destructive/5 p-2.5 text-destructive hover:bg-destructive/10">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       )}
@@ -646,7 +646,7 @@ export default function InsightsFormPage() {
                   ))}
                   {timeSlots.length < 5 && (
                     <button type="button" onClick={() => setTimeSlots([...timeSlots, { date: '', time: '' }])}
-                      className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 hover:text-emerald-700">
+                      className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80">
                       <Plus className="h-4 w-4" /> Weiteren Termin hinzufügen
                     </button>
                   )}
@@ -655,23 +655,23 @@ export default function InsightsFormPage() {
             )}
 
             {/* ── Navigation ── */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between pt-4 border-t border-border">
               {stepIndex > 0 ? (
                 <button type="button" onClick={goBack}
-                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted">
                   <ChevronLeft className="h-4 w-4" /> Zurück
                 </button>
               ) : <div />}
 
               {step === 'appointments' ? (
                 <button type="submit" disabled={submitting}
-                  className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-700 disabled:opacity-50">
+                  className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 disabled:opacity-50">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                   {submitting ? 'Wird analysiert...' : 'Assessment abschliessen'}
                 </button>
               ) : (
                 <button type="button" onClick={goNext}
-                  className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-emerald-700">
+                  className="flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90">
                   Weiter <ChevronRight className="h-4 w-4" />
                 </button>
               )}
