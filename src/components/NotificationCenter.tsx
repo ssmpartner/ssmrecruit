@@ -5,8 +5,11 @@ import { type NotificationType } from '@/context/notifications-context';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 
-const typeConfig: Record<NotificationType, { icon: typeof Bell; color: string }> = {
+const defaultTypeConfig = { icon: Bell, color: 'text-muted-foreground bg-muted' };
+
+const typeConfig: Record<string, { icon: typeof Bell; color: string }> = {
   lead_new: { icon: UserPlus, color: 'text-blue-500 bg-blue-500/10' },
+  new_lead: { icon: UserPlus, color: 'text-blue-500 bg-blue-500/10' },
   lead_status_change: { icon: ArrowRightLeft, color: 'text-amber-500 bg-amber-500/10' },
   lead_assigned: { icon: UserPlus, color: 'text-violet-500 bg-violet-500/10' },
   appointment_created: { icon: CalendarDays, color: 'text-emerald-500 bg-emerald-500/10' },
@@ -18,8 +21,10 @@ const typeConfig: Record<NotificationType, { icon: typeof Bell; color: string }>
   task_created: { icon: ClipboardList, color: 'text-indigo-500 bg-indigo-500/10' },
   task_overdue: { icon: AlertTriangle, color: 'text-red-600 bg-red-600/10' },
   insights_completed: { icon: FileText, color: 'text-teal-500 bg-teal-500/10' },
+  insights: { icon: FileText, color: 'text-teal-500 bg-teal-500/10' },
   document_uploaded: { icon: Upload, color: 'text-cyan-500 bg-cyan-500/10' },
   process_step_changed: { icon: GitBranch, color: 'text-purple-500 bg-purple-500/10' },
+  reminder: { icon: Bell, color: 'text-orange-500 bg-orange-500/10' },
   system: { icon: Info, color: 'text-muted-foreground bg-muted' },
 };
 
@@ -90,7 +95,7 @@ export default function NotificationCenter() {
                 </div>
               ) : (
                 notifications.map((notification) => {
-                  const config = typeConfig[notification.type];
+                  const config = typeConfig[notification.type] || defaultTypeConfig;
                   const Icon = config.icon;
                   return (
                     <button
