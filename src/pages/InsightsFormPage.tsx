@@ -655,7 +655,7 @@ export default function InsightsFormPage() {
             )}
 
             {/* ── Navigation ── */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between pt-4 border-t border-border">
               {stepIndex > 0 ? (
                 <button type="button" onClick={goBack}
                   className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted">
