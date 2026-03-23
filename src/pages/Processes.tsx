@@ -8,6 +8,7 @@ import { statusConfig, statusFlow, type LeadStatus } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
 import { useToast } from '@/hooks/use-toast';
 import ProcessStepper from '@/components/ProcessStepper';
+import EscalationManager from '@/components/EscalationManager';
 import { supabase } from '@/integrations/supabase/client';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 
