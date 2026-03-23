@@ -1,0 +1,1 @@
+ALTER TABLE public.escalation_rules ADD COLUMN sort_order integer NOT NULL DEFAULT 0;
