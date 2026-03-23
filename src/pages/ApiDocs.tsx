@@ -246,20 +246,93 @@ Lukas Müller,lukas@email.ch,+41 44 123 45 67,8001,Zürich,ZH,new,meta,Frontend 
     ],
   },
   {
-    title: 'Webhooks',
-    description: 'Eingehende Webhooks für externe Lead-Quellen.',
+    title: 'Webhooks – Kontaktformular',
+    description: 'Generischer Webhook für externe Website-Kontaktformulare und Zapier-Anbindungen. Leads werden automatisch der Agentur Hauptsitz zugewiesen.',
     endpoints: [
       {
-        method: 'POST', path: '/api/v1/webhooks/leads', summary: 'Lead per Webhook erstellen', auth: true,
-        description: 'Empfängt Lead-Daten von externen Quellen wie Meta Ads, TikTok, oder Zapier. Unterstützt flexible Feldnamen.',
+        method: 'POST', path: '/functions/v1/form-webhook', summary: 'Lead per Website-Formular erstellen', auth: false,
+        description: 'Empfängt Lead-Daten von externen Website-Formularen. Unterstützt flexible Feldnamen (DE/EN). Duplikatprüfung per E-Mail. Automatische Zuweisung an Agentur Hauptsitz.',
         body: [
-          { name: 'name', type: 'string', required: true, description: 'Name (auch full_name akzeptiert)' },
-          { name: 'email', type: 'string', required: true, description: 'E-Mail-Adresse' },
-          { name: 'phone', type: 'string', required: false, description: 'Telefonnummer' },
-          { name: 'source', type: 'string', required: false, description: 'Quelle (Standard: website)' },
-          { name: 'platform', type: 'string', required: false, description: 'Alternativ zu source für Meta/TikTok' },
+          { name: 'name', type: 'string', required: true, description: 'Vollständiger Name (auch: vorname, full_name, fullName)' },
+          { name: 'email', type: 'string', required: true, description: 'E-Mail-Adresse (auch: e_mail)' },
+          { name: 'phone', type: 'string', required: false, description: 'Telefonnummer (auch: telefon, phone_number)' },
+          { name: 'city', type: 'string', required: false, description: 'Wohnort (auch: stadt, ort)' },
+          { name: 'plz', type: 'string', required: false, description: 'Postleitzahl (auch: zip, postleitzahl)' },
+          { name: 'address', type: 'string', required: false, description: 'Strasse (auch: adresse, strasse)' },
+          { name: 'notes', type: 'string', required: false, description: 'Nachricht (auch: nachricht, message, bemerkung)' },
+          { name: 'campaign', type: 'string', required: false, description: 'Kampagne (auch: kampagne, source_detail)' },
+          { name: 'form_source', type: 'string', required: false, description: 'Formularname (auch: form_name, Default: website)' },
         ],
-        response: `{ "success": true, "leadId": "l1742345678-abc1" }`,
+        response: `{
+  "success": true,
+  "lead_id": "uuid",
+  "message": "Lead Max Mustermann erfolgreich erstellt"
+}
+
+// Bei Duplikat (Status 200):
+{
+  "success": true,
+  "duplicate": true,
+  "message": "Lead mit E-Mail ... existiert bereits",
+  "lead_id": "uuid"
+}`,
+      },
+    ],
+  },
+  {
+    title: 'Webhooks – Bewerbungsformular',
+    description: 'Dedizierter Webhook für Bewerbungsformulare mit Datei-Uploads, Consent-Tracking und automatischem custom_fields Fallback.',
+    endpoints: [
+      {
+        method: 'POST', path: '/functions/v1/application-webhook', summary: 'Bewerbung einreichen', auth: false,
+        description: 'Empfängt Bewerbungsdaten inkl. Datei-Uploads (multipart/form-data). Unbekannte Felder werden automatisch in custom_fields gespeichert. Status: complete, incomplete oder spam_suspected.',
+        body: [
+          { name: 'first_name', type: 'string', required: true, description: 'Vorname (auch: vorname)' },
+          { name: 'last_name', type: 'string', required: true, description: 'Nachname (auch: nachname)' },
+          { name: 'email', type: 'string', required: true, description: 'E-Mail (auch: e-mail, e_mail)' },
+          { name: 'salutation', type: 'string', required: false, description: 'Anrede (auch: anrede)' },
+          { name: 'birth_date', type: 'string', required: false, description: 'Geburtsdatum (auch: geburtsdatum)' },
+          { name: 'address', type: 'string', required: false, description: 'Strasse (auch: strasse, adresse)' },
+          { name: 'zip', type: 'string', required: false, description: 'PLZ (auch: plz, postleitzahl)' },
+          { name: 'city', type: 'string', required: false, description: 'Ort (auch: ort, wohnort)' },
+          { name: 'country', type: 'string', required: false, description: 'Land (auch: land, Default: Schweiz)' },
+          { name: 'phone', type: 'string', required: false, description: 'Telefon (auch: telefon, phone_number)' },
+          { name: 'cv', type: 'file', required: true, description: 'Lebenslauf (auch: lebenslauf, resume)' },
+          { name: 'motivation_letter', type: 'file', required: false, description: 'Motivationsschreiben (auch: motivationsschreiben, cover_letter)' },
+          { name: 'attachments', type: 'file[]', required: false, description: 'Weitere Beilagen (auch: beilagen, weitere_beilagen)' },
+          { name: 'consent_privacy', type: 'boolean', required: false, description: 'Datenschutz akzeptiert (auch: datenschutz, privacy)' },
+          { name: 'consent_email_contract', type: 'boolean', required: false, description: 'E-Mail-Vertrag OK (auch: email_consent, vertragsunterlagen)' },
+          { name: 'captcha_valid', type: 'boolean', required: false, description: 'Captcha-Ergebnis (false → spam_suspected)' },
+        ],
+        response: `{
+  "success": true,
+  "application_id": "uuid",
+  "lead_id": "uuid",
+  "status": "complete",
+  "message": "Bewerbung erfolgreich übermittelt"
+}`,
+      },
+    ],
+  },
+  {
+    title: 'Webhooks – Social Media',
+    description: 'Plattform-spezifische Webhooks für Meta und TikTok Lead Ads.',
+    endpoints: [
+      {
+        method: 'POST', path: '/functions/v1/meta-webhook', summary: 'Meta/Facebook Lead Ads', auth: false,
+        description: 'Empfängt Leads aus Facebook/Instagram Lead Ad-Kampagnen.',
+        body: [
+          { name: 'payload', type: 'object', required: true, description: 'Meta Lead Ads Payload (Standardformat)' },
+        ],
+        response: `{ "success": true, "lead_id": "uuid" }`,
+      },
+      {
+        method: 'POST', path: '/functions/v1/tiktok-webhook', summary: 'TikTok Lead Ads', auth: false,
+        description: 'Empfängt Leads aus TikTok Lead Ad-Kampagnen.',
+        body: [
+          { name: 'payload', type: 'object', required: true, description: 'TikTok Lead Ads Payload (Standardformat)' },
+        ],
+        response: `{ "success": true, "lead_id": "uuid" }`,
       },
     ],
   },
