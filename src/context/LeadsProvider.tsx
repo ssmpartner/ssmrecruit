@@ -160,10 +160,10 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
           supabase.from('lead_sources').select('*').order('sort_order'),
         ]);
 
-        if (leadsRes.data) setLeads(leadsRes.data.map(dbToLead));
+        if (leadsData) setLeads(leadsData.map(dbToLead));
         if (employeesRes.data) setEmployees(employeesRes.data.map(dbToEmployee));
         if (agenciesRes.data) setAgencies(agenciesRes.data.map(dbToAgency));
-        if (activitiesRes.data) setActivities(activitiesRes.data.map(dbToActivity));
+        if (activitiesData) setActivities(activitiesData.map(dbToActivity));
         if (appointmentsRes.data) setAppointments(appointmentsRes.data.map(dbToAppointment));
         if (discRes.data) setDiscResults(discRes.data.map(dbToDiscResult));
         if (sourcesRes.data) setLeadSources(sourcesRes.data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, color: r.color || '#6B7280', sortOrder: r.sort_order })));
