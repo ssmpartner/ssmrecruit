@@ -89,6 +89,7 @@ const App = () => (
               {/* Public lead forms (no auth required) */}
               <Route path="/insights-form" element={<Suspense fallback={<FullScreenLoader />}><InsightsFormPage /></Suspense>} />
               <Route path="/document-upload" element={<Suspense fallback={<FullScreenLoader />}><DocumentUploadPage /></Suspense>} />
+              <Route path="/apply" element={<Suspense fallback={<FullScreenLoader />}><ApplicationFormPage /></Suspense>} />
 
               {/* Protected routes – providers inside so DB queries only run when authenticated */}
               <Route element={
