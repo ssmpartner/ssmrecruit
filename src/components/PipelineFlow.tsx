@@ -354,10 +354,11 @@ interface PipelineFlowProps {
   employees?: Employee[];
 }
 
-export default function PipelineFlow({ leads, employees = [] }: PipelineFlowProps) {
+export default function PipelineFlow({ leads, employees = [], onSelectLead }: PipelineFlowProps) {
   const activeLeads = useMemo(() => leads.filter(l => l.lifecycle === 'active'), [leads]);
   const [escalationRules, setEscalationRules] = useState<EscalationRules>(DEFAULT_RULES);
   const [editingStatus, setEditingStatus] = useState<LeadStatus | null>(null);
+  const [viewingStatus, setViewingStatus] = useState<LeadStatus | null>(null);
 
   const handleSaveRules = useCallback((status: LeadStatus, rules: EscalationRule[]) => {
     setEscalationRules(prev => ({ ...prev, [status]: rules }));
