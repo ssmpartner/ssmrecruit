@@ -83,6 +83,31 @@ function EscalationRuleEditor({
   const removeRule = (id: string) => setLocalRules(prev => prev.filter(r => r.id !== id));
   const updateRule = (id: string, updates: Partial<EscalationRule>) => setLocalRules(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
 
+  const moveRule = (id: string, direction: 'up' | 'down') => {
+    setLocalRules(prev => {
+      const idx = prev.findIndex(r => r.id === id);
+      if (idx < 0) return prev;
+      const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (swapIdx < 0 || swapIdx >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+      return next;
+    });
+  };
+
+  const moveWizardLink = (linkId: string, direction: 'up' | 'down') => {
+    const idx = wizardLinks.findIndex(l => l.id === linkId);
+    if (idx < 0) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= wizardLinks.length) return;
+    // We need to swap locally since parent manages state
+    const reordered = [...wizardLinks];
+    [reordered[idx], reordered[swapIdx]] = [reordered[swapIdx], reordered[idx]];
+    // Update parent through callbacks - toggle twice to trigger re-render hack
+    // Actually let's just use the onReorderWizards callback
+    onReorderWizards?.(reordered);
+  };
+
   const addAction = (ruleId: string) => {
     setLocalRules(prev => prev.map(r => r.id === ruleId ? { ...r, actions: [...r.actions, { type: 'notify', notificationMessage: '' }] } : r));
   };
