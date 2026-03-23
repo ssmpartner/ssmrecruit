@@ -1,10 +1,12 @@
 import { useLeads } from '@/context/useLeads';
-import { statusConfig, statusFlow, getAllowedNextStatuses, type LeadStatus } from '@/lib/mock-data';
+import { statusConfig, statusFlow, type LeadStatus } from '@/lib/mock-data';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 
-const pipelineStatuses: LeadStatus[] = statusFlow;
+// Pipeline shows only: Neue Leads, Kontaktiert, Rückruf (callback mapped to "new" with callback_count > 0)
+// All other statuses (rejected, hired etc.) are auto-removed from pipeline view
+const pipelineStatuses: LeadStatus[] = ['new', 'contacted', 'appointment'];
 
 export default function Pipeline() {
   const { leads, employees, agencies, updateLead, addActivity, setSelectedLead } = useLeads();
@@ -19,16 +21,21 @@ export default function Pipeline() {
     addActivity(leadId, 'status_change', `Status geändert: "${oldLabel}" → "${newLabel}"`);
   };
 
+  // Filter only active leads in pipeline-visible statuses
+  const pipelineLeads = leads.filter(l => 
+    l.lifecycle === 'active' && pipelineStatuses.includes(l.status)
+  );
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Pipeline</h1>
-        <p className="text-muted-foreground">Lead anklicken für Details und Bearbeitung</p>
+        <p className="text-muted-foreground">Nur aktive Leads: Neu, Kontaktiert, Terminiert. Alle anderen werden automatisch entfernt.</p>
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
         {pipelineStatuses.map(status => {
-          const columnLeads = leads.filter(l => l.status === status);
+          const columnLeads = pipelineLeads.filter(l => l.status === status);
           const idx = pipelineStatuses.indexOf(status);
 
           return (
@@ -61,7 +68,7 @@ export default function Pipeline() {
                           {emp?.name}
                         </span>
                         <div className="flex gap-1">
-                          {idx > 0 && status !== 'rejected' && (
+                          {idx > 0 && (
                             <button
                               onClick={(e) => moveStatus(lead.id, pipelineStatuses[idx - 1], e)}
                               className="rounded px-1.5 py-0.5 text-xs bg-secondary hover:bg-muted text-muted-foreground transition-colors"
@@ -69,7 +76,7 @@ export default function Pipeline() {
                               ←
                             </button>
                           )}
-                          {idx < pipelineStatuses.length - 1 && status !== 'hired' && status !== 'rejected' && (
+                          {idx < pipelineStatuses.length - 1 && (
                             <button
                               onClick={(e) => moveStatus(lead.id, pipelineStatuses[idx + 1], e)}
                               className="rounded px-1.5 py-0.5 text-xs bg-secondary hover:bg-muted text-muted-foreground transition-colors"
