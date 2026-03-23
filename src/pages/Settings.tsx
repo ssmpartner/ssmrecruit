@@ -942,10 +942,14 @@ function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
   const [savingDq, setSavingDq] = useState(false);
   const [editIqIdx, setEditIqIdx] = useState<number | null>(null);
   const [editDqIdx, setEditDqIdx] = useState<number | null>(null);
+  const [editMqIdx, setEditMqIdx] = useState<number | null>(null);
   const [iqForm, setIqForm] = useState<InsightsQuestion>({ key: '', label: '', question: '' });
   const [dqForm, setDqForm] = useState<DiscQuestion>({ text: '', dimension: 'D' });
+  const [mqForm, setMqForm] = useState<MotivatorQuestion>({ text: '', dimension: 'individualistisch' });
   const [addingIq, setAddingIq] = useState(false);
   const [addingDq, setAddingDq] = useState(false);
+  const [addingMq, setAddingMq] = useState(false);
+  const [savingMq, setSavingMq] = useState(false);
 
   const loadQuestions = useCallback(async () => {
     setLoadingQ(true);
