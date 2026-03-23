@@ -138,6 +138,276 @@ function ScaleRow({ value, onChange }: { value: number; onChange: (v: number) =>
   );
 }
 
+/* ───── Score bar helper ───── */
+function ScoreBar({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-xs">
+        <span className="font-medium text-foreground">{label}</span>
+        <span className="text-muted-foreground">{value}%</span>
+      </div>
+      <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${value}%`, backgroundColor: color }} />
+      </div>
+    </div>
+  );
+}
+
+/* ───── Match level config ───── */
+const matchLevelConfig: Record<string, { label: string; color: string; bg: string }> = {
+  perfect: { label: 'Perfekter Match', color: 'text-emerald-700', bg: 'bg-emerald-100' },
+  very_good: { label: 'Sehr guter Match', color: 'text-blue-700', bg: 'bg-blue-100' },
+  conditional: { label: 'Bedingter Match', color: 'text-amber-700', bg: 'bg-amber-100' },
+  no_match: { label: 'Kein Match', color: 'text-red-700', bg: 'bg-red-100' },
+};
+
+const recommendationConfig: Record<string, { label: string; color: string; bg: string; icon: any }> = {
+  einstellen: { label: 'Einstellen', color: 'text-emerald-700', bg: 'bg-emerald-100', icon: Award },
+  weiter_pruefen: { label: 'Weiter prüfen', color: 'text-amber-700', bg: 'bg-amber-100', icon: BookOpen },
+  ablehnen: { label: 'Ablehnen', color: 'text-red-700', bg: 'bg-red-100', icon: AlertCircle },
+};
+
+/* ───── PDF generation via print ───── */
+function downloadPdf(analysis: any, name: string) {
+  const s = analysis.summary || {};
+  const sc = analysis.scores || {};
+  const m = analysis.match_result || {};
+  const r = analysis.report_sections || {};
+  const rec = recommendationConfig[analysis.recommendation] || { label: analysis.recommendation };
+  const ml = matchLevelConfig[m.level] || { label: m.level };
+
+  let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Assessment Report – ${name || 'Kandidat'}</title><style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #1a1a1a; line-height: 1.6; }
+    h1 { color: #2D4A3E; border-bottom: 3px solid #2D4A3E; padding-bottom: 10px; }
+    h2 { color: #2D4A3E; margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+    .score-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+    .score-bar { height: 10px; border-radius: 5px; background: #e5e7eb; overflow: hidden; flex: 1; margin: 0 12px; }
+    .score-fill { height: 100%; border-radius: 5px; }
+    ul { padding-left: 20px; } li { margin-bottom: 6px; }
+    .section { background: #f8f9fa; border-radius: 8px; padding: 16px; margin: 12px 0; }
+    @media print { body { padding: 20px; } }
+  </style></head><body>`;
+
+  html += `<h1>Assessment Report – ${name || 'Kandidat'}</h1>`;
+  html += `<p style="color:#666;font-size:14px;">Erstellt am ${new Date().toLocaleDateString('de-CH')}</p>`;
+  if (s.headline) html += `<div class="section"><strong>${s.headline}</strong><p>${s.description || ''}</p></div>`;
+
+  html += `<h2>Empfehlung</h2><p><span class="badge" style="background:#e8f5e9;color:#2e7d32;">${rec.label}</span></p>`;
+  if (analysis.recommendation_reason) html += `<p>${analysis.recommendation_reason}</p>`;
+
+  html += `<h2>Match-Ergebnis</h2>`;
+  html += `<p><strong>Score:</strong> ${m.score || 0}% – <span class="badge" style="background:#e3f2fd;color:#1565c0;">${ml.label}</span></p>`;
+
+  if (sc) {
+    html += `<h2>Performance Scores</h2>`;
+    for (const [key, val] of Object.entries(sc)) {
+      html += `<div class="score-row"><span style="width:140px;font-size:14px;">${key.replace(/_/g, ' ')}</span><div class="score-bar"><div class="score-fill" style="width:${val}%;background:#2D4A3E;"></div></div><span style="font-size:14px;font-weight:600;">${val}%</span></div>`;
+    }
+  }
+
+  if (m.strengths?.length) { html += `<h2>Stärken</h2><ul>`; m.strengths.forEach((x: string) => { html += `<li>${x}</li>`; }); html += `</ul>`; }
+  if (m.risks?.length) { html += `<h2>Risiken</h2><ul>`; m.risks.forEach((x: string) => { html += `<li>${x}</li>`; }); html += `</ul>`; }
+  if (r.disc_analysis) html += `<h2>DISC-Analyse</h2><p>${r.disc_analysis}</p>`;
+  if (r.motivator_analysis) html += `<h2>Motivatoren-Analyse</h2><p>${r.motivator_analysis}</p>`;
+  if (r.integration) html += `<h2>Integration</h2><p>${r.integration}</p>`;
+  if (r.company_value) html += `<h2>Wert für das Unternehmen</h2><p>${r.company_value}</p>`;
+  if (r.strengths_profile?.length) { html += `<h2>Stärken-Profil</h2><ul>`; r.strengths_profile.forEach((x: string) => { html += `<li>${x}</li>`; }); html += `</ul>`; }
+  if (r.improvement_areas?.length) { html += `<h2>Verbesserungsbereiche</h2><ul>`; r.improvement_areas.forEach((x: string) => { html += `<li>${x}</li>`; }); html += `</ul>`; }
+  if (r.communication_do?.length) { html += `<h2>Kommunikation – DOs</h2><ul>`; r.communication_do.forEach((x: string) => { html += `<li>✓ ${x}</li>`; }); html += `</ul>`; }
+  if (r.communication_dont?.length) { html += `<h2>Kommunikation – DON'Ts</h2><ul>`; r.communication_dont.forEach((x: string) => { html += `<li>✗ ${x}</li>`; }); html += `</ul>`; }
+
+  html += `<p style="margin-top:40px;color:#999;font-size:12px;text-align:center;">SSM Recruit – Automatisch generierter Assessment-Report</p></body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const printWindow = window.open(url, '_blank');
+  if (printWindow) {
+    printWindow.onload = () => { setTimeout(() => { printWindow.print(); }, 500); };
+  }
+}
+
+/* ───── Completed Results View ───── */
+function CompletedView({ analysisResult, leadName, generatingPdf, setGeneratingPdf }: {
+  analysisResult: any; leadName: string; generatingPdf: boolean; setGeneratingPdf: (v: boolean) => void;
+}) {
+  if (!analysisResult) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-card rounded-2xl shadow-lg p-8 text-center">
+          <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">Vielen Dank!</h1>
+          <p className="text-muted-foreground">Ihre Antworten wurden gespeichert. Die KI-Analyse konnte leider nicht erstellt werden. Wir melden uns bei Ihnen.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const summary = analysisResult.summary || {};
+  const scores = analysisResult.scores || {};
+  const matchResult = analysisResult.match_result || {};
+  const reportSections = analysisResult.report_sections || {};
+  const rec = recommendationConfig[analysisResult.recommendation] || { label: analysisResult.recommendation, color: 'text-foreground', bg: 'bg-muted', icon: BookOpen };
+  const ml = matchLevelConfig[matchResult.level] || { label: matchResult.level, color: 'text-foreground', bg: 'bg-muted' };
+  const RecIcon = rec.icon;
+
+  const scoreItems = [
+    { key: 'performance', label: 'Performance', color: '#2D4A3E' },
+    { key: 'team_fit', label: 'Team Fit', color: '#3B82F6' },
+    { key: 'learning', label: 'Lernfähigkeit', color: '#8B5CF6' },
+    { key: 'sales', label: 'Sales Potential', color: '#F97316' },
+    { key: 'culture_fit', label: 'Culture Fit', color: '#22C55E' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted py-8 px-4">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
+          <div className="px-8 py-6 text-primary-foreground" style={{ background: 'var(--gradient-hero)' }}>
+            <div className="flex items-center gap-3 mb-2">
+              <CheckCircle2 className="h-8 w-8" />
+              <h1 className="text-2xl font-bold">Assessment abgeschlossen!</h1>
+            </div>
+            <p className="text-primary-foreground/70">Hier sind Ihre persönlichen Ergebnisse, {leadName?.split(' ')[0] || 'Kandidat'}.</p>
+          </div>
+
+          {summary.headline && (
+            <div className="p-6 border-b border-border">
+              <h2 className="text-lg font-bold text-foreground mb-1">{summary.headline}</h2>
+              <p className="text-sm text-muted-foreground">{summary.description}</p>
+              <div className="flex gap-3 mt-3">
+                {summary.dominant_disc && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    <Brain className="h-3 w-3" /> DISC: {summary.dominant_disc}
+                  </span>
+                )}
+                {summary.dominant_motivator && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-accent/30 px-3 py-1 text-xs font-semibold text-foreground">
+                    <Target className="h-3 w-3" /> {summary.dominant_motivator}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-border p-4">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Empfehlung</p>
+              <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-bold ${rec.bg} ${rec.color}`}>
+                <RecIcon className="h-4 w-4" /> {rec.label}
+              </span>
+              {analysisResult.recommendation_reason && (
+                <p className="text-xs text-muted-foreground mt-2">{analysisResult.recommendation_reason}</p>
+              )}
+            </div>
+            <div className="rounded-xl border border-border p-4">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Match-Score</p>
+              <div className="flex items-center gap-3">
+                <span className="text-3xl font-black text-foreground">{matchResult.score || 0}%</span>
+                <span className={`rounded-full px-3 py-1 text-xs font-bold ${ml.bg} ${ml.color}`}>{ml.label}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scores */}
+        <div className="bg-card rounded-2xl shadow-lg p-6">
+          <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" /> Performance Scores
+          </h2>
+          <div className="space-y-3">
+            {scoreItems.map(si => (
+              <ScoreBar key={si.key} label={si.label} value={scores[si.key] || 0} color={si.color} />
+            ))}
+          </div>
+        </div>
+
+        {/* Stärken & Risiken */}
+        {(matchResult.strengths?.length > 0 || matchResult.risks?.length > 0) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {matchResult.strengths?.length > 0 && (
+              <div className="bg-card rounded-2xl shadow-lg p-6">
+                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Stärken
+                </h3>
+                <ul className="space-y-2">
+                  {matchResult.strengths.map((s: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <span className="text-emerald-500 mt-0.5">✓</span> {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {matchResult.risks?.length > 0 && (
+              <div className="bg-card rounded-2xl shadow-lg p-6">
+                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-amber-600" /> Risiken
+                </h3>
+                <ul className="space-y-2">
+                  {matchResult.risks.map((r: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <span className="text-amber-500 mt-0.5">⚠</span> {r}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Detailed Report */}
+        {(reportSections.disc_analysis || reportSections.motivator_analysis) && (
+          <div className="bg-card rounded-2xl shadow-lg p-6 space-y-4">
+            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary" /> Detaillierte Analyse
+            </h2>
+            {reportSections.disc_analysis && (
+              <div><h3 className="text-sm font-semibold text-foreground mb-1">DISC-Verhaltensanalyse</h3><p className="text-sm text-muted-foreground">{reportSections.disc_analysis}</p></div>
+            )}
+            {reportSections.motivator_analysis && (
+              <div><h3 className="text-sm font-semibold text-foreground mb-1">Motivatoren-Analyse</h3><p className="text-sm text-muted-foreground">{reportSections.motivator_analysis}</p></div>
+            )}
+            {reportSections.integration && (
+              <div><h3 className="text-sm font-semibold text-foreground mb-1">Integration</h3><p className="text-sm text-muted-foreground">{reportSections.integration}</p></div>
+            )}
+            {reportSections.company_value && (
+              <div><h3 className="text-sm font-semibold text-foreground mb-1">Wert für das Unternehmen</h3><p className="text-sm text-muted-foreground">{reportSections.company_value}</p></div>
+            )}
+          </div>
+        )}
+
+        {/* Communication DOs/DON'Ts */}
+        {(reportSections.communication_do?.length > 0 || reportSections.communication_dont?.length > 0) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {reportSections.communication_do?.length > 0 && (
+              <div className="bg-card rounded-2xl shadow-lg p-6">
+                <h3 className="text-sm font-bold text-emerald-700 mb-3">✓ Kommunikation – DOs</h3>
+                <ul className="space-y-2">{reportSections.communication_do.map((d: string, i: number) => <li key={i} className="text-sm text-muted-foreground">{d}</li>)}</ul>
+              </div>
+            )}
+            {reportSections.communication_dont?.length > 0 && (
+              <div className="bg-card rounded-2xl shadow-lg p-6">
+                <h3 className="text-sm font-bold text-red-700 mb-3">✗ Kommunikation – DON'Ts</h3>
+                <ul className="space-y-2">{reportSections.communication_dont.map((d: string, i: number) => <li key={i} className="text-sm text-muted-foreground">{d}</li>)}</ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* PDF Download */}
+        <div className="flex justify-center pb-8">
+          <button onClick={() => downloadPdf(analysisResult, leadName)}
+            className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 transition-colors">
+            <Download className="h-4 w-4" /> Report als PDF herunterladen
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════ */
 export default function InsightsFormPage() {
   const [searchParams] = useSearchParams();
