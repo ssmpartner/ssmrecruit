@@ -9,6 +9,7 @@ import { cantons } from '@/lib/swiss-plz';
 import { useToast } from '@/hooks/use-toast';
 import ProcessStepper from '@/components/ProcessStepper';
 import { supabase } from '@/integrations/supabase/client';
+import LeadDetailSheet from '@/components/LeadDetailSheet';
 
 // ── Types ──
 export type AutomationTrigger = 'status_change' | 'lead_created' | 'disc_completed' | 'documents_uploaded' | 'time_in_status';
