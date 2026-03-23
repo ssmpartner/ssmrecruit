@@ -193,7 +193,7 @@ function StepEditor({ step, steps, onChange, onRemove }: {
                 </div>
                 <div>
                   <Label className="text-[10px] text-muted-foreground">Next Step</Label>
-                  <Select value={opt.next_step_id || '__none''} onValueChange={v => setOption(idx, { next_step_id: v === '__none' ? '' : v })}>
+                  <Select value={opt.next_step_id || '__none'} onValueChange={v => setOption(idx, { next_step_id: v === '__none' ? '' : v })}>
                     <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none">— Kein —</SelectItem>
