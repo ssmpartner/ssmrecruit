@@ -450,7 +450,8 @@ Neue Leads (Monat);24`,
       "action_value": "Lead seit 3 Tagen unbearbeitet",
       "delay_minutes": 0,
       "is_active": true,
-      "test_only": false
+      "test_only": false,
+      "sort_order": 0
     }
   ]
 }`,
@@ -465,9 +466,10 @@ Neue Leads (Monat);24`,
           { name: 'action_type', type: 'string', required: true, description: 'Aktion: send_notification, change_status, assign_employee, create_task, send_email, trigger_wizard' },
           { name: 'action_value', type: 'string', required: true, description: 'Aktionswert' },
           { name: 'delay_minutes', type: 'number', required: false, description: 'Verzögerung in Minuten' },
+          { name: 'sort_order', type: 'number', required: false, description: 'Reihenfolge / Priorität (Standard: 0)' },
           { name: 'test_only', type: 'boolean', required: false, description: 'Nur für Test-User aktiv (Standard: false)' },
         ],
-        response: `{ "id": "uuid", "is_active": true, "test_only": false }`,
+        response: `{ "id": "uuid", "is_active": true, "test_only": false, "sort_order": 0 }`,
       },
     ],
   },

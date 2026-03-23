@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.21.0';
+const APP_VERSION = '2.22.0';
 
 const versionHistory = [
-  { version: '2.21.0', date: '23.03.2026', changes: [
+  { version: '2.22.0', date: '23.03.2026', changes: [
     'Wizard-Management: Modulares System in Einstellungen → Wizards zur Erstellung und Verwaltung von Lead-Funnels (Step-Builder mit Video, Auswahl, Entscheidung)',
     'Wizard-Typen: recruiting, sales, custom – nur ein aktiver Wizard vom Typ "recruiting" erlaubt',
     'Wizard-Editor: 4 Tabs (Allgemein, Schritte, Logik-Platzhalter, Vorschau) mit Echtzeit-Simulation',
@@ -16,7 +16,9 @@ const versionHistory = [
     'Wizard-Verknüpfung in Eskalation: Wizards können Eskalationsprozessen zugewiesen werden mit Reihenfolge, Start-Step und Verzögerung',
     'Test-Modus (🧪): Regeln und Wizard-Verknüpfungen können einzeln als "Nur für Test-User" markiert werden',
     'Pipeline-Flow erweitert: Jeder Flow-Node zeigt jetzt zugewiesene Regeln UND Wizards an, konfigurierbar über Settings-Dialog mit Tabs',
-    'Datenbank: Neue Tabellen escalation_processes, escalation_rules, escalation_wizard_links mit test_only Spalte',
+    'Sortierung: Regeln und Wizard-Verknüpfungen können per Pfeil-Buttons in der Reihenfolge umsortiert werden – Eskalation wird in definierter Priorität ausgeführt',
+    'Pipeline-Flow Sortierung: Regeln und Wizards sind auch im Flow-Node-Konfigurationsdialog per Drag sortierbar',
+    'Datenbank: Neue Tabellen escalation_processes, escalation_rules, escalation_wizard_links mit test_only und sort_order Spalten',
   ]},
   { version: '2.20.0', date: '23.03.2026', changes: [
     'Bewerbungsformular: Öffentliches mehrstufiges Formular unter /apply mit Datei-Uploads, Validierung und Consent-Tracking',
