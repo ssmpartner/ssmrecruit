@@ -164,7 +164,7 @@ export default function InsightsFormPage() {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([{ date: '', time: '' }]);
 
   const [step, setStep] = useState<WizardStep>('basics');
-
+  const [motivatorPage, setMotivatorPage] = useState(0);
   useEffect(() => {
     if (!token) { setError('Ungültiger Link.'); setLoading(false); return; }
     loadRequest();
