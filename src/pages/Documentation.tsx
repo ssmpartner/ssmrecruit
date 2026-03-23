@@ -2,9 +2,19 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.19.0';
+const APP_VERSION = '2.20.0';
 
 const versionHistory = [
+  { version: '2.20.0', date: '23.03.2026', changes: [
+    'Bewerbungsformular: Öffentliches mehrstufiges Formular unter /apply mit Datei-Uploads, Validierung und Consent-Tracking',
+    'Application-Webhook: Neuer Endpunkt /functions/v1/application-webhook für Bewerbungen mit multipart/form-data Support',
+    'Automatisches custom_fields Fallback: Unbekannte Formularfelder werden verlustfrei als JSON gespeichert',
+    'Bewerbungs-Datenbank: Neue applications-Tabelle mit Kandidatenfeldern, Dokumenten-Pfaden, Consents und Status-Logik',
+    'Storage-Bucket application-documents für sichere Dokumenten-Speicherung (CV, Motivationsschreiben, Beilagen)',
+    'Form-Webhook erweitert: fullName als zusätzlicher Alias für Namensfeld akzeptiert',
+    'API-Dokumentation aktualisiert mit allen Webhook-Endpunkten (form-webhook, application-webhook, meta, tiktok)',
+    'Status-Logik: complete (alle Pflichtfelder + CV), incomplete (fehlende Daten), spam_suspected (Captcha ungültig)',
+  ]},
   { version: '2.19.0', date: '23.03.2026', changes: [
     'Analytics komplett überarbeitet: 4 Tabs – Übersicht (KPIs), Marketing, Geschäftsleitung und Flow-Analyse',
     'Marketing-Tab: Quellen-Performance, Kampagnen-Analyse, Kanal-Konversionsraten und Marketing-Funnel',
