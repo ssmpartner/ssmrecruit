@@ -646,7 +646,7 @@ export default function InsightsFormPage() {
                   ))}
                   {timeSlots.length < 5 && (
                     <button type="button" onClick={() => setTimeSlots([...timeSlots, { date: '', time: '' }])}
-                      className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 hover:text-emerald-700">
+                      className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80">
                       <Plus className="h-4 w-4" /> Weiteren Termin hinzufügen
                     </button>
                   )}
