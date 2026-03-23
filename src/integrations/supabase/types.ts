@@ -914,6 +914,7 @@ export type Database = {
         Row: {
           address: string
           agency_id: string
+          callback_count: number
           campaign: string
           canton: string
           canton_code: string
@@ -925,6 +926,7 @@ export type Database = {
           lead_lifecycle: string
           name: string
           notes: string
+          original_employee_id: string
           phone: string
           plz: string
           position: string
@@ -935,6 +937,7 @@ export type Database = {
         Insert: {
           address?: string
           agency_id: string
+          callback_count?: number
           campaign?: string
           canton?: string
           canton_code?: string
@@ -946,6 +949,7 @@ export type Database = {
           lead_lifecycle?: string
           name: string
           notes?: string
+          original_employee_id?: string
           phone?: string
           plz?: string
           position?: string
@@ -956,6 +960,7 @@ export type Database = {
         Update: {
           address?: string
           agency_id?: string
+          callback_count?: number
           campaign?: string
           canton?: string
           canton_code?: string
@@ -967,6 +972,7 @@ export type Database = {
           lead_lifecycle?: string
           name?: string
           notes?: string
+          original_employee_id?: string
           phone?: string
           plz?: string
           position?: string
@@ -1042,6 +1048,45 @@ export type Database = {
           display_name?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      status_wizard_results: {
+        Row: {
+          answers: Json
+          completed_by: string
+          created_at: string
+          feedback: string
+          id: string
+          lead_id: string
+          lead_withdrawn: boolean
+          original_employee_id: string
+          reassigned_to: string
+          wizard_type: string
+        }
+        Insert: {
+          answers?: Json
+          completed_by?: string
+          created_at?: string
+          feedback?: string
+          id?: string
+          lead_id: string
+          lead_withdrawn?: boolean
+          original_employee_id?: string
+          reassigned_to?: string
+          wizard_type: string
+        }
+        Update: {
+          answers?: Json
+          completed_by?: string
+          created_at?: string
+          feedback?: string
+          id?: string
+          lead_id?: string
+          lead_withdrawn?: boolean
+          original_employee_id?: string
+          reassigned_to?: string
+          wizard_type?: string
         }
         Relationships: []
       }
