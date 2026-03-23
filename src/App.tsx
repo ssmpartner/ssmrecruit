@@ -30,6 +30,7 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const InsightsFormPage = lazy(() => import("./pages/InsightsFormPage"));
 const DocumentUploadPage = lazy(() => import("./pages/DocumentUploadPage"));
+const ApplicationFormPage = lazy(() => import("./pages/ApplicationFormPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
