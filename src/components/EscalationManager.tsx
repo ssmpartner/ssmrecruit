@@ -35,6 +35,7 @@ interface EscalationRule {
   delay_minutes: number;
   is_active: boolean;
   test_only: boolean;
+  sort_order: number;
 }
 
 interface EscalationWizardLink {
