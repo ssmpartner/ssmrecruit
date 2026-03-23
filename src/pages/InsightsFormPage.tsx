@@ -126,8 +126,8 @@ function ScaleRow({ value, onChange }: { value: number; onChange: (v: number) =>
           <button key={val} type="button" onClick={() => onChange(val)}
             className={`flex-1 rounded-lg py-2 text-xs font-medium border transition-all ${
               value === val
-                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                : 'bg-white text-muted-foreground border-border hover:border-ring hover:bg-muted'
             }`}
           >{val}</button>
         ))}
