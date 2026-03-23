@@ -671,7 +671,7 @@ export default function InsightsFormPage() {
                 </button>
               ) : (
                 <button type="button" onClick={goNext}
-                  className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-emerald-700">
+                  className="flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90">
                   Weiter <ChevronRight className="h-4 w-4" />
                 </button>
               )}
