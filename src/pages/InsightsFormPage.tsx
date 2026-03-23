@@ -579,16 +579,16 @@ export default function InsightsFormPage() {
                 {workstyleQuestions.map((q, i) => (
                   <div key={q.key} className="space-y-2">
                     <label className="flex items-baseline gap-2">
-                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">{i + 1}</span>
-                      <span className="text-sm font-semibold text-slate-800">{q.question}</span>
+                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{i + 1}</span>
+                      <span className="text-sm font-semibold text-foreground">{q.question}</span>
                     </label>
                     <div className="grid grid-cols-1 gap-2">
                       {q.options.map(opt => (
                         <button key={opt} type="button" onClick={() => setWorkstyleAnswers(prev => ({ ...prev, [q.key]: opt }))}
                           className={`text-left px-4 py-3 rounded-lg border text-sm transition-all ${
                             workstyleAnswers[q.key] === opt
-                              ? 'bg-emerald-50 border-emerald-400 text-emerald-800 font-medium'
-                              : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
+                              ? 'bg-primary/5 border-ring text-primary font-medium'
+                              : 'bg-card border-border text-foreground hover:border-ring/50'
                           }`}
                         >{opt}</button>
                       ))}
