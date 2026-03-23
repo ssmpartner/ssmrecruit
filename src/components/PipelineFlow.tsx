@@ -281,9 +281,20 @@ function EscalationRuleEditor({
             </div>
           ) : (
             <div className="space-y-2">
-              {wizardLinks.map(link => (
+              {wizardLinks.map((link, wIdx) => (
                 <div key={link.id} className={`rounded-xl border bg-card p-3 shadow-sm transition-opacity ${!link.isActive ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-0.5 shrink-0">
+                      <button onClick={() => moveWizardLink(link.id, 'up')} disabled={wIdx === 0}
+                        className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                        <svg width="10" height="10" viewBox="0 0 12 12"><path d="M6 3L10 8H2L6 3Z" fill="currentColor"/></svg>
+                      </button>
+                      <button onClick={() => moveWizardLink(link.id, 'down')} disabled={wIdx === wizardLinks.length - 1}
+                        className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                        <svg width="10" height="10" viewBox="0 0 12 12"><path d="M6 9L2 4H10L6 9Z" fill="currentColor"/></svg>
+                      </button>
+                    </div>
+                    <span className="text-[10px] font-bold text-muted-foreground bg-muted rounded px-1.5 py-0.5">{wIdx + 1}</span>
                     <Wand2 className="h-4 w-4 text-primary shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{link.wizardName}</p>
