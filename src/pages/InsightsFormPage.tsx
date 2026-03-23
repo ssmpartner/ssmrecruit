@@ -510,7 +510,7 @@ export default function InsightsFormPage() {
                       );
                     })}
                   </div>
-                  <p className="text-xs text-slate-400 text-center">{motivatorPage + 1} / {totalPages}</p>
+                  <p className="text-xs text-muted-foreground text-center">{motivatorPage + 1} / {totalPages}</p>
 
                   {/* Questions */}
                   <div className="space-y-4">
