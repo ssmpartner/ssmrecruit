@@ -95,7 +95,7 @@ export default function NotificationCenter() {
                 </div>
               ) : (
                 notifications.map((notification) => {
-                  const config = typeConfig[notification.type];
+                  const config = typeConfig[notification.type] || defaultTypeConfig;
                   const Icon = config.icon;
                   return (
                     <button
