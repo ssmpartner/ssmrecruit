@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import {
   CheckCircle2, Loader2, AlertCircle, Brain, ClipboardList,
   CalendarPlus, Plus, Trash2, Target, User, Sparkles, ChevronRight, ChevronLeft,
+  Download, TrendingUp, Shield, BookOpen, Users, Zap, Award,
 } from 'lucide-react';
 
 /* ───── types ───── */
