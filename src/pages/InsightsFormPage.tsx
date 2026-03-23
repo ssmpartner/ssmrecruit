@@ -460,7 +460,7 @@ export default function InsightsFormPage() {
                     <textarea value={insightsAnswers[q.key] || ''}
                       onChange={e => setInsightsAnswers(prev => ({ ...prev, [q.key]: e.target.value }))}
                       rows={3} placeholder="Ihre Antwort..." maxLength={2000}
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none resize-none" />
+                      className="w-full rounded-lg border border-border bg-muted px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none resize-none" />
                   </div>
                 ))}
               </>
