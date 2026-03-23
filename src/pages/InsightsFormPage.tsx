@@ -523,9 +523,9 @@ export default function InsightsFormPage() {
                             <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${meta.text} ${meta.bg}`} style={{ backgroundColor: meta.color + '20' }}>
                               {meta.label}
                             </span>
-                            <span className="text-xs text-slate-400">Frage {idx + 1} von {motivatorQuestions.length}</span>
+                            <span className="text-xs text-muted-foreground">Frage {idx + 1} von {motivatorQuestions.length}</span>
                           </div>
-                          <p className="text-sm font-medium text-slate-800 mb-4">{q.text}</p>
+                          <p className="text-sm font-medium text-foreground mb-4">{q.text}</p>
 
                           {/* Likert scale buttons */}
                           <div className="space-y-2">
