@@ -992,6 +992,42 @@ export type Database = {
         }
         Relationships: []
       }
+      wizards: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          rules: Json
+          status: string
+          steps: Json
+          type: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string
+          rules?: Json
+          status?: string
+          steps?: Json
+          type?: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          rules?: Json
+          status?: string
+          steps?: Json
+          type?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
