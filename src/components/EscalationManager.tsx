@@ -500,9 +500,24 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
               </div>
             ) : (
               <div className="space-y-2">
-                {processRules.map(rule => (
+                {processRules.map((rule, idx) => (
                   <div key={rule.id} className={`rounded-xl border bg-card p-4 shadow-sm transition-opacity ${!rule.is_active ? 'opacity-60' : ''}`}>
                     <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-0.5">
+                          <button onClick={() => moveRule(rule.id, 'up')} disabled={idx === 0}
+                            className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 3L10 8H2L6 3Z" fill="currentColor"/></svg>
+                          </button>
+                          <button onClick={() => moveRule(rule.id, 'down')} disabled={idx === processRules.length - 1}
+                            className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 9L2 4H10L6 9Z" fill="currentColor"/></svg>
+                          </button>
+                        </div>
+                        <div className="h-6 w-6 rounded-lg bg-muted flex items-center justify-center">
+                          <span className="text-[10px] font-bold text-muted-foreground">{idx + 1}</span>
+                        </div>
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 text-xs flex-wrap">
                           <span className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-1 font-medium">
