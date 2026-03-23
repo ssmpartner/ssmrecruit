@@ -150,6 +150,8 @@ export default function InsightsFormPage() {
   const [leadName, setLeadName] = useState('');
   const [requestId, setRequestId] = useState('');
   const [leadId, setLeadId] = useState('');
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
 
   // questions from DB or defaults
   const [insightsQuestions, setInsightsQuestions] = useState<InsightsQuestion[]>(defaultInsightsQuestions);
