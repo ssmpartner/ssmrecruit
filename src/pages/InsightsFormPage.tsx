@@ -556,7 +556,7 @@ export default function InsightsFormPage() {
                   <div className="flex items-center justify-between pt-2">
                     {motivatorPage > 0 ? (
                       <button type="button" onClick={() => setMotivatorPage(p => p - 1)}
-                        className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-800">
+                        className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
                         <ChevronLeft className="h-4 w-4" /> Vorherige
                       </button>
                     ) : <div />}
