@@ -659,6 +659,137 @@ export type Database = {
           },
         ]
       }
+      escalation_processes: {
+        Row: {
+          applies_to_all_sources: boolean
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          main_process_status: string
+          name: string
+          priority: number
+          source_filters: string[]
+          updated_at: string
+        }
+        Insert: {
+          applies_to_all_sources?: boolean
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          main_process_status: string
+          name?: string
+          priority?: number
+          source_filters?: string[]
+          updated_at?: string
+        }
+        Update: {
+          applies_to_all_sources?: boolean
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          main_process_status?: string
+          name?: string
+          priority?: number
+          source_filters?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      escalation_rules: {
+        Row: {
+          action_type: string
+          action_value: string
+          condition_type: string
+          condition_value: string
+          created_at: string
+          delay_minutes: number
+          escalation_process_id: string
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          action_type?: string
+          action_value?: string
+          condition_type?: string
+          condition_value?: string
+          created_at?: string
+          delay_minutes?: number
+          escalation_process_id: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          action_value?: string
+          condition_type?: string
+          condition_value?: string
+          created_at?: string
+          delay_minutes?: number
+          escalation_process_id?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escalation_rules_escalation_process_id_fkey"
+            columns: ["escalation_process_id"]
+            isOneToOne: false
+            referencedRelation: "escalation_processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escalation_wizard_links: {
+        Row: {
+          created_at: string
+          escalation_process_id: string
+          id: string
+          is_active: boolean
+          sort_order: number
+          start_step_id: string
+          wizard_id: string
+        }
+        Insert: {
+          created_at?: string
+          escalation_process_id: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          start_step_id?: string
+          wizard_id: string
+        }
+        Update: {
+          created_at?: string
+          escalation_process_id?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          start_step_id?: string
+          wizard_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escalation_wizard_links_escalation_process_id_fkey"
+            columns: ["escalation_process_id"]
+            isOneToOne: false
+            referencedRelation: "escalation_processes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalation_wizard_links_wizard_id_fkey"
+            columns: ["wizard_id"]
+            isOneToOne: false
+            referencedRelation: "wizards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       insights_requests: {
         Row: {
           completed_at: string | null
