@@ -352,6 +352,7 @@ function FlowNode({
 interface PipelineFlowProps {
   leads: Lead[];
   employees?: Employee[];
+  onSelectLead?: (lead: Lead) => void;
 }
 
 export default function PipelineFlow({ leads, employees = [], onSelectLead }: PipelineFlowProps) {
