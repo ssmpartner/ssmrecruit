@@ -1257,30 +1257,89 @@ function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
         </div>
       </div>
 
-      {/* Motivator Questions (Teil 3) */}
+      {/* Motivator Questions (Teil 3) - Full CRUD */}
       <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold flex items-center gap-2">
             <Target className="h-4 w-4 text-muted-foreground" /> Teil 3: Motivatoren-Fragen ({mq.length})
           </h3>
+          <button onClick={() => { setAddingMq(true); setMqForm({ text: '', dimension: 'individualistisch' }); }}
+            className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+            <Plus className="h-3.5 w-3.5" /> Frage hinzufügen
+          </button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Die 6 Motivator-Dimensionen: Individualistisch, Theoretisch, Ökonomisch, Traditionell, Ästhetisch, Sozial.
-          Fragen werden automatisch aus den Standardwerten geladen, können aber in den app_settings angepasst werden.
-        </p>
-        {mq.length > 0 ? (
+
+        {loadingQ ? (
+          <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+        ) : (
           <div className="space-y-2">
             {mq.map((q, i) => (
-              <div key={i} className="rounded-lg border bg-muted/30 px-4 py-3 flex items-center gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">{i + 1}</span>
-                <span className="text-sm flex-1">{q.text}</span>
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-purple-100 text-purple-700">{q.dimension}</span>
+              <div key={i} className="rounded-lg border bg-muted/30 px-4 py-3">
+                {editMqIdx === i ? (
+                  <div className="space-y-2">
+                    <textarea value={mqForm.text} onChange={e => setMqForm(f => ({ ...f, text: e.target.value }))}
+                      rows={2} placeholder="Fragetext" className="w-full rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="text-xs font-medium text-muted-foreground">Dimension:</label>
+                      {motivatorDimensions.map(m => (
+                        <button key={m.key} onClick={() => setMqForm(f => ({ ...f, dimension: m.key }))}
+                          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${mqForm.dimension === m.key ? 'bg-purple-100 text-purple-700' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}>
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleUpdateMq(i)} className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"><Save className="h-3 w-3 inline mr-1" />Speichern</button>
+                      <button onClick={() => setEditMqIdx(null)} className="rounded-md bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80">Abbrechen</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">{i + 1}</span>
+                    <span className="text-sm flex-1">{q.text}</span>
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-purple-100 text-purple-700">
+                      {motivatorDimensions.find(m => m.key === q.dimension)?.label || q.dimension}
+                    </span>
+                    <div className="flex gap-1 shrink-0">
+                      <button onClick={() => { setEditMqIdx(i); setMqForm(q); }}
+                        className="rounded-lg p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => handleDeleteMq(i)}
+                        className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-        ) : (
-          <p className="text-xs text-muted-foreground italic">Standard-Motivatoren-Fragen werden verwendet (12 Fragen, 2 pro Dimension).</p>
         )}
+
+        {addingMq && (
+          <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4 space-y-2">
+            <textarea value={mqForm.text} onChange={e => setMqForm(f => ({ ...f, text: e.target.value }))}
+              rows={2} placeholder="Aussage eingeben (z.B. 'Ich strebe nach finanzieller Unabhängigkeit.')" className="w-full rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+            <div className="flex items-center gap-2 flex-wrap">
+              <label className="text-xs font-medium text-muted-foreground">Dimension:</label>
+              {motivatorDimensions.map(m => (
+                <button key={m.key} onClick={() => setMqForm(f => ({ ...f, dimension: m.key }))}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${mqForm.dimension === m.key ? 'bg-purple-100 text-purple-700' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={handleAddMq} className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"><Plus className="h-3 w-3 inline mr-1" />Hinzufügen</button>
+              <button onClick={() => setAddingMq(false)} className="rounded-md bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80">Abbrechen</button>
+            </div>
+          </div>
+        )}
+
+        <div className="rounded-lg bg-muted/50 p-3">
+          <p className="text-xs text-muted-foreground">
+            <strong>Motivator-Dimensionen:</strong>{' '}
+            Individualistisch · Theoretisch · Ökonomisch · Traditionell · Ästhetisch · Sozial
+            – idealerweise 2+ Fragen pro Dimension.
+          </p>
+        </div>
       </div>
 
       {/* SSM Match Kriterien */}
