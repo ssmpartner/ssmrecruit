@@ -18,6 +18,7 @@ interface AssessmentResult {
   scores: { performance: number; team_fit: number; learning: number; sales: number; culture_fit: number };
   match_result: { score: number; level: string; strengths: string[]; risks: string[] };
   recommendation: string;
+  recommendation_reason?: string;
   report_sections: {
     disc_analysis: string;
     motivator_analysis: string;
