@@ -223,6 +223,7 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
       action_type: ruleForm.action_type,
       action_value: ruleForm.action_value,
       delay_minutes: ruleForm.delay_minutes,
+      sort_order: rules.length,
     } as any);
     if (error) { toast({ title: 'Fehler', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Regel hinzugefügt' });
