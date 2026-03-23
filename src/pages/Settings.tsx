@@ -1221,6 +1221,123 @@ function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
           </p>
         </div>
       </div>
+
+      {/* Motivator Questions (Teil 3) */}
+      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Target className="h-4 w-4 text-muted-foreground" /> Teil 3: Motivatoren-Fragen ({mq.length})
+          </h3>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Die 6 Motivator-Dimensionen: Individualistisch, Theoretisch, Ökonomisch, Traditionell, Ästhetisch, Sozial.
+          Fragen werden automatisch aus den Standardwerten geladen, können aber in den app_settings angepasst werden.
+        </p>
+        {mq.length > 0 ? (
+          <div className="space-y-2">
+            {mq.map((q, i) => (
+              <div key={i} className="rounded-lg border bg-muted/30 px-4 py-3 flex items-center gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold">{i + 1}</span>
+                <span className="text-sm flex-1">{q.text}</span>
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-purple-100 text-purple-700">{q.dimension}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground italic">Standard-Motivatoren-Fragen werden verwendet (12 Fragen, 2 pro Dimension).</p>
+        )}
+      </div>
+
+      {/* SSM Match Kriterien */}
+      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Shield className="h-4 w-4 text-muted-foreground" /> SSM Match-Kriterien
+        </h3>
+        <p className="text-xs text-muted-foreground">
+          Definieren Sie die Idealwerte für das Kandidaten-Matching. Die KI verwendet diese Kriterien für den Culture Fit Score und die Empfehlung.
+        </p>
+
+        {/* Min DISC */}
+        <div className="space-y-3">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mindest DISC-Werte (%)</h4>
+          <div className="grid grid-cols-4 gap-3">
+            {(['D', 'I', 'S', 'C'] as const).map(dim => (
+              <div key={dim} className="space-y-1">
+                <label className={`text-xs font-bold ${dim === 'D' ? 'text-red-600' : dim === 'I' ? 'text-amber-600' : dim === 'S' ? 'text-emerald-600' : 'text-blue-600'}`}>{dim}</label>
+                <input type="number" min={0} max={100} value={ssmCriteria.min_disc[dim] || 0}
+                  onChange={e => setSsmCriteria(prev => ({ ...prev, min_disc: { ...prev.min_disc, [dim]: parseInt(e.target.value) || 0 } }))}
+                  className="w-full h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Preferred motivators */}
+        <div className="space-y-2">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Wunsch-Motivatoren</h4>
+          <div className="flex flex-wrap gap-2">
+            {motivatorDimensions.map(m => {
+              const selected = ssmCriteria.preferred_motivators.includes(m.key);
+              return (
+                <button key={m.key} type="button"
+                  onClick={() => setSsmCriteria(prev => ({
+                    ...prev,
+                    preferred_motivators: selected
+                      ? prev.preferred_motivators.filter(k => k !== m.key)
+                      : [...prev.preferred_motivators, m.key],
+                  }))}
+                  className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                    selected ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:bg-muted'
+                  }`}
+                >{m.label}</button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Min score */}
+        <div className="space-y-1">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mindest-Gesamtscore</h4>
+          <div className="flex items-center gap-3">
+            <input type="range" min={0} max={100} value={ssmCriteria.min_score}
+              onChange={e => setSsmCriteria(prev => ({ ...prev, min_score: parseInt(e.target.value) }))}
+              className="flex-1" />
+            <span className="text-sm font-bold w-10 text-right">{ssmCriteria.min_score}%</span>
+          </div>
+        </div>
+
+        {/* Exclusion criteria */}
+        <div className="space-y-2">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ausschlusskriterien</h4>
+          <div className="space-y-1.5">
+            {ssmCriteria.exclusion_criteria.map((c, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input value={c} onChange={e => {
+                  const updated = [...ssmCriteria.exclusion_criteria];
+                  updated[i] = e.target.value;
+                  setSsmCriteria(prev => ({ ...prev, exclusion_criteria: updated }));
+                }} className="flex-1 h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                <button onClick={() => setSsmCriteria(prev => ({ ...prev, exclusion_criteria: prev.exclusion_criteria.filter((_, j) => j !== i) }))}
+                  className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
+              </div>
+            ))}
+            <button onClick={() => setSsmCriteria(prev => ({ ...prev, exclusion_criteria: [...prev.exclusion_criteria, ''] }))}
+              className="text-xs font-medium text-primary hover:underline flex items-center gap-1"><Plus className="h-3 w-3" /> Kriterium hinzufügen</button>
+          </div>
+        </div>
+
+        {/* Save */}
+        <button
+          onClick={async () => {
+            const filtered = { ...ssmCriteria, exclusion_criteria: ssmCriteria.exclusion_criteria.filter(c => c.trim()) };
+            await supabase.from('app_settings').upsert({ key: 'ssm_criteria', value: filtered as unknown as any, updated_at: new Date().toISOString() });
+            toast({ title: 'SSM-Kriterien gespeichert' });
+          }}
+          className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+        >
+          <Save className="h-4 w-4" /> Kriterien speichern
+        </button>
+      </div>
     </>
   );
 }
