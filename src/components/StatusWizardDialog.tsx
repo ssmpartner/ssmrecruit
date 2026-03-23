@@ -176,6 +176,23 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
       updateLead(leadId, { status: newStatus });
       addActivity(leadId, 'status_change', `Wizard "${statusLabel}" abgeschlossen – Status: "${newStatus}"`);
 
+      // Log detailed wizard answers as activity
+      const answerDetails = Object.entries(answers)
+        .filter(([_, v]) => v !== '' && v !== undefined && v !== null)
+        .map(([k, v]) => {
+          const labels: Record<string, string> = {
+            date: 'Datum', time: 'Uhrzeit', channel: 'Kanal', result: 'Ergebnis',
+            reminder: 'Erinnerung', attempt: 'Versuch', reason: 'Grund',
+            attempts: 'Versuche', matching_failed: 'Matching fehlgeschlagen',
+            confirmed: 'Bestätigt', escalated: 'Eskaliert',
+          };
+          return `${labels[k] || k}: ${v}`;
+        })
+        .join(', ');
+      if (answerDetails) {
+        addActivity(leadId, 'note', `Wizard-Daten (${statusLabel}): ${answerDetails}`);
+      }
+
       if (feedback.trim()) {
         addActivity(leadId, 'note', `Wizard-Feedback (${statusLabel}): ${feedback.trim()}`);
       }
