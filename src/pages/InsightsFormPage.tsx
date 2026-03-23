@@ -469,11 +469,11 @@ export default function InsightsFormPage() {
             {/* ── STEP 2: DISC ── */}
             {step === 'disc' && (
               <>
-                <p className="text-sm text-slate-500">Bewerten Sie die folgenden Aussagen zu Ihrem Verhalten. 1 = trifft nicht zu, 5 = trifft voll zu.</p>
+                <p className="text-sm text-muted-foreground">Bewerten Sie die folgenden Aussagen zu Ihrem Verhalten. 1 = trifft nicht zu, 5 = trifft voll zu.</p>
                 {discQuestions.map((q, i) => (
-                  <div key={i} className={`rounded-xl border p-4 transition-colors ${discAnswers[i] > 0 ? 'bg-slate-50 border-slate-200' : 'bg-white'}`}>
-                    <p className="text-sm font-medium text-slate-800 mb-3">
-                      <span className="text-slate-400 mr-1.5">{i + 1}.</span>{q.text}
+                  <div key={i} className={`rounded-xl border p-4 transition-colors ${discAnswers[i] > 0 ? 'bg-muted border-border' : 'bg-card'}`}>
+                    <p className="text-sm font-medium text-foreground mb-3">
+                      <span className="text-muted-foreground mr-1.5">{i + 1}.</span>{q.text}
                     </p>
                     <ScaleRow value={discAnswers[i]} onChange={v => { const n = [...discAnswers]; n[i] = v; setDiscAnswers(n); }} />
                   </div>
