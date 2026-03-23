@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Filter, CalendarIcon, X, Users, UserCheck, MapPin, Target, TrendingUp, TrendingDown, BarChart3, PieChartIcon, Activity } from 'lucide-react';
+import { Filter, CalendarIcon, X, Users, UserCheck, MapPin, Target, TrendingUp, TrendingDown, BarChart3, PieChartIcon, Activity, Workflow, AlertTriangle, Clock, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -101,7 +101,7 @@ function ChartCard({ title, subtitle, icon: Icon, children, className }: { title
 }
 
 export default function Analytics() {
-  const { leads, agencies, employees, leadSources } = useLeads();
+  const { leads, agencies, employees, leadSources, activities } = useLeads();
   const [cantonFilter, setCantonFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
@@ -197,6 +197,106 @@ export default function Analytics() {
     { name: 'Interview', value: interviewCount, fill: 'hsl(38,80%,50%)' },
     { name: 'Eingestellt', value: hiredCount, fill: 'hsl(152,55%,40%)' },
   ];
+
+  // Flow Analysis Data
+  const statusOrder: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired'];
+
+  const flowAnalysis = useMemo(() => {
+    const now = new Date();
+
+    // Calculate avg days per status based on status change activities
+    const statusDurations: Record<string, number[]> = {};
+    statusOrder.forEach(s => { statusDurations[s] = []; });
+
+    // For each lead, compute days in current status
+    filtered.forEach(lead => {
+      const leadActivities = activities
+        .filter(a => a.leadId === lead.id && a.type === 'status_change')
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+      if (leadActivities.length > 0) {
+        // Time from last status change to now (current status duration)
+        const lastChange = new Date(leadActivities[leadActivities.length - 1].timestamp);
+        const daysInCurrent = Math.max(0, Math.floor((now.getTime() - lastChange.getTime()) / (1000 * 60 * 60 * 24)));
+        if (statusDurations[lead.status]) {
+          statusDurations[lead.status].push(daysInCurrent);
+        }
+
+        // Time between consecutive status changes
+        for (let i = 1; i < leadActivities.length; i++) {
+          const prev = new Date(leadActivities[i - 1].timestamp);
+          const curr = new Date(leadActivities[i].timestamp);
+          const days = Math.max(0, Math.floor((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24)));
+          // Try to extract status from description
+          const match = leadActivities[i - 1].description?.match(/→\s*(\w+)/);
+          if (match) {
+            const prevStatus = Object.keys(statusConfig).find(k => statusConfig[k as LeadStatus]?.label?.toLowerCase().includes(match[1].toLowerCase()));
+            if (prevStatus && statusDurations[prevStatus]) {
+              statusDurations[prevStatus].push(days);
+            }
+          }
+        }
+      } else {
+        // No activity: use days since creation
+        const created = new Date(lead.createdAt);
+        const days = Math.max(0, Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)));
+        if (statusDurations[lead.status]) {
+          statusDurations[lead.status].push(days);
+        }
+      }
+    });
+
+    const avgDaysPerStatus = statusOrder.map(s => {
+      const durations = statusDurations[s];
+      const avg = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+      return {
+        status: s,
+        label: statusConfig[s]?.label || s,
+        avgDays: Math.round(avg * 10) / 10,
+        count: filtered.filter(l => l.status === s).length,
+        maxDays: durations.length > 0 ? Math.max(...durations) : 0,
+      };
+    });
+
+    // Bottleneck: status with highest avg days and >0 leads
+    const bottleneck = avgDaysPerStatus
+      .filter(s => s.count > 0)
+      .sort((a, b) => b.avgDays - a.avgDays)[0] || null;
+
+    // Status transitions from activities
+    const transitions: Record<string, number> = {};
+    activities
+      .filter(a => a.type === 'status_change')
+      .forEach(a => {
+        const match = a.description?.match(/(.+?)\s*→\s*(.+)/);
+        if (match) {
+          const key = `${match[1].trim()} → ${match[2].trim()}`;
+          transitions[key] = (transitions[key] || 0) + 1;
+        }
+      });
+
+    const topTransitions = Object.entries(transitions)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([label, count]) => ({ label, count }));
+
+    // Avg total process duration for hired leads
+    const hiredLeads = filtered.filter(l => l.status === 'hired');
+    const avgProcessDays = hiredLeads.length > 0
+      ? Math.round(hiredLeads.reduce((sum, l) => {
+          const created = new Date(l.createdAt);
+          const updated = new Date(l.updatedAt);
+          return sum + Math.max(0, Math.floor((updated.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)));
+        }, 0) / hiredLeads.length)
+      : 0;
+
+    return { avgDaysPerStatus, bottleneck, topTransitions, avgProcessDays };
+  }, [filtered, activities]);
+
+  const flowBarData = flowAnalysis.avgDaysPerStatus.map((s, i) => ({
+    ...s,
+    fill: PIE_COLORS[i % PIE_COLORS.length],
+  }));
 
   const selectCls = "h-9 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring transition-colors";
 
@@ -513,6 +613,183 @@ export default function Analytics() {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Flow Analysis Section */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="rounded-xl bg-primary/10 p-2.5">
+            <Workflow className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold tracking-tight">Flow-Analyse</h2>
+            <p className="text-xs text-muted-foreground">Verweildauer, Engpässe und Status-Übergänge</p>
+          </div>
+        </div>
+
+        {/* Flow KPI Cards */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCardModern
+            icon={Clock}
+            title="Ø Prozessdauer"
+            value={`${flowAnalysis.avgProcessDays} Tage`}
+            subtitle="Bis zur Einstellung"
+            accentColor="hsl(210,60%,52%)"
+          />
+          <StatCardModern
+            icon={AlertTriangle}
+            title="Engpass"
+            value={flowAnalysis.bottleneck?.label || '–'}
+            subtitle={flowAnalysis.bottleneck ? `Ø ${flowAnalysis.bottleneck.avgDays} Tage · ${flowAnalysis.bottleneck.count} Leads` : 'Kein Engpass'}
+            accentColor="hsl(38,80%,50%)"
+          />
+          <StatCardModern
+            icon={ArrowRight}
+            title="Status-Wechsel"
+            value={activities.filter(a => a.type === 'status_change').length}
+            subtitle="Gesamte Übergänge"
+            accentColor="hsl(162,17%,50%)"
+          />
+          <StatCardModern
+            icon={Activity}
+            title="Ø Tage in aktueller Phase"
+            value={(() => {
+              const all = flowAnalysis.avgDaysPerStatus.filter(s => s.count > 0);
+              if (all.length === 0) return '–';
+              const avg = all.reduce((s, x) => s + x.avgDays, 0) / all.length;
+              return `${Math.round(avg * 10) / 10}`;
+            })()}
+            subtitle="Über alle Status"
+            accentColor="hsl(168,17%,23%)"
+          />
+        </div>
+
+        {/* Avg Days per Status Chart + Top Transitions */}
+        <div className="grid gap-6 lg:grid-cols-5">
+          <ChartCard title="Verweildauer pro Status" subtitle="Durchschnittliche Tage" icon={Clock} className="lg:col-span-3">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={flowBarData} barCategoryGap="20%">
+                <defs>
+                  <linearGradient id="flowBarGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(210,60%,52%)" />
+                    <stop offset="100%" stopColor="hsl(210,60%,62%)" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,89%)" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(0,0%,80%)" axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 12 }} stroke="hsl(0,0%,80%)" axisLine={false} tickLine={false} label={{ value: 'Tage', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'hsl(0,0%,60%)' } }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="avgDays" fill="url(#flowBarGrad)" radius={[6, 6, 0, 0]} name="Ø Tage" barSize={36} />
+                <Bar dataKey="count" fill="hsl(168,17%,23%)" radius={[6, 6, 0, 0]} name="Leads" barSize={36} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          <ChartCard title="Häufigste Übergänge" subtitle="Status-Wechsel" icon={ArrowRight} className="lg:col-span-2">
+            {flowAnalysis.topTransitions.length > 0 ? (
+              <div className="space-y-2.5 max-h-[300px] overflow-y-auto">
+                {flowAnalysis.topTransitions.map((t, i) => {
+                  const maxCount = flowAnalysis.topTransitions[0]?.count || 1;
+                  return (
+                    <div key={i} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium truncate flex-1 mr-2">{t.label}</span>
+                        <span className="font-bold text-foreground shrink-0">{t.count}×</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${(t.count / maxCount) * 100}%`,
+                            background: `linear-gradient(90deg, hsl(168,17%,23%), hsl(162,17%,50%))`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="py-12 text-center text-sm text-muted-foreground">Keine Status-Wechsel vorhanden</p>
+            )}
+          </ChartCard>
+        </div>
+
+        {/* Detailed Status Flow Table */}
+        <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+          <div className="px-6 pt-6 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Workflow className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold">Status-Verweildauer Detail</h3>
+                <p className="text-xs text-muted-foreground">Detaillierte Aufschlüsselung pro Pipeline-Phase</p>
+              </div>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-t bg-muted/30">
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Phase</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Leads</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Ø Tage</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Max Tage</th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Verteilung</th>
+                  <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {flowAnalysis.avgDaysPerStatus.map((s, i) => {
+                  const isBottleneck = flowAnalysis.bottleneck?.status === s.status;
+                  const maxAvg = Math.max(...flowAnalysis.avgDaysPerStatus.map(x => x.avgDays), 1);
+                  return (
+                    <tr key={s.status} className={cn('border-t transition-colors hover:bg-muted/40', i % 2 === 0 && 'bg-muted/10', isBottleneck && 'bg-destructive/5')}>
+                      <td className="px-6 py-3.5 font-medium flex items-center gap-2">
+                        {isBottleneck && <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />}
+                        {s.label}
+                      </td>
+                      <td className="px-6 py-3.5 text-right font-bold">{s.count}</td>
+                      <td className="px-6 py-3.5 text-right">
+                        <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold', isBottleneck ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary')}>
+                          {s.avgDays}d
+                        </span>
+                      </td>
+                      <td className="px-6 py-3.5 text-right text-muted-foreground">{s.maxDays}d</td>
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 flex-1 rounded-full bg-muted overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${(s.avgDays / maxAvg) * 100}%`,
+                                background: isBottleneck
+                                  ? 'linear-gradient(90deg, hsl(0,65%,51%), hsl(38,80%,50%))'
+                                  : 'linear-gradient(90deg, hsl(168,17%,23%), hsl(162,17%,50%))',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-3.5 text-center">
+                        {isBottleneck ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">
+                            <AlertTriangle className="h-3 w-3" /> Engpass
+                          </span>
+                        ) : s.count > 0 ? (
+                          <span className="inline-flex items-center rounded-full bg-[hsl(152,55%,40%)]/10 px-2 py-0.5 text-xs font-semibold text-[hsl(152,55%,40%)]">OK</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">–</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
