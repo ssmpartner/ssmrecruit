@@ -53,7 +53,7 @@ const inputCls = "h-8 w-full rounded-lg border bg-background px-2.5 text-sm outl
 
 // ── Escalation Rule Editor Dialog (with test toggle) ──
 function EscalationRuleEditor({
-  status, rules, wizardLinks, onSave, onSaveWizardLinks, onClose, employees, availableWizards, onAddWizard, onRemoveWizard, onToggleWizardActive, onToggleWizardTest,
+  status, rules, wizardLinks, onSave, onSaveWizardLinks, onClose, employees, availableWizards, onAddWizard, onRemoveWizard, onToggleWizardActive, onToggleWizardTest, onReorderWizards,
 }: {
   status: LeadStatus;
   rules: EscalationRule[];
@@ -67,6 +67,7 @@ function EscalationRuleEditor({
   onRemoveWizard: (linkId: string) => void;
   onToggleWizardActive: (linkId: string) => void;
   onToggleWizardTest: (linkId: string) => void;
+  onReorderWizards?: (reordered: WizardLink[]) => void;
 }) {
   const [localRules, setLocalRules] = useState<EscalationRule[]>(rules);
   const [expandedRule, setExpandedRule] = useState<string | null>(localRules[0]?.id ?? null);
