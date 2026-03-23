@@ -132,7 +132,7 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
 
   const loadProcessDetails = useCallback(async (processId: string) => {
     const [rulesRes, linksRes] = await Promise.all([
-      supabase.from('escalation_rules').select('*').eq('escalation_process_id', processId),
+      supabase.from('escalation_rules').select('*').eq('escalation_process_id', processId).order('sort_order'),
       supabase.from('escalation_wizard_links').select('*').eq('escalation_process_id', processId).order('sort_order'),
     ]);
     setRules((rulesRes.data || []) as EscalationRule[]);
