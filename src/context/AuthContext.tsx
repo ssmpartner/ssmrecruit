@@ -58,6 +58,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(({ data }) => setRole((data?.role as AppRole) ?? null));
   };
 
+  // Auto-logout after 45 minutes of inactivity
+  useEffect(() => {
+    const INACTIVITY_TIMEOUT = 45 * 60 * 1000; // 45 minutes
+    let timer: ReturnType<typeof setTimeout>;
+
+    const resetTimer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (currentSession) {
+          await supabase.auth.signOut();
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          setRole(null);
+          window.location.href = '/login';
+        }
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
+    events.forEach(e => window.addEventListener(e, resetTimer, { passive: true }));
+    resetTimer();
+
+    return () => {
+      clearTimeout(timer);
+      events.forEach(e => window.removeEventListener(e, resetTimer));
+    };
+  }, []);
+
   useEffect(() => {
     // 1. Restore session from storage first
     supabase.auth.getSession().then(({ data: { session } }) => {
