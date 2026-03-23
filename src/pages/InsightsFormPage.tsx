@@ -36,18 +36,18 @@ const defaultDiscQuestions: DiscQuestionItem[] = [
   { text: 'Ich hinterfrage Dinge kritisch und prüfe Fakten.', dimension: 'C' },
 ];
 const defaultMotivatorQuestions: MotivatorQuestion[] = [
-  { text: 'Unabhängigkeit und persönliche Freiheit sind mir im Beruf sehr wichtig.', dimension: 'individualistisch' },
-  { text: 'Ich möchte durch meine Arbeit Einfluss und Entscheidungsmacht haben.', dimension: 'individualistisch' },
-  { text: 'Ich lerne gerne Neues und bilde mich ständig weiter.', dimension: 'theoretisch' },
-  { text: 'Ich analysiere Probleme lieber gründlich, bevor ich handle.', dimension: 'theoretisch' },
-  { text: 'Finanzieller Erfolg und Rendite motivieren mich stark.', dimension: 'oekonomisch' },
-  { text: 'Effizienz und Ergebnisorientierung stehen bei mir im Vordergrund.', dimension: 'oekonomisch' },
-  { text: 'Bewährte Werte und Traditionen geben mir Sicherheit.', dimension: 'traditionell' },
-  { text: 'Verlässlichkeit und Beständigkeit sind mir wichtiger als ständiger Wandel.', dimension: 'traditionell' },
-  { text: 'Kreativität und Gestaltungsmöglichkeiten inspirieren mich.', dimension: 'aesthetisch' },
-  { text: 'Mir ist die Qualität und Ästhetik meiner Arbeit sehr wichtig.', dimension: 'aesthetisch' },
-  { text: 'Anderen zu helfen gibt mir berufliche Erfüllung.', dimension: 'sozial' },
-  { text: 'Ein harmonisches Arbeitsumfeld ist mir wichtiger als hohes Gehalt.', dimension: 'sozial' },
+  { text: 'Ich übernehme gerne Verantwortung und treffe Entscheidungen.', dimension: 'individualistisch' },
+  { text: 'Es motiviert mich, Einfluss auf andere oder Ergebnisse zu haben.', dimension: 'individualistisch' },
+  { text: 'Ein hoher finanzieller Erfolg ist für mich ein wichtiger Antrieb.', dimension: 'oekonomisch' },
+  { text: 'Ich denke oft daran, wie ich meine Leistung in konkrete Ergebnisse umwandeln kann.', dimension: 'oekonomisch' },
+  { text: 'Ich habe Freude daran, neue Dinge zu lernen und zu verstehen.', dimension: 'theoretisch' },
+  { text: 'Ich hinterfrage gerne Zusammenhänge, um ein tieferes Verständnis zu bekommen.', dimension: 'theoretisch' },
+  { text: 'Ich unterstütze gerne andere Menschen, auch ohne direkten Vorteil für mich.', dimension: 'sozial' },
+  { text: 'Es ist mir wichtig, dass sich andere in meinem Umfeld wohlfühlen.', dimension: 'sozial' },
+  { text: 'Ein angenehmes und harmonisches Umfeld steigert meine Motivation.', dimension: 'aesthetisch' },
+  { text: 'Ich lege Wert auf Ausgleich und eine gute Balance im Alltag.', dimension: 'aesthetisch' },
+  { text: 'Klare Regeln und Strukturen helfen mir, effektiv zu arbeiten.', dimension: 'traditionell' },
+  { text: 'Ich orientiere mich gerne an bewährten Vorgehensweisen.', dimension: 'traditionell' },
 ];
 const workstyleQuestions = [
   { key: 'work_experience', label: 'Berufserfahrung', question: 'Wie viele Jahre Berufserfahrung haben Sie in Ihrem Fachgebiet?', type: 'select' as const, options: ['< 1 Jahr', '1-3 Jahre', '3-5 Jahre', '5-10 Jahre', '10+ Jahre'] },
@@ -65,6 +65,15 @@ const selfAssessmentQuestions = [
 ];
 
 const scaleLabels = ['Trifft nicht zu', 'Trifft kaum zu', 'Neutral', 'Trifft eher zu', 'Trifft voll zu'];
+
+const motivatorMeta: Record<string, { label: string; color: string; bg: string; border: string; text: string }> = {
+  individualistisch: { label: 'Individualistisch', color: '#8B5CF6', bg: 'bg-violet-50', border: 'border-violet-300', text: 'text-violet-700' },
+  oekonomisch: { label: 'Ökonomisch', color: '#F97316', bg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-700' },
+  theoretisch: { label: 'Theoretisch', color: '#3B82F6', bg: 'bg-blue-50', border: 'border-blue-300', text: 'text-blue-700' },
+  sozial: { label: 'Sozial', color: '#22C55E', bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700' },
+  aesthetisch: { label: 'Ästhetisch', color: '#EC4899', bg: 'bg-pink-50', border: 'border-pink-300', text: 'text-pink-700' },
+  traditionell: { label: 'Traditionell', color: '#6B7280', bg: 'bg-gray-50', border: 'border-gray-300', text: 'text-gray-700' },
+};
 
 type WizardStep = 'basics' | 'disc' | 'motivators' | 'workstyle' | 'selfassessment' | 'appointments';
 
@@ -155,7 +164,7 @@ export default function InsightsFormPage() {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([{ date: '', time: '' }]);
 
   const [step, setStep] = useState<WizardStep>('basics');
-
+  const [motivatorPage, setMotivatorPage] = useState(0);
   useEffect(() => {
     if (!token) { setError('Ungültiger Link.'); setLoading(false); return; }
     loadRequest();
@@ -472,20 +481,96 @@ export default function InsightsFormPage() {
               </>
             )}
 
-            {/* ── STEP 3: Motivatoren ── */}
-            {step === 'motivators' && (
-              <>
-                <p className="text-sm text-slate-500">Bewerten Sie die folgenden Aussagen zu Ihren Werten und Motivatoren.</p>
-                {motivatorQuestions.map((q, i) => (
-                  <div key={i} className={`rounded-xl border p-4 transition-colors ${motivatorAnswers[i] > 0 ? 'bg-slate-50 border-slate-200' : 'bg-white'}`}>
-                    <p className="text-sm font-medium text-slate-800 mb-3">
-                      <span className="text-slate-400 mr-1.5">{i + 1}.</span>{q.text}
-                    </p>
-                    <ScaleRow value={motivatorAnswers[i]} onChange={v => { const n = [...motivatorAnswers]; n[i] = v; setMotivatorAnswers(n); }} />
+            {/* ── STEP 3: Motivatoren (paginated, color-coded) ── */}
+            {step === 'motivators' && (() => {
+              const questionsPerPage = 2;
+              const totalPages = Math.ceil(motivatorQuestions.length / questionsPerPage);
+              const pageQuestions = motivatorQuestions.slice(motivatorPage * questionsPerPage, (motivatorPage + 1) * questionsPerPage);
+              const globalOffset = motivatorPage * questionsPerPage;
+              const answeredOnPage = pageQuestions.every((_, qi) => motivatorAnswers[globalOffset + qi] > 0);
+
+              return (
+                <>
+                  <div className="text-center space-y-1">
+                    <h2 className="text-lg font-bold text-slate-800">Was motiviert dich wirklich?</h2>
+                    <p className="text-sm text-slate-500">Beantworte die folgenden Aussagen ehrlich – es gibt keine richtigen oder falschen Antworten.</p>
                   </div>
-                ))}
-              </>
-            )}
+
+                  {/* Sub-progress */}
+                  <div className="flex items-center gap-1.5">
+                    {Array.from({ length: totalPages }).map((_, pi) => {
+                      const pageStart = pi * questionsPerPage;
+                      const pageEnd = Math.min(pageStart + questionsPerPage, motivatorQuestions.length);
+                      const allAnswered = motivatorAnswers.slice(pageStart, pageEnd).every(a => a > 0);
+                      return (
+                        <button key={pi} type="button" onClick={() => setMotivatorPage(pi)}
+                          className={`h-2 flex-1 rounded-full transition-all ${
+                            pi === motivatorPage ? 'bg-emerald-500' : allAnswered ? 'bg-emerald-300' : 'bg-slate-200'
+                          }`} />
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-slate-400 text-center">{motivatorPage + 1} / {totalPages}</p>
+
+                  {/* Questions */}
+                  <div className="space-y-4">
+                    {pageQuestions.map((q, qi) => {
+                      const idx = globalOffset + qi;
+                      const meta = motivatorMeta[q.dimension] || motivatorMeta.traditionell;
+                      return (
+                        <div key={idx} className={`rounded-xl border-2 p-5 transition-all ${meta.bg} ${motivatorAnswers[idx] > 0 ? meta.border : 'border-transparent'}`}>
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${meta.text} ${meta.bg}`} style={{ backgroundColor: meta.color + '20' }}>
+                              {meta.label}
+                            </span>
+                            <span className="text-xs text-slate-400">Frage {idx + 1} von {motivatorQuestions.length}</span>
+                          </div>
+                          <p className="text-sm font-medium text-slate-800 mb-4">{q.text}</p>
+
+                          {/* Likert scale buttons */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-1.5">
+                              {[1, 2, 3, 4, 5].map(val => (
+                                <button key={val} type="button"
+                                  onClick={() => { const n = [...motivatorAnswers]; n[idx] = val; setMotivatorAnswers(n); }}
+                                  className={`flex-1 rounded-lg py-2.5 text-sm font-semibold border-2 transition-all ${
+                                    motivatorAnswers[idx] === val
+                                      ? 'text-white shadow-md scale-105'
+                                      : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                  }`}
+                                  style={motivatorAnswers[idx] === val ? { backgroundColor: meta.color, borderColor: meta.color } : {}}
+                                >{val}</button>
+                              ))}
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[10px] text-slate-400">Trifft nicht zu</span>
+                              <span className="text-[10px] text-slate-400">Trifft voll zu</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Page navigation */}
+                  <div className="flex items-center justify-between pt-2">
+                    {motivatorPage > 0 ? (
+                      <button type="button" onClick={() => setMotivatorPage(p => p - 1)}
+                        className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-800">
+                        <ChevronLeft className="h-4 w-4" /> Vorherige
+                      </button>
+                    ) : <div />}
+                    {motivatorPage < totalPages - 1 ? (
+                      <button type="button" onClick={() => { if (answeredOnPage) setMotivatorPage(p => p + 1); }}
+                        disabled={!answeredOnPage}
+                        className={`flex items-center gap-1 text-sm font-medium ${answeredOnPage ? 'text-emerald-600 hover:text-emerald-700' : 'text-slate-300 cursor-not-allowed'}`}>
+                        Nächste <ChevronRight className="h-4 w-4" />
+                      </button>
+                    ) : <div />}
+                  </div>
+                </>
+              );
+            })()}
 
             {/* ── STEP 4: Arbeitsstil & Ziele ── */}
             {step === 'workstyle' && (
