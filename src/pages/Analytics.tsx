@@ -458,7 +458,111 @@ export default function Analytics() {
         <StatCardModern icon={MapPin} title="Aktive Kantone" value={uniqueCantons} subtitle="Regionale Abdeckung" accentColor="hsl(38,80%,50%)" />
       </div>
 
-      {/* Funnel + Source Pie */}
+      {/* Time-Based Lead Statistics */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-primary/10 p-2.5">
+              <CalendarIconSolid className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold tracking-tight">Leads nach Zeitraum</h2>
+              <p className="text-xs text-muted-foreground">Erfasste Leads pro Monat, Quartal und Jahr</p>
+            </div>
+          </div>
+          <div className="flex rounded-lg border bg-muted p-0.5">
+            {(['month', 'quarter', 'year'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setTimeView(v)}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-semibold rounded-md transition-all',
+                  timeView === v ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {v === 'month' ? 'Monat' : v === 'quarter' ? 'Quartal' : 'Jahr'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Time KPI Cards */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatCardModern icon={CalendarIconSolid} title="Dieser Monat" value={thisMonthCount} subtitle={`${new Date().toLocaleString('de', { month: 'long' })} ${currentYear}`} accentColor="hsl(210,60%,52%)" />
+          <StatCardModern icon={CalendarIconSolid} title="Dieses Quartal" value={thisQuarterCount} subtitle={`Q${currentQuarter} ${currentYear}`} accentColor="hsl(38,80%,50%)" />
+          <StatCardModern icon={CalendarIconSolid} title="Dieses Jahr" value={thisYearCount} subtitle={`${currentYear}`} accentColor="hsl(152,55%,40%)" />
+        </div>
+
+        {/* Time Chart */}
+        <ChartCard
+          title={timeView === 'month' ? 'Leads pro Monat' : timeView === 'quarter' ? 'Leads pro Quartal' : 'Leads pro Jahr'}
+          subtitle="Erfasst vs. Eingestellt"
+          icon={BarChart3}
+        >
+          {activeTimeData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={activeTimeData} barCategoryGap="15%">
+                <defs>
+                  <linearGradient id="timeBarGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(210,60%,52%)" />
+                    <stop offset="100%" stopColor="hsl(210,60%,62%)" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,89%)" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(0,0%,80%)" axisLine={false} tickLine={false} angle={timeView === 'month' && activeTimeData.length > 8 ? -35 : 0} textAnchor={timeView === 'month' && activeTimeData.length > 8 ? 'end' : 'middle'} height={timeView === 'month' && activeTimeData.length > 8 ? 60 : 30} />
+                <YAxis tick={{ fontSize: 12 }} stroke="hsl(0,0%,80%)" axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ paddingTop: 12, fontSize: 12 }} />
+                <Bar dataKey="total" fill="url(#timeBarGrad)" radius={[6, 6, 0, 0]} name="Erfasst" barSize={timeView === 'year' ? 48 : 28} />
+                <Bar dataKey="hired" fill="hsl(152,55%,40%)" radius={[6, 6, 0, 0]} name="Eingestellt" barSize={timeView === 'year' ? 48 : 28} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="py-12 text-center text-sm text-muted-foreground">Keine Daten verfügbar</p>
+          )}
+        </ChartCard>
+
+        {/* Time Detail Table */}
+        <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/30">
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Zeitraum</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Erfasst</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Eingestellt</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Konversion</th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Verteilung</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeTimeData.map((row, i) => {
+                  const maxTotal = Math.max(...activeTimeData.map(r => r.total), 1);
+                  return (
+                    <tr key={row.label} className={cn('border-t transition-colors hover:bg-muted/40', i % 2 === 0 && 'bg-muted/10')}>
+                      <td className="px-6 py-3.5 font-medium">{row.label}</td>
+                      <td className="px-6 py-3.5 text-right font-bold">{row.total}</td>
+                      <td className="px-6 py-3.5 text-right">
+                        <span className="inline-flex items-center rounded-full bg-[hsl(152,55%,40%)]/10 px-2 py-0.5 text-xs font-semibold text-[hsl(152,55%,40%)]">{row.hired}</span>
+                      </td>
+                      <td className="px-6 py-3.5 text-right font-semibold">{row.total > 0 ? ((row.hired / row.total) * 100).toFixed(0) : 0}%</td>
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 flex-1 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(row.total / maxTotal) * 100}%`, background: 'linear-gradient(90deg, hsl(210,60%,52%), hsl(162,17%,50%))' }} />
+                          </div>
+                          <span className="text-xs font-medium text-muted-foreground w-10 text-right">{row.total}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-5">
         <ChartCard title="Recruiting-Funnel" subtitle="Conversion-Trichter" icon={TrendingUp} className="lg:col-span-3">
           <ResponsiveContainer width="100%" height={300}>
