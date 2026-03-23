@@ -317,8 +317,6 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
   if (selectedProcess || creating) {
     const processRules = rules;
     const processWizardLinks = wizardLinks;
-    const linkedWizardIds = new Set(processWizardLinks.map(l => l.wizard_id));
-    const availableWizards = wizards.filter(w => !linkedWizardIds.has(w.id));
 
     return (
       <div className="space-y-4">
