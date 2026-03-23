@@ -123,6 +123,47 @@ const apiSections: ApiSection[] = [
     ],
   },
   {
+    title: 'Status-Wizards',
+    description: 'Status-Wizard-Ergebnisse verwalten. Jeder Statuswechsel öffnet einen Wizard mit spezifischen Pflichtfeldern.',
+    endpoints: [
+      {
+        method: 'GET', path: '/api/v1/status-wizard-results', summary: 'Wizard-Ergebnisse abrufen', auth: true,
+        description: 'Gibt alle Wizard-Ergebnisse zurück. Wizard-Daten werden zusätzlich als Aktivitäten protokolliert.',
+        params: [
+          { name: 'leadId', type: 'string', required: false, description: 'Filter nach Lead-ID' },
+          { name: 'wizard_type', type: 'string', required: false, description: 'Filter: contacted, callback, not_interested, not_reached, no_need, not_suitable, internal' },
+        ],
+        response: `{
+  "data": [
+    {
+      "id": "uuid",
+      "lead_id": "l1",
+      "wizard_type": "not_interested",
+      "answers": { "reason": "Hat bereits Stelle" },
+      "feedback": "Kandidat hat vor 2 Wochen unterschrieben.",
+      "completed_by": "Max Müller",
+      "original_employee_id": "emp-1",
+      "lead_withdrawn": true,
+      "reassigned_to": "talent@ssmpartner.ch",
+      "created_at": "2026-03-23T14:00:00.000Z"
+    }
+  ]
+}`,
+      },
+      {
+        method: 'POST', path: '/api/v1/status-wizard-results', summary: 'Wizard-Ergebnis speichern', auth: true,
+        description: 'Speichert ein Wizard-Ergebnis. Löst automatisch Statuswechsel, Lead-Entzug und Aktivitäts-Protokollierung aus.',
+        body: [
+          { name: 'lead_id', type: 'string', required: true, description: 'Lead-ID' },
+          { name: 'wizard_type', type: 'string', required: true, description: 'Wizard-Typ (contacted, callback, not_interested, not_reached, no_need, not_suitable, internal)' },
+          { name: 'answers', type: 'object', required: true, description: 'Wizard-Antworten als JSON (typspezifische Felder)' },
+          { name: 'feedback', type: 'string', required: false, description: 'Freitext-Feedback' },
+        ],
+        response: `{ "id": "uuid", "lead_id": "l1", "wizard_type": "contacted", "lead_withdrawn": false }`,
+      },
+    ],
+  },
+  {
     title: 'Termine',
     description: 'Termine verwalten und Video-Call-Links generieren.',
     endpoints: [

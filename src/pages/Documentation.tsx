@@ -2,9 +2,23 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.22.0';
+const APP_VERSION = '2.23.0';
 
 const versionHistory = [
+  { version: '2.23.0', date: '23.03.2026', changes: [
+    'Status-Wizard-System: 7 definierte Wizards (Kontaktiert, Rückruf, Nicht interessiert, Nicht erreicht, Kein Bedarf, Nicht passend, Interne Stelle) mit Pflichtfeldern und automatischer Lead-Steuerung',
+    'Lead-Entzug-Logik: Automatischer Entzug bei Nicht interessiert, Nicht erreicht, Kein Bedarf, Nicht passend, Interne Stelle – Neuzuweisung an Superadmin',
+    'Rückruf-Eskalation: Max. 3 Rückrufe erlaubt, danach automatische Eskalation zu "Rejected" mit Lead-Entzug',
+    'Original-Besitzer-Tracking: original_employee_id und callback_count in leads-Tabelle für Statistik-Zuordnung',
+    'Wizard-Historie als Aktivitäten: Alle Wizard-Daten (Antworten, Feedback, Eskalation) werden als detaillierte Aktivitäten protokolliert – kein separater Wizard-Tab mehr nötig',
+    'Lead-Detail-Fenster redesigned: Neues zweispaltiges Layout mit Aktionspanel links und 7 Tabs rechts (Info, Insights, Dokumente, Flow, Termine, Aktivität, Status)',
+    'Insights-Tab: DISC-Ergebnisse, Insights-Antworten und Terminvorschläge in eigenem Tab',
+    'Dokumente-Tab: Hochgeladene Dateien und ausstehende Anfragen in eigenem Tab',
+    'Verbesserter Schliessen-Button: Solider Hintergrund mit Border und Shadow für bessere Sichtbarkeit',
+    'Tab-Design mit CI-Farben: Aktiver Tab in Primary-Farbe mit farbigem Icon',
+    'Pipeline-View: Nur aktive Stages (Neu, Kontaktiert, Terminiert) – abgelehnte/entzogene Leads automatisch ausgeblendet',
+    'Datenbank: Neue Tabelle status_wizard_results, Spalten original_employee_id und callback_count in leads',
+  ]},
   { version: '2.22.0', date: '23.03.2026', changes: [
     'Wizard-Management: Modulares System in Einstellungen → Wizards zur Erstellung und Verwaltung von Lead-Funnels (Step-Builder mit Video, Auswahl, Entscheidung)',
     'Wizard-Typen: recruiting, sales, custom – nur ein aktiver Wizard vom Typ "recruiting" erlaubt',
