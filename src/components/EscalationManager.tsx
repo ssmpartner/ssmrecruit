@@ -118,7 +118,7 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
     setLoading(true);
     const [epRes, wizRes] = await Promise.all([
       supabase.from('escalation_processes').select('*').eq('main_process_status', processStatus).order('priority'),
-      supabase.from('wizards').select('id, name, status, type'),
+      supabase.from('wizards').select('id, name, status, type, steps'),
     ]);
     setProcesses((epRes.data || []) as EscalationProcess[]);
     setWizards((wizRes.data || []) as WizardRow[]);
