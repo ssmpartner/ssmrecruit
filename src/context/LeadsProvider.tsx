@@ -294,35 +294,60 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     }
   }, [addNotification]);
 
-  const checkForDuplicates = useCallback(async (newLead: Lead, allLeads: Lead[]) => {
+  const checkForDuplicates = useCallback((newLead: Lead, allLeads: Lead[]) => {
     try {
-      const activeLeads = allLeads.filter(l => l.lifecycle === 'active');
-      if (activeLeads.length < 2) return;
+      const activeLeads = allLeads.filter(l => l.lifecycle === 'active' && l.id !== newLead.id);
+      if (activeLeads.length === 0) return;
 
-      const leadsForScan = activeLeads.map(l => ({
-        id: l.id, name: l.name, email: l.email, phone: l.phone,
-        plz: l.plz, city: l.city, position: l.position,
-      }));
+      const normalize = (s: string) => (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+      const normalizePhone = (p: string) => (p || '').replace(/[\s\-\.\(\)]/g, '');
+      const normalizeEmail = (e: string) => normalize(e);
 
-      const { data, error } = await supabase.functions.invoke('detect-duplicates', {
-        body: { leads: leadsForScan },
-      });
+      for (const other of activeLeads) {
+        let score = 0;
+        const reasons: string[] = [];
 
-      if (error || !data?.duplicates?.length) return;
+        // Email match
+        const emailA = normalizeEmail(newLead.email);
+        const emailB = normalizeEmail(other.email);
+        if (emailA && emailB && emailA === emailB) {
+          score += 50;
+          reasons.push('Gleiche E-Mail-Adresse');
+        }
 
-      const relevantDups = data.duplicates.filter(
-        (d: any) => d.leadId1 === newLead.id || d.leadId2 === newLead.id
-      );
+        // Phone match
+        const phoneA = normalizePhone(newLead.phone);
+        const phoneB = normalizePhone(other.phone);
+        if (phoneA && phoneB && phoneA.length >= 8 && phoneA === phoneB) {
+          score += 40;
+          reasons.push('Gleiche Telefonnummer');
+        }
 
-      for (const dup of relevantDups) {
-        const otherId = dup.leadId1 === newLead.id ? dup.leadId2 : dup.leadId1;
-        const otherLead = allLeads.find(l => l.id === otherId);
-        addNotification({
-          type: 'duplicate_detected',
-          title: 'Mögliches Duplikat erkannt',
-          description: `"${newLead.name}" und "${otherLead?.name || otherId}" (${dup.confidence}% Übereinstimmung): ${dup.reason}`,
-          leadId: newLead.id,
-        });
+        // Name similarity (simple exact/contains check for performance)
+        const nameA = normalize(newLead.name);
+        const nameB = normalize(other.name);
+        if (nameA && nameB && nameA === nameB) {
+          score += 35;
+          reasons.push('Gleicher Name');
+        } else if (nameA && nameB && (nameA.includes(nameB) || nameB.includes(nameA))) {
+          score += 20;
+          reasons.push('Ähnlicher Name');
+        }
+
+        // PLZ match
+        if (newLead.plz && other.plz && newLead.plz === other.plz) {
+          score += 10;
+        }
+
+        if (score >= 50 && reasons.length > 0) {
+          addNotification({
+            type: 'duplicate_detected',
+            title: 'Mögliches Duplikat erkannt',
+            description: `"${newLead.name}" und "${other.name}" (${Math.min(score, 100)}% Übereinstimmung): ${reasons.join(', ')}`,
+            leadId: newLead.id,
+          });
+          break; // Only notify for first match
+        }
       }
     } catch (e) {
       console.error('Auto duplicate check failed:', e);
