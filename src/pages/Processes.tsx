@@ -484,6 +484,29 @@ export default function Processes() {
           </div>
         </TabsContent>
 
+        {/* ══════════ TAB: Eskalation ══════════ */}
+        <TabsContent value="escalation" className="space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-amber-500" /> Eskalationsprozesse</h2>
+            <p className="text-sm text-muted-foreground">Ergänze die Hauptprozesse um automatische Eskalationslogik pro Lead-Quelle.</p>
+          </div>
+
+          <Tabs defaultValue="new" className="space-y-4">
+            <TabsList className="w-fit flex-wrap">
+              {mainFlow.map(status => (
+                <TabsTrigger key={status} value={status} className="gap-1.5 text-xs">
+                  {statusConfig[status].label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {mainFlow.map(status => (
+              <TabsContent key={status} value={status}>
+                <EscalationManager processStatus={status} />
+              </TabsContent>
+            ))}
+          </Tabs>
+        </TabsContent>
+
         {/* ══════════ TAB: Automatisierungen ══════════ */}
         <TabsContent value="automations" className="space-y-4">
           <div className="flex items-center justify-between">
