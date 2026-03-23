@@ -158,8 +158,11 @@ const appFeatures = [
     { name: 'Task-Management', desc: 'Aufgaben zuweisen, priorisieren und Status tracken (offen/in Bearbeitung/erledigt).' },
   ]},
   { category: 'Integrationen & API', icon: '🔌', features: [
-    { name: 'Meta / TikTok / LinkedIn', desc: 'Lead-Import aus Social-Media-Werbekampagnen.' },
-    { name: 'Webhooks', desc: 'Eingehende Webhooks für automatisierten Lead-Import.' },
+    { name: 'Meta / TikTok / LinkedIn', desc: 'Lead-Import aus Social-Media-Werbekampagnen über dedizierte Webhooks.' },
+    { name: 'Form-Webhook', desc: 'Generischer Webhook für Website-Kontaktformulare und Zapier – unterstützt flexible Feldnamen (name, fullName, vorname etc.).' },
+    { name: 'Application-Webhook', desc: 'Bewerbungsformular-Webhook mit multipart/form-data, Datei-Uploads, Consent-Tracking und automatischem custom_fields Fallback.' },
+    { name: 'Bewerbungsformular', desc: 'Öffentliches mehrstufiges Formular unter /apply mit Persönlichen Daten, Dokumenten-Upload und Bestätigung.' },
+    { name: 'Webhooks', desc: 'Eingehende Webhooks für automatisierten Lead-Import (form-webhook, application-webhook, meta-webhook, tiktok-webhook).' },
     { name: 'REST API', desc: 'Vollständige API mit Authentifizierung für externe Systeme.' },
     { name: 'API-Schlüssel', desc: 'Granulare API-Keys mit konfigurierbaren Berechtigungen.' },
   ]},
