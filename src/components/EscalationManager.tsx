@@ -43,6 +43,13 @@ interface EscalationWizardLink {
   start_step_id: string;
   is_active: boolean;
   sort_order: number;
+  delay_minutes: number;
+}
+
+interface WizardStep {
+  id: string;
+  title: string;
+  type: string;
 }
 
 interface WizardRow {
