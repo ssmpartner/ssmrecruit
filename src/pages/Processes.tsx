@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2, Building2, User, ClipboardList, FileText, Upload } from 'lucide-react';
+import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2, Building2, User, ClipboardList, FileText, Upload, AlertTriangle } from 'lucide-react';
 import PipelineFlow from '@/components/PipelineFlow';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,6 +8,7 @@ import { statusConfig, statusFlow, type LeadStatus } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
 import { useToast } from '@/hooks/use-toast';
 import ProcessStepper from '@/components/ProcessStepper';
+import EscalationManager from '@/components/EscalationManager';
 import { supabase } from '@/integrations/supabase/client';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 
@@ -278,6 +279,7 @@ export default function Processes() {
         <TabsList className="w-fit">
           <TabsTrigger value="overview" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" /> Übersicht</TabsTrigger>
           <TabsTrigger value="directory" className="gap-1.5"><BookOpen className="h-3.5 w-3.5" /> Verzeichnis & Richtlinien</TabsTrigger>
+          <TabsTrigger value="escalation" className="gap-1.5"><AlertTriangle className="h-3.5 w-3.5" /> Eskalation</TabsTrigger>
           <TabsTrigger value="automations" className="gap-1.5"><Zap className="h-3.5 w-3.5" /> Automatisierungen</TabsTrigger>
         </TabsList>
 
@@ -480,6 +482,29 @@ export default function Processes() {
               );
             })}
           </div>
+        </TabsContent>
+
+        {/* ══════════ TAB: Eskalation ══════════ */}
+        <TabsContent value="escalation" className="space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-amber-500" /> Eskalationsprozesse</h2>
+            <p className="text-sm text-muted-foreground">Ergänze die Hauptprozesse um automatische Eskalationslogik pro Lead-Quelle.</p>
+          </div>
+
+          <Tabs defaultValue="new" className="space-y-4">
+            <TabsList className="w-fit flex-wrap">
+              {mainFlow.map(status => (
+                <TabsTrigger key={status} value={status} className="gap-1.5 text-xs">
+                  {statusConfig[status].label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {mainFlow.map(status => (
+              <TabsContent key={status} value={status}>
+                <EscalationManager processStatus={status} />
+              </TabsContent>
+            ))}
+          </Tabs>
         </TabsContent>
 
         {/* ══════════ TAB: Automatisierungen ══════════ */}
