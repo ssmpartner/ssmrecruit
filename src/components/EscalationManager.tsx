@@ -489,7 +489,7 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
                   <div key={rule.id} className={`rounded-xl border bg-card p-4 shadow-sm transition-opacity ${!rule.is_active ? 'opacity-60' : ''}`}>
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 text-xs">
+                        <div className="flex items-center gap-2 text-xs flex-wrap">
                           <span className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-1 font-medium">
                             <Zap className="h-3 w-3 text-muted-foreground" />
                             {conditionTypes.find(c => c.value === rule.condition_type)?.label}
@@ -505,9 +505,19 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
                               <Clock className="h-3 w-3" /> {rule.delay_minutes}min
                             </span>
                           )}
+                          {rule.test_only && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 font-bold text-amber-700">
+                              <FlaskConical className="h-3 w-3" /> Test
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
+                        <button onClick={() => toggleRuleTestOnly(rule)}
+                          title={rule.test_only ? 'Test-Modus deaktivieren' : 'Nur für Test-User'}
+                          className={`rounded-lg p-1.5 transition-colors ${rule.test_only ? 'text-amber-600 bg-amber-100' : 'text-muted-foreground hover:text-amber-600 hover:bg-amber-50'}`}>
+                          <FlaskConical className="h-3.5 w-3.5" />
+                        </button>
                         <Switch checked={rule.is_active} onCheckedChange={() => toggleRuleActive(rule)} />
                         <button onClick={() => deleteRule(rule.id)}
                           className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
