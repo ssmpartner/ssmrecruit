@@ -563,7 +563,7 @@ export default function InsightsFormPage() {
                     {motivatorPage < totalPages - 1 ? (
                       <button type="button" onClick={() => { if (answeredOnPage) setMotivatorPage(p => p + 1); }}
                         disabled={!answeredOnPage}
-                        className={`flex items-center gap-1 text-sm font-medium ${answeredOnPage ? 'text-emerald-600 hover:text-emerald-700' : 'text-slate-300 cursor-not-allowed'}`}>
+                        className={`flex items-center gap-1 text-sm font-medium ${answeredOnPage ? 'text-primary hover:text-primary/80' : 'text-muted-foreground/40 cursor-not-allowed'}`}>
                         Nächste <ChevronRight className="h-4 w-4" />
                       </button>
                     ) : <div />}
