@@ -181,6 +181,47 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       }
     }
     loadData();
+  }, [fetchAll]);
+
+  useEffect(() => {
+    const leadsChannel = supabase
+      .channel('realtime-leads')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'leads' },
+        (payload) => {
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const incomingLead = dbToLead(payload.new);
+            setLeads((prev) => {
+              const existingIndex = prev.findIndex((lead) => lead.id === incomingLead.id);
+              if (existingIndex >= 0) {
+                const next = [...prev];
+                next[existingIndex] = incomingLead;
+                return next;
+              }
+              return [incomingLead, ...prev].sort(
+                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              );
+            });
+            return;
+          }
+
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const updatedLead = dbToLead(payload.new);
+            setLeads((prev) => prev.map((lead) => (lead.id === updatedLead.id ? updatedLead : lead)));
+            return;
+          }
+
+          if (payload.eventType === 'DELETE' && payload.old) {
+            setLeads((prev) => prev.filter((lead) => lead.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(leadsChannel);
+    };
   }, []);
 
   const updateAppointmentSettings = useCallback(async (updates: Partial<AppointmentSettings>) => {
