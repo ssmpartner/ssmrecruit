@@ -207,6 +207,7 @@ export default function Settings() {
           {activeTab === 'sources' && <LeadSourcesTab isSuperadmin={isSuperadmin} />}
           {activeTab === 'appointments' && <AppointmentsTab appointmentSettings={appointmentSettings} updateAppointmentSettings={updateAppointmentSettings} toast={toast} />}
           {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}
+          {activeTab === 'wizards' && <WizardsTab />}
           {activeTab === 'email' && <EmailSettingsTab />}
           {activeTab === 'integrations' && (
             <IntegrationsTab
