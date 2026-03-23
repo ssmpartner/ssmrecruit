@@ -230,14 +230,15 @@ export default function LeadDetailSheet() {
                 {/* LEFT: Step Actions + Workflow */}
                 <div className="w-[400px] shrink-0 border-r overflow-y-auto bg-muted/20">
                   <div className="p-4">
-                    <LeadInsightsDocumentsWithActions
+                    <LeadActionPanel
                       leadId={selectedLead.id}
                       leadName={selectedLead.name}
-                      leadStatus={selectedLead.status}
+                      leadStatus={selectedLead.status as LeadStatus}
                       onScheduleAppointment={() => {
                         setRightTab('appointments');
                         setShowAptForm(true);
                       }}
+                      onNavigateToTab={(tab) => setRightTab(tab as any)}
                     />
                   </div>
 
