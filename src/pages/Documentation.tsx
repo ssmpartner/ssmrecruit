@@ -5,6 +5,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 const APP_VERSION = '2.21.0';
 
 const versionHistory = [
+  { version: '2.21.0', date: '23.03.2026', changes: [
+    'Wizard-Management: Modulares System in Einstellungen → Wizards zur Erstellung und Verwaltung von Lead-Funnels (Step-Builder mit Video, Auswahl, Entscheidung)',
+    'Wizard-Typen: recruiting, sales, custom – nur ein aktiver Wizard vom Typ "recruiting" erlaubt',
+    'Wizard-Editor: 4 Tabs (Allgemein, Schritte, Logik-Platzhalter, Vorschau) mit Echtzeit-Simulation',
+    'Standard-Wizards: SSM Recruit Assessment und Dokumenten-Upload als vordefinierte Wizards integriert',
+    'Eskalationsprozesse: Flexible Eskalationslogik pro Hauptprozess (Neuer Lead, Kontaktiert, Terminiert, Follow-up, Eingestellt)',
+    'Quellen-basierte Eskalation: Eskalationsprozesse können gezielt für einzelne, mehrere oder alle Lead-Quellen aktiviert werden',
+    'Eskalations-Editor: 5 Tabs (Allgemein, Quellen, Regeln, Wizards, Vorschau) mit Simulation pro Lead-Quelle',
+    'Wizard-Verknüpfung in Eskalation: Wizards können Eskalationsprozessen zugewiesen werden mit Reihenfolge, Start-Step und Verzögerung',
+    'Test-Modus (🧪): Regeln und Wizard-Verknüpfungen können einzeln als "Nur für Test-User" markiert werden',
+    'Pipeline-Flow erweitert: Jeder Flow-Node zeigt jetzt zugewiesene Regeln UND Wizards an, konfigurierbar über Settings-Dialog mit Tabs',
+    'Datenbank: Neue Tabellen escalation_processes, escalation_rules, escalation_wizard_links mit test_only Spalte',
+  ]},
   { version: '2.20.0', date: '23.03.2026', changes: [
     'Bewerbungsformular: Öffentliches mehrstufiges Formular unter /apply mit Datei-Uploads, Validierung und Consent-Tracking',
     'Application-Webhook: Neuer Endpunkt /functions/v1/application-webhook für Bewerbungen mit multipart/form-data Support',
