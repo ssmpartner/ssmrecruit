@@ -215,10 +215,10 @@ export default function LeadDetailSheet() {
                   </DialogHeader>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 mr-8">
                   <LeadStatusBadge status={selectedLead.status} />
                   <SourceBadge source={selectedLead.source} />
-                  <span className="hidden lg:inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                  <span className="hidden xl:inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
                     <MapPin className="h-3 w-3" /> {selectedLead.plz} {selectedLead.city}
                   </span>
                 </div>
@@ -271,24 +271,26 @@ export default function LeadDetailSheet() {
                 {/* RIGHT: Tabs */}
                 <div className="flex-1 flex flex-col overflow-hidden min-w-0">
                   {/* Tab bar */}
-                  <div className="border-b bg-muted/20 px-3 flex items-center shrink-0">
+                  <div className="border-b bg-card px-3 flex items-center shrink-0">
                     <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
                       {rightTabs.map(tab => (
                         <button
                           key={tab.key}
                           onClick={() => setRightTab(tab.key)}
                           className={cn(
-                            'flex items-center gap-1.5 px-2.5 py-2 text-[11px] font-medium transition-all border-b-2 whitespace-nowrap',
+                            'flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-all border-b-2 whitespace-nowrap',
                             rightTab === tab.key
-                              ? 'border-primary text-foreground bg-background/60'
-                              : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-background/40'
+                              ? 'border-primary text-primary'
+                              : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
                           )}
                         >
-                          <tab.icon className="h-3 w-3" />
-                          <span className="hidden xl:inline">{tab.label}</span>
-                          <span className="xl:hidden">{tab.label.slice(0, 4)}</span>
+                          <tab.icon className={cn("h-3.5 w-3.5", rightTab === tab.key && "text-primary")} />
+                          {tab.label}
                           {tab.count ? (
-                            <span className="rounded-full bg-primary/15 text-primary px-1.5 py-px text-[10px] font-bold leading-none">{tab.count}</span>
+                            <span className={cn(
+                              "rounded-full px-1.5 py-px text-[10px] font-bold leading-none",
+                              rightTab === tab.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                            )}>{tab.count}</span>
                           ) : null}
                         </button>
                       ))}
