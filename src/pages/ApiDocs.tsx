@@ -264,6 +264,61 @@ Lukas Müller,lukas@email.ch,+41 44 123 45 67,8001,Zürich,ZH,new,meta,Frontend 
     ],
   },
   {
+    title: 'Analytics & Reports',
+    description: 'Statistiken, KPIs und Reports abrufen und exportieren.',
+    endpoints: [
+      {
+        method: 'GET', path: '/api/v1/analytics/overview', summary: 'KPI-Übersicht abrufen', auth: true,
+        description: 'Gibt die wichtigsten KPIs zurück: Total Leads, Konversionsrate, Leads nach Status und Zeitraum.',
+        params: [
+          { name: 'from', type: 'string', required: false, description: 'Startdatum (YYYY-MM-DD)' },
+          { name: 'to', type: 'string', required: false, description: 'Enddatum (YYYY-MM-DD)' },
+          { name: 'agencyId', type: 'string', required: false, description: 'Filter nach Agentur' },
+        ],
+        response: `{
+  "totalLeads": 142,
+  "conversionRate": 18.3,
+  "newThisMonth": 24,
+  "hiredThisMonth": 5,
+  "byStatus": { "new": 35, "contacted": 28, "appointment": 15, "hired": 26 },
+  "bySource": { "meta": 45, "tiktok": 30, "website": 40, "linkedin": 27 }
+}`,
+      },
+      {
+        method: 'GET', path: '/api/v1/analytics/marketing', summary: 'Marketing-Statistiken', auth: true,
+        description: 'Quellen-Performance, Kampagnen-Konversionsraten und Kanal-Funnel-Daten.',
+        params: [
+          { name: 'from', type: 'string', required: false, description: 'Startdatum (YYYY-MM-DD)' },
+          { name: 'to', type: 'string', required: false, description: 'Enddatum (YYYY-MM-DD)' },
+        ],
+        response: `{
+  "sources": [
+    { "source": "meta", "leads": 45, "hired": 8, "conversionRate": 17.8 }
+  ],
+  "campaigns": [
+    { "campaign": "Spring 2026", "leads": 20, "hired": 4 }
+  ]
+}`,
+      },
+      {
+        method: 'GET', path: '/api/v1/analytics/export/csv', summary: 'Analytics als CSV exportieren', auth: true,
+        description: 'Exportiert die aktuelle Analytics-Ansicht (Übersicht, Marketing, Geschäftsleitung oder Flow) als CSV-Datei.',
+        params: [
+          { name: 'tab', type: 'string', required: true, description: 'Tab: overview, marketing, management, flow' },
+          { name: 'from', type: 'string', required: false, description: 'Startdatum' },
+          { name: 'to', type: 'string', required: false, description: 'Enddatum' },
+        ],
+        response: `Content-Type: text/csv; charset=utf-8
+Content-Disposition: attachment; filename="analytics-overview-2026-03-23.csv"
+
+Metrik;Wert
+Total Leads;142
+Konversionsrate;18.3%
+Neue Leads (Monat);24`,
+      },
+    ],
+  },
+  {
     title: 'DISC / Insights',
     description: 'Persönlichkeitstest-Ergebnisse abrufen.',
     endpoints: [
