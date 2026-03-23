@@ -154,7 +154,7 @@ const mainFlow: LeadStatus[] = statusFlow.filter(s => s !== 'rejected');
 const inputCls = "h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
 
 export default function Processes() {
-  const { leads, employees, agencies } = useLeads();
+  const { leads, employees, agencies, setSelectedLead } = useLeads();
   const { toast } = useToast();
 
   const [rules, setRules] = useState<AutomationRule[]>(defaultRules);
