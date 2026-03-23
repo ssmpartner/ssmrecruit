@@ -14,7 +14,7 @@ import SourceBadge from './SourceBadge';
 import {
   Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
   FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus,
-  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow
+  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Wand2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -22,6 +22,7 @@ import VideoCallDialog from './VideoCallDialog';
 import ProcessStepper from './ProcessStepper';
 import { LeadInsightsDocumentsWithActions } from './LeadInsightsDocuments';
 import LeadFlowTimeline from './LeadFlowTimeline';
+import WizardHistoryPanel from './WizardHistoryPanel';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
