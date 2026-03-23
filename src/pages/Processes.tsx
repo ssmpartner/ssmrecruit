@@ -279,6 +279,7 @@ export default function Processes() {
         <TabsList className="w-fit">
           <TabsTrigger value="overview" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" /> Übersicht</TabsTrigger>
           <TabsTrigger value="directory" className="gap-1.5"><BookOpen className="h-3.5 w-3.5" /> Verzeichnis & Richtlinien</TabsTrigger>
+          <TabsTrigger value="escalation" className="gap-1.5"><AlertTriangle className="h-3.5 w-3.5" /> Eskalation</TabsTrigger>
           <TabsTrigger value="automations" className="gap-1.5"><Zap className="h-3.5 w-3.5" /> Automatisierungen</TabsTrigger>
         </TabsList>
 
