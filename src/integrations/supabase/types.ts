@@ -709,6 +709,7 @@ export type Database = {
           escalation_process_id: string
           id: string
           is_active: boolean
+          test_only: boolean
           updated_at: string
         }
         Insert: {
@@ -721,6 +722,7 @@ export type Database = {
           escalation_process_id: string
           id?: string
           is_active?: boolean
+          test_only?: boolean
           updated_at?: string
         }
         Update: {
@@ -733,6 +735,7 @@ export type Database = {
           escalation_process_id?: string
           id?: string
           is_active?: boolean
+          test_only?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -754,6 +757,7 @@ export type Database = {
           is_active: boolean
           sort_order: number
           start_step_id: string
+          test_only: boolean
           updated_at: string
           wizard_id: string
         }
@@ -765,6 +769,7 @@ export type Database = {
           is_active?: boolean
           sort_order?: number
           start_step_id?: string
+          test_only?: boolean
           updated_at?: string
           wizard_id: string
         }
@@ -776,6 +781,7 @@ export type Database = {
           is_active?: boolean
           sort_order?: number
           start_step_id?: string
+          test_only?: boolean
           updated_at?: string
           wizard_id?: string
         }

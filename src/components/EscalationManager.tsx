@@ -6,7 +6,7 @@ import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import {
   AlertTriangle, Plus, Trash2, Edit3, ChevronLeft, Save, X,
   Shield, Wand2, Eye, Zap, Clock, ArrowRight, Check,
-  Globe, Filter, Play, CheckCircle2, XCircle
+  Globe, Filter, Play, CheckCircle2, XCircle, FlaskConical
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
@@ -34,6 +34,7 @@ interface EscalationRule {
   action_value: string;
   delay_minutes: number;
   is_active: boolean;
+  test_only: boolean;
 }
 
 interface EscalationWizardLink {
@@ -44,6 +45,7 @@ interface EscalationWizardLink {
   is_active: boolean;
   sort_order: number;
   delay_minutes: number;
+  test_only: boolean;
 }
 
 interface WizardStep {
@@ -239,6 +241,11 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
     if (selectedProcess) loadProcessDetails(selectedProcess.id);
   };
 
+  const toggleRuleTestOnly = async (rule: EscalationRule) => {
+    await supabase.from('escalation_rules').update({ test_only: !rule.test_only } as any).eq('id', rule.id);
+    if (selectedProcess) loadProcessDetails(selectedProcess.id);
+  };
+
   // Wizard links
   const addWizardLink = async (wizardId: string) => {
     if (!selectedProcess) return;
@@ -263,6 +270,11 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
 
   const toggleWizardLinkActive = async (link: EscalationWizardLink) => {
     await supabase.from('escalation_wizard_links').update({ is_active: !link.is_active } as any).eq('id', link.id);
+    if (selectedProcess) loadProcessDetails(selectedProcess.id);
+  };
+
+  const toggleWizardLinkTestOnly = async (link: EscalationWizardLink) => {
+    await supabase.from('escalation_wizard_links').update({ test_only: !link.test_only } as any).eq('id', link.id);
     if (selectedProcess) loadProcessDetails(selectedProcess.id);
   };
 
@@ -477,7 +489,7 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
                   <div key={rule.id} className={`rounded-xl border bg-card p-4 shadow-sm transition-opacity ${!rule.is_active ? 'opacity-60' : ''}`}>
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 text-xs">
+                        <div className="flex items-center gap-2 text-xs flex-wrap">
                           <span className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-1 font-medium">
                             <Zap className="h-3 w-3 text-muted-foreground" />
                             {conditionTypes.find(c => c.value === rule.condition_type)?.label}
@@ -493,9 +505,19 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
                               <Clock className="h-3 w-3" /> {rule.delay_minutes}min
                             </span>
                           )}
+                          {rule.test_only && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 font-bold text-amber-700">
+                              <FlaskConical className="h-3 w-3" /> Test
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
+                        <button onClick={() => toggleRuleTestOnly(rule)}
+                          title={rule.test_only ? 'Test-Modus deaktivieren' : 'Nur für Test-User'}
+                          className={`rounded-lg p-1.5 transition-colors ${rule.test_only ? 'text-amber-600 bg-amber-100' : 'text-muted-foreground hover:text-amber-600 hover:bg-amber-50'}`}>
+                          <FlaskConical className="h-3.5 w-3.5" />
+                        </button>
                         <Switch checked={rule.is_active} onCheckedChange={() => toggleRuleActive(rule)} />
                         <button onClick={() => deleteRule(rule.id)}
                           className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
@@ -586,10 +608,20 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
                               <span className={`text-[10px] rounded-full px-2 py-0.5 font-medium ${wizard?.status === 'active' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                                 {wizard?.status === 'active' ? 'Aktiv' : 'Inaktiv'}
                               </span>
+                              {link.test_only && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                                  <FlaskConical className="h-2.5 w-2.5" /> Test
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5">
+                          <button onClick={() => toggleWizardLinkTestOnly(link)}
+                            title={link.test_only ? 'Test-Modus deaktivieren' : 'Nur für Test-User'}
+                            className={`rounded-lg p-1.5 transition-colors ${link.test_only ? 'text-amber-600 bg-amber-100' : 'text-muted-foreground hover:text-amber-600 hover:bg-amber-50'}`}>
+                            <FlaskConical className="h-3.5 w-3.5" />
+                          </button>
                           <Switch checked={link.is_active} onCheckedChange={() => toggleWizardLinkActive(link)} />
                           <button onClick={() => removeWizardLink(link.id)}
                             className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
