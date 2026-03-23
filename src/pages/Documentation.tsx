@@ -2,9 +2,15 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.17.0';
+const APP_VERSION = '2.18.0';
 
 const versionHistory = [
+  { version: '2.18.0', date: '23.03.2026', changes: [
+    'Meta Leads Import: Historische Leads aus Meta/Facebook CSV-Dateien importieren mit automatischer Duplikaterkennung',
+    'Automatische Agentur- und Mitarbeiter-Zuweisung beim CSV-Import (Hauptsitz als Standard)',
+    'Kampagnen-Feld wird aus CSV-Formularname automatisch befüllt',
+    'E-Mail-basierte Duplikatprüfung beim Import – bestehende Leads werden übersprungen',
+  ]},
   { version: '2.17.0', date: '19.03.2026', changes: [
     'Dashboard komplett überarbeitet: Begrüssung mit Benutzername, Uhrzeit und Live-Wetter',
     'Dashboard KPI-Karten: Leads gesamt, neue Leads, eingestellt, Konversionsrate, offene Tasks, anstehende Termine',
@@ -95,6 +101,7 @@ const appFeatures = [
     { name: 'Archivieren & Löschen', desc: 'Leads archivieren oder löschen (Superadmin) mit Bestätigungsdialog und Wiederherstellung.' },
     { name: 'Systembasierte Duplikaterkennung', desc: 'Automatische Erkennung doppelter Leads per Regelwerk (E-Mail, Telefon, Name, PLZ) mit Konfidenz-Score, Vergleich und Zusammenführung – ohne KI.' },
     { name: 'CSV-Import', desc: 'Leads per CSV-Datei importieren mit automatischer Spalten-Zuordnung (inkl. Lead-Datum, Quelle, Mitarbeiter, Agentur, Status, Kampagne), Vorschau und Validierung.' },
+    { name: 'Meta CSV-Import', desc: 'Historische Meta/Facebook-Leads per CSV importieren mit automatischer Duplikaterkennung, Agentur-Zuweisung und Kampagnen-Befüllung.' },
     { name: 'CSV-Export (Superadmin)', desc: 'Alle Leads als CSV exportieren – nur für Benutzer mit Superadmin-Rolle verfügbar.' },
     { name: 'Mehrfachauswahl & Bulk-Aktionen', desc: 'Superadmins können mehrere Leads auswählen und gesammelt Mitarbeiter/Agentur zuweisen, archivieren oder löschen.' },
   ]},

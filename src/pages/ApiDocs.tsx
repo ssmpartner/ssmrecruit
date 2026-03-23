@@ -211,11 +211,11 @@ const apiSections: ApiSection[] = [
   },
   {
     title: 'CSV Import / Export',
-    description: 'Leads per CSV-Datei importieren oder exportieren.',
+    description: 'Leads per CSV-Datei importieren oder exportieren. Unterstützt auch plattformspezifische Importe (Meta, TikTok).',
     endpoints: [
       {
         method: 'POST', path: '/api/v1/leads/import/csv', summary: 'Leads per CSV importieren', auth: true,
-        description: 'Importiert Leads aus einer CSV-Datei. Unterstützt Komma-, Semikolon- und Tab-getrennte Dateien. Automatische Spalten-Zuordnung für deutsche und englische Feldnamen.',
+        description: 'Importiert Leads aus einer CSV-Datei. Unterstützt Komma-, Semikolon- und Tab-getrennte Dateien. Automatische Spalten-Zuordnung für deutsche und englische Feldnamen. Plattform-CSVs (Meta, TikTok) werden automatisch erkannt.',
         body: [
           { name: 'file', type: 'file (multipart)', required: true, description: 'CSV-Datei (.csv)' },
           { name: 'mapping', type: 'object', required: false, description: 'Manuelle Spalten-Zuordnung (Spaltenindex → Feldname)' },
