@@ -625,7 +625,7 @@ export default function InsightsFormPage() {
                   {timeSlots.map((slot, i) => (
                     <div key={i} className="flex items-end gap-3">
                       <div className="flex-1 space-y-1">
-                        <label className="text-xs font-medium text-slate-600">Datum</label>
+                        <label className="text-xs font-medium text-muted-foreground">Datum</label>
                         <input type="date" min={getMinDate()} value={slot.date}
                           onChange={e => { const u = [...timeSlots]; u[i] = { ...u[i], date: e.target.value }; setTimeSlots(u); }}
                           className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none" />
