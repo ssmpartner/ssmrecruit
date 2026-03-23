@@ -23,6 +23,8 @@ import ProcessStepper from './ProcessStepper';
 import { LeadInsightsDocumentsWithActions } from './LeadInsightsDocuments';
 import LeadFlowTimeline from './LeadFlowTimeline';
 import WizardHistoryPanel from './WizardHistoryPanel';
+import LeadInsightsTab from './LeadInsightsTab';
+import LeadDocumentsTab from './LeadDocumentsTab';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
