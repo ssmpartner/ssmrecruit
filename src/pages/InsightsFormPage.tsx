@@ -543,8 +543,8 @@ export default function InsightsFormPage() {
                               ))}
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[10px] text-slate-400">Trifft nicht zu</span>
-                              <span className="text-[10px] text-slate-400">Trifft voll zu</span>
+                              <span className="text-[10px] text-muted-foreground">Trifft nicht zu</span>
+                              <span className="text-[10px] text-muted-foreground">Trifft voll zu</span>
                             </div>
                           </div>
                         </div>
