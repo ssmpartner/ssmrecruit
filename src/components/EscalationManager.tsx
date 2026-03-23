@@ -608,10 +608,20 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
                               <span className={`text-[10px] rounded-full px-2 py-0.5 font-medium ${wizard?.status === 'active' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                                 {wizard?.status === 'active' ? 'Aktiv' : 'Inaktiv'}
                               </span>
+                              {link.test_only && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                                  <FlaskConical className="h-2.5 w-2.5" /> Test
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5">
+                          <button onClick={() => toggleWizardLinkTestOnly(link)}
+                            title={link.test_only ? 'Test-Modus deaktivieren' : 'Nur für Test-User'}
+                            className={`rounded-lg p-1.5 transition-colors ${link.test_only ? 'text-amber-600 bg-amber-100' : 'text-muted-foreground hover:text-amber-600 hover:bg-amber-50'}`}>
+                            <FlaskConical className="h-3.5 w-3.5" />
+                          </button>
                           <Switch checked={link.is_active} onCheckedChange={() => toggleWizardLinkActive(link)} />
                           <button onClick={() => removeWizardLink(link.id)}
                             className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
