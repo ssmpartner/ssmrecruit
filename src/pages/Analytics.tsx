@@ -109,6 +109,7 @@ export default function Analytics() {
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [expandedAgency, setExpandedAgency] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     return leads.filter(l => {
