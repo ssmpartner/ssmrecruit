@@ -57,6 +57,7 @@ interface WizardRow {
   name: string;
   status: string;
   type: string;
+  steps: any;
 }
 
 const conditionTypes = [
