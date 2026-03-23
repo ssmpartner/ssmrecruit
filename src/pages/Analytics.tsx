@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Filter, CalendarIcon, X, Users, UserCheck, MapPin, Target, TrendingUp, TrendingDown, BarChart3, PieChartIcon, Activity, Workflow, AlertTriangle, Clock, ArrowRight, ChevronDown, RefreshCw, UserX, CalendarX, Timer } from 'lucide-react';
-import { format } from 'date-fns';
+import { Filter, CalendarIcon, X, Users, UserCheck, MapPin, Target, TrendingUp, TrendingDown, BarChart3, PieChartIcon, Activity, Workflow, AlertTriangle, Clock, ArrowRight, ChevronDown, RefreshCw, UserX, CalendarX, Timer, Calendar as CalendarIconSolid } from 'lucide-react';
+import { format, getYear, getMonth, getQuarter } from 'date-fns';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, AreaChart, Area, RadialBarChart, RadialBar,
@@ -299,6 +299,63 @@ export default function Analytics() {
     fill: PIE_COLORS[i % PIE_COLORS.length],
   }));
 
+  // ── Time-based analysis ──
+  const [timeView, setTimeView] = useState<'month' | 'quarter' | 'year'>('month');
+
+  const timeData = useMemo(() => {
+    const monthMap = new Map<string, { label: string; total: number; hired: number; sortKey: number }>();
+    const quarterMap = new Map<string, { label: string; total: number; hired: number; sortKey: number }>();
+    const yearMap = new Map<string, { label: string; total: number; hired: number; sortKey: number }>();
+
+    const monthNames = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+
+    filtered.forEach(l => {
+      const d = new Date(l.createdAt);
+      const y = getYear(d);
+      const m = getMonth(d);
+      const q = getQuarter(d);
+      const isHired = l.status === 'hired';
+
+      // Monthly
+      const mKey = `${y}-${String(m + 1).padStart(2, '0')}`;
+      const mLabel = `${monthNames[m]} ${y}`;
+      const mEntry = monthMap.get(mKey) || { label: mLabel, total: 0, hired: 0, sortKey: y * 100 + m };
+      mEntry.total++;
+      if (isHired) mEntry.hired++;
+      monthMap.set(mKey, mEntry);
+
+      // Quarterly
+      const qKey = `${y}-Q${q}`;
+      const qLabel = `Q${q} ${y}`;
+      const qEntry = quarterMap.get(qKey) || { label: qLabel, total: 0, hired: 0, sortKey: y * 10 + q };
+      qEntry.total++;
+      if (isHired) qEntry.hired++;
+      quarterMap.set(qKey, qEntry);
+
+      // Yearly
+      const yKey = `${y}`;
+      const yEntry = yearMap.get(yKey) || { label: `${y}`, total: 0, hired: 0, sortKey: y };
+      yEntry.total++;
+      if (isHired) yEntry.hired++;
+      yearMap.set(yKey, yEntry);
+    });
+
+    return {
+      month: [...monthMap.values()].sort((a, b) => a.sortKey - b.sortKey),
+      quarter: [...quarterMap.values()].sort((a, b) => a.sortKey - b.sortKey),
+      year: [...yearMap.values()].sort((a, b) => a.sortKey - b.sortKey),
+    };
+  }, [filtered]);
+
+  const activeTimeData = timeData[timeView];
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  const currentQuarter = getQuarter(new Date());
+
+  const thisMonthCount = filtered.filter(l => { const d = new Date(l.createdAt); return getYear(d) === currentYear && getMonth(d) === currentMonth; }).length;
+  const thisQuarterCount = filtered.filter(l => { const d = new Date(l.createdAt); return getYear(d) === currentYear && getQuarter(d) === currentQuarter; }).length;
+  const thisYearCount = filtered.filter(l => { const d = new Date(l.createdAt); return getYear(d) === currentYear; }).length;
+
   const selectCls = "h-9 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring transition-colors";
 
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
@@ -401,7 +458,111 @@ export default function Analytics() {
         <StatCardModern icon={MapPin} title="Aktive Kantone" value={uniqueCantons} subtitle="Regionale Abdeckung" accentColor="hsl(38,80%,50%)" />
       </div>
 
-      {/* Funnel + Source Pie */}
+      {/* Time-Based Lead Statistics */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-primary/10 p-2.5">
+              <CalendarIconSolid className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold tracking-tight">Leads nach Zeitraum</h2>
+              <p className="text-xs text-muted-foreground">Erfasste Leads pro Monat, Quartal und Jahr</p>
+            </div>
+          </div>
+          <div className="flex rounded-lg border bg-muted p-0.5">
+            {(['month', 'quarter', 'year'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setTimeView(v)}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-semibold rounded-md transition-all',
+                  timeView === v ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {v === 'month' ? 'Monat' : v === 'quarter' ? 'Quartal' : 'Jahr'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Time KPI Cards */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatCardModern icon={CalendarIconSolid} title="Dieser Monat" value={thisMonthCount} subtitle={`${new Date().toLocaleString('de', { month: 'long' })} ${currentYear}`} accentColor="hsl(210,60%,52%)" />
+          <StatCardModern icon={CalendarIconSolid} title="Dieses Quartal" value={thisQuarterCount} subtitle={`Q${currentQuarter} ${currentYear}`} accentColor="hsl(38,80%,50%)" />
+          <StatCardModern icon={CalendarIconSolid} title="Dieses Jahr" value={thisYearCount} subtitle={`${currentYear}`} accentColor="hsl(152,55%,40%)" />
+        </div>
+
+        {/* Time Chart */}
+        <ChartCard
+          title={timeView === 'month' ? 'Leads pro Monat' : timeView === 'quarter' ? 'Leads pro Quartal' : 'Leads pro Jahr'}
+          subtitle="Erfasst vs. Eingestellt"
+          icon={BarChart3}
+        >
+          {activeTimeData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={activeTimeData} barCategoryGap="15%">
+                <defs>
+                  <linearGradient id="timeBarGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(210,60%,52%)" />
+                    <stop offset="100%" stopColor="hsl(210,60%,62%)" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,89%)" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(0,0%,80%)" axisLine={false} tickLine={false} angle={timeView === 'month' && activeTimeData.length > 8 ? -35 : 0} textAnchor={timeView === 'month' && activeTimeData.length > 8 ? 'end' : 'middle'} height={timeView === 'month' && activeTimeData.length > 8 ? 60 : 30} />
+                <YAxis tick={{ fontSize: 12 }} stroke="hsl(0,0%,80%)" axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ paddingTop: 12, fontSize: 12 }} />
+                <Bar dataKey="total" fill="url(#timeBarGrad)" radius={[6, 6, 0, 0]} name="Erfasst" barSize={timeView === 'year' ? 48 : 28} />
+                <Bar dataKey="hired" fill="hsl(152,55%,40%)" radius={[6, 6, 0, 0]} name="Eingestellt" barSize={timeView === 'year' ? 48 : 28} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="py-12 text-center text-sm text-muted-foreground">Keine Daten verfügbar</p>
+          )}
+        </ChartCard>
+
+        {/* Time Detail Table */}
+        <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/30">
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Zeitraum</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Erfasst</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Eingestellt</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Konversion</th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Verteilung</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeTimeData.map((row, i) => {
+                  const maxTotal = Math.max(...activeTimeData.map(r => r.total), 1);
+                  return (
+                    <tr key={row.label} className={cn('border-t transition-colors hover:bg-muted/40', i % 2 === 0 && 'bg-muted/10')}>
+                      <td className="px-6 py-3.5 font-medium">{row.label}</td>
+                      <td className="px-6 py-3.5 text-right font-bold">{row.total}</td>
+                      <td className="px-6 py-3.5 text-right">
+                        <span className="inline-flex items-center rounded-full bg-[hsl(152,55%,40%)]/10 px-2 py-0.5 text-xs font-semibold text-[hsl(152,55%,40%)]">{row.hired}</span>
+                      </td>
+                      <td className="px-6 py-3.5 text-right font-semibold">{row.total > 0 ? ((row.hired / row.total) * 100).toFixed(0) : 0}%</td>
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 flex-1 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(row.total / maxTotal) * 100}%`, background: 'linear-gradient(90deg, hsl(210,60%,52%), hsl(162,17%,50%))' }} />
+                          </div>
+                          <span className="text-xs font-medium text-muted-foreground w-10 text-right">{row.total}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-5">
         <ChartCard title="Recruiting-Funnel" subtitle="Conversion-Trichter" icon={TrendingUp} className="lg:col-span-3">
           <ResponsiveContainer width="100%" height={300}>
