@@ -14,7 +14,7 @@ import SourceBadge from './SourceBadge';
 import {
   Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
   FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus,
-  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Wand2, Brain, Upload
+  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Brain, Upload
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -22,7 +22,6 @@ import VideoCallDialog from './VideoCallDialog';
 import ProcessStepper from './ProcessStepper';
 import LeadActionPanel from './LeadActionPanel';
 import LeadFlowTimeline from './LeadFlowTimeline';
-import WizardHistoryPanel from './WizardHistoryPanel';
 import LeadInsightsTab from './LeadInsightsTab';
 import LeadDocumentsTab from './LeadDocumentsTab';
 
@@ -55,7 +54,7 @@ export default function LeadDetailSheet() {
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
-  const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'wizard' | 'insights' | 'documents'>('info');
+  const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'insights' | 'documents'>('info');
   const [confirmReset, setConfirmReset] = useState(false);
 
   const leadAppointments = useMemo(() =>
@@ -176,7 +175,6 @@ export default function LeadDetailSheet() {
     { key: 'insights' as const, label: 'Insights', icon: Brain },
     { key: 'documents' as const, label: 'Dokumente', icon: Upload },
     { key: 'flow' as const, label: 'Flow', icon: Workflow },
-    { key: 'wizard' as const, label: 'Wizards', icon: Wand2 },
     { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length },
     { key: 'activity' as const, label: 'Aktivität', icon: Activity },
     { key: 'status' as const, label: 'Status', icon: FileText },
@@ -595,10 +593,6 @@ export default function LeadDetailSheet() {
                       <LeadFlowTimeline lead={selectedLead} activities={activities} />
                     )}
 
-                    {/* Wizard History Tab */}
-                    {rightTab === 'wizard' && (
-                      <WizardHistoryPanel leadId={selectedLead.id} />
-                    )}
                     {rightTab === 'status' && (
                       <div className="space-y-4">
                         <section>
