@@ -45,6 +45,7 @@ interface EscalationWizardLink {
   is_active: boolean;
   sort_order: number;
   delay_minutes: number;
+  test_only: boolean;
 }
 
 interface WizardStep {
