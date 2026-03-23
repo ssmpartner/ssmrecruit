@@ -1432,7 +1432,205 @@ function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
           <Save className="h-4 w-4" /> Kriterien speichern
         </button>
       </div>
+
+      {/* Wizard Preview & Test */}
+      <WizardPreviewPanel toast={toast} />
     </>
+  );
+}
+
+/* ── Wizard Preview Panel ── */
+function WizardPreviewPanel({ toast }: { toast: any }) {
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [assessmentResult, setAssessmentResult] = useState<any>(null);
+  const [loadingResult, setLoadingResult] = useState(false);
+  const DUMMY_LEAD_ID = 'test-lead-dummy-001';
+  const PREVIEW_TOKEN = 'test-wizard-preview-token';
+
+  const resetAndOpen = async () => {
+    setLoading(true);
+    // Reset the insights request to pending
+    await supabase.from('insights_requests').update({
+      status: 'pending',
+      completed_at: null,
+      responses: {},
+    }).eq('token', PREVIEW_TOKEN);
+    // Reset lead status
+    await supabase.from('leads').update({ status: 'new' }).eq('id', DUMMY_LEAD_ID);
+    // Delete old assessment results for this lead
+    await supabase.from('assessment_results').delete().eq('lead_id', DUMMY_LEAD_ID);
+    await supabase.from('disc_results').delete().eq('lead_id', DUMMY_LEAD_ID);
+    await supabase.from('appointment_suggestions').delete().eq('lead_id', DUMMY_LEAD_ID);
+
+    setAssessmentResult(null);
+    const url = `${window.location.origin}/insights-form?token=${PREVIEW_TOKEN}`;
+    setPreviewUrl(url);
+    setLoading(false);
+    window.open(url, '_blank');
+    toast({ title: 'Wizard geöffnet', description: 'Test-Wizard wurde in neuem Tab geöffnet.' });
+  };
+
+  const loadResult = async () => {
+    setLoadingResult(true);
+    const { data } = await supabase
+      .from('assessment_results')
+      .select('*')
+      .eq('lead_id', DUMMY_LEAD_ID)
+      .order('completed_at', { ascending: false })
+      .limit(1)
+      .single();
+    if (data) {
+      setAssessmentResult(data);
+    } else {
+      toast({ title: 'Keine Ergebnisse', description: 'Bitte füllen Sie zuerst den Wizard aus.', variant: 'destructive' });
+    }
+    setLoadingResult(false);
+  };
+
+  const matchLevelConfig: Record<string, { label: string; emoji: string; bg: string }> = {
+    perfect: { label: 'Perfekter Match', emoji: '🔥', bg: 'bg-success/10 border-success/30' },
+    very_good: { label: 'Sehr guter Match', emoji: '✅', bg: 'bg-info/10 border-info/30' },
+    conditional: { label: 'Bedingt geeignet', emoji: '⚠️', bg: 'bg-warning/10 border-warning/30' },
+    no_match: { label: 'Kein Match', emoji: '❌', bg: 'bg-destructive/10 border-destructive/30' },
+  };
+
+  return (
+    <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <ExternalLink className="h-4 w-4 text-muted-foreground" /> Wizard Vorschau & Test
+        </h3>
+        <div className="flex gap-2">
+          <button onClick={loadResult} disabled={loadingResult}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
+            {loadingResult ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            Ergebnisse laden
+          </button>
+          <button onClick={resetAndOpen} disabled={loading}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
+            Wizard testen
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-lg bg-muted/50 p-3">
+        <p className="text-xs text-muted-foreground">
+          <strong>Test-Lead:</strong> Max Mustermann (Test) · test@ssmrecruit.dev<br />
+          Klicken Sie «Wizard testen», um den Wizard in einem neuen Tab zu öffnen. Nach Abschluss klicken Sie «Ergebnisse laden» um die KI-Analyse hier zu sehen.
+        </p>
+      </div>
+
+      {/* Results Display */}
+      {assessmentResult && (
+        <div className="space-y-4 border-t pt-4">
+          <h4 className="text-sm font-semibold flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-success" /> Assessment-Ergebnis
+          </h4>
+
+          {/* Summary */}
+          {assessmentResult.summary?.headline && (
+            <div className="rounded-lg bg-muted/30 p-3">
+              <p className="text-sm font-semibold">{assessmentResult.summary.headline}</p>
+              <p className="text-xs text-muted-foreground mt-1">{assessmentResult.summary.description}</p>
+            </div>
+          )}
+
+          {/* Match + Recommendation */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className={`rounded-lg border p-3 ${matchLevelConfig[assessmentResult.match_result?.level]?.bg || 'bg-muted'}`}>
+              <p className="text-xs text-muted-foreground">Match Score</p>
+              <p className="text-2xl font-bold">{assessmentResult.match_result?.score ?? '—'}<span className="text-xs font-normal text-muted-foreground">/100</span></p>
+              <p className="text-xs font-medium mt-0.5">
+                {matchLevelConfig[assessmentResult.match_result?.level]?.emoji} {matchLevelConfig[assessmentResult.match_result?.level]?.label || '—'}
+              </p>
+            </div>
+            <div className="rounded-lg border p-3">
+              <p className="text-xs text-muted-foreground">Empfehlung</p>
+              <p className="text-lg font-bold mt-1">
+                {assessmentResult.recommendation === 'einstellen' ? '✅ Einstellen' :
+                 assessmentResult.recommendation === 'weiter_pruefen' ? '🔍 Weiter prüfen' :
+                 assessmentResult.recommendation === 'ablehnen' ? '❌ Ablehnen' : assessmentResult.recommendation || '—'}
+              </p>
+            </div>
+          </div>
+
+          {/* DISC Scores */}
+          {assessmentResult.disc_scores && Object.keys(assessmentResult.disc_scores).length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">DISC Scores</p>
+              <div className="grid grid-cols-4 gap-2">
+                {Object.entries(assessmentResult.disc_scores).map(([dim, val]) => (
+                  <div key={dim} className="rounded-lg border p-2 text-center">
+                    <p className="text-xs font-bold">{dim}</p>
+                    <p className="text-lg font-bold">{val as number}%</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Motivator Scores */}
+          {assessmentResult.motivator_scores && Object.keys(assessmentResult.motivator_scores).length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Motivatoren Scores</p>
+              <div className="space-y-1.5">
+                {Object.entries(assessmentResult.motivator_scores).sort((a, b) => (b[1] as number) - (a[1] as number)).map(([dim, val]) => (
+                  <div key={dim} className="flex items-center gap-2">
+                    <span className="text-xs font-medium w-28 capitalize">{dim}</span>
+                    <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                      <div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${val as number}%` }} />
+                    </div>
+                    <span className="text-xs font-bold w-10 text-right">{val as number}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Performance Scores */}
+          {assessmentResult.scores && Object.keys(assessmentResult.scores).length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Performance Scores</p>
+              <div className="space-y-1.5">
+                {Object.entries(assessmentResult.scores).map(([key, val]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <span className="text-xs font-medium w-28 capitalize">{key.replace('_', ' ')}</span>
+                    <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                      <div className="h-full rounded-full bg-ring transition-all" style={{ width: `${val as number}%` }} />
+                    </div>
+                    <span className="text-xs font-bold w-10 text-right">{val as number}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Strengths & Risks */}
+          {(assessmentResult.match_result?.strengths?.length > 0 || assessmentResult.match_result?.risks?.length > 0) && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs font-semibold text-success mb-1">Stärken</p>
+                <ul className="space-y-0.5">
+                  {assessmentResult.match_result.strengths?.map((s: string, i: number) => (
+                    <li key={i} className="text-xs text-muted-foreground">• {s}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-warning mb-1">Risiken</p>
+                <ul className="space-y-0.5">
+                  {assessmentResult.match_result.risks?.map((r: string, i: number) => (
+                    <li key={i} className="text-xs text-muted-foreground">• {r}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
