@@ -6,7 +6,7 @@ import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import {
   AlertTriangle, Plus, Trash2, Edit3, ChevronLeft, Save, X,
   Shield, Wand2, Eye, Zap, Clock, ArrowRight, Check,
-  Globe, Filter, Play, CheckCircle2, XCircle
+  Globe, Filter, Play, CheckCircle2, XCircle, FlaskConical
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
