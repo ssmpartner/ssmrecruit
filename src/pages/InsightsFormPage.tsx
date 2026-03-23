@@ -601,7 +601,7 @@ export default function InsightsFormPage() {
             {/* ── STEP 5: Selbstbild ── */}
             {step === 'selfassessment' && (
               <>
-                <p className="text-sm text-slate-500">Beschreiben Sie sich selbst in eigenen Worten.</p>
+                <p className="text-sm text-muted-foreground">Beschreiben Sie sich selbst in eigenen Worten.</p>
                 {selfAssessmentQuestions.map((q, i) => (
                   <div key={q.key} className="space-y-2">
                     <label className="flex items-baseline gap-2">
