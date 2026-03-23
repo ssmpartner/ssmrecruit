@@ -376,11 +376,11 @@ export default function InsightsFormPage() {
     </div>
   );
   if (error && !requestId) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-        <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">Link ungültig</h1>
-        <p className="text-slate-600">{error}</p>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-card rounded-2xl shadow-lg p-8 text-center">
+        <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-foreground mb-2">Link ungültig</h1>
+        <p className="text-muted-foreground">{error}</p>
       </div>
     </div>
   );
