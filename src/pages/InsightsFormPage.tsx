@@ -505,7 +505,7 @@ export default function InsightsFormPage() {
                       return (
                         <button key={pi} type="button" onClick={() => setMotivatorPage(pi)}
                           className={`h-2 flex-1 rounded-full transition-all ${
-                            pi === motivatorPage ? 'bg-emerald-500' : allAnswered ? 'bg-emerald-300' : 'bg-slate-200'
+                            pi === motivatorPage ? 'bg-primary' : allAnswered ? 'bg-ring' : 'bg-muted'
                           }`} />
                       );
                     })}
