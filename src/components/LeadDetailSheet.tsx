@@ -55,7 +55,7 @@ export default function LeadDetailSheet() {
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
-  const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'wizard' | 'insights' | 'documents'>('info');
+  const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'insights' | 'documents'>('info');
   const [confirmReset, setConfirmReset] = useState(false);
 
   const leadAppointments = useMemo(() =>
