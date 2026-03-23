@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2, Building2, User, ClipboardList, FileText, Upload, AlertTriangle } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2, Building2, User, ClipboardList, FileText, Upload, AlertTriangle, Mail, Wand2, ArrowRightLeft, Clock, Eye } from 'lucide-react';
 import PipelineFlow from '@/components/PipelineFlow';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -169,6 +169,37 @@ export default function Processes() {
   const [addingGuidelineFor, setAddingGuidelineFor] = useState<LeadStatus | null>(null);
   const [aiLoadingFor, setAiLoadingFor] = useState<LeadStatus | null>(null);
 
+  // ── Fetched automations from DB ──
+  const [emailRules, setEmailRules] = useState<any[]>([]);
+  const [escalationProcesses, setEscalationProcesses] = useState<any[]>([]);
+  const [escalationRules, setEscalationRules] = useState<any[]>([]);
+  const [wizardLinks, setWizardLinks] = useState<any[]>([]);
+  const [wizards, setWizards] = useState<any[]>([]);
+  const [emailTemplates, setEmailTemplates] = useState<any[]>([]);
+  const [automationsLoading, setAutomationsLoading] = useState(false);
+  const [automationsTab, setAutomationsTab] = useState<'all' | 'process' | 'email' | 'escalation' | 'wizard'>('all');
+
+  const loadAllAutomations = useCallback(async () => {
+    setAutomationsLoading(true);
+    const [emailRes, escProcRes, escRulesRes, wizLinksRes, wizRes, templatesRes] = await Promise.all([
+      supabase.from('email_automation_rules').select('*').order('created_at', { ascending: false }),
+      supabase.from('escalation_processes').select('*').order('priority', { ascending: true }),
+      supabase.from('escalation_rules').select('*').order('sort_order', { ascending: true }),
+      supabase.from('escalation_wizard_links').select('*').order('sort_order', { ascending: true }),
+      supabase.from('wizards').select('id, name, type, status'),
+      supabase.from('email_templates').select('id, name'),
+    ]);
+    if (emailRes.data) setEmailRules(emailRes.data);
+    if (escProcRes.data) setEscalationProcesses(escProcRes.data);
+    if (escRulesRes.data) setEscalationRules(escRulesRes.data);
+    if (wizLinksRes.data) setWizardLinks(wizLinksRes.data);
+    if (wizRes.data) setWizards(wizRes.data);
+    if (templatesRes.data) setEmailTemplates(templatesRes.data);
+    setAutomationsLoading(false);
+  }, []);
+
+  useEffect(() => { loadAllAutomations(); }, [loadAllAutomations]);
+
   // ── AI guideline generation ──
   const generateAiGuidelines = async (step: ProcessStep) => {
     setAiLoadingFor(step.status);
@@ -313,8 +344,8 @@ export default function Processes() {
           <div className="grid grid-cols-3 gap-4">
             <div className="rounded-xl border bg-card p-5 shadow-sm">
               <p className="text-xs font-medium text-muted-foreground">Aktive Automatisierungen</p>
-              <p className="text-3xl font-bold mt-1">{rules.filter(r => r.enabled).length}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">von {rules.length} Regeln</p>
+              <p className="text-3xl font-bold mt-1">{rules.filter(r => r.enabled).length + emailRules.filter(r => r.is_active).length + escalationRules.filter(r => r.is_active).length + wizardLinks.filter(r => r.is_active).length}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">von {rules.length + emailRules.length + escalationRules.length + wizardLinks.length} gesamt</p>
             </div>
             <div className="rounded-xl border bg-card p-5 shadow-sm">
               <p className="text-xs font-medium text-muted-foreground">Definierte Richtlinien</p>
@@ -510,207 +541,442 @@ export default function Processes() {
         {/* ══════════ TAB: Automatisierungen ══════════ */}
         <TabsContent value="automations" className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">Automatisierungen</h2>
-              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">{rules.length}</span>
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Zap className="h-5 w-5 text-primary" /> Alle Automatisierungen
+              </h2>
+              <p className="text-sm text-muted-foreground">Übersicht aller aktiven und inaktiven Automatisierungen im System.</p>
             </div>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-                  <Plus className="h-4 w-4" /> Neue Regel
-                </button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader><DialogTitle>Automatisierung erstellen</DialogTitle></DialogHeader>
-                <div className="space-y-5 pt-2">
-                  <div>
-                    <label className="text-sm font-medium">Name</label>
-                    <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="z.B. Auto-Zuweisung ZH Leads" className={inputCls + ' mt-1'} />
-                  </div>
-
-                  {/* Scope selector */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Geltungsbereich</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {([
-                        { key: 'global' as AutomationScope, label: 'Global', icon: Workflow, desc: 'Für alle' },
-                        { key: 'agency' as AutomationScope, label: 'Agentur', icon: Building2, desc: 'Nur eine Agentur' },
-                        { key: 'employee' as AutomationScope, label: 'Mitarbeiter', icon: User, desc: 'Nur ein Mitarbeiter' },
-                      ]).map(({ key, label, icon: Icon, desc }) => {
-                        const isActive = form.scope === key;
-                        return (
-                          <button key={key} onClick={() => setForm(p => ({ ...p, scope: key, scopeAgencyId: '', scopeEmployeeId: '' }))}
-                            className={`rounded-xl border p-3 text-left transition-colors ${isActive ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
-                            <Icon className={`h-3.5 w-3.5 mb-1 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                            <span className="text-xs font-semibold block">{label}</span>
-                            <p className="text-[10px] text-muted-foreground">{desc}</p>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {form.scope === 'agency' && (
-                      <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Agentur</label>
-                        <select value={form.scopeAgencyId} onChange={e => setForm(p => ({ ...p, scopeAgencyId: e.target.value }))} className={inputCls + ' mt-1'}>
-                          <option value="">Wählen</option>{agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
-                    )}
-                    {form.scope === 'employee' && (
-                      <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Mitarbeiter</label>
-                        <select value={form.scopeEmployeeId} onChange={e => setForm(p => ({ ...p, scopeEmployeeId: e.target.value }))} className={inputCls + ' mt-1'}>
-                          <option value="">Wählen</option>{employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Auslöser</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(Object.entries(triggerOptions) as [AutomationTrigger, typeof triggerOptions[AutomationTrigger]][]).map(([key, cfg]) => {
-                        const Icon = cfg.icon; const isActive = form.trigger === key;
-                        return (
-                          <button key={key} onClick={() => setForm(p => ({ ...p, trigger: key }))}
-                            className={`rounded-xl border p-3 text-left transition-colors ${isActive ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                              <span className="text-xs font-semibold">{cfg.label}</span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">{cfg.desc}</p>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {form.trigger === 'status_change' && (
-                      <div className="grid grid-cols-2 gap-3 pt-1">
-                        <div><label className="text-xs font-medium text-muted-foreground">Von Status</label>
-                          <select value={form.fromStatus} onChange={e => setForm(p => ({ ...p, fromStatus: e.target.value as LeadStatus }))} className={inputCls + ' mt-1'}>
-                            <option value="">Beliebig</option>{statusFlow.map(s => <option key={s} value={s}>{statusConfig[s].label}</option>)}</select></div>
-                        <div><label className="text-xs font-medium text-muted-foreground">Zu Status</label>
-                          <select value={form.toStatus} onChange={e => setForm(p => ({ ...p, toStatus: e.target.value as LeadStatus }))} className={inputCls + ' mt-1'}>
-                            <option value="">Beliebig</option>{statusFlow.map(s => <option key={s} value={s}>{statusConfig[s].label}</option>)}</select></div>
-                      </div>
-                    )}
-                    {form.trigger === 'time_in_status' && (
-                      <div className="grid grid-cols-2 gap-3 pt-1">
-                        <div><label className="text-xs font-medium text-muted-foreground">Im Status</label>
-                          <select value={form.toStatus} onChange={e => setForm(p => ({ ...p, toStatus: e.target.value as LeadStatus }))} className={inputCls + ' mt-1'}>
-                            {statusFlow.map(s => <option key={s} value={s}>{statusConfig[s].label}</option>)}</select></div>
-                        <div><label className="text-xs font-medium text-muted-foreground">Nach Tagen</label>
-                          <input type="number" min={1} max={30} value={form.daysInStatus} onChange={e => setForm(p => ({ ...p, daysInStatus: Number(e.target.value) }))} className={inputCls + ' mt-1'} /></div>
-                      </div>
-                    )}
-                    {form.trigger === 'lead_created' && (
-                      <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Kanton (optional)</label>
-                        <select value={form.canton} onChange={e => setForm(p => ({ ...p, canton: e.target.value }))} className={inputCls + ' mt-1'}>
-                          <option value="">Alle Kantone</option>{cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}</select></div>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Aktion</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {(Object.entries(actionOptions) as [AutomationAction, typeof actionOptions[AutomationAction]][]).map(([key, cfg]) => {
-                        const Icon = cfg.icon; const isActive = form.action === key;
-                        return (
-                          <button key={key} onClick={() => setForm(p => ({ ...p, action: key }))}
-                            className={`rounded-xl border p-3 text-left transition-colors ${isActive ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
-                            <Icon className={`h-3.5 w-3.5 mb-1 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                            <span className="text-xs font-semibold">{cfg.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {form.action === 'change_status' && (
-                      <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Ziel-Status</label>
-                        <select value={form.targetStatus} onChange={e => setForm(p => ({ ...p, targetStatus: e.target.value as LeadStatus }))} className={inputCls + ' mt-1'}>
-                          <option value="">Wählen</option>{statusFlow.map(s => <option key={s} value={s}>{statusConfig[s].label}</option>)}</select></div>
-                    )}
-                    {form.action === 'assign_employee' && (
-                      <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Mitarbeiter</label>
-                        <select value={form.targetEmployeeId} onChange={e => setForm(p => ({ ...p, targetEmployeeId: e.target.value }))} className={inputCls + ' mt-1'}>
-                          <option value="">Wählen</option>{employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
-                    )}
-                    {form.action === 'send_notification' && (
-                      <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Nachricht</label>
-                        <textarea value={form.notificationMessage} onChange={e => setForm(p => ({ ...p, notificationMessage: e.target.value }))} rows={2} placeholder="z.B. Lead seit X Tagen unbearbeitet..."
-                          className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none mt-1" /></div>
-                    )}
-                  </div>
-
-                  <button onClick={addRule} disabled={!form.name.trim()} className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
-                    Regel erstellen
+            <div className="flex items-center gap-2">
+              <button onClick={loadAllAutomations} className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium hover:bg-muted/50 transition-colors">
+                {automationsLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5" />} Aktualisieren
+              </button>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                    <Plus className="h-4 w-4" /> Neue Regel
                   </button>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader><DialogTitle>Automatisierung erstellen</DialogTitle></DialogHeader>
+                  <div className="space-y-5 pt-2">
+                    <div>
+                      <label className="text-sm font-medium">Name</label>
+                      <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="z.B. Auto-Zuweisung ZH Leads" className={inputCls + ' mt-1'} />
+                    </div>
+
+                    {/* Scope selector */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Geltungsbereich</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {([
+                          { key: 'global' as AutomationScope, label: 'Global', icon: Workflow, desc: 'Für alle' },
+                          { key: 'agency' as AutomationScope, label: 'Agentur', icon: Building2, desc: 'Nur eine Agentur' },
+                          { key: 'employee' as AutomationScope, label: 'Mitarbeiter', icon: User, desc: 'Nur ein Mitarbeiter' },
+                        ]).map(({ key, label, icon: Icon, desc }) => {
+                          const isActive = form.scope === key;
+                          return (
+                            <button key={key} onClick={() => setForm(p => ({ ...p, scope: key, scopeAgencyId: '', scopeEmployeeId: '' }))}
+                              className={`rounded-xl border p-3 text-left transition-colors ${isActive ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
+                              <Icon className={`h-3.5 w-3.5 mb-1 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                              <span className="text-xs font-semibold block">{label}</span>
+                              <p className="text-[10px] text-muted-foreground">{desc}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {form.scope === 'agency' && (
+                        <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Agentur</label>
+                          <select value={form.scopeAgencyId} onChange={e => setForm(p => ({ ...p, scopeAgencyId: e.target.value }))} className={inputCls + ' mt-1'}>
+                            <option value="">Wählen</option>{agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+                      )}
+                      {form.scope === 'employee' && (
+                        <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Mitarbeiter</label>
+                          <select value={form.scopeEmployeeId} onChange={e => setForm(p => ({ ...p, scopeEmployeeId: e.target.value }))} className={inputCls + ' mt-1'}>
+                            <option value="">Wählen</option>{employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Auslöser</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(Object.entries(triggerOptions) as [AutomationTrigger, typeof triggerOptions[AutomationTrigger]][]).map(([key, cfg]) => {
+                          const Icon = cfg.icon; const isActive = form.trigger === key;
+                          return (
+                            <button key={key} onClick={() => setForm(p => ({ ...p, trigger: key }))}
+                              className={`rounded-xl border p-3 text-left transition-colors ${isActive ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <span className="text-xs font-semibold">{cfg.label}</span>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground">{cfg.desc}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {form.trigger === 'status_change' && (
+                        <div className="grid grid-cols-2 gap-3 pt-1">
+                          <div><label className="text-xs font-medium text-muted-foreground">Von Status</label>
+                            <select value={form.fromStatus} onChange={e => setForm(p => ({ ...p, fromStatus: e.target.value as LeadStatus }))} className={inputCls + ' mt-1'}>
+                              <option value="">Beliebig</option>{statusFlow.map(s => <option key={s} value={s}>{statusConfig[s].label}</option>)}</select></div>
+                          <div><label className="text-xs font-medium text-muted-foreground">Zu Status</label>
+                            <select value={form.toStatus} onChange={e => setForm(p => ({ ...p, toStatus: e.target.value as LeadStatus }))} className={inputCls + ' mt-1'}>
+                              <option value="">Beliebig</option>{statusFlow.map(s => <option key={s} value={s}>{statusConfig[s].label}</option>)}</select></div>
+                        </div>
+                      )}
+                      {form.trigger === 'time_in_status' && (
+                        <div className="grid grid-cols-2 gap-3 pt-1">
+                          <div><label className="text-xs font-medium text-muted-foreground">Im Status</label>
+                            <select value={form.toStatus} onChange={e => setForm(p => ({ ...p, toStatus: e.target.value as LeadStatus }))} className={inputCls + ' mt-1'}>
+                              {statusFlow.map(s => <option key={s} value={s}>{statusConfig[s].label}</option>)}</select></div>
+                          <div><label className="text-xs font-medium text-muted-foreground">Nach Tagen</label>
+                            <input type="number" min={1} max={30} value={form.daysInStatus} onChange={e => setForm(p => ({ ...p, daysInStatus: Number(e.target.value) }))} className={inputCls + ' mt-1'} /></div>
+                        </div>
+                      )}
+                      {form.trigger === 'lead_created' && (
+                        <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Kanton (optional)</label>
+                          <select value={form.canton} onChange={e => setForm(p => ({ ...p, canton: e.target.value }))} className={inputCls + ' mt-1'}>
+                            <option value="">Alle Kantone</option>{cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}</select></div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Aktion</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {(Object.entries(actionOptions) as [AutomationAction, typeof actionOptions[AutomationAction]][]).map(([key, cfg]) => {
+                          const Icon = cfg.icon; const isActive = form.action === key;
+                          return (
+                            <button key={key} onClick={() => setForm(p => ({ ...p, action: key }))}
+                              className={`rounded-xl border p-3 text-left transition-colors ${isActive ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
+                              <Icon className={`h-3.5 w-3.5 mb-1 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                              <span className="text-xs font-semibold">{cfg.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {form.action === 'change_status' && (
+                        <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Ziel-Status</label>
+                          <select value={form.targetStatus} onChange={e => setForm(p => ({ ...p, targetStatus: e.target.value as LeadStatus }))} className={inputCls + ' mt-1'}>
+                            <option value="">Wählen</option>{statusFlow.map(s => <option key={s} value={s}>{statusConfig[s].label}</option>)}</select></div>
+                      )}
+                      {form.action === 'assign_employee' && (
+                        <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Mitarbeiter</label>
+                          <select value={form.targetEmployeeId} onChange={e => setForm(p => ({ ...p, targetEmployeeId: e.target.value }))} className={inputCls + ' mt-1'}>
+                            <option value="">Wählen</option>{employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
+                      )}
+                      {form.action === 'send_notification' && (
+                        <div className="pt-1"><label className="text-xs font-medium text-muted-foreground">Nachricht</label>
+                          <textarea value={form.notificationMessage} onChange={e => setForm(p => ({ ...p, notificationMessage: e.target.value }))} rows={2} placeholder="z.B. Lead seit X Tagen unbearbeitet..."
+                            className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none mt-1" /></div>
+                      )}
+                    </div>
+
+                    <button onClick={addRule} disabled={!form.name.trim()} className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                      Regel erstellen
+                    </button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
 
-          {rules.length === 0 && (
-            <div className="rounded-xl border border-dashed bg-muted/20 p-8 text-center">
-              <Zap className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Noch keine Automatisierungen.</p>
-            </div>
+          {/* ── Summary Cards ── */}
+          <div className="grid grid-cols-4 gap-3">
+            <button onClick={() => setAutomationsTab('process')}
+              className={`rounded-xl border p-4 text-left transition-all ${automationsTab === 'process' ? 'border-primary ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold">Prozess-Regeln</span>
+              </div>
+              <p className="text-2xl font-bold">{rules.length}</p>
+              <p className="text-[10px] text-muted-foreground">{rules.filter(r => r.enabled).length} aktiv</p>
+            </button>
+            <button onClick={() => setAutomationsTab('email')}
+              className={`rounded-xl border p-4 text-left transition-all ${automationsTab === 'email' ? 'border-primary ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
+              <div className="flex items-center gap-2 mb-1">
+                <Mail className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold">E-Mail-Automationen</span>
+              </div>
+              <p className="text-2xl font-bold">{emailRules.length}</p>
+              <p className="text-[10px] text-muted-foreground">{emailRules.filter(r => r.is_active).length} aktiv</p>
+            </button>
+            <button onClick={() => setAutomationsTab('escalation')}
+              className={`rounded-xl border p-4 text-left transition-all ${automationsTab === 'escalation' ? 'border-primary ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
+              <div className="flex items-center gap-2 mb-1">
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                <span className="text-xs font-semibold">Eskalationsregeln</span>
+              </div>
+              <p className="text-2xl font-bold">{escalationRules.length}</p>
+              <p className="text-[10px] text-muted-foreground">{escalationRules.filter(r => r.is_active).length} aktiv</p>
+            </button>
+            <button onClick={() => setAutomationsTab('wizard')}
+              className={`rounded-xl border p-4 text-left transition-all ${automationsTab === 'wizard' ? 'border-primary ring-1 ring-primary' : 'hover:bg-muted/50'}`}>
+              <div className="flex items-center gap-2 mb-1">
+                <Wand2 className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold">Wizard-Verknüpfungen</span>
+              </div>
+              <p className="text-2xl font-bold">{wizardLinks.length}</p>
+              <p className="text-[10px] text-muted-foreground">{wizardLinks.filter(r => r.is_active).length} aktiv</p>
+            </button>
+          </div>
+
+          {/* ── Show All button ── */}
+          {automationsTab !== 'all' && (
+            <button onClick={() => setAutomationsTab('all')} className="text-xs text-primary font-medium hover:underline">← Alle anzeigen</button>
           )}
 
-          <div className="space-y-3">
-            {rules.map(rule => {
-              const trigger = triggerOptions[rule.trigger];
-              const action = actionOptions[rule.action];
-              const TriggerIcon = trigger.icon;
-              const ActionIcon = action.icon;
-              return (
-                <div key={rule.id} className={`rounded-xl border bg-card p-4 shadow-sm transition-all ${!rule.enabled ? 'opacity-60' : ''}`}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Zap className={`h-4 w-4 ${rule.enabled ? 'text-primary' : 'text-muted-foreground'}`} />
-                        <h3 className="text-sm font-semibold truncate">{rule.name}</h3>
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${rule.enabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                          {rule.enabled ? 'Aktiv' : 'Inaktiv'}
-                        </span>
-                        {rule.scope === 'global' && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
-                            <Workflow className="h-2.5 w-2.5" /> Global
-                          </span>
-                        )}
-                        {rule.scope === 'agency' && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
-                            <Building2 className="h-2.5 w-2.5" /> {agencies.find(a => a.id === rule.scopeAgencyId)?.name || 'Agentur'}
-                          </span>
-                        )}
-                        {rule.scope === 'employee' && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
-                            <User className="h-2.5 w-2.5" /> {employees.find(e => e.id === rule.scopeEmployeeId)?.name || 'Mitarbeiter'}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 text-xs">
-                        <div className="inline-flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1">
-                          <TriggerIcon className="h-3 w-3 text-muted-foreground" />
-                          <span className="font-medium">{trigger.label}</span>
-                          {rule.triggerConfig.toStatus && <span className="text-muted-foreground">→ {statusConfig[rule.triggerConfig.toStatus]?.label}</span>}
-                          {rule.triggerConfig.daysInStatus && <span className="text-muted-foreground">({rule.triggerConfig.daysInStatus}d)</span>}
-                        </div>
-                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                        <div className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1">
-                          <ActionIcon className="h-3 w-3 text-primary" />
-                          <span className="font-medium text-primary">{action.label}</span>
-                          {rule.actionConfig.targetStatus && <span className="text-primary/70">→ {statusConfig[rule.actionConfig.targetStatus]?.label}</span>}
-                          {rule.actionConfig.targetEmployeeId && <span className="text-primary/70">→ {employees.find(e => e.id === rule.actionConfig.targetEmployeeId)?.name}</span>}
-                        </div>
-                      </div>
+          {automationsLoading ? (
+            <div className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          ) : (
+            <div className="space-y-6">
+              {/* ── Prozess-Regeln ── */}
+              {(automationsTab === 'all' || automationsTab === 'process') && (
+                <div className="space-y-3">
+                  {automationsTab === 'all' && (
+                    <h3 className="text-sm font-semibold flex items-center gap-2"><Zap className="h-4 w-4 text-primary" /> Prozess-Regeln</h3>
+                  )}
+                  {rules.length === 0 ? (
+                    <div className="rounded-xl border border-dashed bg-muted/20 p-6 text-center">
+                      <p className="text-xs text-muted-foreground">Keine Prozess-Regeln vorhanden.</p>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => toggleRule(rule.id)} className={`relative h-6 w-11 rounded-full transition-colors ${rule.enabled ? 'bg-primary' : 'bg-muted'}`}>
-                        <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${rule.enabled ? 'translate-x-5' : ''}`} />
-                      </button>
-                      <button onClick={() => removeRule(rule.id)} className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
+                  ) : (
+                    rules.map(rule => {
+                      const trigger = triggerOptions[rule.trigger];
+                      const action = actionOptions[rule.action];
+                      const TriggerIcon = trigger.icon;
+                      const ActionIcon = action.icon;
+                      return (
+                        <div key={rule.id} className={`rounded-xl border bg-card p-4 shadow-sm transition-all ${!rule.enabled ? 'opacity-60' : ''}`}>
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <Zap className={`h-4 w-4 ${rule.enabled ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <h3 className="text-sm font-semibold truncate">{rule.name}</h3>
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${rule.enabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                  {rule.enabled ? 'Aktiv' : 'Inaktiv'}
+                                </span>
+                                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">Prozess</span>
+                                {rule.scope === 'agency' && (
+                                  <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
+                                    <Building2 className="h-2.5 w-2.5" /> {agencies.find(a => a.id === rule.scopeAgencyId)?.name || 'Agentur'}
+                                  </span>
+                                )}
+                                {rule.scope === 'employee' && (
+                                  <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
+                                    <User className="h-2.5 w-2.5" /> {employees.find(e => e.id === rule.scopeEmployeeId)?.name || 'Mitarbeiter'}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs">
+                                <div className="inline-flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1">
+                                  <TriggerIcon className="h-3 w-3 text-muted-foreground" />
+                                  <span className="font-medium">{trigger.label}</span>
+                                  {rule.triggerConfig.toStatus && <span className="text-muted-foreground">→ {statusConfig[rule.triggerConfig.toStatus]?.label}</span>}
+                                  {rule.triggerConfig.daysInStatus && <span className="text-muted-foreground">({rule.triggerConfig.daysInStatus}d)</span>}
+                                </div>
+                                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                                <div className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1">
+                                  <ActionIcon className="h-3 w-3 text-primary" />
+                                  <span className="font-medium text-primary">{action.label}</span>
+                                  {rule.actionConfig.targetStatus && <span className="text-primary/70">→ {statusConfig[rule.actionConfig.targetStatus]?.label}</span>}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => toggleRule(rule.id)} className={`relative h-6 w-11 rounded-full transition-colors ${rule.enabled ? 'bg-primary' : 'bg-muted'}`}>
+                                <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${rule.enabled ? 'translate-x-5' : ''}`} />
+                              </button>
+                              <button onClick={() => removeRule(rule.id)} className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
-              );
-            })}
-          </div>
+              )}
+
+              {/* ── E-Mail-Automationen ── */}
+              {(automationsTab === 'all' || automationsTab === 'email') && (
+                <div className="space-y-3">
+                  {automationsTab === 'all' && (
+                    <h3 className="text-sm font-semibold flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> E-Mail-Automationen</h3>
+                  )}
+                  {emailRules.length === 0 ? (
+                    <div className="rounded-xl border border-dashed bg-muted/20 p-6 text-center">
+                      <p className="text-xs text-muted-foreground">Keine E-Mail-Automationen vorhanden. Erstelle sie unter Einstellungen → E-Mail.</p>
+                    </div>
+                  ) : (
+                    emailRules.map(rule => {
+                      const templateName = emailTemplates.find(t => t.id === rule.template_id)?.name || '(Kein Template)';
+                      const triggerLabel = rule.trigger_type === 'status_change' ? 'Statusänderung' : rule.trigger_type === 'time_based' ? 'Zeitbasiert' : 'Ereignis';
+                      return (
+                        <div key={rule.id} className={`rounded-xl border bg-card p-4 shadow-sm transition-all ${!rule.is_active ? 'opacity-60' : ''}`}>
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <Mail className={`h-4 w-4 ${rule.is_active ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <h3 className="text-sm font-semibold truncate">{rule.name}</h3>
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${rule.is_active ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                  {rule.is_active ? 'Aktiv' : 'Inaktiv'}
+                                </span>
+                                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">E-Mail</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs flex-wrap">
+                                <div className="inline-flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1">
+                                  <ArrowRightLeft className="h-3 w-3 text-muted-foreground" />
+                                  <span className="font-medium">{triggerLabel}</span>
+                                </div>
+                                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                                <div className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1">
+                                  <Mail className="h-3 w-3 text-primary" />
+                                  <span className="font-medium text-primary">{templateName}</span>
+                                </div>
+                                {rule.delay_minutes > 0 && (
+                                  <div className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-1">
+                                    <Clock className="h-3 w-3 text-muted-foreground" />
+                                    <span className="text-muted-foreground">{rule.delay_minutes} Min.</span>
+                                  </div>
+                                )}
+                                <span className="text-muted-foreground">→ {rule.recipient_type === 'lead' ? 'Kandidat' : rule.recipient_type === 'recruiter' ? 'Recruiter' : 'Team'}</span>
+                              </div>
+                              {rule.description && <p className="text-[11px] text-muted-foreground mt-1.5">{rule.description}</p>}
+                            </div>
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${rule.is_active ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                              {rule.is_active ? '✓' : '—'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+
+              {/* ── Eskalationsregeln ── */}
+              {(automationsTab === 'all' || automationsTab === 'escalation') && (
+                <div className="space-y-3">
+                  {automationsTab === 'all' && (
+                    <h3 className="text-sm font-semibold flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-500" /> Eskalationsregeln</h3>
+                  )}
+                  {escalationRules.length === 0 ? (
+                    <div className="rounded-xl border border-dashed bg-muted/20 p-6 text-center">
+                      <p className="text-xs text-muted-foreground">Keine Eskalationsregeln vorhanden. Erstelle sie im Eskalation-Tab.</p>
+                    </div>
+                  ) : (
+                    escalationRules.map(rule => {
+                      const proc = escalationProcesses.find(p => p.id === rule.escalation_process_id);
+                      const statusLabel = proc ? (statusConfig[proc.main_process_status as LeadStatus]?.label || proc.main_process_status) : '?';
+                      return (
+                        <div key={rule.id} className={`rounded-xl border bg-card p-4 shadow-sm transition-all ${!rule.is_active ? 'opacity-60' : ''}`}>
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <AlertTriangle className={`h-4 w-4 ${rule.is_active ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                                <h3 className="text-sm font-semibold truncate">{rule.condition_type}: {rule.condition_value}</h3>
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${rule.is_active ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                  {rule.is_active ? 'Aktiv' : 'Inaktiv'}
+                                </span>
+                                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">Eskalation</span>
+                                {rule.test_only && (
+                                  <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">🧪 Test</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs flex-wrap">
+                                <div className="inline-flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1">
+                                  <span className="font-medium">{rule.condition_type}</span>
+                                  <span className="text-muted-foreground">= {rule.condition_value}</span>
+                                </div>
+                                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                                <div className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1">
+                                  <span className="font-medium text-primary">{rule.action_type}: {rule.action_value}</span>
+                                </div>
+                                {rule.delay_minutes > 0 && (
+                                  <div className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-1">
+                                    <Clock className="h-3 w-3 text-muted-foreground" />
+                                    <span className="text-muted-foreground">{rule.delay_minutes} Min.</span>
+                                  </div>
+                                )}
+                                {proc && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
+                                    {proc.name} ({statusLabel})
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <span className="text-xs text-muted-foreground font-mono">#{rule.sort_order}</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+
+              {/* ── Wizard-Verknüpfungen ── */}
+              {(automationsTab === 'all' || automationsTab === 'wizard') && (
+                <div className="space-y-3">
+                  {automationsTab === 'all' && (
+                    <h3 className="text-sm font-semibold flex items-center gap-2"><Wand2 className="h-4 w-4 text-primary" /> Wizard-Verknüpfungen</h3>
+                  )}
+                  {wizardLinks.length === 0 ? (
+                    <div className="rounded-xl border border-dashed bg-muted/20 p-6 text-center">
+                      <p className="text-xs text-muted-foreground">Keine Wizard-Verknüpfungen vorhanden. Verknüpfe Wizards im Eskalation-Tab.</p>
+                    </div>
+                  ) : (
+                    wizardLinks.map(link => {
+                      const wiz = wizards.find(w => w.id === link.wizard_id);
+                      const proc = escalationProcesses.find(p => p.id === link.escalation_process_id);
+                      const statusLabel = proc ? (statusConfig[proc.main_process_status as LeadStatus]?.label || proc.main_process_status) : '?';
+                      return (
+                        <div key={link.id} className={`rounded-xl border bg-card p-4 shadow-sm transition-all ${!link.is_active ? 'opacity-60' : ''}`}>
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <Wand2 className={`h-4 w-4 ${link.is_active ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <h3 className="text-sm font-semibold truncate">{wiz?.name || 'Unbekannter Wizard'}</h3>
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${link.is_active ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                  {link.is_active ? 'Aktiv' : 'Inaktiv'}
+                                </span>
+                                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">Wizard</span>
+                                {link.test_only && (
+                                  <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">🧪 Test</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs flex-wrap">
+                                {proc && (
+                                  <div className="inline-flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1">
+                                    <AlertTriangle className="h-3 w-3 text-muted-foreground" />
+                                    <span className="font-medium">{proc.name}</span>
+                                    <span className="text-muted-foreground">({statusLabel})</span>
+                                  </div>
+                                )}
+                                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                                <div className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1">
+                                  <Wand2 className="h-3 w-3 text-primary" />
+                                  <span className="font-medium text-primary">{wiz?.name || '?'}</span>
+                                  {wiz?.type && <span className="text-primary/60 capitalize">({wiz.type})</span>}
+                                </div>
+                                {link.delay_minutes > 0 && (
+                                  <div className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-1">
+                                    <Clock className="h-3 w-3 text-muted-foreground" />
+                                    <span className="text-muted-foreground">{link.delay_minutes} Min.</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <span className="text-xs text-muted-foreground font-mono">#{link.sort_order}</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
       <LeadDetailSheet />
