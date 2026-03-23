@@ -198,6 +198,106 @@ export default function Analytics() {
     { name: 'Eingestellt', value: hiredCount, fill: 'hsl(152,55%,40%)' },
   ];
 
+  // Flow Analysis Data
+  const statusOrder: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired'];
+
+  const flowAnalysis = useMemo(() => {
+    const now = new Date();
+
+    // Calculate avg days per status based on status change activities
+    const statusDurations: Record<string, number[]> = {};
+    statusOrder.forEach(s => { statusDurations[s] = []; });
+
+    // For each lead, compute days in current status
+    filtered.forEach(lead => {
+      const leadActivities = activities
+        .filter(a => a.leadId === lead.id && a.type === 'status_change')
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+      if (leadActivities.length > 0) {
+        // Time from last status change to now (current status duration)
+        const lastChange = new Date(leadActivities[leadActivities.length - 1].timestamp);
+        const daysInCurrent = Math.max(0, Math.floor((now.getTime() - lastChange.getTime()) / (1000 * 60 * 60 * 24)));
+        if (statusDurations[lead.status]) {
+          statusDurations[lead.status].push(daysInCurrent);
+        }
+
+        // Time between consecutive status changes
+        for (let i = 1; i < leadActivities.length; i++) {
+          const prev = new Date(leadActivities[i - 1].timestamp);
+          const curr = new Date(leadActivities[i].timestamp);
+          const days = Math.max(0, Math.floor((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24)));
+          // Try to extract status from description
+          const match = leadActivities[i - 1].description?.match(/→\s*(\w+)/);
+          if (match) {
+            const prevStatus = Object.keys(statusConfig).find(k => statusConfig[k as LeadStatus]?.label?.toLowerCase().includes(match[1].toLowerCase()));
+            if (prevStatus && statusDurations[prevStatus]) {
+              statusDurations[prevStatus].push(days);
+            }
+          }
+        }
+      } else {
+        // No activity: use days since creation
+        const created = new Date(lead.createdAt);
+        const days = Math.max(0, Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)));
+        if (statusDurations[lead.status]) {
+          statusDurations[lead.status].push(days);
+        }
+      }
+    });
+
+    const avgDaysPerStatus = statusOrder.map(s => {
+      const durations = statusDurations[s];
+      const avg = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+      return {
+        status: s,
+        label: statusConfig[s]?.label || s,
+        avgDays: Math.round(avg * 10) / 10,
+        count: filtered.filter(l => l.status === s).length,
+        maxDays: durations.length > 0 ? Math.max(...durations) : 0,
+      };
+    });
+
+    // Bottleneck: status with highest avg days and >0 leads
+    const bottleneck = avgDaysPerStatus
+      .filter(s => s.count > 0)
+      .sort((a, b) => b.avgDays - a.avgDays)[0] || null;
+
+    // Status transitions from activities
+    const transitions: Record<string, number> = {};
+    activities
+      .filter(a => a.type === 'status_change')
+      .forEach(a => {
+        const match = a.description?.match(/(.+?)\s*→\s*(.+)/);
+        if (match) {
+          const key = `${match[1].trim()} → ${match[2].trim()}`;
+          transitions[key] = (transitions[key] || 0) + 1;
+        }
+      });
+
+    const topTransitions = Object.entries(transitions)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([label, count]) => ({ label, count }));
+
+    // Avg total process duration for hired leads
+    const hiredLeads = filtered.filter(l => l.status === 'hired');
+    const avgProcessDays = hiredLeads.length > 0
+      ? Math.round(hiredLeads.reduce((sum, l) => {
+          const created = new Date(l.createdAt);
+          const updated = new Date(l.updatedAt);
+          return sum + Math.max(0, Math.floor((updated.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)));
+        }, 0) / hiredLeads.length)
+      : 0;
+
+    return { avgDaysPerStatus, bottleneck, topTransitions, avgProcessDays };
+  }, [filtered, activities]);
+
+  const flowBarData = flowAnalysis.avgDaysPerStatus.map((s, i) => ({
+    ...s,
+    fill: PIE_COLORS[i % PIE_COLORS.length],
+  }));
+
   const selectCls = "h-9 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring transition-colors";
 
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
