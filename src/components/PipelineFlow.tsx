@@ -703,6 +703,7 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
             onRemoveWizard={handleRemoveWizard}
             onToggleWizardActive={handleToggleWizardActive}
             onToggleWizardTest={handleToggleWizardTest}
+            onReorderWizards={handleReorderWizards}
           />
         )}
       </Dialog>
