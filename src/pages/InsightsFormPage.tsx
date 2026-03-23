@@ -450,12 +450,12 @@ export default function InsightsFormPage() {
             {/* ── STEP 1: Basisdaten ── */}
             {step === 'basics' && (
               <>
-                <p className="text-sm text-slate-500">Beantworten Sie die folgenden Fragen zu Ihrer beruflichen Situation.</p>
+                <p className="text-sm text-muted-foreground">Beantworten Sie die folgenden Fragen zu Ihrer beruflichen Situation.</p>
                 {insightsQuestions.map((q, i) => (
                   <div key={q.key} className="space-y-2">
                     <label className="flex items-baseline gap-2">
                       <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{i + 1}</span>
-                      <span className="text-sm font-semibold text-slate-800">{q.question}</span>
+                      <span className="text-sm font-semibold text-foreground">{q.question}</span>
                     </label>
                     <textarea value={insightsAnswers[q.key] || ''}
                       onChange={e => setInsightsAnswers(prev => ({ ...prev, [q.key]: e.target.value }))}
