@@ -910,9 +910,33 @@ function AppointmentsTab({ appointmentSettings, updateAppointmentSettings, toast
 interface InsightsQuestion { key: string; label: string; question: string }
 interface DiscQuestion { text: string; dimension: 'D' | 'I' | 'S' | 'C' }
 
+interface MotivatorQuestion { text: string; dimension: string }
+interface SsmCriteria {
+  min_disc: Record<string, number>;
+  preferred_motivators: string[];
+  min_score: number;
+  exclusion_criteria: string[];
+}
+const defaultSsmCriteria: SsmCriteria = {
+  min_disc: { D: 40, I: 40, S: 40, C: 40 },
+  preferred_motivators: ['oekonomisch', 'individualistisch'],
+  min_score: 60,
+  exclusion_criteria: [],
+};
+const motivatorDimensions = [
+  { key: 'individualistisch', label: 'Individualistisch' },
+  { key: 'theoretisch', label: 'Theoretisch' },
+  { key: 'oekonomisch', label: 'Ökonomisch' },
+  { key: 'traditionell', label: 'Traditionell' },
+  { key: 'aesthetisch', label: 'Ästhetisch' },
+  { key: 'sozial', label: 'Sozial' },
+];
+
 function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
   const [iq, setIq] = useState<InsightsQuestion[]>([]);
   const [dq, setDq] = useState<DiscQuestion[]>([]);
+  const [mq, setMq] = useState<MotivatorQuestion[]>([]);
+  const [ssmCriteria, setSsmCriteria] = useState<SsmCriteria>(defaultSsmCriteria);
   const [loadingQ, setLoadingQ] = useState(true);
   const [savingIq, setSavingIq] = useState(false);
   const [savingDq, setSavingDq] = useState(false);
