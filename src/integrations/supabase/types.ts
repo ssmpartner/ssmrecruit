@@ -103,6 +103,90 @@ export type Database = {
         }
         Relationships: []
       }
+      applications: {
+        Row: {
+          address: string
+          agency_id: string | null
+          attachment_paths: Json
+          birth_date: string
+          city: string
+          consent_email_contract: boolean
+          consent_privacy: boolean
+          country: string
+          created_at: string
+          custom_fields: Json
+          cv_path: string | null
+          email: string
+          first_name: string
+          id: string
+          ip_address: string | null
+          last_name: string
+          lead_id: string | null
+          motivation_letter_path: string | null
+          phone: string
+          salutation: string
+          source: string
+          status: string
+          updated_at: string
+          user_agent: string | null
+          zip: string
+        }
+        Insert: {
+          address?: string
+          agency_id?: string | null
+          attachment_paths?: Json
+          birth_date?: string
+          city?: string
+          consent_email_contract?: boolean
+          consent_privacy?: boolean
+          country?: string
+          created_at?: string
+          custom_fields?: Json
+          cv_path?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          ip_address?: string | null
+          last_name?: string
+          lead_id?: string | null
+          motivation_letter_path?: string | null
+          phone?: string
+          salutation?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          zip?: string
+        }
+        Update: {
+          address?: string
+          agency_id?: string | null
+          attachment_paths?: Json
+          birth_date?: string
+          city?: string
+          consent_email_contract?: boolean
+          consent_privacy?: boolean
+          country?: string
+          created_at?: string
+          custom_fields?: Json
+          cv_path?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          ip_address?: string | null
+          last_name?: string
+          lead_id?: string | null
+          motivation_letter_path?: string | null
+          phone?: string
+          salutation?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          zip?: string
+        }
+        Relationships: []
+      }
       appointment_suggestions: {
         Row: {
           created_at: string
