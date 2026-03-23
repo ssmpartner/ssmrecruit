@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import {
   AlertTriangle, Plus, Trash2, Edit3, ChevronLeft, Save, X,
-  Shield, Wand2, Eye, Zap, Clock, ArrowRight, Check, GripVertical,
+  Shield, Wand2, Eye, Zap, Clock, ArrowRight, Check,
   Globe, Filter, Play, CheckCircle2, XCircle
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -43,6 +43,13 @@ interface EscalationWizardLink {
   start_step_id: string;
   is_active: boolean;
   sort_order: number;
+  delay_minutes: number;
+}
+
+interface WizardStep {
+  id: string;
+  title: string;
+  type: string;
 }
 
 interface WizardRow {
@@ -50,6 +57,7 @@ interface WizardRow {
   name: string;
   status: string;
   type: string;
+  steps: any;
 }
 
 const conditionTypes = [
@@ -110,7 +118,7 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
     setLoading(true);
     const [epRes, wizRes] = await Promise.all([
       supabase.from('escalation_processes').select('*').eq('main_process_status', processStatus).order('priority'),
-      supabase.from('wizards').select('id, name, status, type'),
+      supabase.from('wizards').select('id, name, status, type, steps'),
     ]);
     setProcesses((epRes.data || []) as EscalationProcess[]);
     setWizards((wizRes.data || []) as WizardRow[]);
@@ -238,6 +246,8 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
       escalation_process_id: selectedProcess.id,
       wizard_id: wizardId,
       sort_order: wizardLinks.length,
+      delay_minutes: 0,
+      start_step_id: '',
     } as any);
     if (error) { toast({ title: 'Fehler', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Wizard verknüpft' });
@@ -254,6 +264,31 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
   const toggleWizardLinkActive = async (link: EscalationWizardLink) => {
     await supabase.from('escalation_wizard_links').update({ is_active: !link.is_active } as any).eq('id', link.id);
     if (selectedProcess) loadProcessDetails(selectedProcess.id);
+  };
+
+  const updateWizardLink = async (linkId: string, updates: Partial<EscalationWizardLink>) => {
+    await supabase.from('escalation_wizard_links').update(updates as any).eq('id', linkId);
+    if (selectedProcess) loadProcessDetails(selectedProcess.id);
+  };
+
+  const moveWizardLink = async (linkId: string, direction: 'up' | 'down') => {
+    const idx = wizardLinks.findIndex(l => l.id === linkId);
+    if (idx < 0) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= wizardLinks.length) return;
+    const current = wizardLinks[idx];
+    const swap = wizardLinks[swapIdx];
+    await Promise.all([
+      supabase.from('escalation_wizard_links').update({ sort_order: swap.sort_order } as any).eq('id', current.id),
+      supabase.from('escalation_wizard_links').update({ sort_order: current.sort_order } as any).eq('id', swap.id),
+    ]);
+    if (selectedProcess) loadProcessDetails(selectedProcess.id);
+  };
+
+  const getWizardSteps = (wizardId: string): WizardStep[] => {
+    const wizard = wizards.find(w => w.id === wizardId);
+    if (!wizard?.steps || !Array.isArray(wizard.steps)) return [];
+    return (wizard.steps as any[]).map(s => ({ id: s.id || '', title: s.title || '', type: s.type || '' }));
   };
 
   const toggleSourceFilter = (sourceId: string) => {
@@ -282,8 +317,6 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
   if (selectedProcess || creating) {
     const processRules = rules;
     const processWizardLinks = wizardLinks;
-    const linkedWizardIds = new Set(processWizardLinks.map(l => l.wizard_id));
-    const availableWizards = wizards.filter(w => !linkedWizardIds.has(w.id));
 
     return (
       <div className="space-y-4">
@@ -479,30 +512,37 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
           {/* ── Tab: Wizards ── */}
           <TabsContent value="wizards" className="space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">{processWizardLinks.length} verknüpfte Wizards</p>
+              <div>
+                <p className="text-sm font-medium">{processWizardLinks.length} verknüpfte Wizards</p>
+                <p className="text-xs text-muted-foreground">Wizards werden in der definierten Reihenfolge gestartet wenn die Eskalation greift.</p>
+              </div>
               <Dialog open={showWizardDialog} onOpenChange={setShowWizardDialog}>
                 <DialogTrigger asChild>
-                  <button disabled={availableWizards.length === 0}
-                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                  <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
                     <Plus className="h-3.5 w-3.5" /> Wizard verknüpfen
                   </button>
                 </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader><DialogTitle>Wizard verknüpfen</DialogTitle></DialogHeader>
                   <div className="space-y-2 pt-2">
-                    {availableWizards.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Alle Wizards sind bereits verknüpft.</p>
+                    {wizards.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">Keine Wizards im System vorhanden.</p>
                     ) : (
-                      availableWizards.map(w => (
-                        <button key={w.id} onClick={() => addWizardLink(w.id)}
-                          className="w-full flex items-center gap-3 rounded-lg border p-3 text-left hover:bg-muted/50 transition-colors">
-                          <Wand2 className="h-4 w-4 text-primary shrink-0" />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{w.name}</p>
-                            <p className="text-[11px] text-muted-foreground">{w.type} · {w.status}</p>
-                          </div>
-                        </button>
-                      ))
+                      wizards.map(w => {
+                        const alreadyLinked = processWizardLinks.some(l => l.wizard_id === w.id);
+                        return (
+                          <button key={w.id} onClick={() => addWizardLink(w.id)}
+                            className={`w-full flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${alreadyLinked ? 'opacity-40 cursor-not-allowed' : 'hover:bg-muted/50'}`}
+                            disabled={alreadyLinked}>
+                            <Wand2 className="h-4 w-4 text-primary shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{w.name}</p>
+                              <p className="text-[11px] text-muted-foreground">{w.type} · {w.status}</p>
+                            </div>
+                            {alreadyLinked && <span className="text-[10px] text-muted-foreground">Bereits verknüpft</span>}
+                          </button>
+                        );
+                      })
                     )}
                   </div>
                 </DialogContent>
@@ -513,28 +553,82 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
               <div className="rounded-xl border border-dashed bg-muted/20 p-8 text-center">
                 <Wand2 className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">Keine Wizards verknüpft.</p>
+                <p className="text-xs text-muted-foreground mt-1">Verknüpfe einen Wizard um ihn bei Eskalation automatisch zu starten.</p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {processWizardLinks.map(link => {
+              <div className="space-y-3">
+                {processWizardLinks.map((link, idx) => {
                   const wizard = wizards.find(w => w.id === link.wizard_id);
+                  const steps = getWizardSteps(link.wizard_id);
                   return (
-                    <div key={link.id} className={`rounded-xl border bg-card p-4 shadow-sm transition-opacity ${!link.is_active ? 'opacity-60' : ''}`}>
-                      <div className="flex items-center justify-between gap-3">
+                    <div key={link.id} className={`rounded-xl border bg-card shadow-sm transition-opacity ${!link.is_active ? 'opacity-60' : ''}`}>
+                      {/* Header */}
+                      <div className="flex items-center justify-between gap-3 p-4">
                         <div className="flex items-center gap-3">
-                          <GripVertical className="h-4 w-4 text-muted-foreground/40" />
+                          <div className="flex flex-col gap-0.5">
+                            <button onClick={() => moveWizardLink(link.id, 'up')} disabled={idx === 0}
+                              className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                              <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 3L10 8H2L6 3Z" fill="currentColor"/></svg>
+                            </button>
+                            <button onClick={() => moveWizardLink(link.id, 'down')} disabled={idx === processWizardLinks.length - 1}
+                              className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors">
+                              <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 9L2 4H10L6 9Z" fill="currentColor"/></svg>
+                            </button>
+                          </div>
+                          <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <span className="text-xs font-bold text-primary">{idx + 1}</span>
+                          </div>
                           <Wand2 className="h-4 w-4 text-primary shrink-0" />
                           <div>
-                            <p className="text-sm font-medium">{wizard?.name || 'Unbekannt'}</p>
-                            <p className="text-[11px] text-muted-foreground">{wizard?.type} · Reihenfolge: {link.sort_order + 1}</p>
+                            <p className="text-sm font-semibold">{wizard?.name || 'Unbekannt'}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[10px] rounded-full bg-muted px-2 py-0.5 font-medium text-muted-foreground">{wizard?.type}</span>
+                              <span className={`text-[10px] rounded-full px-2 py-0.5 font-medium ${wizard?.status === 'active' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                {wizard?.status === 'active' ? 'Aktiv' : 'Inaktiv'}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           <Switch checked={link.is_active} onCheckedChange={() => toggleWizardLinkActive(link)} />
                           <button onClick={() => removeWizardLink(link.id)}
                             className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
+                        </div>
+                      </div>
+
+                      {/* Settings */}
+                      <div className="border-t px-4 py-3 space-y-3 bg-muted/10">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[11px] font-medium text-muted-foreground">Start-Step (optional)</label>
+                            <select value={link.start_step_id || ''}
+                              onChange={e => updateWizardLink(link.id, { start_step_id: e.target.value })}
+                              className={inputCls + ' mt-1 !h-8 !text-xs'}>
+                              <option value="">Erster Schritt (Standard)</option>
+                              {steps.map(s => (
+                                <option key={s.id} value={s.id}>{s.title} ({s.type})</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-muted-foreground">Verzögerung vor Start</label>
+                            <div className="flex items-center gap-2 mt-1">
+                              <input type="number" min={0} value={link.delay_minutes}
+                                onChange={e => updateWizardLink(link.id, { delay_minutes: Number(e.target.value) })}
+                                className={inputCls + ' !h-8 !text-xs'} />
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">Minuten</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Future: Conditions placeholder */}
+                        <div className="rounded-lg border border-dashed bg-muted/20 p-2.5">
+                          <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                            <Shield className="h-3 w-3" />
+                            Bedingungen (z.B. Lead Score {'>'} X) – kommt bald
+                          </p>
                         </div>
                       </div>
                     </div>

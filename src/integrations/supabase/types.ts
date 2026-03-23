@@ -748,29 +748,35 @@ export type Database = {
       escalation_wizard_links: {
         Row: {
           created_at: string
+          delay_minutes: number
           escalation_process_id: string
           id: string
           is_active: boolean
           sort_order: number
           start_step_id: string
+          updated_at: string
           wizard_id: string
         }
         Insert: {
           created_at?: string
+          delay_minutes?: number
           escalation_process_id: string
           id?: string
           is_active?: boolean
           sort_order?: number
           start_step_id?: string
+          updated_at?: string
           wizard_id: string
         }
         Update: {
           created_at?: string
+          delay_minutes?: number
           escalation_process_id?: string
           id?: string
           is_active?: boolean
           sort_order?: number
           start_step_id?: string
+          updated_at?: string
           wizard_id?: string
         }
         Relationships: [
