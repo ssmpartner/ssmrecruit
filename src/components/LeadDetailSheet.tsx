@@ -22,7 +22,6 @@ import VideoCallDialog from './VideoCallDialog';
 import ProcessStepper from './ProcessStepper';
 import LeadActionPanel from './LeadActionPanel';
 import LeadFlowTimeline from './LeadFlowTimeline';
-import WizardHistoryPanel from './WizardHistoryPanel';
 import LeadInsightsTab from './LeadInsightsTab';
 import LeadDocumentsTab from './LeadDocumentsTab';
 
