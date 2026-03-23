@@ -268,37 +268,40 @@ export default function LeadDetailSheet() {
                   })()}
                 </div>
 
-                {/* RIGHT: Info / Appointments / Activity / Status */}
+                {/* RIGHT: Tabs */}
                 <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-                  {/* Right tab bar */}
-                  <div className="border-b px-4 flex items-center gap-1 shrink-0">
-                    {rightTabs.map(tab => (
-                      <button
-                        key={tab.key}
-                        onClick={() => setRightTab(tab.key)}
-                        className={cn(
-                          'flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors border-b-2',
-                          rightTab === tab.key
-                            ? 'border-primary text-foreground'
-                            : 'border-transparent text-muted-foreground hover:text-foreground'
-                        )}
-                      >
-                        <tab.icon className="h-3.5 w-3.5" />
-                        {tab.label}
-                        {tab.count ? (
-                          <span className="ml-0.5 rounded-full bg-primary px-1.5 py-0.5 text-xs font-bold text-primary-foreground leading-none">{tab.count}</span>
-                        ) : null}
-                      </button>
-                    ))}
+                  {/* Tab bar */}
+                  <div className="border-b bg-muted/20 px-3 flex items-center shrink-0">
+                    <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
+                      {rightTabs.map(tab => (
+                        <button
+                          key={tab.key}
+                          onClick={() => setRightTab(tab.key)}
+                          className={cn(
+                            'flex items-center gap-1.5 px-2.5 py-2 text-[11px] font-medium transition-all border-b-2 whitespace-nowrap',
+                            rightTab === tab.key
+                              ? 'border-primary text-foreground bg-background/60'
+                              : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-background/40'
+                          )}
+                        >
+                          <tab.icon className="h-3 w-3" />
+                          <span className="hidden xl:inline">{tab.label}</span>
+                          <span className="xl:hidden">{tab.label.slice(0, 4)}</span>
+                          {tab.count ? (
+                            <span className="rounded-full bg-primary/15 text-primary px-1.5 py-px text-[10px] font-bold leading-none">{tab.count}</span>
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
                     {/* Edit/Save in header */}
-                    <div className="ml-auto">
+                    <div className="ml-auto shrink-0 pl-2">
                       {rightTab === 'info' && (
                         !editing ? (
-                          <button onClick={startEdit} className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted transition-colors">
+                          <button onClick={startEdit} className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted transition-colors">
                             <Edit3 className="h-3 w-3" /> Bearbeiten
                           </button>
                         ) : (
-                          <button onClick={saveEdit} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-all">
+                          <button onClick={saveEdit} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-[11px] font-semibold text-primary-foreground hover:opacity-90 transition-all">
                             <Save className="h-3 w-3" /> Speichern
                           </button>
                         )
