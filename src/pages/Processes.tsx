@@ -199,7 +199,6 @@ export default function Processes() {
   }, []);
 
   useEffect(() => { loadAllAutomations(); }, [loadAllAutomations]);
-  const [aiLoadingFor, setAiLoadingFor] = useState<LeadStatus | null>(null);
 
   // ── AI guideline generation ──
   const generateAiGuidelines = async (step: ProcessStep) => {
