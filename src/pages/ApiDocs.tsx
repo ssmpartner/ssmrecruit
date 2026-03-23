@@ -392,6 +392,153 @@ Neue Leads (Monat);24`,
     ],
   },
   {
+    title: 'Eskalationsprozesse',
+    description: 'Eskalationsprozesse verwalten, Regeln definieren und Wizards verknüpfen.',
+    endpoints: [
+      {
+        method: 'GET', path: '/api/v1/escalation-processes', summary: 'Alle Eskalationsprozesse abrufen', auth: true,
+        description: 'Gibt alle Eskalationsprozesse zurück. Optional nach Hauptprozess-Status filtern.',
+        params: [
+          { name: 'main_process_status', type: 'string', required: false, description: 'Filter: new, contacted, appointment, follow_up, hired' },
+          { name: 'is_active', type: 'boolean', required: false, description: 'Filter nach Aktivitätsstatus' },
+        ],
+        response: `{
+  "data": [
+    {
+      "id": "uuid",
+      "main_process_status": "new",
+      "name": "Meta-Leads Eskalation",
+      "is_active": true,
+      "priority": 0,
+      "applies_to_all_sources": false,
+      "source_filters": ["meta", "tiktok"]
+    }
+  ]
+}`,
+      },
+      {
+        method: 'POST', path: '/api/v1/escalation-processes', summary: 'Eskalationsprozess erstellen', auth: true,
+        description: 'Erstellt einen neuen Eskalationsprozess für einen Hauptprozess.',
+        body: [
+          { name: 'main_process_status', type: 'string', required: true, description: 'Hauptprozess-Status (new, contacted, etc.)' },
+          { name: 'name', type: 'string', required: true, description: 'Name des Eskalationsprozesses' },
+          { name: 'priority', type: 'number', required: false, description: 'Priorität (niedrigere Zahl = höher)' },
+          { name: 'applies_to_all_sources', type: 'boolean', required: false, description: 'Gilt für alle Lead-Quellen' },
+          { name: 'source_filters', type: 'string[]', required: false, description: 'Array von Lead-Quellen-IDs' },
+        ],
+        response: `{ "id": "uuid", "name": "Meta-Leads Eskalation", "created_at": "2026-03-23T10:00:00.000Z" }`,
+      },
+    ],
+  },
+  {
+    title: 'Eskalationsregeln',
+    description: 'Regeln (If → Then) innerhalb von Eskalationsprozessen definieren.',
+    endpoints: [
+      {
+        method: 'GET', path: '/api/v1/escalation-rules', summary: 'Regeln abrufen', auth: true,
+        description: 'Gibt alle Regeln eines Eskalationsprozesses zurück.',
+        params: [
+          { name: 'escalation_process_id', type: 'string', required: true, description: 'Eskalationsprozess-ID' },
+        ],
+        response: `{
+  "data": [
+    {
+      "id": "uuid",
+      "condition_type": "time_in_status",
+      "condition_value": "3",
+      "action_type": "send_notification",
+      "action_value": "Lead seit 3 Tagen unbearbeitet",
+      "delay_minutes": 0,
+      "is_active": true,
+      "test_only": false
+    }
+  ]
+}`,
+      },
+      {
+        method: 'POST', path: '/api/v1/escalation-rules', summary: 'Regel erstellen', auth: true,
+        description: 'Erstellt eine neue Regel. test_only=true aktiviert die Regel nur für Test-User.',
+        body: [
+          { name: 'escalation_process_id', type: 'string', required: true, description: 'Eskalationsprozess-ID' },
+          { name: 'condition_type', type: 'string', required: true, description: 'Bedingung: time_in_status, source_match, no_activity, missing_data' },
+          { name: 'condition_value', type: 'string', required: true, description: 'Bedingungswert (z.B. Tage)' },
+          { name: 'action_type', type: 'string', required: true, description: 'Aktion: send_notification, change_status, assign_employee, create_task, send_email, trigger_wizard' },
+          { name: 'action_value', type: 'string', required: true, description: 'Aktionswert' },
+          { name: 'delay_minutes', type: 'number', required: false, description: 'Verzögerung in Minuten' },
+          { name: 'test_only', type: 'boolean', required: false, description: 'Nur für Test-User aktiv (Standard: false)' },
+        ],
+        response: `{ "id": "uuid", "is_active": true, "test_only": false }`,
+      },
+    ],
+  },
+  {
+    title: 'Wizard-Verknüpfungen',
+    description: 'Wizards mit Eskalationsprozessen verknüpfen und konfigurieren.',
+    endpoints: [
+      {
+        method: 'GET', path: '/api/v1/escalation-wizard-links', summary: 'Wizard-Verknüpfungen abrufen', auth: true,
+        description: 'Gibt alle Wizard-Verknüpfungen eines Eskalationsprozesses zurück.',
+        params: [
+          { name: 'escalation_process_id', type: 'string', required: true, description: 'Eskalationsprozess-ID' },
+        ],
+        response: `{
+  "data": [
+    {
+      "id": "uuid",
+      "wizard_id": "uuid",
+      "start_step_id": "",
+      "sort_order": 0,
+      "delay_minutes": 0,
+      "is_active": true,
+      "test_only": false
+    }
+  ]
+}`,
+      },
+      {
+        method: 'POST', path: '/api/v1/escalation-wizard-links', summary: 'Wizard verknüpfen', auth: true,
+        description: 'Verknüpft einen Wizard mit einem Eskalationsprozess. test_only=true aktiviert nur für Test-User.',
+        body: [
+          { name: 'escalation_process_id', type: 'string', required: true, description: 'Eskalationsprozess-ID' },
+          { name: 'wizard_id', type: 'string', required: true, description: 'Wizard-ID' },
+          { name: 'start_step_id', type: 'string', required: false, description: 'Optionaler Start-Step' },
+          { name: 'sort_order', type: 'number', required: false, description: 'Reihenfolge' },
+          { name: 'delay_minutes', type: 'number', required: false, description: 'Verzögerung vor Start (Minuten)' },
+          { name: 'test_only', type: 'boolean', required: false, description: 'Nur für Test-User (Standard: false)' },
+        ],
+        response: `{ "id": "uuid", "is_active": true, "test_only": false }`,
+      },
+    ],
+  },
+  {
+    title: 'Wizards',
+    description: 'Wizard-Konfigurationen verwalten (Step-Builder für Lead-Funnels).',
+    endpoints: [
+      {
+        method: 'GET', path: '/api/v1/wizards', summary: 'Alle Wizards abrufen', auth: true,
+        description: 'Gibt alle konfigurierten Wizards zurück. Filter nach Typ und Status möglich.',
+        params: [
+          { name: 'type', type: 'string', required: false, description: 'Filter: recruiting, sales, custom' },
+          { name: 'status', type: 'string', required: false, description: 'Filter: active, inactive' },
+        ],
+        response: `{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "SSM Recruit Assessment",
+      "type": "recruiting",
+      "status": "active",
+      "version": "1.0",
+      "steps": [
+        { "id": "step-1", "type": "choice", "title": "Persönliche Fragen", "options": [...] }
+      ]
+    }
+  ]
+}`,
+      },
+    ],
+  },
+  {
     title: 'DISC / Insights',
     description: 'Persönlichkeitstest-Ergebnisse abrufen.',
     endpoints: [
