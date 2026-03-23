@@ -299,6 +299,63 @@ export default function Analytics() {
     fill: PIE_COLORS[i % PIE_COLORS.length],
   }));
 
+  // ── Time-based analysis ──
+  const [timeView, setTimeView] = useState<'month' | 'quarter' | 'year'>('month');
+
+  const timeData = useMemo(() => {
+    const monthMap = new Map<string, { label: string; total: number; hired: number; sortKey: number }>();
+    const quarterMap = new Map<string, { label: string; total: number; hired: number; sortKey: number }>();
+    const yearMap = new Map<string, { label: string; total: number; hired: number; sortKey: number }>();
+
+    const monthNames = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+
+    filtered.forEach(l => {
+      const d = new Date(l.createdAt);
+      const y = getYear(d);
+      const m = getMonth(d);
+      const q = getQuarter(d);
+      const isHired = l.status === 'hired';
+
+      // Monthly
+      const mKey = `${y}-${String(m + 1).padStart(2, '0')}`;
+      const mLabel = `${monthNames[m]} ${y}`;
+      const mEntry = monthMap.get(mKey) || { label: mLabel, total: 0, hired: 0, sortKey: y * 100 + m };
+      mEntry.total++;
+      if (isHired) mEntry.hired++;
+      monthMap.set(mKey, mEntry);
+
+      // Quarterly
+      const qKey = `${y}-Q${q}`;
+      const qLabel = `Q${q} ${y}`;
+      const qEntry = quarterMap.get(qKey) || { label: qLabel, total: 0, hired: 0, sortKey: y * 10 + q };
+      qEntry.total++;
+      if (isHired) qEntry.hired++;
+      quarterMap.set(qKey, qEntry);
+
+      // Yearly
+      const yKey = `${y}`;
+      const yEntry = yearMap.get(yKey) || { label: `${y}`, total: 0, hired: 0, sortKey: y };
+      yEntry.total++;
+      if (isHired) yEntry.hired++;
+      yearMap.set(yKey, yEntry);
+    });
+
+    return {
+      month: [...monthMap.values()].sort((a, b) => a.sortKey - b.sortKey),
+      quarter: [...quarterMap.values()].sort((a, b) => a.sortKey - b.sortKey),
+      year: [...yearMap.values()].sort((a, b) => a.sortKey - b.sortKey),
+    };
+  }, [filtered]);
+
+  const activeTimeData = timeData[timeView];
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  const currentQuarter = getQuarter(new Date());
+
+  const thisMonthCount = filtered.filter(l => { const d = new Date(l.createdAt); return getYear(d) === currentYear && getMonth(d) === currentMonth; }).length;
+  const thisQuarterCount = filtered.filter(l => { const d = new Date(l.createdAt); return getYear(d) === currentYear && getQuarter(d) === currentQuarter; }).length;
+  const thisYearCount = filtered.filter(l => { const d = new Date(l.createdAt); return getYear(d) === currentYear; }).length;
+
   const selectCls = "h-9 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring transition-colors";
 
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
