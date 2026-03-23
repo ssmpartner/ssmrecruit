@@ -31,6 +31,7 @@ interface AssessmentResult {
     company_value: string;
   };
   summary: { headline: string; description: string; dominant_disc: string; dominant_motivator: string };
+  raw_ai_response?: any;
   completed_at: string;
 }
 
