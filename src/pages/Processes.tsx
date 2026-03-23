@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Workflow, Plus, Trash2, Zap, UserCog, Bell, ArrowRight, Check, ChevronRight, ChevronDown, Users, Settings2, Brain, Edit3, Save, X, Shield, BookOpen, BarChart3, Sparkles, Loader2, Building2, User, ClipboardList, FileText, Upload } from 'lucide-react';
+import PipelineFlow from '@/components/PipelineFlow';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLeads } from '@/context/useLeads';
@@ -281,6 +282,9 @@ export default function Processes() {
 
         {/* ══════════ TAB: Übersicht ══════════ */}
         <TabsContent value="overview" className="space-y-6">
+          {/* Pipeline Flow Visualization */}
+          <PipelineFlow leads={leads} />
+
           <div className="rounded-xl border bg-card p-6 shadow-sm space-y-6">
             <div className="flex items-center gap-2">
               <Workflow className="h-5 w-5 text-primary" />
