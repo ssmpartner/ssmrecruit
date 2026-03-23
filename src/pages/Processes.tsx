@@ -688,6 +688,7 @@ export default function Processes() {
           </div>
         </TabsContent>
       </Tabs>
+      <LeadDetailSheet />
     </div>
   );
 }
