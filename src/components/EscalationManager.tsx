@@ -241,6 +241,11 @@ export default function EscalationManager({ processStatus }: EscalationManagerPr
     if (selectedProcess) loadProcessDetails(selectedProcess.id);
   };
 
+  const toggleRuleTestOnly = async (rule: EscalationRule) => {
+    await supabase.from('escalation_rules').update({ test_only: !rule.test_only } as any).eq('id', rule.id);
+    if (selectedProcess) loadProcessDetails(selectedProcess.id);
+  };
+
   // Wizard links
   const addWizardLink = async (wizardId: string) => {
     if (!selectedProcess) return;
