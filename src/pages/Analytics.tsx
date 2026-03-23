@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Filter, CalendarIcon, X, Users, UserCheck, MapPin, Target, TrendingUp, TrendingDown, BarChart3, PieChartIcon, Activity, Workflow, AlertTriangle, Clock, ArrowRight, ChevronDown, RefreshCw, UserX, CalendarX, Timer } from 'lucide-react';
-import { format } from 'date-fns';
+import { Filter, CalendarIcon, X, Users, UserCheck, MapPin, Target, TrendingUp, TrendingDown, BarChart3, PieChartIcon, Activity, Workflow, AlertTriangle, Clock, ArrowRight, ChevronDown, RefreshCw, UserX, CalendarX, Timer, Calendar as CalendarIconSolid } from 'lucide-react';
+import { format, getYear, getMonth, getQuarter } from 'date-fns';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, AreaChart, Area, RadialBarChart, RadialBar,
