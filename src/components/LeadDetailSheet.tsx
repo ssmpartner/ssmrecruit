@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import VideoCallDialog from './VideoCallDialog';
 import ProcessStepper from './ProcessStepper';
-import { LeadInsightsDocumentsWithActions } from './LeadInsightsDocuments';
+import LeadActionPanel from './LeadActionPanel';
 import LeadFlowTimeline from './LeadFlowTimeline';
 import WizardHistoryPanel from './WizardHistoryPanel';
 import LeadInsightsTab from './LeadInsightsTab';
@@ -185,59 +185,64 @@ export default function LeadDetailSheet() {
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-6xl w-[85vw] max-h-[85vh] h-[85vh] overflow-hidden flex flex-col p-0 gap-0">
+        <DialogContent className="max-w-[90vw] w-[90vw] max-h-[90vh] h-[90vh] overflow-hidden flex flex-col p-0 gap-0 rounded-xl">
           {selectedLead && (
             <>
-              {/* Compact Header */}
-              <div className="border-b px-5 py-3 flex items-center gap-3 shrink-0" style={{ background: 'linear-gradient(135deg, hsl(var(--muted)), hsl(var(--background)))' }}>
-                <div className="flex items-center gap-1.5">
+              {/* Header */}
+              <div className="border-b px-5 py-3 flex items-center gap-4 shrink-0 bg-card">
+                <div className="flex items-center gap-1">
                   <button onClick={goToPrev} disabled={!hasPrev}
-                    className="flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
-                    <ChevronLeft className="h-4 w-4" />
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border bg-background text-muted-foreground hover:bg-muted disabled:opacity-25 transition-colors">
+                    <ChevronLeft className="h-3.5 w-3.5" />
                   </button>
                   <button onClick={goToNext} disabled={!hasNext}
-                    className="flex h-8 w-8 items-center justify-center rounded-md border bg-background text-muted-foreground hover:bg-muted disabled:opacity-30 transition-colors">
-                    <ChevronRight className="h-4 w-4" />
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border bg-background text-muted-foreground hover:bg-muted disabled:opacity-25 transition-colors">
+                    <ChevronRight className="h-3.5 w-3.5" />
                   </button>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <DialogHeader className="space-y-0">
-                    <DialogTitle className="text-lg font-bold tracking-tight">{selectedLead.name}</DialogTitle>
-                    <DialogDescription className="text-sm text-muted-foreground">{selectedLead.position || 'Kein Titel'}</DialogDescription>
-                  </DialogHeader>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <LeadStatusBadge status={selectedLead.status} />
-                  <SourceBadge source={selectedLead.source} />
-                  <span className="hidden md:inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" /> {selectedLead.plz} {selectedLead.city}
-                  </span>
                   {currentIndex >= 0 && (
-                    <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs text-primary font-semibold tabular-nums">
+                    <span className="ml-1 text-[11px] text-muted-foreground tabular-nums">
                       {currentIndex + 1}/{activeLeads.length}
                     </span>
                   )}
                 </div>
+
+                <div className="h-5 w-px bg-border" />
+
+                <div className="min-w-0 flex-1">
+                  <DialogHeader className="space-y-0">
+                    <DialogTitle className="text-base font-bold tracking-tight leading-tight">{selectedLead.name}</DialogTitle>
+                    <DialogDescription className="text-xs text-muted-foreground leading-tight">{selectedLead.position || 'Keine Position'}</DialogDescription>
+                  </DialogHeader>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <LeadStatusBadge status={selectedLead.status} />
+                  <SourceBadge source={selectedLead.source} />
+                  <span className="hidden lg:inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                    <MapPin className="h-3 w-3" /> {selectedLead.plz} {selectedLead.city}
+                  </span>
+                </div>
               </div>
 
-              {/* Process Stepper */}
-              <div className="border-b px-5 py-2 shrink-0">
+              {/* Process Stepper - more compact */}
+              <div className="border-b px-5 py-1.5 shrink-0 bg-muted/30">
                 <ProcessStepper currentStatus={selectedLead.status} compact />
               </div>
 
               {/* Two Column Layout */}
               <div className="flex-1 flex overflow-hidden">
-                {/* LEFT: Step Actions + Workflow */}
-                <div className="w-[400px] shrink-0 border-r overflow-y-auto bg-muted/20">
+                {/* LEFT: Actions Panel */}
+                <div className="w-[360px] shrink-0 border-r overflow-y-auto">
                   <div className="p-4">
-                    <LeadInsightsDocumentsWithActions
+                    <LeadActionPanel
                       leadId={selectedLead.id}
                       leadName={selectedLead.name}
-                      leadStatus={selectedLead.status}
+                      leadStatus={selectedLead.status as LeadStatus}
                       onScheduleAppointment={() => {
                         setRightTab('appointments');
                         setShowAptForm(true);
                       }}
+                      onNavigateToTab={(tab) => setRightTab(tab as any)}
                     />
                   </div>
 
@@ -246,11 +251,11 @@ export default function LeadDetailSheet() {
                     const nextVideoApt = leadAppointments.find(a => a.type === 'video' && a.meetingLink && new Date(`${a.date}T${a.time}`) >= new Date());
                     if (!nextVideoApt) return null;
                     return (
-                      <div className="mx-4 mb-4 flex items-center gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5">
+                      <div className="mx-4 mb-4 flex items-center gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
                         <Video className="h-4 w-4 text-primary shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-semibold truncate">{nextVideoApt.title}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-[11px] text-muted-foreground">
                             {new Date(nextVideoApt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short' })} • {nextVideoApt.time}
                           </p>
                         </div>
@@ -263,37 +268,40 @@ export default function LeadDetailSheet() {
                   })()}
                 </div>
 
-                {/* RIGHT: Info / Appointments / Activity / Status */}
+                {/* RIGHT: Tabs */}
                 <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-                  {/* Right tab bar */}
-                  <div className="border-b px-4 flex items-center gap-1 shrink-0">
-                    {rightTabs.map(tab => (
-                      <button
-                        key={tab.key}
-                        onClick={() => setRightTab(tab.key)}
-                        className={cn(
-                          'flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors border-b-2',
-                          rightTab === tab.key
-                            ? 'border-primary text-foreground'
-                            : 'border-transparent text-muted-foreground hover:text-foreground'
-                        )}
-                      >
-                        <tab.icon className="h-3.5 w-3.5" />
-                        {tab.label}
-                        {tab.count ? (
-                          <span className="ml-0.5 rounded-full bg-primary px-1.5 py-0.5 text-xs font-bold text-primary-foreground leading-none">{tab.count}</span>
-                        ) : null}
-                      </button>
-                    ))}
+                  {/* Tab bar */}
+                  <div className="border-b bg-muted/20 px-3 flex items-center shrink-0">
+                    <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
+                      {rightTabs.map(tab => (
+                        <button
+                          key={tab.key}
+                          onClick={() => setRightTab(tab.key)}
+                          className={cn(
+                            'flex items-center gap-1.5 px-2.5 py-2 text-[11px] font-medium transition-all border-b-2 whitespace-nowrap',
+                            rightTab === tab.key
+                              ? 'border-primary text-foreground bg-background/60'
+                              : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-background/40'
+                          )}
+                        >
+                          <tab.icon className="h-3 w-3" />
+                          <span className="hidden xl:inline">{tab.label}</span>
+                          <span className="xl:hidden">{tab.label.slice(0, 4)}</span>
+                          {tab.count ? (
+                            <span className="rounded-full bg-primary/15 text-primary px-1.5 py-px text-[10px] font-bold leading-none">{tab.count}</span>
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
                     {/* Edit/Save in header */}
-                    <div className="ml-auto">
+                    <div className="ml-auto shrink-0 pl-2">
                       {rightTab === 'info' && (
                         !editing ? (
-                          <button onClick={startEdit} className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted transition-colors">
+                          <button onClick={startEdit} className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted transition-colors">
                             <Edit3 className="h-3 w-3" /> Bearbeiten
                           </button>
                         ) : (
-                          <button onClick={saveEdit} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-all">
+                          <button onClick={saveEdit} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-[11px] font-semibold text-primary-foreground hover:opacity-90 transition-all">
                             <Save className="h-3 w-3" /> Speichern
                           </button>
                         )
