@@ -570,6 +570,16 @@ export default function LeadDetailSheet() {
                       </div>
                     )}
 
+                    {/* Insights Tab */}
+                    {rightTab === 'insights' && (
+                      <LeadInsightsTab leadId={selectedLead.id} leadName={selectedLead.name} />
+                    )}
+
+                    {/* Documents Tab */}
+                    {rightTab === 'documents' && (
+                      <LeadDocumentsTab leadId={selectedLead.id} />
+                    )}
+
                     {/* Flow Tab */}
                     {rightTab === 'flow' && (
                       <LeadFlowTimeline lead={selectedLead} activities={activities} />
