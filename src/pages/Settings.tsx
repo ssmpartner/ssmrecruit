@@ -1030,6 +1030,37 @@ function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
     saveDqToDb(updated);
   };
 
+  const saveMqToDb = async (questions: MotivatorQuestion[]) => {
+    setSavingMq(true);
+    await supabase.from('app_settings').upsert({ key: 'motivator_questions', value: questions as unknown as any, updated_at: new Date().toISOString() });
+    setSavingMq(false);
+    toast({ title: 'Motivatoren-Fragen gespeichert' });
+  };
+
+  const handleAddMq = () => {
+    if (!mqForm.text.trim()) { toast({ title: 'Fehler', description: 'Fragetext eingeben', variant: 'destructive' }); return; }
+    const updated = [...mq, mqForm];
+    setMq(updated);
+    saveMqToDb(updated);
+    setMqForm({ text: '', dimension: 'individualistisch' });
+    setAddingMq(false);
+  };
+
+  const handleUpdateMq = (idx: number) => {
+    if (!mqForm.text.trim()) return;
+    const updated = [...mq];
+    updated[idx] = mqForm;
+    setMq(updated);
+    saveMqToDb(updated);
+    setEditMqIdx(null);
+  };
+
+  const handleDeleteMq = (idx: number) => {
+    const updated = mq.filter((_, i) => i !== idx);
+    setMq(updated);
+    saveMqToDb(updated);
+  };
+
   const dimColor = (d: string) =>
     d === 'D' ? 'bg-red-100 text-red-700' :
     d === 'I' ? 'bg-amber-100 text-amber-700' :
