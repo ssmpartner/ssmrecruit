@@ -605,8 +605,8 @@ export default function InsightsFormPage() {
                 {selfAssessmentQuestions.map((q, i) => (
                   <div key={q.key} className="space-y-2">
                     <label className="flex items-baseline gap-2">
-                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">{i + 1}</span>
-                      <span className="text-sm font-semibold text-slate-800">{q.question}</span>
+                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{i + 1}</span>
+                      <span className="text-sm font-semibold text-foreground">{q.question}</span>
                     </label>
                     <textarea value={selfAssessmentAnswers[q.key] || ''}
                       onChange={e => setSelfAssessmentAnswers(prev => ({ ...prev, [q.key]: e.target.value }))}
