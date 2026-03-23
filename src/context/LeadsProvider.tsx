@@ -126,7 +126,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Fetch all rows from a table, paginating past the 1000-row default limit
-  const fetchAll = useCallback(async (table: string, orderCol = 'created_at', ascending = false) => {
+  const fetchAll = useCallback(async (table: 'leads' | 'activities', orderCol = 'created_at', ascending = false) => {
     const PAGE = 1000;
     let page = 0;
     let allRows: any[] = [];
