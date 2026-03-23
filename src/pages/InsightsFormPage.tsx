@@ -426,8 +426,8 @@ export default function InsightsFormPage() {
               return (
                 <button key={s.key} type="button" onClick={() => goToStep(s.key)}
                   className={`flex-1 min-w-0 flex items-center justify-center gap-1 py-3 text-xs font-medium transition-colors whitespace-nowrap px-2 ${
-                    isActive ? 'border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50'
-                    : isPast ? 'text-emerald-600' : 'text-slate-400'
+                    isActive ? 'border-b-2 border-primary text-primary bg-primary/5'
+                    : isPast ? 'text-ring' : 'text-muted-foreground'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5 shrink-0" />
