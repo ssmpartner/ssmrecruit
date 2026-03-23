@@ -575,7 +575,7 @@ export default function InsightsFormPage() {
             {/* ── STEP 4: Arbeitsstil & Ziele ── */}
             {step === 'workstyle' && (
               <>
-                <p className="text-sm text-slate-500">Wählen Sie die passendste Antwort zu Ihrem Arbeitsstil.</p>
+                <p className="text-sm text-muted-foreground">Wählen Sie die passendste Antwort zu Ihrem Arbeitsstil.</p>
                 {workstyleQuestions.map((q, i) => (
                   <div key={q.key} className="space-y-2">
                     <label className="flex items-baseline gap-2">
