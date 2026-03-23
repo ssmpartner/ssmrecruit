@@ -2,9 +2,22 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.20.0';
+const APP_VERSION = '2.21.0';
 
 const versionHistory = [
+  { version: '2.21.0', date: '23.03.2026', changes: [
+    'Wizard-Management: Modulares System in Einstellungen → Wizards zur Erstellung und Verwaltung von Lead-Funnels (Step-Builder mit Video, Auswahl, Entscheidung)',
+    'Wizard-Typen: recruiting, sales, custom – nur ein aktiver Wizard vom Typ "recruiting" erlaubt',
+    'Wizard-Editor: 4 Tabs (Allgemein, Schritte, Logik-Platzhalter, Vorschau) mit Echtzeit-Simulation',
+    'Standard-Wizards: SSM Recruit Assessment und Dokumenten-Upload als vordefinierte Wizards integriert',
+    'Eskalationsprozesse: Flexible Eskalationslogik pro Hauptprozess (Neuer Lead, Kontaktiert, Terminiert, Follow-up, Eingestellt)',
+    'Quellen-basierte Eskalation: Eskalationsprozesse können gezielt für einzelne, mehrere oder alle Lead-Quellen aktiviert werden',
+    'Eskalations-Editor: 5 Tabs (Allgemein, Quellen, Regeln, Wizards, Vorschau) mit Simulation pro Lead-Quelle',
+    'Wizard-Verknüpfung in Eskalation: Wizards können Eskalationsprozessen zugewiesen werden mit Reihenfolge, Start-Step und Verzögerung',
+    'Test-Modus (🧪): Regeln und Wizard-Verknüpfungen können einzeln als "Nur für Test-User" markiert werden',
+    'Pipeline-Flow erweitert: Jeder Flow-Node zeigt jetzt zugewiesene Regeln UND Wizards an, konfigurierbar über Settings-Dialog mit Tabs',
+    'Datenbank: Neue Tabellen escalation_processes, escalation_rules, escalation_wizard_links mit test_only Spalte',
+  ]},
   { version: '2.20.0', date: '23.03.2026', changes: [
     'Bewerbungsformular: Öffentliches mehrstufiges Formular unter /apply mit Datei-Uploads, Validierung und Consent-Tracking',
     'Application-Webhook: Neuer Endpunkt /functions/v1/application-webhook für Bewerbungen mit multipart/form-data Support',
@@ -140,6 +153,8 @@ const appFeatures = [
     { name: 'Agentur-Einstellungen', desc: 'Regionale Zuweisung, Sprache und erlaubte Kantone pro Agentur konfigurieren.' },
     { name: 'Mitarbeiter', desc: 'Mitarbeiterprofile und Zuweisungen verwalten.' },
     { name: 'Prozesse', desc: 'Mehrstufige Recruiting-Prozesse mit Stepper-Ansicht, KI-generierten Richtlinien und Geltungsbereichen für Automatisierungen (Global/Agentur/Mitarbeiter).' },
+    { name: 'Eskalationsprozesse', desc: 'Flexible Eskalationslogik pro Hauptprozess mit quellen-basierter Aktivierung, Regel-Engine, Wizard-Verknüpfung und Test-Modus.' },
+    { name: 'Pipeline-Flow', desc: 'Visuelle Pipeline mit Eskalations-Erkennung, Wizard- und Regelzuweisung pro Flow-Node und Test-Modus-Indikator.' },
   ]},
   { category: 'Analyse & Insights', icon: '📊', features: [
     { name: 'Dashboard', desc: 'Übersicht mit Begrüssung, Uhrzeit, Wetter, 6 KPI-Karten, Leads nach Kanal, Pipeline-Verteilung, anstehende Termine und Schnellzugriff (+ Neu Dropdown).' },
@@ -148,6 +163,7 @@ const appFeatures = [
     { name: 'Analytics – Geschäftsleitung', desc: 'Agentur-Performance mit Problemanalyse (stagnierende Leads, Verzögerungen), Kanton-Verteilung und Mitarbeiter-Effizienz.' },
     { name: 'Analytics – Flow-Analyse', desc: 'Verweildauer pro Phase, Bottleneck-Erkennung, Status-Übergangs-Häufigkeiten und durchschnittliche Bearbeitungszeiten.' },
     { name: 'Analytics – Export', desc: 'CSV-Export (Excel-kompatibel mit BOM) und PDF-Export für formatierte Berichte.' },
+    { name: 'Wizard-Management', desc: 'Modulares System zur Erstellung von Lead-Funnels mit Step-Builder (Video, Auswahl, Entscheidung), Echtzeit-Vorschau und logischer Verknüpfung.' },
     { name: 'DISC-Persönlichkeitstest', desc: 'Automatisierte Persönlichkeitsanalyse für Kandidaten mit automatischer Ergebnisanzeige.' },
     { name: 'Insights-Fragebogen', desc: 'Anpassbare Fragen (Teil 1: Insights, Teil 2: DISC, Teil 3: Terminvorschläge) – konfigurierbar in den Einstellungen.' },
   ]},
