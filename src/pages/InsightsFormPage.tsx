@@ -536,7 +536,7 @@ export default function InsightsFormPage() {
                                   className={`flex-1 rounded-lg py-2.5 text-sm font-semibold border-2 transition-all ${
                                     motivatorAnswers[idx] === val
                                       ? 'text-white shadow-md scale-105'
-                                      : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                      : 'bg-card text-muted-foreground border-border hover:border-ring/50 hover:bg-muted'
                                   }`}
                                   style={motivatorAnswers[idx] === val ? { backgroundColor: meta.color, borderColor: meta.color } : {}}
                                 >{val}</button>
