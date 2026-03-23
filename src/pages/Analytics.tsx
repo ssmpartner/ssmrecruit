@@ -673,7 +673,7 @@ export default function Analytics() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 );
               })}
             </tbody>
