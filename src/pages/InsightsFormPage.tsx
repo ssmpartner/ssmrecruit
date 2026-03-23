@@ -638,7 +638,7 @@ export default function InsightsFormPage() {
                       </div>
                       {timeSlots.length > 1 && (
                         <button type="button" onClick={() => setTimeSlots(timeSlots.filter((_, j) => j !== i))}
-                          className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-red-600 hover:bg-red-100">
+                          className="rounded-lg border border-destructive/20 bg-destructive/5 p-2.5 text-destructive hover:bg-destructive/10">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       )}
