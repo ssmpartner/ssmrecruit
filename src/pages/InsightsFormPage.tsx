@@ -442,7 +442,7 @@ export default function InsightsFormPage() {
           {/* Form content */}
           <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 flex items-center gap-2">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-sm text-destructive flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 shrink-0" /> {error}
               </div>
             )}
