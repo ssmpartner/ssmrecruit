@@ -949,11 +949,13 @@ function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
 
   const loadQuestions = useCallback(async () => {
     setLoadingQ(true);
-    const { data } = await supabase.from('app_settings').select('key,value').in('key', ['insights_questions', 'disc_questions']);
+    const { data } = await supabase.from('app_settings').select('key,value').in('key', ['insights_questions', 'disc_questions', 'motivator_questions', 'ssm_criteria']);
     if (data) {
       for (const row of data) {
         if (row.key === 'insights_questions') setIq(row.value as unknown as InsightsQuestion[]);
         if (row.key === 'disc_questions') setDq(row.value as unknown as DiscQuestion[]);
+        if (row.key === 'motivator_questions') setMq(row.value as unknown as MotivatorQuestion[]);
+        if (row.key === 'ssm_criteria') setSsmCriteria({ ...defaultSsmCriteria, ...(row.value as any) });
       }
     }
     setLoadingQ(false);
