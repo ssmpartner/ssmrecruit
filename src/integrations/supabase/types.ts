@@ -374,6 +374,7 @@ export type Database = {
       document_requests: {
         Row: {
           created_at: string
+          expires_at: string
           id: string
           lead_id: string
           reminder_sent_at: string | null
@@ -384,6 +385,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          expires_at?: string
           id?: string
           lead_id: string
           reminder_sent_at?: string | null
@@ -394,6 +396,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          expires_at?: string
           id?: string
           lead_id?: string
           reminder_sent_at?: string | null
