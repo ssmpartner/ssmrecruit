@@ -460,6 +460,58 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
             employees={employees}
           />
         )}
+      {/* Leads in Status Dialog */}
+      <Dialog open={viewingStatus !== null} onOpenChange={(open) => !open && setViewingStatus(null)}>
+        {viewingStatus && (() => {
+          const now = Date.now();
+          const inStatus = activeLeads
+            .filter(l => l.status === viewingStatus)
+            .map(l => {
+              const days = (now - new Date(l.updatedAt || l.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+              const rules = escalationRules[viewingStatus] || [];
+              const activeR = rules.filter(r => r.enabled);
+              const minT = activeR.length > 0 ? Math.min(...activeR.map(r => r.thresholdDays)) : Infinity;
+              return { lead: l, days, isEscalated: days > minT };
+            })
+            .sort((a, b) => b.days - a.days);
+
+          return (
+            <DialogContent className="max-w-lg max-h-[70vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  {statusConfig[viewingStatus].label} – {inStatus.length} Lead{inStatus.length !== 1 ? 's' : ''}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2 mt-2">
+                {inStatus.map(({ lead, days, isEscalated }) => (
+                  <div
+                    key={lead.id}
+                    onClick={() => { onSelectLead?.(lead); setViewingStatus(null); }}
+                    className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition-all hover:shadow-sm hover:-translate-y-0.5 ${
+                      isEscalated ? 'border-destructive/30 bg-destructive/5' : 'hover:bg-muted/50'
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{lead.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{lead.position || '—'} · {lead.city || lead.plz || '—'}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <SourceBadge source={lead.source} />
+                      <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                        isEscalated ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {isEscalated && <AlertTriangle className="h-3 w-3" />}
+                        <Clock className="h-3 w-3" />
+                        {Math.floor(days)}d
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </DialogContent>
+          );
+        })()}
       </Dialog>
     </div>
   );
