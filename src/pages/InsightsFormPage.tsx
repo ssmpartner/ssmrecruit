@@ -492,8 +492,8 @@ export default function InsightsFormPage() {
               return (
                 <>
                   <div className="text-center space-y-1">
-                    <h2 className="text-lg font-bold text-slate-800">Was motiviert dich wirklich?</h2>
-                    <p className="text-sm text-slate-500">Beantworte die folgenden Aussagen ehrlich – es gibt keine richtigen oder falschen Antworten.</p>
+                    <h2 className="text-lg font-bold text-foreground">Was motiviert dich wirklich?</h2>
+                    <p className="text-sm text-muted-foreground">Beantworte die folgenden Aussagen ehrlich – es gibt keine richtigen oder falschen Antworten.</p>
                   </div>
 
                   {/* Sub-progress */}
