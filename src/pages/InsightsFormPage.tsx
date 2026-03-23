@@ -665,7 +665,7 @@ export default function InsightsFormPage() {
 
               {step === 'appointments' ? (
                 <button type="submit" disabled={submitting}
-                  className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-700 disabled:opacity-50">
+                  className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 disabled:opacity-50">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                   {submitting ? 'Wird analysiert...' : 'Assessment abschliessen'}
                 </button>
