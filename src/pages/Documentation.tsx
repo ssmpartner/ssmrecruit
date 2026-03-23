@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.20.0';
+const APP_VERSION = '2.21.0';
 
 const versionHistory = [
   { version: '2.20.0', date: '23.03.2026', changes: [
