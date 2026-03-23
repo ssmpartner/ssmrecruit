@@ -594,10 +594,6 @@ export default function LeadDetailSheet() {
                       <LeadFlowTimeline lead={selectedLead} activities={activities} />
                     )}
 
-                    {/* Wizard History Tab */}
-                    {rightTab === 'wizard' && (
-                      <WizardHistoryPanel leadId={selectedLead.id} />
-                    )}
                     {rightTab === 'status' && (
                       <div className="space-y-4">
                         <section>
