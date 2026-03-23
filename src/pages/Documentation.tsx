@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 const APP_VERSION = '2.22.0';
 
 const versionHistory = [
-  { version: '2.21.0', date: '23.03.2026', changes: [
+  { version: '2.22.0', date: '23.03.2026', changes: [
     'Wizard-Management: Modulares System in Einstellungen → Wizards zur Erstellung und Verwaltung von Lead-Funnels (Step-Builder mit Video, Auswahl, Entscheidung)',
     'Wizard-Typen: recruiting, sales, custom – nur ein aktiver Wizard vom Typ "recruiting" erlaubt',
     'Wizard-Editor: 4 Tabs (Allgemein, Schritte, Logik-Platzhalter, Vorschau) mit Echtzeit-Simulation',
