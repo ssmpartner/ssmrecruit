@@ -1432,6 +1432,9 @@ function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
           <Save className="h-4 w-4" /> Kriterien speichern
         </button>
       </div>
+
+      {/* Wizard Preview & Test */}
+      <WizardPreviewPanel toast={toast} />
     </>
   );
 }
