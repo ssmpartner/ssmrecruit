@@ -317,6 +317,7 @@ export default function InsightsFormPage() {
       });
 
       if (!analysisErr && analysisData && !analysisData.error) {
+        setAnalysisResult(analysisData);
         await supabase.from('assessment_results').insert({
           lead_id: leadId,
           disc_scores: discResult.scores,
