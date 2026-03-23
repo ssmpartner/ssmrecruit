@@ -238,7 +238,7 @@ function EscalationRuleEditor({
 
 // ── Flow Node ──
 function FlowNode({
-  status, count, escalated, avgDays, isLast, rules, onOpenRules,
+  status, count, escalated, avgDays, isLast, rules, onOpenRules, onClickNode,
 }: {
   status: LeadStatus;
   count: number;
@@ -247,6 +247,7 @@ function FlowNode({
   isLast: boolean;
   rules: EscalationRule[];
   onOpenRules: () => void;
+  onClickNode: () => void;
 }) {
   const config = statusConfig[status];
   const hasEscalation = escalated > 0;
