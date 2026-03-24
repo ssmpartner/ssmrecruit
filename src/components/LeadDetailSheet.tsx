@@ -611,7 +611,7 @@ export default function LeadDetailSheet() {
                             </div>
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground mb-1.5">Nächster Schritt</p>
+                            <p className="text-sm text-muted-foreground mb-2">Nächster Schritt</p>
                             {(() => {
                               const allowed = getAllowedNextStatuses(selectedLead.status, false);
                               return allowed.length > 0 ? (
