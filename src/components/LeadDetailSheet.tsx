@@ -345,14 +345,14 @@ export default function LeadDetailSheet() {
                             </div>
                             <div className="grid grid-cols-2 gap-2.5">
                               <div>
-                                <label className={`text-xs ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail</label>
-                                <input value={form.email} onChange={e => { setForm(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.email; return n; }); }} className={inputErr('email')} />
-                                {fieldErrors.email && <p className="text-xs text-destructive mt-0.5">{fieldErrors.email}</p>}
-                              </div>
-                              <div>
-                                <label className={`text-xs ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon</label>
-                                <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
-                                {fieldErrors.phone && <p className="text-xs text-destructive mt-0.5">{fieldErrors.phone}</p>}
+                                 <label className={`text-sm ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail</label>
+                                 <input value={form.email} onChange={e => { setForm(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.email; return n; }); }} className={inputErr('email')} />
+                                 {fieldErrors.email && <p className="text-sm text-destructive mt-0.5">{fieldErrors.email}</p>}
+                               </div>
+                               <div>
+                                 <label className={`text-sm ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon</label>
+                                 <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
+                                 {fieldErrors.phone && <p className="text-sm text-destructive mt-0.5">{fieldErrors.phone}</p>}
                               </div>
                             </div>
                             <div>
