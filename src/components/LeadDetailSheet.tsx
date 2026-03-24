@@ -483,7 +483,7 @@ export default function LeadDetailSheet() {
                             </div>
                             <div className="grid grid-cols-3 gap-2.5">
                               <div>
-                                <label className="text-xs text-muted-foreground">Datum *</label>
+                                <label className="text-sm text-muted-foreground">Datum *</label>
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <button className={cn(inputCls, 'flex items-center gap-1.5 text-left', !aptForm.date && 'text-muted-foreground')}>
