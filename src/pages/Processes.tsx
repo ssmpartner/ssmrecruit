@@ -152,6 +152,8 @@ const defaultRules: AutomationRule[] = [
   { id: 'rule-1', name: 'DISC-Test → Follow-up', enabled: true, trigger: 'disc_completed', triggerConfig: {}, action: 'change_status', actionConfig: { targetStatus: 'follow_up' }, scope: 'global', createdAt: new Date().toISOString() },
   { id: 'rule-2', name: 'Erinnerung bei Inaktivität', enabled: false, trigger: 'time_in_status', triggerConfig: { toStatus: 'contacted', daysInStatus: 3 }, action: 'send_notification', actionConfig: { notificationMessage: 'Lead seit 3 Tagen im Status "Kontaktiert" – bitte nachfassen!' }, scope: 'global', createdAt: new Date().toISOString() },
   { id: 'rule-3', name: 'Dokumente hochgeladen → Benachrichtigung', enabled: true, trigger: 'documents_uploaded', triggerConfig: {}, action: 'send_notification', actionConfig: { notificationMessage: 'Dokumente wurden hochgeladen – bitte prüfen.' }, scope: 'global', createdAt: new Date().toISOString() },
+  { id: 'rule-4', name: 'PLZ → Agentur-Auto-Zuweisung', enabled: true, trigger: 'plz_auto_assign', triggerConfig: {}, action: 'assign_employee', actionConfig: { notificationMessage: 'Lead wird basierend auf PLZ/Kanton automatisch der zuständigen Agentur und einem Mitarbeiter zugewiesen.' }, scope: 'global', createdAt: new Date().toISOString() },
+  { id: 'rule-5', name: 'Dokument-Link abgelaufen (48h)', enabled: true, trigger: 'document_link_expired', triggerConfig: {}, action: 'send_notification', actionConfig: { notificationMessage: 'Der Dokument-Upload-Link ist nach 48 Stunden abgelaufen. Bitte erneut senden falls nötig.' }, scope: 'global', createdAt: new Date().toISOString() },
 ];
 
 const mainFlow: LeadStatus[] = statusFlow.filter(s => s !== 'rejected');
