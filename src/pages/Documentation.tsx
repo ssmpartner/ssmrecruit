@@ -2,9 +2,13 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.25.0';
+const APP_VERSION = '2.26.0';
 
 const versionHistory = [
+  { version: '2.26.0', date: '24.03.2026', changes: [
+    'Mapbox als Dienst-Integration unter Einstellungen → Integrationen: Live-Verbindungsstatus, maskierte Token-Vorschau und Feature-Übersicht (Karte, Adress-Autovervollständigung, Geocoding)',
+    'API-Dokumentation: Neue Endpunkte mapbox-token (Token abrufen) und Mapbox-Integrationsstatus dokumentiert',
+  ]},
   { version: '2.25.0', date: '24.03.2026', changes: [
     'Mapbox Adress-Autovervollständigung: Beim Erfassen oder Bearbeiten von Leads werden Schweizer Adressen live vorgeschlagen (Geocoding API)',
     'Neue Edge Function geocode-address: Mapbox Geocoding v5 mit Einschränkung auf Schweiz (CH) und deutscher Sprache',
@@ -221,6 +225,7 @@ const appFeatures = [
     { name: 'Webhooks', desc: 'Eingehende Webhooks für automatisierten Lead-Import (form-webhook, application-webhook, meta-webhook, tiktok-webhook).' },
     { name: 'REST API', desc: 'Vollständige API mit Authentifizierung für externe Systeme.' },
     { name: 'API-Schlüssel', desc: 'Granulare API-Keys mit konfigurierbaren Berechtigungen.' },
+    { name: 'Mapbox-Integration', desc: 'Dienst-Integration unter Einstellungen → Integrationen mit Live-Statusprüfung. Drei Funktionen: Karten-Visualisierung (Analytics Karte-Tab), Adress-Autovervollständigung (Lead-Erfassung/-Bearbeitung) und Geocoding für automatische Agentur-Zuweisung.' },
   ]},
   { category: 'Backend & Datenbank', icon: '🗄️', features: [
     { name: 'Lovable Cloud', desc: 'Vollständig persistente Datenbank für alle Module (Leads, Termine, Aufgaben, etc.).' },
@@ -248,6 +253,7 @@ const techStack = [
   { name: 'React Router', desc: 'Navigation', icon: '🧭' },
   { name: 'Radix UI', desc: 'Komponenten', icon: '🧩' },
   { name: 'TanStack Query', desc: 'Daten-Management', icon: '🔄' },
+  { name: 'Mapbox GL JS', desc: 'Karten & Geocoding', icon: '🗺️' },
 ];
 
 const roles = [
