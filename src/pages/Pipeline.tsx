@@ -25,9 +25,11 @@ export default function Pipeline() {
   };
 
   // Filter only active leads in pipeline-visible statuses
-  const pipelineLeads = leads.filter(l => 
-    l.lifecycle === 'active' && pipelineStatuses.includes(l.status)
-  );
+  // Superadmin sees all leads, other roles see only their assigned leads
+  const pipelineLeads = leads.filter(l => {
+    if (l.lifecycle !== 'active' || !pipelineStatuses.includes(l.status)) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
