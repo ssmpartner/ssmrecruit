@@ -361,7 +361,7 @@ export default function LeadDetailSheet() {
                             </div>
                             <div className="grid grid-cols-3 gap-2.5">
                               <div className="relative">
-                                <label className="text-xs text-muted-foreground">PLZ</label>
+                                <label className="text-sm text-muted-foreground">PLZ</label>
                                 <input value={form.plz} onChange={e => handlePlzChange(e.target.value)}
                                   onFocus={() => form.plz.length >= 2 && setShowPlzDropdown(plzSuggestions.length > 0)}
                                   onBlur={() => setTimeout(() => setShowPlzDropdown(false), 200)}
