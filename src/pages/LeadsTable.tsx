@@ -32,7 +32,7 @@ const PAGE_SIZES: { value: PageSize; label: string }[] = [
 ];
 
 export default function LeadsTable() {
-  const { leads, employees, agencies, leadSources, setSelectedLead } = useLeads();
+  const { leads, employees, agencies, leadSources, activities, setSelectedLead } = useLeads();
   const { isSuperadmin } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -46,6 +46,8 @@ export default function LeadsTable() {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(20);
+
+  const leadsWithActivities = useMemo(() => new Set(activities.map(a => a.leadId)), [activities]);
 
   const lifecycleLeads = useMemo(() => {
     const lifecycle: LeadLifecycle = activeTab === 'active' ? 'active' : activeTab === 'archived' ? 'archived' : 'deleted';
@@ -328,7 +330,7 @@ export default function LeadsTable() {
                             <p className="font-medium">{lead.name}</p>
                             <p className="text-xs text-muted-foreground">{lead.position}</p>
                           </div>
-                          {lead.status === 'new' && (
+                          {lead.status === 'new' && !leadsWithActivities.has(lead.id) && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider animate-pulse">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                               Neu
