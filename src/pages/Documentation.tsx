@@ -221,6 +221,7 @@ const appFeatures = [
     { name: 'Webhooks', desc: 'Eingehende Webhooks für automatisierten Lead-Import (form-webhook, application-webhook, meta-webhook, tiktok-webhook).' },
     { name: 'REST API', desc: 'Vollständige API mit Authentifizierung für externe Systeme.' },
     { name: 'API-Schlüssel', desc: 'Granulare API-Keys mit konfigurierbaren Berechtigungen.' },
+    { name: 'Mapbox-Integration', desc: 'Dienst-Integration unter Einstellungen → Integrationen mit Live-Statusprüfung. Drei Funktionen: Karten-Visualisierung (Analytics Karte-Tab), Adress-Autovervollständigung (Lead-Erfassung/-Bearbeitung) und Geocoding für automatische Agentur-Zuweisung.' },
   ]},
   { category: 'Backend & Datenbank', icon: '🗄️', features: [
     { name: 'Lovable Cloud', desc: 'Vollständig persistente Datenbank für alle Module (Leads, Termine, Aufgaben, etc.).' },
