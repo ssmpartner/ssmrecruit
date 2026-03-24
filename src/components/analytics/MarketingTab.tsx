@@ -108,6 +108,21 @@ export default function MarketingTab({ filtered, leadSources }: MarketingTabProp
         </ChartCard>
       </div>
 
+      {/* Gender Distribution */}
+      {genderData.length > 0 && (
+        <ChartCard title="Geschlechterverteilung" subtitle="Frauen / Männer" icon={Users}>
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie data={genderData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={4} dataKey="value" label={renderCustomizedLabel} labelLine={false} strokeWidth={2} stroke="hsl(0,0%,100%)">
+                {genderData.map((g, i) => <Cell key={i} fill={g.fill} />)}
+              </Pie>
+              <Tooltip content={<PieTooltip />} />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      )}
+
       {/* Funnel by Source */}
       {funnelBySource.length > 0 && (
         <ChartCard title="Funnel nach Quelle" subtitle="Conversion pro Kanal" icon={TrendingUp}>
