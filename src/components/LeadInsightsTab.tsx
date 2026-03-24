@@ -443,6 +443,26 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
           <p className="text-xs text-muted-foreground/70 mt-1">Klicken Sie oben auf «Link senden», um den Insights & DISC-Wizard zu starten.</p>
         </div>
       )}
+
+      {/* ── Send Confirmation Dialog ── */}
+      <Dialog open={showSendConfirm} onOpenChange={setShowSendConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Insights-Link senden</DialogTitle>
+            <DialogDescription>
+              Möchten Sie einen neuen Insights & DISC-Test-Link für <strong>{leadName}</strong> erstellen? Der Link wird automatisch in die Zwischenablage kopiert.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowSendConfirm(false)}>
+              Abbrechen
+            </Button>
+            <Button onClick={() => { setShowSendConfirm(false); handleSendInsightsLink(); }}>
+              Bestätigen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
