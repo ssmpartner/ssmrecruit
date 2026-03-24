@@ -7,7 +7,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import InsightsTab from './InsightsTab';
 import { useLeads } from '@/context/useLeads';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   leadId: string;
@@ -52,6 +53,7 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
   const [sendingLink, setSendingLink] = useState(false);
   const [previewToken, setPreviewToken] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [showSendConfirm, setShowSendConfirm] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -261,7 +263,7 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
           <div className="flex items-center gap-1.5">
             {/* Send new link */}
             <button
-              onClick={handleSendInsightsLink}
+              onClick={() => setShowSendConfirm(true)}
               disabled={sendingLink}
               className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
             >
@@ -441,6 +443,26 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
           <p className="text-xs text-muted-foreground/70 mt-1">Klicken Sie oben auf «Link senden», um den Insights & DISC-Wizard zu starten.</p>
         </div>
       )}
+
+      {/* ── Send Confirmation Dialog ── */}
+      <Dialog open={showSendConfirm} onOpenChange={setShowSendConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Insights-Link senden</DialogTitle>
+            <DialogDescription>
+              Möchten Sie einen neuen Insights & DISC-Test-Link für <strong>{leadName}</strong> erstellen? Der Link wird automatisch in die Zwischenablage kopiert.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowSendConfirm(false)}>
+              Abbrechen
+            </Button>
+            <Button onClick={() => { setShowSendConfirm(false); handleSendInsightsLink(); }}>
+              Bestätigen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
