@@ -424,9 +424,9 @@ export default function LeadDetailSheet() {
                               </div>
                             )}
                             <div>
-                              <label className="text-xs text-muted-foreground">Notizen</label>
-                              <textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={2}
-                                className="w-full rounded-md border bg-background px-2.5 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+                               <label className="text-sm text-muted-foreground">Notizen</label>
+                               <textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3}
+                                 className="w-full rounded-md border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
                             </div>
                           </div>
                         ) : (
