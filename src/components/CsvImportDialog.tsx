@@ -3,6 +3,8 @@ import { Upload, FileText, AlertTriangle, CheckCircle2, X, Loader2 } from 'lucid
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useLeads } from '@/context/useLeads';
 import { toast } from 'sonner';
+import { lookupPlz } from '@/lib/swiss-plz';
+import { resolveAssignmentByPlz } from '@/lib/agency-assignment';
 
 interface CsvRow {
   name: string;
@@ -179,6 +181,25 @@ export default function CsvImportDialog() {
         const campaignNote = row.campaign ? `Kampagne: ${row.campaign}` : '';
         const combinedNotes = [row.notes, campaignNote].filter(Boolean).join(' | ');
 
+        // Auto-resolve PLZ → canton → location data
+        const plzLookup = row.plz ? lookupPlz(row.plz) : null;
+        const resolvedCity = row.city || plzLookup?.city || '';
+        const resolvedCanton = row.canton || plzLookup?.canton || '';
+        const resolvedCantonCode = row.cantonCode || plzLookup?.cantonCode || '';
+
+        // Auto-assign agency/employee by canton if not explicitly set
+        const explicitAgency = row.agencyId ? resolveAgency(row.agencyId) : null;
+        const explicitEmployee = row.employeeId ? resolveEmployee(row.employeeId) : null;
+
+        let finalAgencyId = explicitAgency || defaultAgency;
+        let finalEmployeeId = explicitEmployee || defaultEmployee;
+
+        if (!explicitAgency && resolvedCantonCode) {
+          const resolved = resolveAssignmentByPlz(row.plz || '', resolvedCantonCode, agencies, employees, defaultAgency, defaultEmployee);
+          finalAgencyId = resolved.agencyId;
+          if (!explicitEmployee) finalEmployeeId = resolved.employeeId;
+        }
+
         await addLead({
           name: row.name,
           salutation: row.salutation || '',
@@ -186,14 +207,14 @@ export default function CsvImportDialog() {
           phone: row.phone || '',
           address: row.address || '',
           plz: row.plz || '',
-          city: row.city || '',
-          canton: row.canton || '',
-          cantonCode: row.cantonCode || '',
+          city: resolvedCity,
+          canton: resolvedCanton,
+          cantonCode: resolvedCantonCode,
           position: row.position || '',
           source: (row.source as any) || 'csv_import',
           status: resolveStatus(row.status) as any,
-          agencyId: resolveAgency(row.agencyId),
-          employeeId: resolveEmployee(row.employeeId),
+          agencyId: finalAgencyId,
+          employeeId: finalEmployeeId,
           notes: row.notes || '',
           campaign: row.campaign || '',
           lifecycle: 'active',
