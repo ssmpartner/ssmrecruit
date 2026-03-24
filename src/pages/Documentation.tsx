@@ -5,6 +5,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 const APP_VERSION = '2.25.0';
 
 const versionHistory = [
+  { version: '2.25.0', date: '24.03.2026', changes: [
+    'Mapbox Adress-Autovervollständigung: Beim Erfassen oder Bearbeiten von Leads werden Schweizer Adressen live vorgeschlagen (Geocoding API)',
+    'Neue Edge Function geocode-address: Mapbox Geocoding v5 mit Einschränkung auf Schweiz (CH) und deutscher Sprache',
+    'AddressAutocomplete-Komponente: Wiederverwendbar mit Debounce (300ms), Dropdown-Vorschläge und automatischer PLZ/Ort/Kanton-Befüllung bei Auswahl',
+    'Integration in Lead-Erfassung und Lead-Bearbeitung: Strasse/Nr.-Feld nutzt jetzt Mapbox-Autovervollständigung',
+    'Analytics Karte-Tab: Interaktive Mapbox-Karte mit Lead-Pins (status-kodiert) und Agentur-Kantonsgebieten',
+    'NEU-Badge in der Leads-Tabelle: Neue Leads werden mit pulsierendem Badge markiert bis zur ersten Statusänderung',
+    'Geschlechterverteilung im Marketing-Tab: Demografische Aufschlüsselung nach Anrede (Frauen/Männer)',
+  ]},
   { version: '2.24.0', date: '24.03.2026', changes: [
     'PLZ-basierte automatische Agentur-/Mitarbeiterzuweisung: Beim CSV-Import und Webhook-Eingang (Meta, TikTok, Formular) wird anhand der PLZ der Kanton ermittelt und die zuständige regionale Agentur samt Mitarbeiter automatisch zugewiesen',
     'Neue DB-Funktion resolve_agency_by_canton: Priorisiert spezifische Agenturen vor dem Hauptsitz-Fallback',
