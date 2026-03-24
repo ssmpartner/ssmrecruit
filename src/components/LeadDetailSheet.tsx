@@ -499,7 +499,7 @@ export default function LeadDetailSheet() {
                                 </Popover>
                               </div>
                               <div>
-                                <label className="text-xs text-muted-foreground">Uhrzeit</label>
+                                <label className="text-sm text-muted-foreground">Uhrzeit</label>
                                 <input type="time" value={aptForm.time} onChange={e => setAptForm(prev => ({ ...prev, time: e.target.value }))} className={inputCls} />
                               </div>
                               <div>
