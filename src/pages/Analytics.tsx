@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Filter, CalendarIcon, X, Activity, BarChart3, Megaphone, Briefcase, Workflow } from 'lucide-react';
+import { Filter, CalendarIcon, X, Activity, BarChart3, Megaphone, Briefcase, Workflow, Map as MapIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLeads } from '@/context/useLeads';
 import { statusConfig, type LeadStatus } from '@/lib/mock-data';
