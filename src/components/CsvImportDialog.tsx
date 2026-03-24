@@ -5,6 +5,7 @@ import { useLeads } from '@/context/useLeads';
 import { toast } from 'sonner';
 import { lookupPlz } from '@/lib/swiss-plz';
 import { resolveAssignmentByPlz } from '@/lib/agency-assignment';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CsvRow {
   name: string;
@@ -181,11 +182,26 @@ export default function CsvImportDialog() {
         const campaignNote = row.campaign ? `Kampagne: ${row.campaign}` : '';
         const combinedNotes = [row.notes, campaignNote].filter(Boolean).join(' | ');
 
-        // Auto-resolve PLZ → canton → location data
+        // Auto-resolve PLZ → canton → location data (local first, then Mapbox)
         const plzLookup = row.plz ? lookupPlz(row.plz) : null;
-        const resolvedCity = row.city || plzLookup?.city || '';
-        const resolvedCanton = row.canton || plzLookup?.canton || '';
-        const resolvedCantonCode = row.cantonCode || plzLookup?.cantonCode || '';
+        let resolvedCity = row.city || plzLookup?.city || '';
+        let resolvedCanton = row.canton || plzLookup?.canton || '';
+        let resolvedCantonCode = row.cantonCode || plzLookup?.cantonCode || '';
+
+        // Mapbox fallback if still missing canton
+        if (!resolvedCantonCode && (row.plz || row.city || row.address)) {
+          try {
+            const { data } = await supabase.functions.invoke('geocode-address', {
+              body: { query: [row.address, row.plz, row.city].filter(Boolean).join(' '), types: 'address,place' },
+            });
+            const best = data?.suggestions?.[0];
+            if (best) {
+              if (!resolvedCity && best.city) resolvedCity = best.city;
+              if (!resolvedCanton && best.canton) resolvedCanton = best.canton;
+              if (!resolvedCantonCode && best.cantonCode) resolvedCantonCode = best.cantonCode;
+            }
+          } catch { /* ignore Mapbox errors during import */ }
+        }
 
         // Auto-assign agency/employee by canton if not explicitly set
         const explicitAgency = row.agencyId ? resolveAgency(row.agencyId) : null;

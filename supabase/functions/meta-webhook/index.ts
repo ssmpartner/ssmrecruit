@@ -6,32 +6,78 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function resolveAgencyByPlz(supabase: any, plz: string) {
-  if (!plz) return null;
-  const { data: existingLead } = await supabase
-    .from('leads')
-    .select('canton_code')
-    .eq('plz', plz)
-    .not('canton_code', 'eq', '')
-    .limit(1)
-    .single();
-  if (existingLead?.canton_code) {
-    const { data: agencyId } = await supabase.rpc('resolve_agency_by_canton', { _canton_code: existingLead.canton_code });
-    if (agencyId) {
-      const { data: employee } = await supabase.from('employees').select('id').eq('agency_id', agencyId).limit(1).single();
-      return { agencyId, employeeId: employee?.id };
+const PLZ_CANTON_MAP: [number, number, string, string][] = [
+  [1000,1199,"Waadt","VD"],[1200,1299,"Genf","GE"],[1300,1499,"Waadt","VD"],
+  [1500,1799,"Freiburg","FR"],[1800,1899,"Waadt","VD"],[1900,1999,"Wallis","VS"],
+  [2000,2499,"Neuenburg","NE"],[2500,2699,"Bern","BE"],[2800,2999,"Jura","JU"],
+  [3000,3899,"Bern","BE"],[3900,3999,"Wallis","VS"],
+  [4000,4099,"Basel-Stadt","BS"],[4100,4199,"Basel-Landschaft","BL"],
+  [4200,4399,"Solothurn","SO"],[4400,4499,"Basel-Landschaft","BL"],[4500,4999,"Solothurn","SO"],
+  [5000,5999,"Aargau","AG"],
+  [6000,6299,"Luzern","LU"],[6300,6399,"Zug","ZG"],
+  [6400,6459,"Schwyz","SZ"],[6460,6499,"Uri","UR"],[6500,6999,"Tessin","TI"],
+  [7000,7799,"Graubünden","GR"],
+  [8000,8199,"Zürich","ZH"],[8200,8279,"Schaffhausen","SH"],
+  [8280,8289,"Thurgau","TG"],[8300,8499,"Zürich","ZH"],
+  [8500,8599,"Thurgau","TG"],[8600,8639,"Zürich","ZH"],
+  [8640,8649,"St. Gallen","SG"],[8650,8749,"Zürich","ZH"],
+  [8750,8759,"Glarus","GL"],[8760,8852,"Zürich","ZH"],
+  [8853,8853,"Schwyz","SZ"],[8854,8999,"Zürich","ZH"],
+  [9000,9049,"St. Gallen","SG"],[9050,9059,"Appenzell I.Rh.","AI"],
+  [9060,9099,"St. Gallen","SG"],[9100,9199,"Appenzell A.Rh.","AR"],
+  [9200,9699,"St. Gallen","SG"],
+];
+
+function lookupCantonByPlz(plz: string): { canton: string; cantonCode: string } | null {
+  const num = parseInt(plz, 10);
+  if (isNaN(num)) return null;
+  let best: { canton: string; cantonCode: string } | null = null;
+  let bestSize = 999999;
+  for (const [lo, hi, canton, code] of PLZ_CANTON_MAP) {
+    if (num >= lo && num <= hi && (hi - lo) < bestSize) {
+      best = { canton, cantonCode: code };
+      bestSize = hi - lo;
     }
   }
-  return null;
+  return best;
+}
+
+async function enrichAddressViaMapbox(plz: string, city: string): Promise<{ city: string; canton: string; cantonCode: string } | null> {
+  const MAPBOX_TOKEN = Deno.env.get("MAPBOX_TOKEN");
+  if (!MAPBOX_TOKEN) return null;
+  const query = [plz, city].filter(Boolean).join(' ');
+  if (query.length < 2) return null;
+  try {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=CH&language=de&types=address,place&limit=1&autocomplete=false`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const f = data.features?.[0];
+    if (!f) return null;
+    const context = f.context || [];
+    const place = context.find((c: any) => c.id?.startsWith("place"))?.text || "";
+    const regionCode = context.find((c: any) => c.id?.startsWith("region"))?.short_code?.replace("CH-", "") || "";
+    const region = context.find((c: any) => c.id?.startsWith("region"))?.text || "";
+    const isPlace = f.place_type?.includes("place");
+    return { city: isPlace ? f.text : (place || ""), canton: region, cantonCode: regionCode };
+  } catch { return null; }
+}
+
+async function resolveLocation(plz: string, city: string) {
+  if (plz) {
+    const local = lookupCantonByPlz(plz);
+    if (local) return { city: city || "", ...local };
+  }
+  return await enrichAddressViaMapbox(plz, city);
 }
 
 async function getDefaultAssignment(supabase: any) {
   const { data: hauptsitz } = await supabase.from('agencies').select('id').ilike('name', '%hauptsitz%').limit(1).single();
   const agencyId = hauptsitz?.id || (await supabase.from('agencies').select('id').limit(1).single()).data?.id;
-  if (!agencyId) throw new Error('No agency found for lead assignment');
+  if (!agencyId) throw new Error('No agency found');
   const { data: emp } = await supabase.from('employees').select('id').eq('agency_id', agencyId).limit(1).single();
   const employeeId = emp?.id || (await supabase.from('employees').select('id').limit(1).single()).data?.id;
-  if (!employeeId) throw new Error('No employee found for lead assignment');
+  if (!employeeId) throw new Error('No employee found');
   return { agencyId, employeeId };
 }
 
@@ -41,19 +87,14 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
+    const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-    // Facebook webhook verification (GET request)
     if (req.method === 'GET') {
       const url = new URL(req.url);
       const mode = url.searchParams.get('hub.mode');
       const token = url.searchParams.get('hub.verify_token');
       const challenge = url.searchParams.get('hub.challenge');
       const storedToken = Deno.env.get('META_VERIFY_TOKEN');
-
       if (mode === 'subscribe' && token && storedToken && token === storedToken && challenge) {
         console.log('Meta webhook verified');
         return new Response(challenge, { status: 200, headers: corsHeaders });
@@ -63,31 +104,41 @@ serve(async (req) => {
 
     const body = await req.json();
     console.log('Meta webhook payload:', JSON.stringify(body));
-
     const defaults = await getDefaultAssignment(supabase);
     const inserted = [];
 
     async function insertLead(name: string, email: string, phone: string, city: string, plz: string, campaign: string) {
-      // Try PLZ-based resolution
-      const locationMatch = plz ? await resolveAgencyByPlz(supabase, plz) : null;
-      const agencyId = locationMatch?.agencyId || defaults.agencyId;
-      const employeeId = locationMatch?.employeeId || defaults.employeeId;
+      // Auto-enrich address data
+      const location = await resolveLocation(plz, city);
+      const finalCity = city || location?.city || '';
+      const finalCanton = location?.canton || '';
+      const finalCantonCode = location?.cantonCode || '';
+
+      // Resolve agency by canton
+      let agencyId = defaults.agencyId;
+      let employeeId = defaults.employeeId;
+      if (finalCantonCode) {
+        const { data: resolvedAgency } = await supabase.rpc('resolve_agency_by_canton', { _canton_code: finalCantonCode });
+        if (resolvedAgency) {
+          agencyId = resolvedAgency;
+          const { data: emp } = await supabase.from('employees').select('id').eq('agency_id', agencyId).limit(1).single();
+          if (emp?.id) employeeId = emp.id;
+        }
+      }
 
       const id = crypto.randomUUID();
       const now = new Date().toISOString();
-
       const { data, error } = await supabase.from('leads').insert({
-        id, name, email, phone, city, plz,
+        id, name, email, phone,
+        city: finalCity, plz,
+        canton: finalCanton, canton_code: finalCantonCode,
         source: 'meta', status: 'new', campaign,
         agency_id: agencyId, employee_id: employeeId,
-        notes: `Automatisch importiert via Meta Lead Ads`,
+        notes: 'Automatisch importiert via Meta Lead Ads',
         created_at: now, updated_at: now,
       }).select().single();
 
-      if (error) {
-        console.error('Error inserting Meta lead:', error);
-        return;
-      }
+      if (error) { console.error('Error inserting Meta lead:', error); return; }
       inserted.push(data);
       await supabase.from('activities').insert({ id: crypto.randomUUID(), lead_id: id, type: 'status_change', description: 'Lead automatisch via Meta Lead Ads importiert', user: 'System', created_at: now });
       await supabase.from('notifications').insert({ title: 'Neuer Meta Lead', type: 'new_lead', description: `${name} wurde via Meta Lead Ads importiert.`, lead_id: id });
@@ -131,14 +182,12 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ success: true, inserted: inserted.length }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Meta webhook error:', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
