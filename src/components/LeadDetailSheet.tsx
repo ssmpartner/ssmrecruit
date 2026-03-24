@@ -208,7 +208,15 @@ export default function LeadDetailSheet() {
 
                 <div className="h-5 w-px bg-border" />
 
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 flex items-center gap-2.5">
+                  <div className={cn(
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+                    selectedLead.salutation === 'Frau'
+                      ? "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400"
+                      : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                  )}>
+                    <User className="h-4.5 w-4.5" />
+                  </div>
                   <DialogHeader className="space-y-0">
                     <DialogTitle className="text-lg font-bold tracking-tight leading-tight">{selectedLead.name}</DialogTitle>
                     <DialogDescription className="text-sm text-muted-foreground leading-tight">{selectedLead.position || 'Keine Position'}</DialogDescription>
