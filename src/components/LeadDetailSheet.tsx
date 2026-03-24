@@ -510,9 +510,9 @@ export default function LeadDetailSheet() {
                               </div>
                             </div>
                             <div>
-                              <label className="text-xs text-muted-foreground">Notizen</label>
-                              <textarea value={aptForm.notes} onChange={e => setAptForm(prev => ({ ...prev, notes: e.target.value }))} rows={2} placeholder="Optional..."
-                                className="w-full rounded-md border bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
+                               <label className="text-sm text-muted-foreground">Notizen</label>
+                               <textarea value={aptForm.notes} onChange={e => setAptForm(prev => ({ ...prev, notes: e.target.value }))} rows={2} placeholder="Optional..."
+                                 className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
                             </div>
                             <div className="flex justify-end gap-2">
                               <button onClick={() => setShowAptForm(false)} className="rounded-md border px-2.5 py-1 text-xs hover:bg-muted transition-colors">Abbrechen</button>
