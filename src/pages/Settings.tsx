@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2 } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin } from 'lucide-react';
 import EmailSettingsTab from '@/components/EmailSettingsTab';
 import ProfileSettings from '@/components/ProfileSettings';
 import WizardsTab from '@/components/WizardsTab';
@@ -1778,7 +1778,103 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
           );
         })}
       </div>
+
+      {/* Mapbox Integration */}
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold flex items-center gap-2 mb-1"><MapPin className="h-5 w-5" /> Dienst-Integrationen</h2>
+        <p className="text-sm text-muted-foreground mb-4">Externe Dienste für Karten, Geocoding und mehr.</p>
+        <MapboxIntegrationCard toast={toast} />
+      </div>
     </>
+  );
+}
+
+function MapboxIntegrationCard({ toast }: { toast: any }) {
+  const [expanded, setExpanded] = useState(false);
+  const [status, setStatus] = useState<'loading' | 'connected' | 'disconnected'>('loading');
+  const [tokenPreview, setTokenPreview] = useState('');
+
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('mapbox-token');
+        if (!error && data?.token) {
+          setStatus('connected');
+          const t = data.token as string;
+          setTokenPreview(t.slice(0, 8) + '••••••••' + t.slice(-4));
+        } else {
+          setStatus('disconnected');
+        }
+      } catch {
+        setStatus('disconnected');
+      }
+    };
+    check();
+  }, []);
+
+  return (
+    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <button onClick={() => setExpanded(!expanded)}
+        className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🗺️</span>
+          <div>
+            <h3 className="font-semibold text-sm">Mapbox</h3>
+            <p className="text-xs text-muted-foreground">Karten-Visualisierung, Geocoding & Adress-Autovervollständigung</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          {status === 'connected' && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
+          {status === 'disconnected' && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="border-t px-5 py-5 space-y-4">
+          <div className="rounded-lg bg-secondary/50 p-4">
+            <h4 className="text-sm font-medium mb-2">Verwendung in SSM Recruit:</h4>
+            <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+              <li><strong>Statistik → Karte:</strong> Interaktive Lead-Verteilung mit Status-Pins & Agentur-Gebiete</li>
+              <li><strong>Adress-Autovervollständigung:</strong> Beim Erstellen/Bearbeiten von Leads automatische Adressvorschläge</li>
+              <li><strong>Geocoding:</strong> PLZ/Ort-Erkennung für automatische Agentur-Zuweisung</li>
+            </ul>
+          </div>
+
+          {status === 'connected' && (
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium">Mapbox Access Token</label>
+                <div className="mt-1 flex items-center gap-2">
+                  <code className="flex-1 rounded-lg bg-secondary px-3 py-2 text-xs font-mono text-secondary-foreground">{tokenPreview}</code>
+                  <span className="shrink-0 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success">Aktiv</span>
+                </div>
+              </div>
+              <div className="rounded-lg border border-border/50 p-3">
+                <p className="text-xs text-muted-foreground">
+                  Der Token ist als Backend-Secret gespeichert und wird sicher über eine Backend-Funktion bereitgestellt. 
+                  Um den Token zu ändern, aktualisieren Sie das Secret <code className="bg-secondary px-1 rounded text-[10px]">MAPBOX_TOKEN</code> in den Projekt-Einstellungen.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {status === 'disconnected' && (
+            <div className="space-y-3">
+              <div className="rounded-lg bg-secondary/50 p-4">
+                <h4 className="text-sm font-medium mb-2">Token einrichten:</h4>
+                <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
+                  <li>Erstellen Sie ein Konto bei <a href="https://www.mapbox.com/" target="_blank" rel="noreferrer" className="text-primary underline">mapbox.com</a></li>
+                  <li>Navigieren Sie zu <strong>Account → Access Tokens</strong></li>
+                  <li>Erstellen oder kopieren Sie Ihren Default Public Token</li>
+                  <li>Speichern Sie den Token als Secret <code className="bg-secondary px-1 rounded">MAPBOX_TOKEN</code></li>
+                </ol>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
