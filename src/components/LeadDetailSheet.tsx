@@ -50,7 +50,7 @@ export default function LeadDetailSheet() {
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
   const [showPlzDropdown, setShowPlzDropdown] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [form, setForm] = useState({ name: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '' });
+  const [form, setForm] = useState({ name: '', salutation: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '' });
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export default function LeadDetailSheet() {
   const startEdit = () => {
     if (!selectedLead) return;
     setForm({
-      name: selectedLead.name, email: selectedLead.email, phone: selectedLead.phone,
+      name: selectedLead.name, salutation: selectedLead.salutation || '', email: selectedLead.email, phone: selectedLead.phone,
       position: selectedLead.position, address: selectedLead.address, plz: selectedLead.plz,
       city: selectedLead.city, canton: selectedLead.canton, cantonCode: selectedLead.cantonCode,
       notes: selectedLead.notes, source: selectedLead.source, createdAt: selectedLead.createdAt,
@@ -118,6 +118,7 @@ export default function LeadDetailSheet() {
 
     const changes: string[] = [];
     if (form.name !== selectedLead.name) changes.push(`Name → "${form.name}"`);
+    if (form.salutation !== (selectedLead.salutation || '')) changes.push(`Anrede → "${form.salutation || '—'}"`);
     if (form.email !== selectedLead.email) changes.push(`Email → "${form.email}"`);
     if (form.phone !== selectedLead.phone) changes.push(`Telefon aktualisiert`);
     if (form.position !== selectedLead.position) changes.push(`Position → "${form.position}"`);
@@ -334,14 +335,24 @@ export default function LeadDetailSheet() {
 
                         {editing ? (
                           <div className="space-y-2.5">
-                            <div className="grid grid-cols-2 gap-2.5">
-                              {(['name', 'position'] as const).map(field => (
-                                <div key={field}>
-                                   <label className={`text-sm ${fieldErrors[field] ? 'text-destructive' : 'text-muted-foreground'}`}>{field === 'name' ? 'Name *' : 'Position'}</label>
-                                   <input value={form[field]} onChange={e => { setForm(prev => ({ ...prev, [field]: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n[field]; return n; }); }} className={inputErr(field)} />
-                                   {fieldErrors[field] && <p className="text-sm text-destructive mt-0.5">{fieldErrors[field]}</p>}
-                                </div>
-                              ))}
+                            <div className="grid grid-cols-3 gap-2.5">
+                              <div>
+                                <label className="text-sm text-muted-foreground">Anrede</label>
+                                <select value={form.salutation} onChange={e => setForm(prev => ({ ...prev, salutation: e.target.value }))} className={inputCls}>
+                                  <option value="">— Keine —</option>
+                                  <option value="Herr">Herr</option>
+                                  <option value="Frau">Frau</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className={`text-sm ${fieldErrors.name ? 'text-destructive' : 'text-muted-foreground'}`}>Name *</label>
+                                <input value={form.name} onChange={e => { setForm(prev => ({ ...prev, name: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.name; return n; }); }} className={inputErr('name')} />
+                                {fieldErrors.name && <p className="text-sm text-destructive mt-0.5">{fieldErrors.name}</p>}
+                              </div>
+                              <div>
+                                <label className="text-sm text-muted-foreground">Position</label>
+                                <input value={form.position} onChange={e => setForm(prev => ({ ...prev, position: e.target.value }))} className={inputCls} />
+                              </div>
                             </div>
                             <div className="grid grid-cols-2 gap-2.5">
                               <div>
@@ -432,10 +443,11 @@ export default function LeadDetailSheet() {
                         ) : (
                            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
                              {[
-                               ['E-Mail', selectedLead.email],
-                               ['Telefon', selectedLead.phone],
-                               ['Position', selectedLead.position],
-                               ['Erstellt', new Date(selectedLead.createdAt).toLocaleDateString('de-CH')],
+                                ['Anrede', selectedLead.salutation || '—'],
+                                ['E-Mail', selectedLead.email],
+                                ['Telefon', selectedLead.phone],
+                                ['Position', selectedLead.position],
+                                ['Erstellt', new Date(selectedLead.createdAt).toLocaleDateString('de-CH')],
                                ['Adresse', selectedLead.address],
                                ['Ort', `${selectedLead.plz} ${selectedLead.city}`],
                                ['Kanton', `${selectedLead.canton} (${selectedLead.cantonCode})`],

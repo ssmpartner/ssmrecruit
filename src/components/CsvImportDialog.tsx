@@ -24,11 +24,11 @@ interface CsvRow {
 }
 
 const REQUIRED_FIELDS = ['name', 'email'];
-const OPTIONAL_FIELDS = ['phone', 'address', 'plz', 'city', 'canton', 'cantonCode', 'position', 'source', 'notes', 'createdAt', 'status', 'employeeId', 'agencyId', 'campaign'];
+const OPTIONAL_FIELDS = ['salutation', 'phone', 'address', 'plz', 'city', 'canton', 'cantonCode', 'position', 'source', 'notes', 'createdAt', 'status', 'employeeId', 'agencyId', 'campaign'];
 const ALL_FIELDS = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
 
 const FIELD_LABELS: Record<string, string> = {
-  name: 'Name', email: 'E-Mail', phone: 'Telefon', address: 'Adresse',
+  name: 'Name', salutation: 'Anrede', email: 'E-Mail', phone: 'Telefon', address: 'Adresse',
   plz: 'PLZ', city: 'Ort', canton: 'Kanton', cantonCode: 'Kanton-Code',
   position: 'Position', source: 'Quelle', notes: 'Notizen',
   createdAt: 'Lead-Datum', status: 'Status', employeeId: 'Mitarbeiter',
@@ -61,6 +61,7 @@ function parseCsv(text: string): { headers: string[]; rows: string[][] } {
 function autoMapHeaders(csvHeaders: string[]): Record<number, string> {
   const mapping: Record<number, string> = {};
   const aliases: Record<string, string[]> = {
+    salutation: ['salutation', 'anrede', 'geschlecht', 'gender', 'title', 'titel'],
     name: ['name', 'vorname', 'nachname', 'full_name', 'fullname', 'vor- und nachname', 'kandidat'],
     email: ['email', 'e-mail', 'mail', 'e_mail', 'email_address'],
     phone: ['phone', 'telefon', 'tel', 'phone_number', 'mobiltelefon', 'handy'],
@@ -180,6 +181,7 @@ export default function CsvImportDialog() {
 
         await addLead({
           name: row.name,
+          salutation: row.salutation || '',
           email: row.email,
           phone: row.phone || '',
           address: row.address || '',

@@ -933,6 +933,7 @@ export type Database = {
           phone: string
           plz: string
           position: string
+          salutation: string
           source: string
           status: string
           updated_at: string
@@ -956,6 +957,7 @@ export type Database = {
           phone?: string
           plz?: string
           position?: string
+          salutation?: string
           source?: string
           status?: string
           updated_at?: string
@@ -979,6 +981,7 @@ export type Database = {
           phone?: string
           plz?: string
           position?: string
+          salutation?: string
           source?: string
           status?: string
           updated_at?: string

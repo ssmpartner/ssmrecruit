@@ -168,6 +168,7 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
     if (!validate()) return;
     addLead({
       name: form.name.trim(),
+      salutation: '',
       email: form.email.trim(),
       phone: form.phone.trim(),
       address: form.address.trim(),

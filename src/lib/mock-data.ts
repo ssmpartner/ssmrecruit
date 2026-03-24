@@ -39,6 +39,7 @@ export type LeadLifecycle = 'active' | 'archived' | 'deleted';
 export interface Lead {
   id: string;
   name: string;
+  salutation: string;
   email: string;
   phone: string;
   address: string;
@@ -272,6 +273,7 @@ export const leads: Lead[] = swissNames.map((name, i) => {
   const phoneNum = `+41 ${['44', '31', '61', '41', '71', '52', '22', '21', '62', '43'][i % 10]} ${String(100 + i * 13).slice(-3)} ${String(10 + i * 7).slice(-2)} ${String(10 + i * 3).slice(-2)}`;
   return {
     id: `l${i + 1}`,
+    salutation: '',
     name,
     email: `${name.toLowerCase().replace(' ', '.').replace('ü', 'ue').replace('ö', 'oe').replace('ä', 'ae')}@email.ch`,
     phone: phoneNum,
