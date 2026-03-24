@@ -47,6 +47,8 @@ export default function LeadsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(20);
 
+  const leadsWithActivities = useMemo(() => new Set(activities.map(a => a.leadId)), [activities]);
+
   const lifecycleLeads = useMemo(() => {
     const lifecycle: LeadLifecycle = activeTab === 'active' ? 'active' : activeTab === 'archived' ? 'archived' : 'deleted';
     return leads.filter(l => l.lifecycle === lifecycle);
