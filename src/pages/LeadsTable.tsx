@@ -330,7 +330,7 @@ export default function LeadsTable() {
                             <p className="font-medium">{lead.name}</p>
                             <p className="text-xs text-muted-foreground">{lead.position}</p>
                           </div>
-                          {lead.status === 'new' && !activities.some(a => a.leadId === lead.id) && (
+                          {lead.status === 'new' && !leadsWithActivities.has(lead.id) && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider animate-pulse">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                               Neu
