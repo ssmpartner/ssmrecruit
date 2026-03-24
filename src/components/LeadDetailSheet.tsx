@@ -596,7 +596,7 @@ export default function LeadDetailSheet() {
                     {rightTab === 'status' && (
                       <div className="space-y-4">
                         <section>
-                          <h4 className="text-sm font-semibold mb-2">Status ändern</h4>
+                          <h4 className="text-base font-semibold mb-3">Status ändern</h4>
                           <div className="mb-3">
                             <p className="text-xs text-muted-foreground mb-1.5">Admin (frei wählbar)</p>
                             <div className="flex flex-wrap gap-1">
