@@ -54,6 +54,8 @@ const triggerOptions: Record<AutomationTrigger, { label: string; icon: typeof Za
   disc_completed: { label: 'DISC-Test fertig', icon: Brain, desc: 'Wenn der DISC-Persönlichkeitstest abgeschlossen wird → Auto-Status Follow-up' },
   documents_uploaded: { label: 'Dokumente erhalten', icon: Upload, desc: 'Wenn der Kandidat Dokumente hochgeladen hat' },
   time_in_status: { label: 'Verweildauer', icon: Bell, desc: 'Wenn ein Lead zu lange in einem Status bleibt' },
+  plz_auto_assign: { label: 'PLZ-Auto-Zuweisung', icon: Building2, desc: 'Automatische Agentur-/Mitarbeiterzuweisung basierend auf PLZ/Kanton beim Import oder Webhook-Eingang' },
+  document_link_expired: { label: 'Dokument-Link abgelaufen', icon: Clock, desc: 'Wenn ein Dokument-Upload-Link nach 48h abläuft ohne dass Dokumente hochgeladen wurden' },
 };
 
 const actionOptions: Record<AutomationAction, { label: string; icon: typeof Zap }> = {
