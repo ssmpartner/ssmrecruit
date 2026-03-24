@@ -12,6 +12,7 @@ import OverviewTab from '@/components/analytics/OverviewTab';
 import MarketingTab from '@/components/analytics/MarketingTab';
 import ManagementTab from '@/components/analytics/ManagementTab';
 import FlowAnalysisTab from '@/components/analytics/FlowAnalysisTab';
+import MapTab from '@/components/analytics/MapTab';
 import ExportActions from '@/components/analytics/ExportActions';
 
 export default function Analytics() {
