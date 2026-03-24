@@ -617,8 +617,8 @@ export default function LeadDetailSheet() {
                               return allowed.length > 0 ? (
                                 <div className="flex flex-wrap gap-1">
                                   {allowed.map(s => (
-                                    <button key={s} onClick={() => changeStatus(s)}
-                                      className="rounded-full px-2.5 py-1 text-xs font-medium border border-primary/30 bg-primary/5 hover:bg-primary hover:text-primary-foreground transition-colors">
+                                     <button key={s} onClick={() => changeStatus(s)}
+                                       className="rounded-full px-3 py-1.5 text-sm font-medium border border-primary/30 bg-primary/5 hover:bg-primary hover:text-primary-foreground transition-colors">
                                       → {statusConfig[s].label}
                                     </button>
                                   ))}
