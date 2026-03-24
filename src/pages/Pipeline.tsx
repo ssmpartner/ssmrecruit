@@ -12,6 +12,7 @@ const pipelineStatuses: LeadStatus[] = ['new', 'contacted', 'appointment'];
 
 export default function Pipeline() {
   const { leads, employees, agencies, updateLead, addActivity, setSelectedLead } = useLeads();
+  const { isSuperadmin } = useAuth();
 
   const moveStatus = (leadId: string, newStatus: LeadStatus, e: React.MouseEvent) => {
     e.stopPropagation();
