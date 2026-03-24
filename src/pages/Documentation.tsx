@@ -2,9 +2,18 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.26.0';
+const APP_VERSION = '2.27.0';
 
 const versionHistory = [
+  { version: '2.27.0', date: '24.03.2026', changes: [
+    'Automatische Adress-Ergänzung beim Lead-Import (CSV, form-webhook, meta-webhook, tiktok-webhook): PLZ wird lokal via Schweizer PLZ-Datenbank aufgelöst, Mapbox-Fallback für fehlende Adressdaten',
+    'Bulk-Adress-Enrichment: «Adressen ergänzen»-Button in der Leads-Tabelle (Superadmin) – ergänzt fehlende PLZ, Ort und Kanton für alle aktiven Leads',
+    'Datenbank-Migration: 951 Leads mit fehlenden Kanton-Daten wurden via PLZ-Ranges und Orts-Mapping automatisch aktualisiert',
+    'Bestätigungsdialog beim Insights-Link-Versand: «Bestätigen» / «Abbrechen» vor dem Erstellen eines neuen Insights & DISC-Links',
+    'Geschlechts-Icons in Leads-Tabelle, Lead-Detail und Pipeline-Flow: Männlich/Weiblich-Symbol basierend auf gespeicherter Anrede (Herr/Frau)',
+    'Pipeline-Flow: Interaktive horizontale und vertikale Visualisierung mit farbiger Prozess-Wegleitung',
+    'NEU-Badge Sortierung: Leads werden nach Zeitstempel sortiert (neuester Import/Eintrag zuerst), NEU-Badge für Einträge der letzten 48h',
+  ]},
   { version: '2.26.0', date: '24.03.2026', changes: [
     'Mapbox als Dienst-Integration unter Einstellungen → Integrationen: Live-Verbindungsstatus, maskierte Token-Vorschau und Feature-Übersicht (Karte, Adress-Autovervollständigung, Geocoding)',
     'API-Dokumentation: Neue Endpunkte mapbox-token (Token abrufen) und Mapbox-Integrationsstatus dokumentiert',
