@@ -840,11 +840,11 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
                       isEscalated ? 'border-destructive/30 bg-destructive/5' : 'hover:bg-muted/50'
                     }`}
                   >
-                     <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-bold text-sm ${
-                      lead.salutation === 'Frau' ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                    <span className={`shrink-0 text-lg font-bold ${
+                      lead.salutation === 'Frau' ? 'text-pink-500 dark:text-pink-400' : 'text-blue-500 dark:text-blue-400'
                     }`}>
                       {lead.salutation === 'Frau' ? '♀' : '♂'}
-                    </div>
+                    </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{lead.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{lead.position || '—'} · {lead.city || lead.plz || '—'}</p>

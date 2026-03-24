@@ -62,11 +62,11 @@ export default function Pipeline() {
                       className="cursor-pointer rounded-lg border bg-card p-3 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
                     >
                       <div className="flex items-center gap-2">
-                         <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-bold text-xs ${
-                          lead.salutation === 'Frau' ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                        <span className={`shrink-0 text-base font-bold ${
+                          lead.salutation === 'Frau' ? 'text-pink-500 dark:text-pink-400' : 'text-blue-500 dark:text-blue-400'
                         }`}>
                           {lead.salutation === 'Frau' ? '♀' : '♂'}
-                        </div>
+                        </span>
                         <p className="font-medium text-sm">{lead.name}</p>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{lead.position}</p>
