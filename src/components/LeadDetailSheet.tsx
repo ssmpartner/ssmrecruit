@@ -24,6 +24,7 @@ import LeadActionPanel from './LeadActionPanel';
 import LeadFlowTimeline from './LeadFlowTimeline';
 import LeadInsightsTab from './LeadInsightsTab';
 import LeadDocumentsTab from './LeadDocumentsTab';
+import AddressAutocomplete, { type AddressSuggestion } from './AddressAutocomplete';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
