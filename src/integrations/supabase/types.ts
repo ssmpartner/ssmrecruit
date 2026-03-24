@@ -1266,6 +1266,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      resolve_agency_by_canton: {
+        Args: { _canton_code: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "superadmin" | "admin" | "backoffice" | "analyst" | "teamleiter"
