@@ -23,6 +23,7 @@ function dbToLead(row: any): Lead {
   return {
     id: row.id,
     name: row.name,
+    salutation: row.salutation || '',
     email: row.email,
     phone: row.phone,
     address: row.address,
