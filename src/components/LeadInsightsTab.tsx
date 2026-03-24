@@ -53,6 +53,7 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
   const [sendingLink, setSendingLink] = useState(false);
   const [previewToken, setPreviewToken] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [showSendConfirm, setShowSendConfirm] = useState(false);
 
   useEffect(() => {
     loadData();
