@@ -282,7 +282,7 @@ export default function LeadDetailSheet() {
                               : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
                           )}
                         >
-                          <tab.icon className={cn("h-3.5 w-3.5", rightTab === tab.key && "text-primary")} />
+                          <tab.icon className={cn("h-4 w-4", rightTab === tab.key && "text-primary")} />
                           {tab.label}
                           {tab.count ? (
                             <span className={cn(
