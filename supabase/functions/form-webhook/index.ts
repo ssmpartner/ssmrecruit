@@ -6,6 +6,37 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+async function resolveAgencyByLocation(supabase: any, plz: string, city: string) {
+  // Try to resolve canton from PLZ using the DB function
+  if (!plz && !city) return null;
+
+  // Use the resolve_agency_by_canton DB function if we can determine canton
+  // First, try to find canton from existing leads with same PLZ
+  if (plz) {
+    const { data: existingLead } = await supabase
+      .from('leads')
+      .select('canton_code, agency_id')
+      .eq('plz', plz)
+      .not('canton_code', 'eq', '')
+      .limit(1)
+      .single();
+
+    if (existingLead?.canton_code) {
+      const { data: agencyId } = await supabase.rpc('resolve_agency_by_canton', { _canton_code: existingLead.canton_code });
+      if (agencyId) {
+        const { data: employee } = await supabase
+          .from('employees')
+          .select('id')
+          .eq('agency_id', agencyId)
+          .limit(1)
+          .single();
+        return { agencyId, employeeId: employee?.id };
+      }
+    }
+  }
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -52,29 +83,37 @@ serve(async (req) => {
       });
     }
 
-    // Find agency "Hauptsitz"
-    const { data: hauptsitz } = await supabase
-      .from('agencies')
-      .select('id')
-      .ilike('name', '%hauptsitz%')
-      .limit(1)
-      .single();
+    // Try PLZ-based agency resolution first
+    const locationMatch = await resolveAgencyByLocation(supabase, plz, city);
 
-    const agencyId = hauptsitz?.id || (await supabase.from('agencies').select('id').limit(1).single()).data?.id;
+    let agencyId = locationMatch?.agencyId;
+    let employeeId = locationMatch?.employeeId;
+
+    // Fallback to Hauptsitz
+    if (!agencyId) {
+      const { data: hauptsitz } = await supabase
+        .from('agencies')
+        .select('id')
+        .ilike('name', '%hauptsitz%')
+        .limit(1)
+        .single();
+      agencyId = hauptsitz?.id || (await supabase.from('agencies').select('id').limit(1).single()).data?.id;
+    }
 
     if (!agencyId) {
       throw new Error('Keine Agentur für Lead-Zuweisung gefunden');
     }
 
-    // Get default employee from that agency
-    const { data: defaultEmployee } = await supabase
-      .from('employees')
-      .select('id')
-      .eq('agency_id', agencyId)
-      .limit(1)
-      .single();
-
-    const employeeId = defaultEmployee?.id || (await supabase.from('employees').select('id').limit(1).single()).data?.id;
+    // Fallback employee from resolved agency
+    if (!employeeId) {
+      const { data: defaultEmployee } = await supabase
+        .from('employees')
+        .select('id')
+        .eq('agency_id', agencyId)
+        .limit(1)
+        .single();
+      employeeId = defaultEmployee?.id || (await supabase.from('employees').select('id').limit(1).single()).data?.id;
+    }
 
     if (!employeeId) {
       throw new Error('Kein Mitarbeiter für Lead-Zuweisung gefunden');
@@ -126,7 +165,6 @@ serve(async (req) => {
       throw new Error(`Lead konnte nicht gespeichert werden: ${error.message}`);
     }
 
-    // Create activity
     await supabase.from('activities').insert({
       id: crypto.randomUUID(),
       lead_id: id,
@@ -136,7 +174,6 @@ serve(async (req) => {
       created_at: now,
     });
 
-    // Create notification
     await supabase.from('notifications').insert({
       title: 'Neuer Website-Lead',
       type: 'new_lead',
