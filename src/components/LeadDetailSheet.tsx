@@ -400,7 +400,7 @@ export default function LeadDetailSheet() {
                             {isSuperadmin && (
                               <div className="grid grid-cols-2 gap-2.5">
                                 <div>
-                                  <label className="text-xs text-muted-foreground">Quelle</label>
+                                  <label className="text-sm text-muted-foreground">Quelle</label>
                                   <select value={form.source} onChange={e => setForm(prev => ({ ...prev, source: e.target.value }))} className={inputCls}>
                                     {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                                   </select>
