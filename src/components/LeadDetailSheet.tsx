@@ -460,7 +460,7 @@ export default function LeadDetailSheet() {
                     {rightTab === 'appointments' && (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-semibold">Termine</h4>
+                          <h4 className="text-base font-semibold">Termine</h4>
                           <button onClick={() => { setShowAptForm(!showAptForm); setAptForm({ title: '', date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' }); }}
                             className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
                             <Plus className="h-3 w-3" /> Neu
