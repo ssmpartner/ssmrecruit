@@ -369,7 +369,21 @@ export default function LeadDetailSheet() {
                             </div>
                             <div>
                               <label className="text-sm text-muted-foreground">Strasse & Nr.</label>
-                              <input value={form.address} onChange={e => setForm(prev => ({ ...prev, address: e.target.value }))} className={inputCls} />
+                              <AddressAutocomplete
+                                value={form.address}
+                                onChange={val => setForm(prev => ({ ...prev, address: val }))}
+                                onSelect={(s: AddressSuggestion) => {
+                                  setForm(prev => ({
+                                    ...prev,
+                                    address: s.street,
+                                    plz: s.plz || prev.plz,
+                                    city: s.city || prev.city,
+                                    canton: s.canton || prev.canton,
+                                    cantonCode: s.cantonCode || prev.cantonCode,
+                                  }));
+                                }}
+                                placeholder="Adresse suchen..."
+                              />
                             </div>
                             <div className="grid grid-cols-3 gap-2.5">
                               <div className="relative">

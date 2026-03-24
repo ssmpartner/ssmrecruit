@@ -270,7 +270,22 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Strasse / Nr.</label>
-                <input value={form.address} onChange={e => set('address', e.target.value)} className={inputCls('address')} placeholder="Bahnhofstrasse 1" maxLength={200} />
+                <AddressAutocomplete
+                  value={form.address}
+                  onChange={val => set('address', val)}
+                  onSelect={(s: AddressSuggestion) => {
+                    setForm(prev => ({
+                      ...prev,
+                      address: s.street,
+                      plz: s.plz || prev.plz,
+                      city: s.city || prev.city,
+                      canton: s.canton || prev.canton,
+                      cantonCode: s.cantonCode || prev.cantonCode,
+                    }));
+                  }}
+                  placeholder="Bahnhofstrasse 1"
+                  className={errors.address ? 'border-destructive ring-1 ring-destructive/30' : ''}
+                />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="relative">
