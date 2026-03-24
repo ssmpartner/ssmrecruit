@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Brain, CheckCircle2, Clock, Copy, Check, Loader2, CalendarPlus, CalendarCheck, X } from 'lucide-react';
+import {
+  Brain, CheckCircle2, Clock, Copy, Check, Loader2, CalendarPlus,
+  CalendarCheck, X, Send, ExternalLink, Eye, EyeOff, Download, FileText
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import InsightsTab from './InsightsTab';
 import { useLeads } from '@/context/useLeads';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface Props {
   leadId: string;
@@ -45,6 +49,9 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
   const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
   const [expandedInsights, setExpandedInsights] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState('');
+  const [sendingLink, setSendingLink] = useState(false);
+  const [previewToken, setPreviewToken] = useState<string | null>(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -76,6 +83,32 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
     toast({ title: 'Kopiert!', description: 'Link in der Zwischenablage.' });
   }
 
+  const handleSendInsightsLink = useCallback(async () => {
+    setSendingLink(true);
+    const { data, error } = await supabase
+      .from('insights_requests')
+      .insert({ lead_id: leadId, sent_via: 'manual' })
+      .select()
+      .single();
+
+    if (error || !data) {
+      toast({ title: 'Fehler', description: 'Link konnte nicht erstellt werden.', variant: 'destructive' });
+      setSendingLink(false);
+      return;
+    }
+
+    await supabase.from('activities').insert({
+      id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+      description: 'Insights & DISC-Test-Link erstellt', user: 'System',
+    });
+
+    const url = getPublicUrl((data as any).token);
+    await navigator.clipboard.writeText(url);
+    toast({ title: '✅ Link erstellt & kopiert', description: url });
+    setSendingLink(false);
+    loadData();
+  }, [leadId, toast]);
+
   async function handleSuggestionAction(id: string, action: 'accepted' | 'declined') {
     await supabase.from('appointment_suggestions').update({
       status: action,
@@ -98,38 +131,233 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
     loadData();
   }
 
+  const handleDownloadPdf = useCallback(async () => {
+    setGeneratingPdf(true);
+    try {
+      // Use browser print to generate a "PDF" of the insights content
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast({ title: 'Pop-up blockiert', description: 'Bitte erlauben Sie Pop-ups für den PDF-Download.', variant: 'destructive' });
+        setGeneratingPdf(false);
+        return;
+      }
+
+      // Gather all data for the PDF
+      const completedReqs = insightsRequests.filter(r => r.status === 'completed');
+      const discResult = discResults.find(d => d.leadId === leadId);
+
+      // Fetch assessment results
+      const { data: assessment } = await supabase
+        .from('assessment_results')
+        .select('*')
+        .eq('lead_id', leadId)
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      let insightsHtml = '';
+
+      // Insights responses
+      completedReqs.forEach(req => {
+        if (req.responses) {
+          insightsHtml += '<h3>Insights-Antworten</h3>';
+          Object.entries(req.responses).forEach(([key, value]) => {
+            insightsHtml += `<div class="qa"><strong>${insightsQuestionLabels[key] || key}:</strong> <span>${value}</span></div>`;
+          });
+        }
+      });
+
+      // DISC
+      if (discResult) {
+        insightsHtml += '<h3>DISC-Ergebnisse</h3>';
+        insightsHtml += `<p><strong>Dominanter Typ:</strong> ${discResult.dominantType?.toUpperCase()}</p>`;
+        if (discResult.scores) {
+          insightsHtml += '<div class="scores">';
+          Object.entries(discResult.scores as Record<string, number>).forEach(([dim, score]) => {
+            insightsHtml += `<div class="score-bar"><span>${dim.toUpperCase()}</span><div class="bar"><div class="fill" style="width:${score}%"></div></div><span>${score}%</span></div>`;
+          });
+          insightsHtml += '</div>';
+        }
+      }
+
+      // Assessment
+      if (assessment) {
+        const a = assessment as any;
+        if (a.summary?.headline) insightsHtml += `<h3>${a.summary.headline}</h3>`;
+        if (a.summary?.description) insightsHtml += `<p>${a.summary.description}</p>`;
+        if (a.match_result?.score != null) {
+          insightsHtml += `<div class="match"><strong>Match Score:</strong> ${a.match_result.score}/100 — ${a.match_result.level}</div>`;
+        }
+        if (a.recommendation) insightsHtml += `<div class="rec"><strong>Empfehlung:</strong> ${a.recommendation}</div>`;
+        if (a.report_sections?.strengths_profile?.length) {
+          insightsHtml += '<h4>Stärken</h4><ul>' + a.report_sections.strengths_profile.map((s: string) => `<li>${s}</li>`).join('') + '</ul>';
+        }
+        if (a.report_sections?.improvement_areas?.length) {
+          insightsHtml += '<h4>Verbesserungsbereiche</h4><ul>' + a.report_sections.improvement_areas.map((s: string) => `<li>${s}</li>`).join('') + '</ul>';
+        }
+      }
+
+      printWindow.document.write(`<!DOCTYPE html><html><head><title>Insights Report – ${leadName}</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; }
+          h1 { font-size: 22px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
+          h3 { font-size: 16px; margin-top: 24px; color: #2563eb; }
+          h4 { font-size: 14px; margin-top: 16px; }
+          .qa { margin: 8px 0; padding: 8px 12px; background: #f8f9fa; border-radius: 6px; font-size: 13px; }
+          .qa strong { display: block; font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 2px; }
+          .scores { margin: 12px 0; }
+          .score-bar { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 13px; }
+          .score-bar .bar { flex: 1; height: 12px; background: #e5e7eb; border-radius: 6px; overflow: hidden; }
+          .score-bar .fill { height: 100%; background: #2563eb; border-radius: 6px; }
+          .match, .rec { padding: 10px 14px; margin: 8px 0; background: #eff6ff; border-radius: 8px; font-size: 13px; }
+          ul { font-size: 13px; }
+          li { margin: 4px 0; }
+          .meta { font-size: 12px; color: #888; margin-top: 4px; }
+          @media print { body { margin: 20px; } }
+        </style>
+      </head><body>
+        <h1>Insights Report</h1>
+        <p><strong>${leadName}</strong></p>
+        <p class="meta">Erstellt am ${new Date().toLocaleDateString('de-CH', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+        ${insightsHtml || '<p>Keine Insights-Daten vorhanden.</p>'}
+      </body></html>`);
+      printWindow.document.close();
+      setTimeout(() => {
+        printWindow.print();
+        setGeneratingPdf(false);
+      }, 500);
+    } catch {
+      setGeneratingPdf(false);
+      toast({ title: 'Fehler beim PDF-Export', variant: 'destructive' });
+    }
+  }, [insightsRequests, discResults, leadId, leadName, toast]);
+
   const hasDisc = discResults.some(d => d.leadId === leadId);
+  const completedInsights = insightsRequests.filter(r => r.status === 'completed');
+  const pendingInsights = insightsRequests.filter(r => r.status !== 'completed');
+  const hasAnyResults = hasDisc || completedInsights.length > 0;
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
 
-  const completedInsights = insightsRequests.filter(r => r.status === 'completed');
-  const pendingInsights = insightsRequests.filter(r => r.status !== 'completed');
-  const hasContent = hasDisc || completedInsights.length > 0 || pendingInsights.length > 0 || appointmentSuggestions.length > 0;
-
-  if (!hasContent) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Brain className="h-10 w-10 text-muted-foreground/40 mb-3" />
-        <p className="text-sm font-medium text-muted-foreground">Noch keine Insights vorhanden</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">Senden Sie einen Insights & DISC-Link über das Aktionspanel links.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
-      {/* DISC Results */}
+      {/* ── Action Bar ── */}
+      <div className="rounded-lg border bg-card p-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Brain className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold">Insights & DISC</span>
+            {pendingInsights.length > 0 && (
+              <span className="rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-bold">
+                {pendingInsights.length} ausstehend
+              </span>
+            )}
+            {completedInsights.length > 0 && (
+              <span className="rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[10px] font-bold">
+                {completedInsights.length} abgeschlossen
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
+            {/* Send new link */}
+            <button
+              onClick={handleSendInsightsLink}
+              disabled={sendingLink}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {sendingLink ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+              Link senden
+            </button>
+
+            {/* PDF download */}
+            {hasAnyResults && (
+              <button
+                onClick={handleDownloadPdf}
+                disabled={generatingPdf}
+                className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium hover:bg-muted transition-colors disabled:opacity-50"
+              >
+                {generatingPdf ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+                PDF
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Active links list */}
+        {pendingInsights.length > 0 && (
+          <div className="mt-3 space-y-1.5 border-t pt-3">
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Aktive Links</p>
+            {pendingInsights.map(req => (
+              <div key={req.id} className="flex items-center gap-2 rounded-md bg-muted/40 px-2.5 py-2">
+                <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <span className="text-xs text-muted-foreground flex-1 truncate">
+                  Gesendet: {new Date(req.sent_at).toLocaleDateString('de-CH')}
+                </span>
+                <div className="flex items-center gap-1">
+                  {/* Preview */}
+                  <button
+                    onClick={() => setPreviewToken(previewToken === req.token ? null : req.token)}
+                    className="flex h-6 w-6 items-center justify-center rounded border bg-background hover:bg-muted transition-colors"
+                    title="Vorschau"
+                  >
+                    {previewToken === req.token ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                  </button>
+                  {/* Copy */}
+                  <button
+                    onClick={() => copyLink(req.token)}
+                    className="flex h-6 w-6 items-center justify-center rounded border bg-background hover:bg-muted transition-colors"
+                    title="Link kopieren"
+                  >
+                    {copiedToken === req.token ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
+                  </button>
+                  {/* Open in new tab */}
+                  <a
+                    href={getPublicUrl(req.token)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-6 w-6 items-center justify-center rounded border bg-background hover:bg-muted transition-colors"
+                    title="In neuem Tab öffnen"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Mini Preview ── */}
+      {previewToken && (
+        <div className="rounded-lg border bg-card overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30">
+            <span className="text-xs font-semibold flex items-center gap-1.5">
+              <Eye className="h-3.5 w-3.5" /> Formular-Vorschau
+            </span>
+            <button onClick={() => setPreviewToken(null)} className="flex h-5 w-5 items-center justify-center rounded hover:bg-muted">
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+          <iframe
+            src={getPublicUrl(previewToken)}
+            className="w-full h-[400px] border-0"
+            title="Insights Formular Vorschau"
+          />
+        </div>
+      )}
+
+      {/* ── DISC Results ── */}
       {hasDisc && (
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <Brain className="h-4 w-4 text-primary" />
-            <h5 className="text-sm font-semibold">DISC-Ergebnisse</h5>
+            <h5 className="text-sm font-semibold">DISC-Ergebnisse & Assessment</h5>
           </div>
           <InsightsTab leadId={leadId} leadName={leadName} />
         </div>
       )}
 
-      {/* Completed Insights */}
+      {/* ── Completed Insights Responses ── */}
       {completedInsights.map(req => (
         <div key={req.id} className="rounded-lg border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
@@ -162,7 +390,7 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
         </div>
       ))}
 
-      {/* Appointment Suggestions */}
+      {/* ── Appointment Suggestions ── */}
       {appointmentSuggestions.length > 0 && (
         <div className="rounded-lg border bg-card p-4 space-y-2">
           <div className="flex items-center gap-2 mb-1">
@@ -205,23 +433,14 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
         </div>
       )}
 
-      {/* Pending Insights */}
-      {pendingInsights.map(req => (
-        <div key={req.id} className="flex items-center justify-between rounded-lg border bg-card p-3">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-accent" />
-            <span className="text-xs">Insights & DISC-Link ausstehend</span>
-            <span className="text-[11px] text-muted-foreground">
-              {new Date(req.sent_at).toLocaleDateString('de-CH')}
-            </span>
-          </div>
-          <button onClick={() => copyLink(req.token)}
-            className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs hover:bg-muted transition-colors">
-            {copiedToken === req.token ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
-            {copiedToken === req.token ? 'Kopiert' : 'Link'}
-          </button>
+      {/* ── Empty State ── */}
+      {!hasDisc && completedInsights.length === 0 && pendingInsights.length === 0 && appointmentSuggestions.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <Brain className="h-10 w-10 text-muted-foreground/40 mb-3" />
+          <p className="text-sm font-medium text-muted-foreground">Noch keine Insights vorhanden</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Klicken Sie oben auf «Link senden», um den Insights & DISC-Wizard zu starten.</p>
         </div>
-      ))}
+      )}
     </div>
   );
 }
