@@ -383,7 +383,7 @@ export default function LeadDetailSheet() {
                                  <input value={form.city} onChange={isSuperadmin ? e => setForm(prev => ({ ...prev, city: e.target.value })) : undefined} readOnly={!isSuperadmin} className={isSuperadmin ? inputCls : "h-10 w-full rounded-md border bg-muted px-3 text-sm"} />
                               </div>
                               <div>
-                                <label className="text-xs text-muted-foreground">Kanton</label>
+                                <label className="text-sm text-muted-foreground">Kanton</label>
                                 {isSuperadmin ? (
                                   <select value={form.cantonCode} onChange={e => {
                                     const c = cantons.find(ct => ct.code === e.target.value);
