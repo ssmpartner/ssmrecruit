@@ -393,7 +393,7 @@ export default function LeadDetailSheet() {
                                     {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
                                   </select>
                                 ) : (
-                                  <input value={form.canton ? `${form.canton} (${form.cantonCode})` : ''} readOnly className="h-8 w-full rounded-md border bg-muted px-2.5 text-sm" />
+                                  <input value={form.canton ? `${form.canton} (${form.cantonCode})` : ''} readOnly className="h-10 w-full rounded-md border bg-muted px-3 text-sm" />
                                 )}
                               </div>
                             </div>
