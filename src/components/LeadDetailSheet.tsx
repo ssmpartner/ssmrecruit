@@ -545,11 +545,11 @@ export default function LeadDetailSheet() {
                                     <TypeIcon className={cn("h-3.5 w-3.5", isPast ? 'text-muted-foreground' : 'text-primary')} />
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-medium">{apt.title}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {new Date(apt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short' })} • {apt.time} • {apt.duration}min • {appointmentTypeConfig[apt.type].label}
-                                    </p>
-                                    {apt.notes && <p className="text-xs mt-0.5 text-muted-foreground">{apt.notes}</p>}
+                                     <p className="text-sm font-medium">{apt.title}</p>
+                                     <p className="text-sm text-muted-foreground">
+                                       {new Date(apt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short' })} • {apt.time} • {apt.duration}min • {appointmentTypeConfig[apt.type].label}
+                                     </p>
+                                     {apt.notes && <p className="text-sm mt-0.5 text-muted-foreground">{apt.notes}</p>}
                                   </div>
                                   <button onClick={() => removeAppointment(apt.id)} className="shrink-0 rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
                                     <Trash2 className="h-3 w-3" />
