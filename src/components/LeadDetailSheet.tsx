@@ -209,8 +209,8 @@ export default function LeadDetailSheet() {
                 <div className="h-5 w-px bg-border" />
 
                 <div className="min-w-0 flex-1 flex items-center gap-2.5">
-                  <div className={cn(
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+                   <div className={cn(
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-bold text-base",
                     selectedLead.salutation === 'Frau'
                       ? "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400"
                       : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
