@@ -624,7 +624,7 @@ export default function LeadDetailSheet() {
                                   ))}
                                 </div>
                               ) : (
-                                <p className="text-xs text-muted-foreground italic">Endstatus erreicht</p>
+                                <p className="text-sm text-muted-foreground italic">Endstatus erreicht</p>
                               );
                             })()}
                           </div>
