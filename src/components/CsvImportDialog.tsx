@@ -5,6 +5,7 @@ import { useLeads } from '@/context/useLeads';
 import { toast } from 'sonner';
 import { lookupPlz } from '@/lib/swiss-plz';
 import { resolveAssignmentByPlz } from '@/lib/agency-assignment';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CsvRow {
   name: string;
