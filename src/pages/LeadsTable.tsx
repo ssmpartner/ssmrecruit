@@ -323,8 +323,18 @@ export default function LeadsTable() {
                         </td>
                       )}
                       <td className="px-5 py-3">
-                        <p className="font-medium">{lead.name}</p>
-                        <p className="text-xs text-muted-foreground">{lead.position}</p>
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <p className="font-medium">{lead.name}</p>
+                            <p className="text-xs text-muted-foreground">{lead.position}</p>
+                          </div>
+                          {lead.status === 'new' && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider animate-pulse">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                              Neu
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-5 py-3 text-muted-foreground text-xs">{lead.phone}</td>
                       <td className="px-5 py-3">
