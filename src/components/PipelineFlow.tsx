@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import { ArrowRight, ArrowDown, AlertTriangle, Clock, TrendingUp, Users, Settings2, Bell, UserCog, ArrowRightLeft, Plus, Trash2, Save, X, ChevronDown, ChevronUp, Eye, Wand2, FlaskConical, LayoutGrid, AlignVerticalJustifyStart } from 'lucide-react';
+import { ArrowRight, ArrowDown, AlertTriangle, Clock, TrendingUp, Users, Settings2, Bell, UserCog, ArrowRightLeft, Plus, Trash2, Save, X, ChevronDown, ChevronUp, Eye, Wand2, FlaskConical, LayoutGrid, AlignVerticalJustifyStart, User } from 'lucide-react';
 import { statusConfig, type LeadStatus, type Lead, type Employee } from '@/lib/mock-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
