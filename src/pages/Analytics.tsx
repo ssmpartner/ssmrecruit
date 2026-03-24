@@ -60,6 +60,7 @@ export default function Analytics() {
     { value: 'marketing', label: 'Marketing', icon: Megaphone },
     { value: 'management', label: 'Geschäftsleitung', icon: Briefcase },
     { value: 'flow', label: 'Flow-Analyse', icon: Workflow },
+    { value: 'map', label: 'Karte', icon: MapIcon },
   ];
 
   return (
