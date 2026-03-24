@@ -24,7 +24,7 @@ interface CsvRow {
 }
 
 const REQUIRED_FIELDS = ['name', 'email'];
-const OPTIONAL_FIELDS = ['phone', 'address', 'plz', 'city', 'canton', 'cantonCode', 'position', 'source', 'notes', 'createdAt', 'status', 'employeeId', 'agencyId', 'campaign'];
+const OPTIONAL_FIELDS = ['salutation', 'phone', 'address', 'plz', 'city', 'canton', 'cantonCode', 'position', 'source', 'notes', 'createdAt', 'status', 'employeeId', 'agencyId', 'campaign'];
 const ALL_FIELDS = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
 
 const FIELD_LABELS: Record<string, string> = {
