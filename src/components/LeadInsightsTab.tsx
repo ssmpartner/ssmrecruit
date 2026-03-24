@@ -263,7 +263,7 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
           <div className="flex items-center gap-1.5">
             {/* Send new link */}
             <button
-              onClick={handleSendInsightsLink}
+              onClick={() => setShowSendConfirm(true)}
               disabled={sendingLink}
               className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
             >
