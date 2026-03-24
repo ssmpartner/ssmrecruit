@@ -13,7 +13,6 @@ export function resolveAssignmentByPlz(
   fallbackAgencyId: string,
   fallbackEmployeeId: string,
 ): { agencyId: string; employeeId: string } {
-  // Determine canton code from PLZ if not provided
   let resolvedCanton = cantonCode;
   if (!resolvedCanton && plz) {
     const loc = lookupPlz(plz);
@@ -24,15 +23,15 @@ export function resolveAssignmentByPlz(
     return { agencyId: fallbackAgencyId, employeeId: fallbackEmployeeId };
   }
 
-  // Find specific agency (not Hauptsitz) with this canton
+  // Find specific agency (not Hauptsitz) with this canton, prefer most specific
   const specificAgency = agencies
     .filter(a => !a.name.toLowerCase().includes('hauptsitz'))
-    .filter(a => (a as any).allowedCantons?.includes(resolvedCanton))
-    .sort((a, b) => ((a as any).allowedCantons?.length || 99) - ((b as any).allowedCantons?.length || 99))[0];
+    .filter(a => a.allowedCantons?.includes(resolvedCanton!))
+    .sort((a, b) => (a.allowedCantons?.length || 99) - (b.allowedCantons?.length || 99))[0];
 
   const matchedAgencyId = specificAgency?.id || fallbackAgencyId;
 
-  // Find employee from that agency
+  // Find employee from matched agency
   const agencyEmployees = employees.filter(e => e.agencyId === matchedAgencyId);
   const matchedEmployeeId = agencyEmployees[0]?.id || fallbackEmployeeId;
 
