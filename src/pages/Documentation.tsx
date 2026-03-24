@@ -5,6 +5,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 const APP_VERSION = '2.24.0';
 
 const versionHistory = [
+  { version: '2.24.0', date: '24.03.2026', changes: [
+    'PLZ-basierte automatische Agentur-/Mitarbeiterzuweisung: Beim CSV-Import und Webhook-Eingang (Meta, TikTok, Formular) wird anhand der PLZ der Kanton ermittelt und die zuständige regionale Agentur samt Mitarbeiter automatisch zugewiesen',
+    'Neue DB-Funktion resolve_agency_by_canton: Priorisiert spezifische Agenturen vor dem Hauptsitz-Fallback',
+    'Dokument-Upload-Link 48h Ablauf: Links laufen automatisch nach 48 Stunden ab, Status (aktiv/abgelaufen/benutzt) wird im Dokumente-Tab angezeigt, erneutes Senden möglich',
+    'Geschlecht/Anrede im Lead-Detail: Anrede kann beim Bearbeiten über Dropdown ausgewählt werden (Herr, Frau, Divers, Keine Angabe)',
+    '14 E-Mail-Benachrichtigungsvorlagen vorbereitet: Templates und Automationsregeln für alle wichtigen Events (Neuer Lead, Statuswechsel, Termin, Aufgabe, DISC, Insights, Dokumente, Duplikate etc.) – standardmässig inaktiv',
+    '"Keine Angabe" Anzeige: Fehlende Felder beim Import oder unerkannte Daten werden klar als "Keine Angabe" (kursiv) dargestellt',
+    'Grössere Schrift im Lead-Detail-Fenster: Alle Texte, Labels und Werte vergrössert für bessere Lesbarkeit',
+    'Neue Automationsregeln: PLZ-Auto-Zuweisung und Dokument-Link-Ablauf (48h) als Prozess-Regeln im Automatisierungen-Dashboard',
+    'Automationen-Dashboard: 2 neue Trigger-Typen (PLZ-Auto-Zuweisung, Dokument-Link abgelaufen) verfügbar',
+  ]},
   { version: '2.23.0', date: '23.03.2026', changes: [
     'Status-Wizard-System: 7 definierte Wizards (Kontaktiert, Rückruf, Nicht interessiert, Nicht erreicht, Kein Bedarf, Nicht passend, Interne Stelle) mit Pflichtfeldern und automatischer Lead-Steuerung',
     'Lead-Entzug-Logik: Automatischer Entzug bei Nicht interessiert, Nicht erreicht, Kein Bedarf, Nicht passend, Interne Stelle – Neuzuweisung an Superadmin',
