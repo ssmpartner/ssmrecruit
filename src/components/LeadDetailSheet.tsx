@@ -503,7 +503,7 @@ export default function LeadDetailSheet() {
                                 <input type="time" value={aptForm.time} onChange={e => setAptForm(prev => ({ ...prev, time: e.target.value }))} className={inputCls} />
                               </div>
                               <div>
-                                <label className="text-xs text-muted-foreground">Dauer</label>
+                                <label className="text-sm text-muted-foreground">Dauer</label>
                                 <select value={aptForm.duration} onChange={e => setAptForm(prev => ({ ...prev, duration: Number(e.target.value) }))} className={inputCls}>
                                   {[15, 30, 45, 60, 90].map(d => <option key={d} value={d}>{d} Min.</option>)}
                                 </select>
