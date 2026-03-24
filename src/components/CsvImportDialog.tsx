@@ -3,6 +3,8 @@ import { Upload, FileText, AlertTriangle, CheckCircle2, X, Loader2 } from 'lucid
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useLeads } from '@/context/useLeads';
 import { toast } from 'sonner';
+import { lookupPlz } from '@/lib/swiss-plz';
+import { resolveAssignmentByPlz } from '@/lib/agency-assignment';
 
 interface CsvRow {
   name: string;
