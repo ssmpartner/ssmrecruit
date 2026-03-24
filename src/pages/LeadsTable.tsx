@@ -13,6 +13,7 @@ import LeadActions from '@/components/LeadActions';
 import DuplicateLeads from '@/components/DuplicateLeads';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import BulkActionsBar from '@/components/BulkActionsBar';
+import AddressEnrichment from '@/components/AddressEnrichment';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
