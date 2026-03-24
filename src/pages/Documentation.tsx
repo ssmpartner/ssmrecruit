@@ -248,6 +248,7 @@ const techStack = [
   { name: 'React Router', desc: 'Navigation', icon: '🧭' },
   { name: 'Radix UI', desc: 'Komponenten', icon: '🧩' },
   { name: 'TanStack Query', desc: 'Daten-Management', icon: '🔄' },
+  { name: 'Mapbox GL JS', desc: 'Karten & Geocoding', icon: '🗺️' },
 ];
 
 const roles = [
