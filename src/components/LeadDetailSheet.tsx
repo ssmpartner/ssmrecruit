@@ -677,7 +677,7 @@ export default function LeadDetailSheet() {
                         </div>
                         <div className="space-y-0">
                           {leadActivities.length === 0 && (
-                            <p className="text-xs text-muted-foreground py-4 text-center">Noch keine Aktivitäten</p>
+                            <p className="text-sm text-muted-foreground py-4 text-center">Noch keine Aktivitäten</p>
                           )}
                           {leadActivities.map((act, i) => {
                             const Icon = activityIcon[act.type];
