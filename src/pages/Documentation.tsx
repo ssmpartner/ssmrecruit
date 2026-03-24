@@ -5,6 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 const APP_VERSION = '2.26.0';
 
 const versionHistory = [
+  { version: '2.26.0', date: '24.03.2026', changes: [
+    'Mapbox als Dienst-Integration unter Einstellungen → Integrationen: Live-Verbindungsstatus, maskierte Token-Vorschau und Feature-Übersicht (Karte, Adress-Autovervollständigung, Geocoding)',
+    'API-Dokumentation: Neue Endpunkte mapbox-token (Token abrufen) und Mapbox-Integrationsstatus dokumentiert',
+  ]},
   { version: '2.25.0', date: '24.03.2026', changes: [
     'Mapbox Adress-Autovervollständigung: Beim Erfassen oder Bearbeiten von Leads werden Schweizer Adressen live vorgeschlagen (Geocoding API)',
     'Neue Edge Function geocode-address: Mapbox Geocoding v5 mit Einschränkung auf Schweiz (CH) und deutscher Sprache',
