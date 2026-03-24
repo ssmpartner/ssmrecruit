@@ -531,7 +531,7 @@ export default function LeadDetailSheet() {
                         )}
 
                         {leadAppointments.length === 0 && !showAptForm && (
-                          <p className="text-xs text-muted-foreground py-8 text-center">Noch keine Termine</p>
+                          <p className="text-sm text-muted-foreground py-8 text-center">Noch keine Termine</p>
                         )}
                         <div className="space-y-2">
                           {leadAppointments.map(apt => {
