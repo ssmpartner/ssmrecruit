@@ -198,9 +198,9 @@ export default function LeadDetailSheet() {
                     <ChevronRight className="h-3.5 w-3.5" />
                   </button>
                   {currentIndex >= 0 && (
-                    <span className="ml-1 text-[11px] text-muted-foreground tabular-nums">
-                      {currentIndex + 1}/{activeLeads.length}
-                    </span>
+                      <span className="ml-1 text-xs text-muted-foreground tabular-nums">
+                       {currentIndex + 1}/{activeLeads.length}
+                     </span>
                   )}
                 </div>
 
