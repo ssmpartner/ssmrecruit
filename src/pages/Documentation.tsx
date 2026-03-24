@@ -169,6 +169,7 @@ const appFeatures = [
     { name: 'Video-Calls', desc: 'Integrierte Video-Anrufe direkt aus der Anwendung starten.' },
     { name: 'Benachrichtigungen', desc: 'Echtzeit In-App-Benachrichtigungen für Leads, Termine, Tasks, Prozess-Schritte, DISC, Insights, Dokument-Uploads, Duplikate und Automatisierungen – individuell konfigurierbar.' },
     { name: 'Termin-Erinnerungen', desc: 'Automatische Erinnerungen vor anstehenden Terminen.' },
+    { name: 'E-Mail-Benachrichtigungen', desc: '14 vorbereitete E-Mail-Templates für alle wichtigen Events (Neuer Lead, Statuswechsel, Termine, Aufgaben, DISC, Insights, Dokumente, Duplikate). Standardmässig inaktiv, individuell aktivierbar.' },
   ]},
   { category: 'Terminplanung', icon: '📅', features: [
     { name: 'Kalender', desc: 'Interaktiver Kalender mit Tages-, Wochen- und Monatsansicht.' },
