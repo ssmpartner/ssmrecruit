@@ -61,7 +61,14 @@ export default function Pipeline() {
                       onClick={() => setSelectedLead(lead)}
                       className="cursor-pointer rounded-lg border bg-card p-3 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
                     >
-                      <p className="font-medium text-sm">{lead.name}</p>
+                      <div className="flex items-center gap-2">
+                        <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                          lead.salutation === 'Frau' ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                        }`}>
+                          <User className="h-3.5 w-3.5" />
+                        </div>
+                        <p className="font-medium text-sm">{lead.name}</p>
+                      </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{lead.position}</p>
                       <p className="text-xs text-muted-foreground">{lead.plz} {lead.city} ({lead.cantonCode})</p>
                       <div className="mt-2 flex items-center gap-2">
