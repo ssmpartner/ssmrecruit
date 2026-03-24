@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Target, TrendingUp, BarChart3, PieChart as PieChartIcon, Megaphone, Zap } from 'lucide-react';
+import { Target, TrendingUp, BarChart3, PieChart as PieChartIcon, Megaphone, Zap, Users } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
