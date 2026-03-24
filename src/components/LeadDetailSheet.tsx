@@ -598,7 +598,7 @@ export default function LeadDetailSheet() {
                         <section>
                           <h4 className="text-base font-semibold mb-3">Status ändern</h4>
                           <div className="mb-3">
-                            <p className="text-xs text-muted-foreground mb-1.5">Admin (frei wählbar)</p>
+                            <p className="text-sm text-muted-foreground mb-2">Admin (frei wählbar)</p>
                             <div className="flex flex-wrap gap-1">
                               {statusKeys.map(s => (
                                 <button key={s} onClick={() => changeStatus(s)}
