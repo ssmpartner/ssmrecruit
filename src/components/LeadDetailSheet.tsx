@@ -215,7 +215,7 @@ export default function LeadDetailSheet() {
                       ? "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400"
                       : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
                   )}>
-                    <User className="h-4.5 w-4.5" />
+                    {selectedLead.salutation === 'Frau' ? '♀' : '♂'}
                   </div>
                   <DialogHeader className="space-y-0">
                     <DialogTitle className="text-lg font-bold tracking-tight leading-tight">{selectedLead.name}</DialogTitle>
