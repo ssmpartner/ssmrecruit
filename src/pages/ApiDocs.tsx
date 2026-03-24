@@ -599,6 +599,127 @@ Neue Leads (Monat);24`,
       },
     ],
   },
+  {
+    title: 'Dokument-Anfragen',
+    description: 'Dokument-Upload-Links verwalten. Links sind 48 Stunden gültig und laufen danach automatisch ab.',
+    endpoints: [
+      {
+        method: 'GET', path: '/api/v1/document-requests', summary: 'Dokument-Anfragen abrufen', auth: true,
+        description: 'Gibt alle Dokument-Anfragen zurück. Jede Anfrage hat einen Status (pending, completed, expired) und eine 48h-Ablaufzeit.',
+        params: [
+          { name: 'leadId', type: 'string', required: false, description: 'Filter nach Lead-ID' },
+          { name: 'status', type: 'string', required: false, description: 'Filter: pending, completed, expired' },
+        ],
+        response: `{
+  "data": [
+    {
+      "id": "uuid",
+      "lead_id": "l1",
+      "token": "uuid-token",
+      "status": "pending",
+      "sent_via": "manual",
+      "sent_at": "2026-03-24T10:00:00.000Z",
+      "expires_at": "2026-03-26T10:00:00.000Z",
+      "reminder_sent_at": null
+    }
+  ]
+}`,
+      },
+      {
+        method: 'POST', path: '/api/v1/document-requests', summary: 'Dokument-Anfrage erstellen', auth: true,
+        description: 'Erstellt eine neue Dokument-Upload-Anfrage für einen Lead. Der Link ist 48 Stunden gültig.',
+        body: [
+          { name: 'lead_id', type: 'string', required: true, description: 'Lead-ID' },
+          { name: 'sent_via', type: 'string', required: false, description: 'Versandart: manual, email, whatsapp (Standard: manual)' },
+        ],
+        response: `{
+  "id": "uuid",
+  "token": "uuid-token",
+  "expires_at": "2026-03-26T10:00:00.000Z",
+  "upload_url": "/upload/uuid-token"
+}`,
+      },
+    ],
+  },
+  {
+    title: 'E-Mail-Benachrichtigungen',
+    description: 'E-Mail-Templates und Automationsregeln für automatische Benachrichtigungen verwalten.',
+    endpoints: [
+      {
+        method: 'GET', path: '/api/v1/email-templates', summary: 'E-Mail-Templates abrufen', auth: true,
+        description: 'Gibt alle E-Mail-Vorlagen zurück. 14 vordefinierte Templates für alle wichtigen Events.',
+        params: [
+          { name: 'category', type: 'string', required: false, description: 'Filter: lead_communication, appointment, task, system' },
+          { name: 'is_active', type: 'boolean', required: false, description: 'Filter nach Aktivitätsstatus' },
+        ],
+        response: `{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Neuer Lead Benachrichtigung",
+      "category": "lead_communication",
+      "subject": "Neuer Lead: {{name}}",
+      "placeholders": ["name", "email", "source"],
+      "is_active": false
+    }
+  ]
+}`,
+      },
+      {
+        method: 'GET', path: '/api/v1/email-automation-rules', summary: 'Automationsregeln abrufen', auth: true,
+        description: 'Gibt alle E-Mail-Automationsregeln zurück. Regeln definieren wann welches Template gesendet wird.',
+        params: [
+          { name: 'trigger_type', type: 'string', required: false, description: 'Filter: event, status_change, time_based' },
+          { name: 'is_active', type: 'boolean', required: false, description: 'Filter nach Aktivitätsstatus' },
+        ],
+        response: `{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Neuer Lead → E-Mail",
+      "trigger_type": "event",
+      "trigger_config": { "event": "lead.created" },
+      "template_id": "uuid",
+      "recipient_type": "admin",
+      "delay_minutes": 0,
+      "is_active": false
+    }
+  ]
+}`,
+      },
+      {
+        method: 'PATCH', path: '/api/v1/email-automation-rules/:id', summary: 'Automationsregel aktivieren/deaktivieren', auth: true,
+        description: 'Aktiviert oder deaktiviert eine E-Mail-Automationsregel. Nur für Superadmins.',
+        params: [{ name: 'id', type: 'string', required: true, description: 'Regel-ID' }],
+        body: [
+          { name: 'is_active', type: 'boolean', required: true, description: 'Aktivieren (true) oder deaktivieren (false)' },
+        ],
+        response: `{ "id": "uuid", "is_active": true, "updated_at": "2026-03-24T10:00:00.000Z" }`,
+      },
+    ],
+  },
+  {
+    title: 'PLZ-Zuweisung',
+    description: 'Automatische Agentur-/Mitarbeiterzuweisung basierend auf PLZ und Kanton.',
+    endpoints: [
+      {
+        method: 'POST', path: '/api/v1/leads/resolve-assignment', summary: 'PLZ-basierte Zuweisung auflösen', auth: true,
+        description: 'Ermittelt anhand einer PLZ die zuständige Agentur und einen verfügbaren Mitarbeiter. Nutzt die Schweizer PLZ-Datenbank und die Kanton-Zuordnung der Agenturen.',
+        body: [
+          { name: 'plz', type: 'string', required: true, description: 'Postleitzahl' },
+        ],
+        response: `{
+  "agency_id": "a2",
+  "agency_name": "Agentur Zürich",
+  "employee_id": "e3",
+  "employee_name": "Max Müller",
+  "canton": "Zürich",
+  "canton_code": "ZH",
+  "city": "Zürich"
+}`,
+      },
+    ],
+  },
 ];
 
 function EndpointCard({ endpoint }: { endpoint: ApiEndpoint }) {
@@ -731,7 +852,7 @@ export function ApiDocsContent() {
           <p className="text-muted-foreground">Vollständige REST API Referenz für SSM Recruit</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-bold">v1.1</span>
+          <span className="rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-bold">v1.2</span>
           <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">REST / JSON</span>
         </div>
       </div>

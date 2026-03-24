@@ -2,9 +2,20 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.23.0';
+const APP_VERSION = '2.24.0';
 
 const versionHistory = [
+  { version: '2.24.0', date: '24.03.2026', changes: [
+    'PLZ-basierte automatische Agentur-/Mitarbeiterzuweisung: Beim CSV-Import und Webhook-Eingang (Meta, TikTok, Formular) wird anhand der PLZ der Kanton ermittelt und die zuständige regionale Agentur samt Mitarbeiter automatisch zugewiesen',
+    'Neue DB-Funktion resolve_agency_by_canton: Priorisiert spezifische Agenturen vor dem Hauptsitz-Fallback',
+    'Dokument-Upload-Link 48h Ablauf: Links laufen automatisch nach 48 Stunden ab, Status (aktiv/abgelaufen/benutzt) wird im Dokumente-Tab angezeigt, erneutes Senden möglich',
+    'Geschlecht/Anrede im Lead-Detail: Anrede kann beim Bearbeiten über Dropdown ausgewählt werden (Herr, Frau, Divers, Keine Angabe)',
+    '14 E-Mail-Benachrichtigungsvorlagen vorbereitet: Templates und Automationsregeln für alle wichtigen Events (Neuer Lead, Statuswechsel, Termin, Aufgabe, DISC, Insights, Dokumente, Duplikate etc.) – standardmässig inaktiv',
+    '"Keine Angabe" Anzeige: Fehlende Felder beim Import oder unerkannte Daten werden klar als "Keine Angabe" (kursiv) dargestellt',
+    'Grössere Schrift im Lead-Detail-Fenster: Alle Texte, Labels und Werte vergrössert für bessere Lesbarkeit',
+    'Neue Automationsregeln: PLZ-Auto-Zuweisung und Dokument-Link-Ablauf (48h) als Prozess-Regeln im Automatisierungen-Dashboard',
+    'Automationen-Dashboard: 2 neue Trigger-Typen (PLZ-Auto-Zuweisung, Dokument-Link abgelaufen) verfügbar',
+  ]},
   { version: '2.23.0', date: '23.03.2026', changes: [
     'Status-Wizard-System: 7 definierte Wizards (Kontaktiert, Rückruf, Nicht interessiert, Nicht erreicht, Kein Bedarf, Nicht passend, Interne Stelle) mit Pflichtfeldern und automatischer Lead-Steuerung',
     'Lead-Entzug-Logik: Automatischer Entzug bei Nicht interessiert, Nicht erreicht, Kein Bedarf, Nicht passend, Interne Stelle – Neuzuweisung an Superadmin',
@@ -149,8 +160,8 @@ const appFeatures = [
     { name: 'Lead hinzufügen', desc: 'Neue Leads manuell erfassen mit PLZ-Autovervollständigung (Schweizer PLZ-Daten + DB-Lerneffekt), automatischer Ort-/Kanton-Befüllung und Mehrfacherfassung ohne Dialog-Schliessung.' },
     { name: 'Archivieren & Löschen', desc: 'Leads archivieren oder löschen (Superadmin) mit Bestätigungsdialog und Wiederherstellung.' },
     { name: 'Systembasierte Duplikaterkennung', desc: 'Automatische Erkennung doppelter Leads per Regelwerk (E-Mail, Telefon, Name, PLZ) mit Konfidenz-Score, Vergleich und Zusammenführung – ohne KI.' },
-    { name: 'CSV-Import', desc: 'Leads per CSV-Datei importieren mit automatischer Spalten-Zuordnung (inkl. Lead-Datum, Quelle, Mitarbeiter, Agentur, Status, Kampagne), Vorschau und Validierung.' },
-    { name: 'Meta CSV-Import', desc: 'Historische Meta/Facebook-Leads per CSV importieren mit automatischer Duplikaterkennung, Agentur-Zuweisung und Kampagnen-Befüllung.' },
+    { name: 'CSV-Import', desc: 'Leads per CSV-Datei importieren mit automatischer Spalten-Zuordnung, PLZ-basierter Agentur-/Mitarbeiterzuweisung, Vorschau und Validierung. Fehlende Felder werden als "Keine Angabe" angezeigt.' },
+    { name: 'Meta CSV-Import', desc: 'Historische Meta/Facebook-Leads per CSV importieren mit automatischer Duplikaterkennung, PLZ-basierter Agentur-Zuweisung und Kampagnen-Befüllung.' },
     { name: 'CSV-Export (Superadmin)', desc: 'Alle Leads als CSV exportieren – nur für Benutzer mit Superadmin-Rolle verfügbar.' },
     { name: 'Mehrfachauswahl & Bulk-Aktionen', desc: 'Superadmins können mehrere Leads auswählen und gesammelt Mitarbeiter/Agentur zuweisen, archivieren oder löschen.' },
   ]},
@@ -158,6 +169,7 @@ const appFeatures = [
     { name: 'Video-Calls', desc: 'Integrierte Video-Anrufe direkt aus der Anwendung starten.' },
     { name: 'Benachrichtigungen', desc: 'Echtzeit In-App-Benachrichtigungen für Leads, Termine, Tasks, Prozess-Schritte, DISC, Insights, Dokument-Uploads, Duplikate und Automatisierungen – individuell konfigurierbar.' },
     { name: 'Termin-Erinnerungen', desc: 'Automatische Erinnerungen vor anstehenden Terminen.' },
+    { name: 'E-Mail-Benachrichtigungen', desc: '14 vorbereitete E-Mail-Templates für alle wichtigen Events (Neuer Lead, Statuswechsel, Termine, Aufgaben, DISC, Insights, Dokumente, Duplikate). Standardmässig inaktiv, individuell aktivierbar.' },
   ]},
   { category: 'Terminplanung', icon: '📅', features: [
     { name: 'Kalender', desc: 'Interaktiver Kalender mit Tages-, Wochen- und Monatsansicht.' },
@@ -171,6 +183,8 @@ const appFeatures = [
     { name: 'Prozesse', desc: 'Mehrstufige Recruiting-Prozesse mit Stepper-Ansicht, KI-generierten Richtlinien und Geltungsbereichen für Automatisierungen (Global/Agentur/Mitarbeiter).' },
     { name: 'Eskalationsprozesse', desc: 'Flexible Eskalationslogik pro Hauptprozess mit quellen-basierter Aktivierung, Regel-Engine, Wizard-Verknüpfung und Test-Modus.' },
     { name: 'Pipeline-Flow', desc: 'Visuelle Pipeline mit Eskalations-Erkennung, Wizard- und Regelzuweisung pro Flow-Node und Test-Modus-Indikator.' },
+    { name: 'PLZ-Auto-Zuweisung', desc: 'Automatische Agentur- und Mitarbeiterzuweisung basierend auf PLZ/Kanton bei Import und Webhook-Eingang.' },
+    { name: 'Dokument-Link Ablauf', desc: 'Upload-Links laufen nach 48h automatisch ab. Status (aktiv/abgelaufen/benutzt) wird im Dokumente-Tab angezeigt.' },
   ]},
   { category: 'Analyse & Insights', icon: '📊', features: [
     { name: 'Dashboard', desc: 'Übersicht mit Begrüssung, Uhrzeit, Wetter, 6 KPI-Karten, Leads nach Kanal, Pipeline-Verteilung, anstehende Termine und Schnellzugriff (+ Neu Dropdown).' },
