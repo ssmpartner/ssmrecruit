@@ -379,8 +379,8 @@ export default function LeadDetailSheet() {
                                 )}
                               </div>
                               <div>
-                                <label className="text-xs text-muted-foreground">Ort</label>
-                                <input value={form.city} onChange={isSuperadmin ? e => setForm(prev => ({ ...prev, city: e.target.value })) : undefined} readOnly={!isSuperadmin} className={isSuperadmin ? inputCls : "h-8 w-full rounded-md border bg-muted px-2.5 text-sm"} />
+                                 <label className="text-sm text-muted-foreground">Ort</label>
+                                 <input value={form.city} onChange={isSuperadmin ? e => setForm(prev => ({ ...prev, city: e.target.value })) : undefined} readOnly={!isSuperadmin} className={isSuperadmin ? inputCls : "h-10 w-full rounded-md border bg-muted px-3 text-sm"} />
                               </div>
                               <div>
                                 <label className="text-xs text-muted-foreground">Kanton</label>
