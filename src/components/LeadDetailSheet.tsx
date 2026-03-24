@@ -515,7 +515,7 @@ export default function LeadDetailSheet() {
                                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
                             </div>
                             <div className="flex justify-end gap-2">
-                              <button onClick={() => setShowAptForm(false)} className="rounded-md border px-2.5 py-1 text-xs hover:bg-muted transition-colors">Abbrechen</button>
+                              <button onClick={() => setShowAptForm(false)} className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Abbrechen</button>
                               <button disabled={!aptForm.title.trim() || !aptForm.date}
                                 onClick={() => {
                                   if (!aptForm.title.trim() || !aptForm.date || !selectedLead) return;
