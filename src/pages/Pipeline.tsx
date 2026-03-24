@@ -1,8 +1,10 @@
 import { useLeads } from '@/context/useLeads';
+import { useAuth } from '@/context/AuthContext';
 import { statusConfig, statusFlow, type LeadStatus } from '@/lib/mock-data';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
+import { User } from 'lucide-react';
 
 // Pipeline shows only: Neue Leads, Kontaktiert, Rückruf (callback mapped to "new" with callback_count > 0)
 // All other statuses (rejected, hired etc.) are auto-removed from pipeline view
@@ -10,6 +12,7 @@ const pipelineStatuses: LeadStatus[] = ['new', 'contacted', 'appointment'];
 
 export default function Pipeline() {
   const { leads, employees, agencies, updateLead, addActivity, setSelectedLead } = useLeads();
+  const { isSuperadmin } = useAuth();
 
   const moveStatus = (leadId: string, newStatus: LeadStatus, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -22,9 +25,11 @@ export default function Pipeline() {
   };
 
   // Filter only active leads in pipeline-visible statuses
-  const pipelineLeads = leads.filter(l => 
-    l.lifecycle === 'active' && pipelineStatuses.includes(l.status)
-  );
+  // Superadmin sees all leads, other roles see only their assigned leads
+  const pipelineLeads = leads.filter(l => {
+    if (l.lifecycle !== 'active' || !pipelineStatuses.includes(l.status)) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -56,7 +61,14 @@ export default function Pipeline() {
                       onClick={() => setSelectedLead(lead)}
                       className="cursor-pointer rounded-lg border bg-card p-3 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
                     >
-                      <p className="font-medium text-sm">{lead.name}</p>
+                      <div className="flex items-center gap-2">
+                        <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                          lead.salutation === 'Frau' ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                        }`}>
+                          <User className="h-3.5 w-3.5" />
+                        </div>
+                        <p className="font-medium text-sm">{lead.name}</p>
+                      </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{lead.position}</p>
                       <p className="text-xs text-muted-foreground">{lead.plz} {lead.city} ({lead.cantonCode})</p>
                       <div className="mt-2 flex items-center gap-2">

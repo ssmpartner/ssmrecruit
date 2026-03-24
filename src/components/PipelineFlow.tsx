@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import { ArrowRight, ArrowDown, AlertTriangle, Clock, TrendingUp, Users, Settings2, Bell, UserCog, ArrowRightLeft, Plus, Trash2, Save, X, ChevronDown, ChevronUp, Eye, Wand2, FlaskConical, LayoutGrid, AlignVerticalJustifyStart } from 'lucide-react';
+import { ArrowRight, ArrowDown, AlertTriangle, Clock, TrendingUp, Users, Settings2, Bell, UserCog, ArrowRightLeft, Plus, Trash2, Save, X, ChevronDown, ChevronUp, Eye, Wand2, FlaskConical, LayoutGrid, AlignVerticalJustifyStart, User } from 'lucide-react';
 import { statusConfig, type LeadStatus, type Lead, type Employee } from '@/lib/mock-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -840,6 +840,11 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
                       isEscalated ? 'border-destructive/30 bg-destructive/5' : 'hover:bg-muted/50'
                     }`}
                   >
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                      lead.salutation === 'Frau' ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                    }`}>
+                      <User className="h-4 w-4" />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{lead.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{lead.position || '—'} · {lead.city || lead.plz || '—'}</p>
