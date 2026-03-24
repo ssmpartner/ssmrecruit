@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadLifecycle, statusConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
