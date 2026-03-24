@@ -774,6 +774,49 @@ Neue Leads (Monat);24`,
       },
     ],
   },
+  {
+    title: 'Adress-Enrichment',
+    description: 'Automatische Ergänzung fehlender Adressdaten (PLZ, Ort, Kanton) für Leads. Verwendet lokale Schweizer PLZ-Datenbank mit Mapbox-Fallback.',
+    endpoints: [
+      {
+        method: 'POST', path: '/api/v1/leads/enrich-addresses', summary: 'Bulk-Adress-Enrichment', auth: true,
+        description: 'Ergänzt fehlende Adressdaten für alle aktiven Leads. Schritt 1: Lokale Auflösung via Schweizer PLZ-Datenbank (PLZ→Ort/Kanton). Schritt 2: Mapbox-Geocoding-Fallback für verbleibende Lücken. Nur für Superadmins.',
+        params: [
+          { name: 'lead_lifecycle', type: 'string', required: false, description: 'Filter: active, archived, deleted (Standard: active)' },
+        ],
+        response: `{
+  "total": 150,
+  "updated": 120,
+  "skipped": 25,
+  "errors": 5,
+  "details": [
+    { "lead_id": "l1", "status": "updated", "fields": ["city", "canton", "canton_code"] },
+    { "lead_id": "l2", "status": "skipped", "reason": "Bereits vollständig" }
+  ]
+}`,
+      },
+      {
+        method: 'POST', path: '/functions/v1/geocode-address', summary: 'Einzelne Adresse geocodieren (Enrichment)', auth: true,
+        description: 'Wird auch intern beim CSV-Import und Webhook-Eingang verwendet, um fehlende Adressdaten automatisch zu ergänzen. Bei Webhooks (form-webhook, meta-webhook, tiktok-webhook) erfolgt die Enrichment-Logik automatisch vor dem Lead-Insert.',
+        body: [
+          { name: 'query', type: 'string', required: true, description: 'PLZ, Ort oder vollständige Adresse' },
+          { name: 'types', type: 'string', required: false, description: 'Mapbox Place-Types (Standard: "address,place")' },
+        ],
+        response: `{
+  "suggestions": [
+    {
+      "fullAddress": "8001 Zürich, Schweiz",
+      "plz": "8001",
+      "city": "Zürich",
+      "canton": "Zürich",
+      "cantonCode": "ZH",
+      "coordinates": [8.5417, 47.3769]
+    }
+  ]
+}`,
+      },
+    ],
+  },
 ];
 
 function EndpointCard({ endpoint }: { endpoint: ApiEndpoint }) {
