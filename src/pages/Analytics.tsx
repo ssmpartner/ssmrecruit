@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Filter, CalendarIcon, X, Activity, BarChart3, Megaphone, Briefcase, Workflow } from 'lucide-react';
+import { Filter, CalendarIcon, X, Activity, BarChart3, Megaphone, Briefcase, Workflow, Map as MapIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLeads } from '@/context/useLeads';
 import { statusConfig, type LeadStatus } from '@/lib/mock-data';
@@ -12,6 +12,7 @@ import OverviewTab from '@/components/analytics/OverviewTab';
 import MarketingTab from '@/components/analytics/MarketingTab';
 import ManagementTab from '@/components/analytics/ManagementTab';
 import FlowAnalysisTab from '@/components/analytics/FlowAnalysisTab';
+import MapTab from '@/components/analytics/MapTab';
 import ExportActions from '@/components/analytics/ExportActions';
 
 export default function Analytics() {
@@ -59,6 +60,7 @@ export default function Analytics() {
     { value: 'marketing', label: 'Marketing', icon: Megaphone },
     { value: 'management', label: 'Geschäftsleitung', icon: Briefcase },
     { value: 'flow', label: 'Flow-Analyse', icon: Workflow },
+    { value: 'map', label: 'Karte', icon: MapIcon },
   ];
 
   return (
@@ -164,6 +166,9 @@ export default function Analytics() {
           </TabsContent>
           <TabsContent value="flow" className="m-0">
             <FlowAnalysisTab filtered={filtered} activities={activities} />
+          </TabsContent>
+          <TabsContent value="map" className="m-0">
+            <MapTab filtered={filtered} agencies={agencies} />
           </TabsContent>
         </div>
       </Tabs>
