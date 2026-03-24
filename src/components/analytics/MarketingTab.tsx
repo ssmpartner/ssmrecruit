@@ -46,6 +46,17 @@ export default function MarketingTab({ filtered, leadSources }: MarketingTabProp
     return [...map.values()].sort((a, b) => b.total - a.total).slice(0, 10);
   }, [filtered]);
 
+  const genderData = useMemo(() => {
+    const women = filtered.filter(l => l.salutation === 'Frau').length;
+    const men = filtered.filter(l => l.salutation === 'Herr').length;
+    const unknown = filtered.length - women - men;
+    return [
+      { name: 'Frauen', value: women, fill: 'hsl(330, 65%, 50%)' },
+      { name: 'Männer', value: men, fill: 'hsl(210, 60%, 52%)' },
+      ...(unknown > 0 ? [{ name: 'Keine Angabe', value: unknown, fill: 'hsl(0, 0%, 70%)' }] : []),
+    ].filter(g => g.value > 0);
+  }, [filtered]);
+
   const totalLeads = filtered.length;
   const totalHired = filtered.filter(l => l.status === 'hired').length;
   const totalContacted = filtered.filter(l => l.status !== 'new').length;
