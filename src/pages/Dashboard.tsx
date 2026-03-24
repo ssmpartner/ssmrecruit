@@ -35,15 +35,16 @@ interface WeatherData {
   icon: string;
 }
 
-function WeatherIcon({ icon }: { icon: string }) {
+const WeatherIcon = forwardRef<SVGSVGElement, { icon: string }>(({ icon, ...props }, ref) => {
   const cls = "h-5 w-5";
-  if (icon.includes('rain')) return <CloudRain className={cls} />;
-  if (icon.includes('snow')) return <CloudSnow className={cls} />;
-  if (icon.includes('thunder')) return <CloudLightning className={cls} />;
-  if (icon.includes('cloud') || icon.includes('overcast')) return <Cloudy className={cls} />;
-  if (icon.includes('sun') || icon.includes('clear')) return <Sun className={cls} />;
-  return <Cloud className={cls} />;
-}
+  if (icon.includes('rain')) return <CloudRain className={cls} ref={ref} {...props} />;
+  if (icon.includes('snow')) return <CloudSnow className={cls} ref={ref} {...props} />;
+  if (icon.includes('thunder')) return <CloudLightning className={cls} ref={ref} {...props} />;
+  if (icon.includes('cloud') || icon.includes('overcast')) return <Cloudy className={cls} ref={ref} {...props} />;
+  if (icon.includes('sun') || icon.includes('clear')) return <Sun className={cls} ref={ref} {...props} />;
+  return <Cloud className={cls} ref={ref} {...props} />;
+});
+WeatherIcon.displayName = 'WeatherIcon';
 
 function MiniStat({ icon: Icon, label, value, color, onClick }: { icon: any; label: string; value: number | string; color?: string; onClick?: () => void }) {
   return (
