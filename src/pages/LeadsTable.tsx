@@ -325,7 +325,13 @@ export default function LeadsTable() {
                         </td>
                       )}
                       <td className="px-5 py-3">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className={cn(
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                            lead.salutation === 'Frau' ? "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400" : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                          )}>
+                            <User className="h-4 w-4" />
+                          </div>
                           <div>
                             <p className="font-medium">{lead.name}</p>
                             <p className="text-xs text-muted-foreground">{lead.position}</p>
