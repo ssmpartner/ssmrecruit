@@ -28,7 +28,7 @@ const OPTIONAL_FIELDS = ['salutation', 'phone', 'address', 'plz', 'city', 'canto
 const ALL_FIELDS = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
 
 const FIELD_LABELS: Record<string, string> = {
-  name: 'Name', email: 'E-Mail', phone: 'Telefon', address: 'Adresse',
+  name: 'Name', salutation: 'Anrede', email: 'E-Mail', phone: 'Telefon', address: 'Adresse',
   plz: 'PLZ', city: 'Ort', canton: 'Kanton', cantonCode: 'Kanton-Code',
   position: 'Position', source: 'Quelle', notes: 'Notizen',
   createdAt: 'Lead-Datum', status: 'Status', employeeId: 'Mitarbeiter',
