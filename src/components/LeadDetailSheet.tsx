@@ -78,7 +78,7 @@ export default function LeadDetailSheet() {
   const startEdit = () => {
     if (!selectedLead) return;
     setForm({
-      name: selectedLead.name, email: selectedLead.email, phone: selectedLead.phone,
+      name: selectedLead.name, salutation: selectedLead.salutation || '', email: selectedLead.email, phone: selectedLead.phone,
       position: selectedLead.position, address: selectedLead.address, plz: selectedLead.plz,
       city: selectedLead.city, canton: selectedLead.canton, cantonCode: selectedLead.cantonCode,
       notes: selectedLead.notes, source: selectedLead.source, createdAt: selectedLead.createdAt,
