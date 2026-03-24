@@ -602,7 +602,7 @@ export default function LeadDetailSheet() {
                             <div className="flex flex-wrap gap-1">
                               {statusKeys.map(s => (
                                 <button key={s} onClick={() => changeStatus(s)}
-                                  className={`rounded-full px-2.5 py-1 text-xs font-medium border transition-colors ${
+                                  className={`rounded-full px-3 py-1.5 text-sm font-medium border transition-colors ${
                                     selectedLead.status === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary text-secondary-foreground border-transparent hover:border-primary/30'
                                   }`}>
                                   {statusConfig[s].label}
