@@ -167,6 +167,9 @@ export default function Analytics() {
           <TabsContent value="flow" className="m-0">
             <FlowAnalysisTab filtered={filtered} activities={activities} />
           </TabsContent>
+          <TabsContent value="map" className="m-0">
+            <MapTab filtered={filtered} agencies={agencies} />
+          </TabsContent>
         </div>
       </Tabs>
     </div>
