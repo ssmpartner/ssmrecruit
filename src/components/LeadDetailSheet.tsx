@@ -286,7 +286,7 @@ export default function LeadDetailSheet() {
                           {tab.label}
                           {tab.count ? (
                             <span className={cn(
-                              "rounded-full px-1.5 py-px text-[10px] font-bold leading-none",
+                              "rounded-full px-2 py-0.5 text-xs font-bold leading-none",
                               rightTab === tab.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                             )}>{tab.count}</span>
                           ) : null}
