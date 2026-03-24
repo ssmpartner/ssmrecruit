@@ -318,7 +318,7 @@ export default function LeadDetailSheet() {
                           <h4 className="text-sm font-semibold flex items-center gap-1.5"><UserCog className="h-4 w-4" /> Zuweisung</h4>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="text-xs text-muted-foreground">Agentur</label>
+                              <label className="text-sm text-muted-foreground">Agentur</label>
                               <select value={selectedLead.agencyId} onChange={e => changeAgency(e.target.value)} className={inputCls + ' mt-0.5'}>
                                 {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                               </select>
