@@ -523,8 +523,8 @@ export default function LeadDetailSheet() {
                                   setShowAptForm(false);
                                   setAptForm({ title: '', date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' });
                                 }}
-                                className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
-                                Speichern
+                                 className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                 Speichern
                               </button>
                             </div>
                           </div>
