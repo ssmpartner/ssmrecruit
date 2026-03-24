@@ -430,25 +430,25 @@ export default function LeadDetailSheet() {
                             </div>
                           </div>
                         ) : (
-                          <div className="grid grid-cols-2 gap-x-6 gap-y-0.5 text-sm">
-                            {[
-                              ['E-Mail', selectedLead.email],
-                              ['Telefon', selectedLead.phone],
-                              ['Position', selectedLead.position],
-                              ['Erstellt', new Date(selectedLead.createdAt).toLocaleDateString('de-CH')],
-                              ['Adresse', selectedLead.address],
-                              ['Ort', `${selectedLead.plz} ${selectedLead.city}`],
-                              ['Kanton', `${selectedLead.canton} (${selectedLead.cantonCode})`],
-                            ].map(([label, value]) => (
-                              <div key={label} className="flex justify-between py-1.5 border-b">
-                                <span className="text-muted-foreground text-xs">{label}</span>
-                                <span className="font-medium text-xs text-right">{value || '—'}</span>
-                              </div>
-                            ))}
-                            {selectedLead.notes && (
-                              <div className="col-span-2 pt-2">
-                                <span className="text-muted-foreground text-xs">Notizen</span>
-                                <p className="mt-0.5 text-xs">{selectedLead.notes}</p>
+                           <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+                             {[
+                               ['E-Mail', selectedLead.email],
+                               ['Telefon', selectedLead.phone],
+                               ['Position', selectedLead.position],
+                               ['Erstellt', new Date(selectedLead.createdAt).toLocaleDateString('de-CH')],
+                               ['Adresse', selectedLead.address],
+                               ['Ort', `${selectedLead.plz} ${selectedLead.city}`],
+                               ['Kanton', `${selectedLead.canton} (${selectedLead.cantonCode})`],
+                             ].map(([label, value]) => (
+                               <div key={label} className="flex justify-between py-2 border-b">
+                                 <span className="text-muted-foreground text-sm">{label}</span>
+                                 <span className="font-medium text-sm text-right">{value || '—'}</span>
+                               </div>
+                             ))}
+                             {selectedLead.notes && (
+                               <div className="col-span-2 pt-3">
+                                 <span className="text-muted-foreground text-sm">Notizen</span>
+                                 <p className="mt-1 text-sm">{selectedLead.notes}</p>
                               </div>
                             )}
                           </div>
