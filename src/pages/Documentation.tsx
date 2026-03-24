@@ -2,9 +2,18 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.26.0';
+const APP_VERSION = '2.27.0';
 
 const versionHistory = [
+  { version: '2.27.0', date: '24.03.2026', changes: [
+    'Automatische Adress-Ergänzung beim Lead-Import (CSV, form-webhook, meta-webhook, tiktok-webhook): PLZ wird lokal via Schweizer PLZ-Datenbank aufgelöst, Mapbox-Fallback für fehlende Adressdaten',
+    'Bulk-Adress-Enrichment: «Adressen ergänzen»-Button in der Leads-Tabelle (Superadmin) – ergänzt fehlende PLZ, Ort und Kanton für alle aktiven Leads',
+    'Datenbank-Migration: 951 Leads mit fehlenden Kanton-Daten wurden via PLZ-Ranges und Orts-Mapping automatisch aktualisiert',
+    'Bestätigungsdialog beim Insights-Link-Versand: «Bestätigen» / «Abbrechen» vor dem Erstellen eines neuen Insights & DISC-Links',
+    'Geschlechts-Icons in Leads-Tabelle, Lead-Detail und Pipeline-Flow: Männlich/Weiblich-Symbol basierend auf gespeicherter Anrede (Herr/Frau)',
+    'Pipeline-Flow: Interaktive horizontale und vertikale Visualisierung mit farbiger Prozess-Wegleitung',
+    'NEU-Badge Sortierung: Leads werden nach Zeitstempel sortiert (neuester Import/Eintrag zuerst), NEU-Badge für Einträge der letzten 48h',
+  ]},
   { version: '2.26.0', date: '24.03.2026', changes: [
     'Mapbox als Dienst-Integration unter Einstellungen → Integrationen: Live-Verbindungsstatus, maskierte Token-Vorschau und Feature-Übersicht (Karte, Adress-Autovervollständigung, Geocoding)',
     'API-Dokumentation: Neue Endpunkte mapbox-token (Token abrufen) und Mapbox-Integrationsstatus dokumentiert',
@@ -173,10 +182,11 @@ const appFeatures = [
     { name: 'Lead hinzufügen', desc: 'Neue Leads manuell erfassen mit PLZ-Autovervollständigung (Schweizer PLZ-Daten + DB-Lerneffekt), Mapbox-Adress-Autovervollständigung, automatischer Ort-/Kanton-Befüllung und Mehrfacherfassung ohne Dialog-Schliessung.' },
     { name: 'Archivieren & Löschen', desc: 'Leads archivieren oder löschen (Superadmin) mit Bestätigungsdialog und Wiederherstellung.' },
     { name: 'Systembasierte Duplikaterkennung', desc: 'Automatische Erkennung doppelter Leads per Regelwerk (E-Mail, Telefon, Name, PLZ) mit Konfidenz-Score, Vergleich und Zusammenführung – ohne KI.' },
-    { name: 'CSV-Import', desc: 'Leads per CSV-Datei importieren mit automatischer Spalten-Zuordnung, PLZ-basierter Agentur-/Mitarbeiterzuweisung, Vorschau und Validierung. Fehlende Felder werden als "Keine Angabe" angezeigt.' },
+    { name: 'CSV-Import', desc: 'Leads per CSV-Datei importieren mit automatischer Spalten-Zuordnung, PLZ-basierter Agentur-/Mitarbeiterzuweisung, automatischer Adress-Ergänzung (PLZ→Ort/Kanton via lokale DB + Mapbox-Fallback), Vorschau und Validierung.' },
     { name: 'Meta CSV-Import', desc: 'Historische Meta/Facebook-Leads per CSV importieren mit automatischer Duplikaterkennung, PLZ-basierter Agentur-Zuweisung und Kampagnen-Befüllung.' },
     { name: 'CSV-Export (Superadmin)', desc: 'Alle Leads als CSV exportieren – nur für Benutzer mit Superadmin-Rolle verfügbar.' },
     { name: 'Mehrfachauswahl & Bulk-Aktionen', desc: 'Superadmins können mehrere Leads auswählen und gesammelt Mitarbeiter/Agentur zuweisen, archivieren oder löschen.' },
+    { name: 'Bulk-Adress-Enrichment', desc: 'Superadmin-Button «Adressen ergänzen» in der Leads-Tabelle: Ergänzt fehlende PLZ, Ort und Kanton für alle aktiven Leads via lokale Schweizer PLZ-Datenbank und Mapbox-Geocoding.' },
   ]},
   { category: 'Kommunikation', icon: '📞', features: [
     { name: 'Video-Calls', desc: 'Integrierte Video-Anrufe direkt aus der Anwendung starten.' },
@@ -195,8 +205,8 @@ const appFeatures = [
     { name: 'Mitarbeiter', desc: 'Mitarbeiterprofile und Zuweisungen verwalten.' },
     { name: 'Prozesse', desc: 'Mehrstufige Recruiting-Prozesse mit Stepper-Ansicht, KI-generierten Richtlinien und Geltungsbereichen für Automatisierungen (Global/Agentur/Mitarbeiter).' },
     { name: 'Eskalationsprozesse', desc: 'Flexible Eskalationslogik pro Hauptprozess mit quellen-basierter Aktivierung, Regel-Engine, Wizard-Verknüpfung und Test-Modus.' },
-    { name: 'Pipeline-Flow', desc: 'Visuelle Pipeline mit Eskalations-Erkennung, Wizard- und Regelzuweisung pro Flow-Node und Test-Modus-Indikator.' },
-    { name: 'PLZ-Auto-Zuweisung', desc: 'Automatische Agentur- und Mitarbeiterzuweisung basierend auf PLZ/Kanton bei Import und Webhook-Eingang.' },
+    { name: 'Pipeline-Flow', desc: 'Interaktive Pipeline mit horizontaler und vertikaler Ansicht, farbiger Prozess-Wegleitung, Geschlechts-Icons bei Lead-Namen, Eskalations-Erkennung, Wizard-/Regelzuweisung und Test-Modus-Indikator.' },
+    { name: 'PLZ-Auto-Zuweisung', desc: 'Automatische Agentur- und Mitarbeiterzuweisung basierend auf PLZ/Kanton bei Import und Webhook-Eingang. Automatische Adress-Ergänzung (PLZ→Ort/Kanton) bei allen Import-Methoden.' },
     { name: 'Dokument-Link Ablauf', desc: 'Upload-Links laufen nach 48h automatisch ab. Status (aktiv/abgelaufen/benutzt) wird im Dokumente-Tab angezeigt.' },
   ]},
   { category: 'Analyse & Insights', icon: '📊', features: [
@@ -209,7 +219,7 @@ const appFeatures = [
     { name: 'Analytics – Karte', desc: 'Interaktive Mapbox-Karte mit Lead-Verteilung (status-kodierte Pins) und Agentur-Kantonsgebieten (farbige Polygone) in der Schweiz.' },
     { name: 'Wizard-Management', desc: 'Modulares System zur Erstellung von Lead-Funnels mit Step-Builder (Video, Auswahl, Entscheidung), Echtzeit-Vorschau und logischer Verknüpfung.' },
     { name: 'DISC-Persönlichkeitstest', desc: 'Automatisierte Persönlichkeitsanalyse für Kandidaten mit automatischer Ergebnisanzeige.' },
-    { name: 'Insights-Fragebogen', desc: 'Anpassbare Fragen (Teil 1: Insights, Teil 2: DISC, Teil 3: Terminvorschläge) – konfigurierbar in den Einstellungen.' },
+    { name: 'Insights-Fragebogen', desc: 'Anpassbare Fragen (Teil 1: Insights, Teil 2: DISC, Teil 3: Terminvorschläge) – konfigurierbar in den Einstellungen. Link-Versand mit Bestätigungsdialog, Vorschau und PDF-Download.' },
   ]},
   { category: 'Aufgaben & KI', icon: '🤖', features: [
     { name: 'Phasen-Tasks', desc: 'Automatische Pflichtaufgaben basierend auf dem aktuellen Lead-Status (regelbasiert, ohne KI).' },
