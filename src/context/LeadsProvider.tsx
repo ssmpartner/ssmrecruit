@@ -278,6 +278,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     // Map to DB columns
     const dbUpdates: any = {};
     if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.salutation !== undefined) dbUpdates.salutation = updates.salutation;
     if (updates.email !== undefined) dbUpdates.email = updates.email;
     if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
     if (updates.address !== undefined) dbUpdates.address = updates.address;
