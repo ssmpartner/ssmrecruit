@@ -443,18 +443,18 @@ export default function LeadDetailSheet() {
                         ) : (
                            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
                              {[
-                                ['Anrede', selectedLead.salutation || '—'],
+                                ['Anrede', selectedLead.salutation],
                                 ['E-Mail', selectedLead.email],
                                 ['Telefon', selectedLead.phone],
                                 ['Position', selectedLead.position],
                                 ['Erstellt', new Date(selectedLead.createdAt).toLocaleDateString('de-CH')],
                                ['Adresse', selectedLead.address],
-                               ['Ort', `${selectedLead.plz} ${selectedLead.city}`],
-                               ['Kanton', `${selectedLead.canton} (${selectedLead.cantonCode})`],
+                               ['Ort', selectedLead.plz || selectedLead.city ? `${selectedLead.plz} ${selectedLead.city}`.trim() : ''],
+                               ['Kanton', selectedLead.canton ? `${selectedLead.canton} (${selectedLead.cantonCode})` : ''],
                              ].map(([label, value]) => (
                                <div key={label} className="flex justify-between py-2 border-b">
                                  <span className="text-muted-foreground text-sm">{label}</span>
-                                 <span className="font-medium text-sm text-right">{value || '—'}</span>
+                                 <span className={`font-medium text-sm text-right ${!value?.toString().trim() ? 'text-muted-foreground italic' : ''}`}>{value?.toString().trim() || 'Keine Angabe'}</span>
                                </div>
                              ))}
                              {selectedLead.notes && (
