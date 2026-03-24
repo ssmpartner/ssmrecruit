@@ -471,11 +471,11 @@ export default function LeadDetailSheet() {
                           <div className="rounded-lg border bg-muted/30 p-3 space-y-2.5">
                             <div className="grid grid-cols-2 gap-2.5">
                               <div>
-                                <label className="text-xs text-muted-foreground">Titel *</label>
-                                <input value={aptForm.title} onChange={e => setAptForm(prev => ({ ...prev, title: e.target.value }))} placeholder="z.B. Erstgespräch" className={inputCls} />
-                              </div>
-                              <div>
-                                <label className="text-xs text-muted-foreground">Art</label>
+                                 <label className="text-sm text-muted-foreground">Titel *</label>
+                                 <input value={aptForm.title} onChange={e => setAptForm(prev => ({ ...prev, title: e.target.value }))} placeholder="z.B. Erstgespräch" className={inputCls} />
+                               </div>
+                               <div>
+                                 <label className="text-sm text-muted-foreground">Art</label>
                                 <select value={aptForm.type} onChange={e => setAptForm(prev => ({ ...prev, type: e.target.value as any }))} className={inputCls}>
                                   {Object.entries(appointmentTypeConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                                 </select>
