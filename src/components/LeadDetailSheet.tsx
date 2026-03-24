@@ -208,8 +208,8 @@ export default function LeadDetailSheet() {
 
                 <div className="min-w-0 flex-1">
                   <DialogHeader className="space-y-0">
-                    <DialogTitle className="text-base font-bold tracking-tight leading-tight">{selectedLead.name}</DialogTitle>
-                    <DialogDescription className="text-xs text-muted-foreground leading-tight">{selectedLead.position || 'Keine Position'}</DialogDescription>
+                    <DialogTitle className="text-lg font-bold tracking-tight leading-tight">{selectedLead.name}</DialogTitle>
+                    <DialogDescription className="text-sm text-muted-foreground leading-tight">{selectedLead.position || 'Keine Position'}</DialogDescription>
                   </DialogHeader>
                 </div>
 
