@@ -720,6 +720,33 @@ Neue Leads (Monat);24`,
       },
     ],
   },
+  {
+    title: 'Geocoding',
+    description: 'Adress-Autovervollständigung und Geocoding via Mapbox.',
+    endpoints: [
+      {
+        method: 'POST', path: '/functions/v1/geocode-address', summary: 'Adresse geocodieren', auth: true,
+        description: 'Sucht Schweizer Adressen via Mapbox Geocoding API. Gibt bis zu 5 Vorschläge mit Strasse, PLZ, Ort, Kanton und Koordinaten zurück. Eingeschränkt auf die Schweiz (CH), deutsche Sprache.',
+        body: [
+          { name: 'query', type: 'string', required: true, description: 'Suchbegriff (mind. 2 Zeichen), z.B. "Bahnhofstrasse 1"' },
+          { name: 'types', type: 'string', required: false, description: 'Mapbox Place-Types (Standard: "address,place")' },
+        ],
+        response: `{
+  "suggestions": [
+    {
+      "fullAddress": "Bahnhofstrasse 1, 8001 Zürich, Schweiz",
+      "street": "Bahnhofstrasse 1",
+      "plz": "8001",
+      "city": "Zürich",
+      "canton": "Zürich",
+      "cantonCode": "ZH",
+      "coordinates": [8.5417, 47.3769]
+    }
+  ]
+}`,
+      },
+    ],
+  },
 ];
 
 function EndpointCard({ endpoint }: { endpoint: ApiEndpoint }) {
@@ -852,7 +879,7 @@ export function ApiDocsContent() {
           <p className="text-muted-foreground">Vollständige REST API Referenz für SSM Recruit</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-bold">v1.2</span>
+          <span className="rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-bold">v1.3</span>
           <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">REST / JSON</span>
         </div>
       </div>
