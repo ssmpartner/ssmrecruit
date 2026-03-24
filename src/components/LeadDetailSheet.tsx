@@ -334,14 +334,24 @@ export default function LeadDetailSheet() {
 
                         {editing ? (
                           <div className="space-y-2.5">
-                            <div className="grid grid-cols-2 gap-2.5">
-                              {(['name', 'position'] as const).map(field => (
-                                <div key={field}>
-                                   <label className={`text-sm ${fieldErrors[field] ? 'text-destructive' : 'text-muted-foreground'}`}>{field === 'name' ? 'Name *' : 'Position'}</label>
-                                   <input value={form[field]} onChange={e => { setForm(prev => ({ ...prev, [field]: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n[field]; return n; }); }} className={inputErr(field)} />
-                                   {fieldErrors[field] && <p className="text-sm text-destructive mt-0.5">{fieldErrors[field]}</p>}
-                                </div>
-                              ))}
+                            <div className="grid grid-cols-3 gap-2.5">
+                              <div>
+                                <label className="text-sm text-muted-foreground">Anrede</label>
+                                <select value={form.salutation} onChange={e => setForm(prev => ({ ...prev, salutation: e.target.value }))} className={inputCls}>
+                                  <option value="">— Keine —</option>
+                                  <option value="Herr">Herr</option>
+                                  <option value="Frau">Frau</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className={`text-sm ${fieldErrors.name ? 'text-destructive' : 'text-muted-foreground'}`}>Name *</label>
+                                <input value={form.name} onChange={e => { setForm(prev => ({ ...prev, name: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.name; return n; }); }} className={inputErr('name')} />
+                                {fieldErrors.name && <p className="text-sm text-destructive mt-0.5">{fieldErrors.name}</p>}
+                              </div>
+                              <div>
+                                <label className="text-sm text-muted-foreground">Position</label>
+                                <input value={form.position} onChange={e => setForm(prev => ({ ...prev, position: e.target.value }))} className={inputCls} />
+                              </div>
                             </div>
                             <div className="grid grid-cols-2 gap-2.5">
                               <div>
