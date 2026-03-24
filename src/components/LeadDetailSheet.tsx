@@ -118,6 +118,7 @@ export default function LeadDetailSheet() {
 
     const changes: string[] = [];
     if (form.name !== selectedLead.name) changes.push(`Name → "${form.name}"`);
+    if (form.salutation !== (selectedLead.salutation || '')) changes.push(`Anrede → "${form.salutation || '—'}"`);
     if (form.email !== selectedLead.email) changes.push(`Email → "${form.email}"`);
     if (form.phone !== selectedLead.phone) changes.push(`Telefon aktualisiert`);
     if (form.position !== selectedLead.position) changes.push(`Position → "${form.position}"`);
