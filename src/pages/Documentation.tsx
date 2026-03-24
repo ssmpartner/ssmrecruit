@@ -202,6 +202,7 @@ const appFeatures = [
     { name: 'Analytics – Geschäftsleitung', desc: 'Agentur-Performance mit Problemanalyse (stagnierende Leads, Verzögerungen), Kanton-Verteilung und Mitarbeiter-Effizienz.' },
     { name: 'Analytics – Flow-Analyse', desc: 'Verweildauer pro Phase, Bottleneck-Erkennung, Status-Übergangs-Häufigkeiten und durchschnittliche Bearbeitungszeiten.' },
     { name: 'Analytics – Export', desc: 'CSV-Export (Excel-kompatibel mit BOM) und PDF-Export für formatierte Berichte.' },
+    { name: 'Analytics – Karte', desc: 'Interaktive Mapbox-Karte mit Lead-Verteilung (status-kodierte Pins) und Agentur-Kantonsgebieten (farbige Polygone) in der Schweiz.' },
     { name: 'Wizard-Management', desc: 'Modulares System zur Erstellung von Lead-Funnels mit Step-Builder (Video, Auswahl, Entscheidung), Echtzeit-Vorschau und logischer Verknüpfung.' },
     { name: 'DISC-Persönlichkeitstest', desc: 'Automatisierte Persönlichkeitsanalyse für Kandidaten mit automatischer Ergebnisanzeige.' },
     { name: 'Insights-Fragebogen', desc: 'Anpassbare Fragen (Teil 1: Insights, Teil 2: DISC, Teil 3: Terminvorschläge) – konfigurierbar in den Einstellungen.' },
