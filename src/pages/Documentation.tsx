@@ -205,8 +205,8 @@ const appFeatures = [
     { name: 'Mitarbeiter', desc: 'Mitarbeiterprofile und Zuweisungen verwalten.' },
     { name: 'Prozesse', desc: 'Mehrstufige Recruiting-Prozesse mit Stepper-Ansicht, KI-generierten Richtlinien und Geltungsbereichen für Automatisierungen (Global/Agentur/Mitarbeiter).' },
     { name: 'Eskalationsprozesse', desc: 'Flexible Eskalationslogik pro Hauptprozess mit quellen-basierter Aktivierung, Regel-Engine, Wizard-Verknüpfung und Test-Modus.' },
-    { name: 'Pipeline-Flow', desc: 'Visuelle Pipeline mit Eskalations-Erkennung, Wizard- und Regelzuweisung pro Flow-Node und Test-Modus-Indikator.' },
-    { name: 'PLZ-Auto-Zuweisung', desc: 'Automatische Agentur- und Mitarbeiterzuweisung basierend auf PLZ/Kanton bei Import und Webhook-Eingang.' },
+    { name: 'Pipeline-Flow', desc: 'Interaktive Pipeline mit horizontaler und vertikaler Ansicht, farbiger Prozess-Wegleitung, Geschlechts-Icons bei Lead-Namen, Eskalations-Erkennung, Wizard-/Regelzuweisung und Test-Modus-Indikator.' },
+    { name: 'PLZ-Auto-Zuweisung', desc: 'Automatische Agentur- und Mitarbeiterzuweisung basierend auf PLZ/Kanton bei Import und Webhook-Eingang. Automatische Adress-Ergänzung (PLZ→Ort/Kanton) bei allen Import-Methoden.' },
     { name: 'Dokument-Link Ablauf', desc: 'Upload-Links laufen nach 48h automatisch ab. Status (aktiv/abgelaufen/benutzt) wird im Dokumente-Tab angezeigt.' },
   ]},
   { category: 'Analyse & Insights', icon: '📊', features: [
