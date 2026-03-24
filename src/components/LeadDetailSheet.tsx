@@ -356,7 +356,7 @@ export default function LeadDetailSheet() {
                               </div>
                             </div>
                             <div>
-                              <label className="text-xs text-muted-foreground">Strasse & Nr.</label>
+                              <label className="text-sm text-muted-foreground">Strasse & Nr.</label>
                               <input value={form.address} onChange={e => setForm(prev => ({ ...prev, address: e.target.value }))} className={inputCls} />
                             </div>
                             <div className="grid grid-cols-3 gap-2.5">
