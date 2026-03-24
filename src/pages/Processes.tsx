@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 
 // ── Types ──
-export type AutomationTrigger = 'status_change' | 'lead_created' | 'disc_completed' | 'documents_uploaded' | 'time_in_status';
+export type AutomationTrigger = 'status_change' | 'lead_created' | 'disc_completed' | 'documents_uploaded' | 'time_in_status' | 'plz_auto_assign' | 'document_link_expired';
 export type AutomationAction = 'change_status' | 'assign_employee' | 'send_notification';
 
 export type AutomationScope = 'global' | 'agency' | 'employee';
