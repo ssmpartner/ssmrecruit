@@ -181,6 +181,7 @@ export default function CsvImportDialog() {
 
         await addLead({
           name: row.name,
+          salutation: row.salutation || '',
           email: row.email,
           phone: row.phone || '',
           address: row.address || '',

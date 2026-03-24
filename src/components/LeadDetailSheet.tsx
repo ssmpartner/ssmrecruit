@@ -442,10 +442,11 @@ export default function LeadDetailSheet() {
                         ) : (
                            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
                              {[
-                               ['E-Mail', selectedLead.email],
-                               ['Telefon', selectedLead.phone],
-                               ['Position', selectedLead.position],
-                               ['Erstellt', new Date(selectedLead.createdAt).toLocaleDateString('de-CH')],
+                                ['Anrede', selectedLead.salutation || '—'],
+                                ['E-Mail', selectedLead.email],
+                                ['Telefon', selectedLead.phone],
+                                ['Position', selectedLead.position],
+                                ['Erstellt', new Date(selectedLead.createdAt).toLocaleDateString('de-CH')],
                                ['Adresse', selectedLead.address],
                                ['Ort', `${selectedLead.plz} ${selectedLead.city}`],
                                ['Kanton', `${selectedLead.canton} (${selectedLead.cantonCode})`],

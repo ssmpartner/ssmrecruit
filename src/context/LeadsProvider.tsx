@@ -413,6 +413,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     await supabase.from('leads').insert({
       id,
       name: leadData.name,
+      salutation: leadData.salutation || '',
       email: leadData.email,
       phone: leadData.phone,
       address: leadData.address,

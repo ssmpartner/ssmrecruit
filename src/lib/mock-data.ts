@@ -39,6 +39,7 @@ export type LeadLifecycle = 'active' | 'archived' | 'deleted';
 export interface Lead {
   id: string;
   name: string;
+  salutation: string;
   email: string;
   phone: string;
   address: string;
