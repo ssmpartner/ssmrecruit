@@ -337,9 +337,9 @@ export default function LeadDetailSheet() {
                             <div className="grid grid-cols-2 gap-2.5">
                               {(['name', 'position'] as const).map(field => (
                                 <div key={field}>
-                                  <label className={`text-xs ${fieldErrors[field] ? 'text-destructive' : 'text-muted-foreground'}`}>{field === 'name' ? 'Name *' : 'Position'}</label>
-                                  <input value={form[field]} onChange={e => { setForm(prev => ({ ...prev, [field]: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n[field]; return n; }); }} className={inputErr(field)} />
-                                  {fieldErrors[field] && <p className="text-xs text-destructive mt-0.5">{fieldErrors[field]}</p>}
+                                   <label className={`text-sm ${fieldErrors[field] ? 'text-destructive' : 'text-muted-foreground'}`}>{field === 'name' ? 'Name *' : 'Position'}</label>
+                                   <input value={form[field]} onChange={e => { setForm(prev => ({ ...prev, [field]: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n[field]; return n; }); }} className={inputErr(field)} />
+                                   {fieldErrors[field] && <p className="text-sm text-destructive mt-0.5">{fieldErrors[field]}</p>}
                                 </div>
                               ))}
                             </div>
