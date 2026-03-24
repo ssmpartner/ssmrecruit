@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import { ArrowRight, AlertTriangle, Clock, TrendingUp, Users, Settings2, Bell, UserCog, ArrowRightLeft, Plus, Trash2, Save, X, ChevronDown, ChevronUp, Eye, Wand2, FlaskConical } from 'lucide-react';
+import { ArrowRight, ArrowDown, AlertTriangle, Clock, TrendingUp, Users, Settings2, Bell, UserCog, ArrowRightLeft, Plus, Trash2, Save, X, ChevronDown, ChevronUp, Eye, Wand2, FlaskConical, LayoutGrid, AlignVerticalJustifyStart } from 'lucide-react';
 import { statusConfig, type LeadStatus, type Lead, type Employee } from '@/lib/mock-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,6 +11,19 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const mainFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired'];
+
+// Color map for status-based theming (border, bg, accent, connector line)
+const STATUS_THEME: Record<string, { border: string; bg: string; accent: string; text: string; line: string; glow: string }> = {
+  new:         { border: 'border-blue-400',    bg: 'bg-blue-50 dark:bg-blue-950/40',    accent: 'bg-blue-500',    text: 'text-blue-700 dark:text-blue-300',    line: 'bg-blue-400',    glow: 'shadow-blue-200/50 dark:shadow-blue-800/30' },
+  contacted:   { border: 'border-amber-400',   bg: 'bg-amber-50 dark:bg-amber-950/40',  accent: 'bg-amber-500',   text: 'text-amber-700 dark:text-amber-300',  line: 'bg-amber-400',   glow: 'shadow-amber-200/50 dark:shadow-amber-800/30' },
+  appointment: { border: 'border-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/40', accent: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-300', line: 'bg-emerald-400', glow: 'shadow-emerald-200/50 dark:shadow-emerald-800/30' },
+  follow_up:   { border: 'border-violet-400',  bg: 'bg-violet-50 dark:bg-violet-950/40', accent: 'bg-violet-500',  text: 'text-violet-700 dark:text-violet-300', line: 'bg-violet-400',  glow: 'shadow-violet-200/50 dark:shadow-violet-800/30' },
+  hired:       { border: 'border-green-400',   bg: 'bg-green-50 dark:bg-green-950/40',  accent: 'bg-green-500',   text: 'text-green-700 dark:text-green-300',  line: 'bg-green-400',   glow: 'shadow-green-200/50 dark:shadow-green-800/30' },
+};
+
+const EMOJI_MAP: Record<string, string> = {
+  new: '🆕', contacted: '📞', appointment: '📅', follow_up: '🔄', hired: '✅',
+};
 
 export interface EscalationAction {
   type: 'notify' | 'reassign' | 'status_change';
@@ -73,6 +86,7 @@ function EscalationRuleEditor({
   const [expandedRule, setExpandedRule] = useState<string | null>(localRules[0]?.id ?? null);
   const [activeTab, setActiveTab] = useState('rules');
   const { toast } = useToast();
+  const theme = STATUS_THEME[status] || STATUS_THEME.new;
 
   const addRule = () => {
     const id = `esc-${Date.now()}`;
@@ -101,11 +115,8 @@ function EscalationRuleEditor({
     if (idx < 0) return;
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (swapIdx < 0 || swapIdx >= wizardLinks.length) return;
-    // We need to swap locally since parent manages state
     const reordered = [...wizardLinks];
     [reordered[idx], reordered[swapIdx]] = [reordered[swapIdx], reordered[idx]];
-    // Update parent through callbacks - toggle twice to trigger re-render hack
-    // Actually let's just use the onReorderWizards callback
     onReorderWizards?.(reordered);
   };
 
@@ -132,6 +143,7 @@ function EscalationRuleEditor({
     <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
+          <div className={`h-3 w-3 rounded-full ${theme.accent}`} />
           <Settings2 className="h-5 w-5 text-primary" />
           Konfiguration: {statusConfig[status].label}
         </DialogTitle>
@@ -310,16 +322,15 @@ function EscalationRuleEditor({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button onClick={() => onToggleWizardTest(link.id)}
-                              className={`rounded-md p-1 transition-colors ${link.testOnly ? 'text-amber-600 bg-amber-100' : 'text-muted-foreground hover:bg-muted'}`}>
+                              className={`rounded-md p-1 transition-colors ${link.testOnly ? 'bg-amber-100 text-amber-700' : 'text-muted-foreground hover:bg-muted'}`}>
                               <FlaskConical className="h-3.5 w-3.5" />
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent><p>{link.testOnly ? 'Test-Modus deaktivieren' : 'Nur für Test-User aktivieren'}</p></TooltipContent>
+                          <TooltipContent><p>Test-Modus {link.testOnly ? 'deaktivieren' : 'aktivieren'}</p></TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                       <Switch checked={link.isActive} onCheckedChange={() => onToggleWizardActive(link.id)} />
-                      <button onClick={() => onRemoveWizard(link.id)}
-                        className="rounded-lg p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                      <button onClick={() => onRemoveWizard(link.id)} className="text-destructive/60 hover:text-destructive">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -329,28 +340,29 @@ function EscalationRuleEditor({
             </div>
           )}
 
-          {/* Add wizard */}
           {availableWizards.filter(w => !linkedWizardIds.includes(w.id)).length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-[11px] font-medium text-muted-foreground">Wizard hinzufügen:</p>
-              {availableWizards.filter(w => !linkedWizardIds.includes(w.id)).map(w => (
-                <button key={w.id} onClick={() => onAddWizard(w.id)}
-                  className="w-full flex items-center gap-3 rounded-lg border p-2.5 text-left hover:bg-muted/50 transition-colors">
-                  <Plus className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span className="text-sm">{w.name}</span>
-                  <span className="text-[10px] text-muted-foreground ml-auto">{w.type}</span>
-                </button>
-              ))}
+            <div className="pt-2 border-t">
+              <p className="text-[11px] font-medium text-muted-foreground mb-2">Verfügbare Wizards</p>
+              <div className="space-y-1">
+                {availableWizards.filter(w => !linkedWizardIds.includes(w.id)).map(w => (
+                  <button key={w.id} onClick={() => onAddWizard(w.id)}
+                    className="flex items-center gap-2 w-full rounded-lg border border-dashed p-2.5 text-sm hover:border-primary/40 hover:bg-muted/30 transition-colors">
+                    <Plus className="h-3.5 w-3.5 text-primary" />
+                    <span className="truncate">{w.name}</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">{w.type}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </TabsContent>
       </Tabs>
 
-      <div className="flex justify-end gap-2 mt-4 pt-3 border-t">
-        <button onClick={onClose} className="inline-flex items-center gap-1.5 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors">
+      <div className="flex justify-end gap-2 pt-3 border-t">
+        <button onClick={onClose} className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm hover:bg-muted transition-colors">
           <X className="h-3.5 w-3.5" /> Abbrechen
         </button>
-        <button onClick={handleSave} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+        <button onClick={handleSave} className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-sm hover:bg-primary/90 transition-colors">
           <Save className="h-3.5 w-3.5" /> Speichern
         </button>
       </div>
@@ -359,128 +371,150 @@ function EscalationRuleEditor({
 }
 
 // ── Flow Node ──
-function FlowNode({
-  status, count, escalated, avgDays, isLast, rules, wizardCount, onOpenConfig, onClickNode,
-}: {
+function FlowNode({ status, count, escalated, avgDays, rules, wizardCount, onOpenConfig, onClickNode, layout }: {
   status: LeadStatus;
   count: number;
   escalated: number;
   avgDays: number;
-  isLast: boolean;
   rules: EscalationRule[];
   wizardCount: number;
   onOpenConfig: () => void;
   onClickNode: () => void;
+  layout: 'horizontal' | 'vertical';
 }) {
   const config = statusConfig[status];
+  const theme = STATUS_THEME[status] || STATUS_THEME.new;
   const hasEscalation = escalated > 0;
   const activeRules = rules.filter(r => r.enabled);
   const minThreshold = activeRules.length > 0 ? Math.min(...activeRules.map(r => r.thresholdDays)) : undefined;
   const testRules = rules.filter(r => r.testOnly);
-  const emoji = config.label === 'Neuer Lead' ? '🆕' : config.label === 'Kontaktiert' ? '📞' : config.label === 'Termin' ? '📅' : config.label === 'Follow-up' ? '🔄' : '✅';
+  const emoji = EMOJI_MAP[status] || '📋';
 
   return (
-    <div className="flex items-center gap-0 flex-1 min-w-0">
-      <div className="flex flex-col items-center flex-1 min-w-0">
-        {/* Escalation badge */}
-        <div className="h-7 flex items-end justify-center mb-1.5">
-          {hasEscalation && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1 rounded-full bg-destructive/10 border border-destructive/20 px-2.5 py-0.5 text-[11px] font-semibold text-destructive animate-pulse cursor-pointer" onClick={onOpenConfig}>
-                    <AlertTriangle className="h-3 w-3" />
-                    {escalated} Eskalation{escalated > 1 ? 'en' : ''}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{escalated} Lead{escalated > 1 ? 's' : ''} haben die Verweildauer überschritten</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
-
-        {/* Main node */}
-        <div
-          className={`relative w-full rounded-2xl border-2 p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group ${
-            hasEscalation
-              ? 'border-destructive/40 bg-destructive/5 shadow-sm shadow-destructive/10'
-              : 'border-border bg-card shadow-sm hover:border-primary/30'
-          }`}
-        >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-lg">{emoji}</span>
-            <div className="flex items-center gap-1.5">
-              {minThreshold !== undefined && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {minThreshold}d
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Eskalation nach {minThreshold} Tag{minThreshold !== 1 ? 'en' : ''}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              {status !== 'hired' && (
-                <button onClick={onOpenConfig}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity rounded-md p-0.5 hover:bg-muted"
-                  title="Regeln & Wizards bearbeiten">
-                  <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          <p className="text-xs font-medium text-muted-foreground mb-1 truncate">{config.label}</p>
-          <p className="text-3xl font-bold tracking-tight cursor-pointer hover:text-primary transition-colors" onClick={onClickNode} title="Leads anzeigen">{count}</p>
-
-          {count > 0 && status !== 'hired' && (
-            <div className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground">
-              <TrendingUp className="h-3 w-3" />
-              <span>Ø {avgDays.toFixed(1)} Tage</span>
-            </div>
-          )}
-
-          {/* Active rules & wizards indicator */}
-          {status !== 'hired' && (activeRules.length > 0 || wizardCount > 0) && (
-            <div className="mt-1.5 flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
-              {activeRules.length > 0 && (
-                <span className="inline-flex items-center gap-1">
-                  {activeRules.flatMap(r => r.actions).some(a => a.type === 'notify') && <Bell className="h-2.5 w-2.5" />}
-                  {activeRules.flatMap(r => r.actions).some(a => a.type === 'reassign') && <UserCog className="h-2.5 w-2.5" />}
-                  {activeRules.flatMap(r => r.actions).some(a => a.type === 'status_change') && <ArrowRightLeft className="h-2.5 w-2.5" />}
-                  {activeRules.length} Regel{activeRules.length !== 1 ? 'n' : ''}
-                </span>
-              )}
-              {wizardCount > 0 && (
-                <span className="inline-flex items-center gap-1">
-                  <Wand2 className="h-2.5 w-2.5" />
-                  {wizardCount} Wizard{wizardCount !== 1 ? 's' : ''}
-                </span>
-              )}
-              {testRules.length > 0 && (
-                <span className="inline-flex items-center gap-1 text-amber-600">
-                  <FlaskConical className="h-2.5 w-2.5" />
-                  {testRules.length} Test
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="h-6" />
+    <div className={layout === 'vertical' ? 'flex flex-col items-center w-full' : 'flex flex-col items-center flex-1 min-w-0'}>
+      {/* Escalation badge */}
+      <div className={`flex items-center justify-center ${layout === 'vertical' ? 'h-6 mb-1' : 'h-7 mb-1.5'}`}>
+        {hasEscalation && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1 rounded-full bg-destructive/10 border border-destructive/20 px-2.5 py-0.5 text-[11px] font-semibold text-destructive animate-pulse cursor-pointer" onClick={onOpenConfig}>
+                  <AlertTriangle className="h-3 w-3" />
+                  {escalated} Eskalation{escalated > 1 ? 'en' : ''}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{escalated} Lead{escalated > 1 ? 's' : ''} haben die Verweildauer überschritten</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
 
-      {!isLast && (
-        <div className="flex flex-col items-center px-1 shrink-0">
-          <ArrowRight className="h-5 w-5 text-muted-foreground/50" />
+      {/* Main node */}
+      <div
+        className={`relative rounded-2xl border-2 p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group cursor-pointer ${
+          layout === 'vertical' ? 'w-full max-w-sm' : 'w-full'
+        } ${theme.border} ${theme.bg} shadow-md ${theme.glow} ${
+          hasEscalation ? '!border-destructive/50 ring-2 ring-destructive/20' : ''
+        }`}
+        onClick={onClickNode}
+      >
+        {/* Color accent bar */}
+        <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-xl ${theme.accent}`} />
+
+        <div className="flex items-center justify-between mb-3 mt-1">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{emoji}</span>
+            <span className={`text-xs font-semibold uppercase tracking-wider ${theme.text}`}>{config.label}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {minThreshold !== undefined && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {minThreshold}d
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Eskalation nach {minThreshold} Tag{minThreshold !== 1 ? 'en' : ''}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {status !== 'hired' && (
+              <button onClick={(e) => { e.stopPropagation(); onOpenConfig(); }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity rounded-md p-0.5 hover:bg-background/60"
+                title="Regeln & Wizards bearbeiten">
+                <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
         </div>
-      )}
+
+        <p className={`text-3xl font-bold tracking-tight ${theme.text}`}>{count}</p>
+
+        {count > 0 && status !== 'hired' && (
+          <div className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground">
+            <TrendingUp className="h-3 w-3" />
+            <span>Ø {avgDays.toFixed(1)} Tage</span>
+          </div>
+        )}
+
+        {/* Active rules & wizards indicator */}
+        {status !== 'hired' && (activeRules.length > 0 || wizardCount > 0) && (
+          <div className="mt-1.5 flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
+            {activeRules.length > 0 && (
+              <span className="inline-flex items-center gap-1">
+                {activeRules.flatMap(r => r.actions).some(a => a.type === 'notify') && <Bell className="h-2.5 w-2.5" />}
+                {activeRules.flatMap(r => r.actions).some(a => a.type === 'reassign') && <UserCog className="h-2.5 w-2.5" />}
+                {activeRules.flatMap(r => r.actions).some(a => a.type === 'status_change') && <ArrowRightLeft className="h-2.5 w-2.5" />}
+                {activeRules.length} Regel{activeRules.length !== 1 ? 'n' : ''}
+              </span>
+            )}
+            {wizardCount > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <Wand2 className="h-2.5 w-2.5" />
+                {wizardCount} Wizard{wizardCount !== 1 ? 's' : ''}
+              </span>
+            )}
+            {testRules.length > 0 && (
+              <span className="inline-flex items-center gap-1 text-amber-600">
+                <FlaskConical className="h-2.5 w-2.5" />
+                {testRules.length} Test
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Connector Arrow ──
+function FlowConnector({ fromStatus, toStatus, layout }: { fromStatus: LeadStatus; toStatus: LeadStatus; layout: 'horizontal' | 'vertical' }) {
+  const fromTheme = STATUS_THEME[fromStatus] || STATUS_THEME.new;
+  const toTheme = STATUS_THEME[toStatus] || STATUS_THEME.new;
+
+  if (layout === 'vertical') {
+    return (
+      <div className="flex flex-col items-center py-1">
+        <div className={`w-0.5 h-4 ${fromTheme.line} rounded-full`} />
+        <div className="relative">
+          <ArrowDown className={`h-5 w-5 ${fromTheme.text}`} />
+        </div>
+        <div className={`w-0.5 h-4 ${toTheme.line} rounded-full`} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center px-1 shrink-0">
+      <div className={`h-0.5 w-3 ${fromTheme.line} rounded-full`} />
+      <ArrowRight className={`h-5 w-5 ${fromTheme.text}`} />
+      <div className={`h-0.5 w-3 ${toTheme.line} rounded-full`} />
     </div>
   );
 }
@@ -497,6 +531,7 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
   const [escalationRules, setEscalationRules] = useState<EscalationRules>(DEFAULT_RULES);
   const [editingStatus, setEditingStatus] = useState<LeadStatus | null>(null);
   const [viewingStatus, setViewingStatus] = useState<LeadStatus | null>(null);
+  const [layout, setLayout] = useState<'horizontal' | 'vertical'>('horizontal');
 
   // Wizard links per status (loaded from DB)
   const [wizardLinksMap, setWizardLinksMap] = useState<Record<string, WizardLink[]>>({});
@@ -643,33 +678,96 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
               {rejectedCount} abgelehnt
             </div>
           )}
+
+          {/* Layout Toggle */}
+          <div className="flex items-center rounded-lg border bg-muted/30 p-0.5">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setLayout('horizontal')}
+                    className={`rounded-md p-1.5 transition-colors ${layout === 'horizontal' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent><p>Horizontal</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setLayout('vertical')}
+                    className={`rounded-md p-1.5 transition-colors ${layout === 'vertical' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    <AlignVerticalJustifyStart className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent><p>Vertikal</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-start gap-0 pt-2">
-        {flowData.map((data, i) => (
-          <FlowNode
-            key={data.status}
-            status={data.status}
-            count={data.count}
-            escalated={data.escalated}
-            avgDays={data.avgDays}
-            isLast={i === flowData.length - 1}
-            rules={data.rules}
-            wizardCount={data.wizardCount}
-            onOpenConfig={() => setEditingStatus(data.status)}
-            onClickNode={() => data.count > 0 && setViewingStatus(data.status)}
-          />
-        ))}
-      </div>
+      {/* Flow Visualization */}
+      {layout === 'horizontal' ? (
+        <div className="flex items-start gap-0 pt-2">
+          {flowData.map((data, i) => (
+            <div key={data.status} className="flex items-center flex-1 min-w-0">
+              <FlowNode
+                status={data.status}
+                count={data.count}
+                escalated={data.escalated}
+                avgDays={data.avgDays}
+                rules={data.rules}
+                wizardCount={data.wizardCount}
+                onOpenConfig={() => setEditingStatus(data.status)}
+                onClickNode={() => data.count > 0 && setViewingStatus(data.status)}
+                layout="horizontal"
+              />
+              {i < flowData.length - 1 && (
+                <FlowConnector fromStatus={data.status} toStatus={flowData[i + 1].status} layout="horizontal" />
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-0 pt-2 max-w-md mx-auto">
+          {flowData.map((data, i) => (
+            <div key={data.status} className="w-full">
+              <FlowNode
+                status={data.status}
+                count={data.count}
+                escalated={data.escalated}
+                avgDays={data.avgDays}
+                rules={data.rules}
+                wizardCount={data.wizardCount}
+                onOpenConfig={() => setEditingStatus(data.status)}
+                onClickNode={() => data.count > 0 && setViewingStatus(data.status)}
+                layout="vertical"
+              />
+              {i < flowData.length - 1 && (
+                <FlowConnector fromStatus={data.status} toStatus={flowData[i + 1].status} layout="vertical" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Legend */}
-      <div className="flex items-center gap-6 pt-2 border-t text-[11px] text-muted-foreground flex-wrap">
-        <div className="flex items-center gap-1.5">
-          <div className="h-2.5 w-2.5 rounded-full bg-primary/60" />
-          <span>Normal</span>
-        </div>
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-4 pt-3 border-t text-[11px] text-muted-foreground flex-wrap">
+        {mainFlow.map(status => {
+          const t = STATUS_THEME[status];
+          return (
+            <div key={status} className="flex items-center gap-1.5">
+              <div className={`h-2.5 w-2.5 rounded-full ${t.accent}`} />
+              <span>{statusConfig[status].label}</span>
+            </div>
+          );
+        })}
+        <div className="flex items-center gap-1.5 ml-2 pl-2 border-l">
           <div className="h-2.5 w-2.5 rounded-full bg-destructive/60 animate-pulse" />
           <span>Eskalation</span>
         </div>
@@ -679,7 +777,7 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
         </div>
         <div className="flex items-center gap-1.5">
           <FlaskConical className="h-3 w-3 text-amber-600" />
-          <span>Test-Modus</span>
+          <span>Test</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Settings2 className="h-3 w-3" />
@@ -712,6 +810,7 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
       <Dialog open={viewingStatus !== null} onOpenChange={(open) => !open && setViewingStatus(null)}>
         {viewingStatus && (() => {
           const now = Date.now();
+          const theme = STATUS_THEME[viewingStatus] || STATUS_THEME.new;
           const inStatus = activeLeads
             .filter(l => l.status === viewingStatus)
             .map(l => {
@@ -727,6 +826,7 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
             <DialogContent className="max-w-lg max-h-[70vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
+                  <div className={`h-3 w-3 rounded-full ${theme.accent}`} />
                   <Users className="h-5 w-5 text-primary" />
                   {statusConfig[viewingStatus].label} – {inStatus.length} Lead{inStatus.length !== 1 ? 's' : ''}
                 </DialogTitle>
