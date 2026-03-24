@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Target, TrendingUp, BarChart3, PieChart as PieChartIcon, Megaphone, Zap } from 'lucide-react';
+import { Target, TrendingUp, BarChart3, PieChart as PieChartIcon, Megaphone, Zap, Users } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -44,6 +44,17 @@ export default function MarketingTab({ filtered, leadSources }: MarketingTabProp
       map.set(c, entry);
     });
     return [...map.values()].sort((a, b) => b.total - a.total).slice(0, 10);
+  }, [filtered]);
+
+  const genderData = useMemo(() => {
+    const women = filtered.filter(l => l.salutation === 'Frau').length;
+    const men = filtered.filter(l => l.salutation === 'Herr').length;
+    const unknown = filtered.length - women - men;
+    return [
+      { name: 'Frauen', value: women, fill: 'hsl(330, 65%, 50%)' },
+      { name: 'Männer', value: men, fill: 'hsl(210, 60%, 52%)' },
+      ...(unknown > 0 ? [{ name: 'Keine Angabe', value: unknown, fill: 'hsl(0, 0%, 70%)' }] : []),
+    ].filter(g => g.value > 0);
   }, [filtered]);
 
   const totalLeads = filtered.length;
@@ -96,6 +107,21 @@ export default function MarketingTab({ filtered, leadSources }: MarketingTabProp
           </ResponsiveContainer>
         </ChartCard>
       </div>
+
+      {/* Gender Distribution */}
+      {genderData.length > 0 && (
+        <ChartCard title="Geschlechterverteilung" subtitle="Frauen / Männer" icon={Users}>
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie data={genderData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={4} dataKey="value" label={renderCustomizedLabel} labelLine={false} strokeWidth={2} stroke="hsl(0,0%,100%)">
+                {genderData.map((g, i) => <Cell key={i} fill={g.fill} />)}
+              </Pie>
+              <Tooltip content={<PieTooltip />} />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      )}
 
       {/* Funnel by Source */}
       {funnelBySource.length > 0 && (
