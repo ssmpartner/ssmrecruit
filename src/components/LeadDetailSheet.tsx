@@ -324,7 +324,7 @@ export default function LeadDetailSheet() {
                               </select>
                             </div>
                             <div>
-                              <label className="text-xs text-muted-foreground">Mitarbeiter</label>
+                              <label className="text-sm text-muted-foreground">Mitarbeiter</label>
                               <select value={selectedLead.employeeId} onChange={e => changeEmployee(e.target.value)} className={inputCls + ' mt-0.5'}>
                                 {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                               </select>
