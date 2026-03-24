@@ -61,6 +61,7 @@ function parseCsv(text: string): { headers: string[]; rows: string[][] } {
 function autoMapHeaders(csvHeaders: string[]): Record<number, string> {
   const mapping: Record<number, string> = {};
   const aliases: Record<string, string[]> = {
+    salutation: ['salutation', 'anrede', 'geschlecht', 'gender', 'title', 'titel'],
     name: ['name', 'vorname', 'nachname', 'full_name', 'fullname', 'vor- und nachname', 'kandidat'],
     email: ['email', 'e-mail', 'mail', 'e_mail', 'email_address'],
     phone: ['phone', 'telefon', 'tel', 'phone_number', 'mobiltelefon', 'handy'],
