@@ -745,6 +745,33 @@ Neue Leads (Monat);24`,
   ]
 }`,
       },
+      {
+        method: 'GET', path: '/functions/v1/mapbox-token', summary: 'Mapbox-Token abrufen', auth: false,
+        description: 'Gibt den Mapbox Access Token zurück. Wird vom Frontend für die Karten-Darstellung (Analytics Karte-Tab) verwendet. Der Token wird serverseitig aus den Secrets geladen und nie im Client-Code gespeichert.',
+        response: `{
+  "token": "pk.eyJ1Ijoi..."
+}
+
+// Falls nicht konfiguriert (Status 500):
+{
+  "error": "MAPBOX_TOKEN not configured"
+}`,
+      },
+    ],
+  },
+  {
+    title: 'Mapbox-Integration (Einstellungen)',
+    description: 'Mapbox ist als Dienst-Integration unter Einstellungen → Integrationen sichtbar. Der Verbindungsstatus wird live geprüft. Features: Karten-Visualisierung (Analytics), Adress-Autovervollständigung und Geocoding für Agentur-Zuweisung.',
+    endpoints: [
+      {
+        method: 'GET', path: '/functions/v1/mapbox-token', summary: 'Integrations-Status prüfen', auth: false,
+        description: 'Prüft ob der MAPBOX_TOKEN konfiguriert ist. Wird in Einstellungen → Integrationen zur Statusanzeige verwendet. Zeigt maskierte Token-Vorschau bei erfolgreicher Verbindung.',
+        response: `// Verbunden:
+{ "token": "pk.eyJ1Ijoi..." }
+
+// Nicht konfiguriert:
+{ "error": "MAPBOX_TOKEN not configured" }`,
+      },
     ],
   },
 ];
