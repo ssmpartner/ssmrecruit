@@ -686,12 +686,12 @@ export default function LeadDetailSheet() {
                                 {i < leadActivities.length - 1 && (
                                   <div className="absolute left-[11px] top-6 bottom-0 w-px bg-border" />
                                 )}
-                                <div className="relative z-10 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary">
-                                  <Icon className="h-3 w-3 text-muted-foreground" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs">{act.description}</p>
-                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                 <div className="relative z-10 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary">
+                                   <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                                 </div>
+                                 <div className="flex-1 min-w-0">
+                                   <p className="text-sm">{act.description}</p>
+                                   <p className="text-xs text-muted-foreground mt-0.5">
                                     {act.user} • {new Date(act.timestamp).toLocaleString('de-CH')}
                                   </p>
                                 </div>
