@@ -2,8 +2,24 @@ import { lookupPlz } from './swiss-plz';
 import type { Agency, Employee } from './mock-data';
 
 /**
+ * Calculate distance between two coordinates using Haversine formula.
+ * Returns distance in kilometers.
+ */
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
  * Resolve agency and employee based on PLZ/canton code.
- * Prefers specific agencies over Hauptsitz (fallback).
+ * Priority: 1) Canton match  2) Radius + nearest distance as tiebreaker/fallback
  */
 export function resolveAssignmentByPlz(
   plz: string,
@@ -12,6 +28,8 @@ export function resolveAssignmentByPlz(
   employees: Employee[],
   fallbackAgencyId: string,
   fallbackEmployeeId: string,
+  leadLat?: number | null,
+  leadLng?: number | null,
 ): { agencyId: string; employeeId: string } {
   let resolvedCanton = cantonCode;
   if (!resolvedCanton && plz) {
@@ -19,21 +37,61 @@ export function resolveAssignmentByPlz(
     if (loc) resolvedCanton = loc.cantonCode;
   }
 
-  if (!resolvedCanton) {
-    return { agencyId: fallbackAgencyId, employeeId: fallbackEmployeeId };
+  const nonHq = agencies.filter(a => !a.name.toLowerCase().includes('hauptsitz'));
+
+  // Step 1: Canton-based matching
+  if (resolvedCanton) {
+    const cantonMatches = nonHq
+      .filter(a => a.allowedCantons?.includes(resolvedCanton!))
+      .sort((a, b) => (a.allowedCantons?.length || 99) - (b.allowedCantons?.length || 99));
+
+    if (cantonMatches.length === 1) {
+      return pickEmployee(cantonMatches[0].id, employees, fallbackEmployeeId);
+    }
+
+    // Multiple canton matches → use distance as tiebreaker if coordinates available
+    if (cantonMatches.length > 1 && leadLat != null && leadLng != null) {
+      const withCoords = cantonMatches.filter(a => a.latitude != null && a.longitude != null);
+      if (withCoords.length > 0) {
+        const nearest = withCoords
+          .map(a => ({ agency: a, dist: haversineKm(leadLat, leadLng, a.latitude!, a.longitude!) }))
+          .sort((a, b) => a.dist - b.dist)[0];
+        return pickEmployee(nearest.agency.id, employees, fallbackEmployeeId);
+      }
+      // No coords → pick first canton match
+      return pickEmployee(cantonMatches[0].id, employees, fallbackEmployeeId);
+    }
+
+    if (cantonMatches.length > 0) {
+      return pickEmployee(cantonMatches[0].id, employees, fallbackEmployeeId);
+    }
   }
 
-  // Find specific agency (not Hauptsitz) with this canton, prefer most specific
-  const specificAgency = agencies
-    .filter(a => !a.name.toLowerCase().includes('hauptsitz'))
-    .filter(a => a.allowedCantons?.includes(resolvedCanton!))
-    .sort((a, b) => (a.allowedCantons?.length || 99) - (b.allowedCantons?.length || 99))[0];
+  // Step 2: Radius-based fallback (no canton match)
+  if (leadLat != null && leadLng != null) {
+    const withinRadius = nonHq
+      .filter(a => a.latitude != null && a.longitude != null)
+      .map(a => ({ agency: a, dist: haversineKm(leadLat, leadLng, a.latitude!, a.longitude!) }))
+      .filter(a => a.dist <= (a.agency.radiusKm ?? 30))
+      .sort((a, b) => a.dist - b.dist);
 
-  const matchedAgencyId = specificAgency?.id || fallbackAgencyId;
+    if (withinRadius.length > 0) {
+      return pickEmployee(withinRadius[0].agency.id, employees, fallbackEmployeeId);
+    }
+  }
 
-  // Find employee from matched agency
-  const agencyEmployees = employees.filter(e => e.agencyId === matchedAgencyId);
-  const matchedEmployeeId = agencyEmployees[0]?.id || fallbackEmployeeId;
+  // Final fallback: Hauptsitz
+  return { agencyId: fallbackAgencyId, employeeId: fallbackEmployeeId };
+}
 
-  return { agencyId: matchedAgencyId, employeeId: matchedEmployeeId };
+function pickEmployee(
+  agencyId: string,
+  employees: Employee[],
+  fallbackEmployeeId: string,
+): { agencyId: string; employeeId: string } {
+  const agencyEmployees = employees.filter(e => e.agencyId === agencyId);
+  return {
+    agencyId,
+    employeeId: agencyEmployees[0]?.id || fallbackEmployeeId,
+  };
 }
