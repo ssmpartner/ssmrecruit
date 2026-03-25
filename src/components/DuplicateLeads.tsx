@@ -154,8 +154,17 @@ export default function DuplicateLeads() {
                 </div>
 
                 <div className="flex gap-3 mb-3">
-                  <LeadCard lead={lead1} label="Lead A" />
-                  <LeadCard lead={lead2} label="Lead B" />
+                  {(() => {
+                    const date1 = new Date(lead1.createdAt).getTime();
+                    const date2 = new Date(lead2.createdAt).getTime();
+                    const lead1IsNewer = date1 >= date2;
+                    return (
+                      <>
+                        <LeadCard lead={lead1} label="Lead A" isNewer={lead1IsNewer} />
+                        <LeadCard lead={lead2} label="Lead B" isNewer={!lead1IsNewer} />
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <div className="flex gap-2 justify-end">
