@@ -197,24 +197,26 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
         addActivity(leadId, 'note', `Wizard-Feedback (${statusLabel}): ${feedback.trim()}`);
       }
 
-      // Lead withdrawal
+      // Lead withdrawal → archive
       if (shouldWithdraw) {
         const superadmin = findSuperadminEmployee();
         if (superadmin) {
-          // Set original_employee_id for statistics tracking
+          // Set original_employee_id, reassign, and archive
           await supabase.from('leads').update({
             original_employee_id: originalEmployeeId,
             employee_id: superadmin.id,
+            lead_lifecycle: 'archived',
           }).eq('id', leadId);
 
-          updateLead(leadId, { employeeId: superadmin.id });
+          updateLead(leadId, { employeeId: superadmin.id, lifecycle: 'archived' });
           addActivity(leadId, 'assignment', `Lead entzogen und an ${superadmin.name} (Superadmin) zugewiesen`);
+          addActivity(leadId, 'status_change', `Lead archiviert (Grund: ${statusLabel})`);
 
           // Create notification
           await supabase.from('notifications').insert({
             type: 'lead_withdrawn',
-            title: 'Lead entzogen',
-            description: `"${leadName}" wurde entzogen (${statusLabel}). Neuer Besitzer: ${superadmin.name}`,
+            title: 'Lead entzogen & archiviert',
+            description: `"${leadName}" wurde entzogen und archiviert (${statusLabel}). Neuer Besitzer: ${superadmin.name}`,
             lead_id: leadId,
           });
         }
