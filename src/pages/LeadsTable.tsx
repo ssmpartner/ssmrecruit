@@ -48,7 +48,24 @@ export default function LeadsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(20);
 
-  const leadsWithActivities = useMemo(() => new Set(activities.map(a => a.leadId)), [activities]);
+  const [viewedLeads, setViewedLeads] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('viewedLeadIds');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch { return new Set(); }
+  });
+
+  const markLeadViewed = useCallback((lead: Parameters<typeof setSelectedLead>[0]) => {
+    if (lead) {
+      setViewedLeads(prev => {
+        const next = new Set(prev);
+        next.add(lead.id);
+        localStorage.setItem('viewedLeadIds', JSON.stringify([...next]));
+        return next;
+      });
+    }
+    setSelectedLead(lead);
+  }, [setSelectedLead]);
 
   const lifecycleLeads = useMemo(() => {
     const lifecycle: LeadLifecycle = activeTab === 'active' ? 'active' : activeTab === 'archived' ? 'archived' : 'deleted';
@@ -314,7 +331,7 @@ export default function LeadsTable() {
                   return (
                     <tr
                       key={lead.id}
-                      onClick={() => setSelectedLead(lead)}
+                      onClick={() => markLeadViewed(lead)}
                       className={cn(
                         "cursor-pointer border-b last:border-0 hover:bg-muted/50 transition-colors",
                         selectedIds.includes(lead.id) && "bg-primary/5"
@@ -340,7 +357,7 @@ export default function LeadsTable() {
                             <p className="font-medium">{lead.name}</p>
                             <p className="text-xs text-muted-foreground">{lead.position}</p>
                           </div>
-                          {lead.status === 'new' && !leadsWithActivities.has(lead.id) && (Date.now() - new Date(lead.createdAt).getTime() < 48 * 60 * 60 * 1000) && (
+                          {lead.status === 'new' && !viewedLeads.has(lead.id) && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider animate-pulse">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                               Neu
