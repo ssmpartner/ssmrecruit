@@ -492,7 +492,7 @@ export default function LeadDetailSheet() {
                                 ['E-Mail', selectedLead.email],
                                 ['Telefon', selectedLead.phone],
                                 ['Position', selectedLead.position],
-                                ['Erstellt', new Date(selectedLead.createdAt).toLocaleDateString('de-CH')],
+                                ['Leaddatum', new Date(selectedLead.createdAt).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
                                ['Adresse', selectedLead.address],
                                ['Ort', selectedLead.plz || selectedLead.city ? `${selectedLead.plz} ${selectedLead.city}`.trim() : ''],
                                ['Kanton', selectedLead.canton ? `${selectedLead.canton} (${selectedLead.cantonCode})` : ''],
