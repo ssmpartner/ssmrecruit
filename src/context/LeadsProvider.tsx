@@ -64,6 +64,12 @@ function dbToAgency(row: any): Agency {
     language: row.language || 'de',
     allowedCantons: row.allowed_cantons || [],
     color: row.color || '#6B7280',
+    address: row.address || '',
+    plz: row.plz || '',
+    city: row.city || '',
+    latitude: row.latitude ?? null,
+    longitude: row.longitude ?? null,
+    radiusKm: row.radius_km ?? 30,
   };
 }
 
