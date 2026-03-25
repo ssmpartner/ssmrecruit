@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin } from 'lucide-react';
 import EmailSettingsTab from '@/components/EmailSettingsTab';
+import NotificationRoleMatrix from '@/components/NotificationRoleMatrix';
 import ProfileSettings from '@/components/ProfileSettings';
 import WizardsTab from '@/components/WizardsTab';
 import { useToast } from '@/hooks/use-toast';
