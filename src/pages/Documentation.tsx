@@ -2,9 +2,15 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.31.0';
+const APP_VERSION = '2.32.0';
 
 const versionHistory = [
+  { version: '2.32.0', date: '25.03.2026', changes: [
+    'Benachrichtigungs-Rollen-Matrix: Superadmins können pro Benachrichtigungstyp und Rolle (Superadmin, Admin, Backoffice, Teamleiter, Analyst) steuern, ob In-App- und/oder E-Mail-Benachrichtigungen aktiviert sind',
+    'Neue DB-Tabelle notification_role_settings mit RLS (nur Superadmin-Schreibzugriff) und vorbefüllten Einstellungen für alle 14 Benachrichtigungstypen × 5 Rollen',
+    'Integrationen: Offizielle Brand-Icons (SVG) für TikTok, Meta, LinkedIn, Microsoft 365 und Website statt generischer Emojis',
+    'Keine E-Mails an Leads/Bewerber: Alle 14 E-Mail-Automationsregeln senden ausschliesslich an Recruiter (internes Team). Versand an Leads nur bei expliziter Voll-Automation.',
+  ]},
   { version: '2.31.0', date: '25.03.2026', changes: [
     'Granulare Lead-Status: Neue spezifische Status «Rückruf», «Nicht erreicht», «Nicht interessiert», «Kein Bedarf», «Nicht passend» und «Interne Stelle» mit eigenen Farb-Badges in der Leads-Übersicht',
     'Status-Wizard schreibt jetzt den exakten Status (z. B. not_reached, not_interested) statt generisch «rejected»',
