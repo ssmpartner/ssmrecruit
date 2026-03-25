@@ -1668,13 +1668,13 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
         {integrations.map((integration: any) => {
           const isExpanded = expandedId === integration.id;
           const isComingSoon = integration.id === 'linkedin' || integration.id === 'microsoft365';
+          const BrandIcon = BRAND_ICONS[integration.id];
           return (
             <div key={integration.id} className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <button onClick={() => !isComingSoon && setExpandedId(isExpanded ? null : integration.id)}
                 className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors" disabled={isComingSoon}>
                 <div className="flex items-center gap-3">
                   {BrandIcon ? <BrandIcon className="h-7 w-7" /> : <span className="text-2xl">{integration.icon}</span>}
-                  <div>
                     <h3 className="font-semibold text-sm">{integration.name}</h3>
                     <p className="text-xs text-muted-foreground">{integration.description}</p>
                   </div>
