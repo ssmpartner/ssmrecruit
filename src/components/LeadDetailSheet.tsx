@@ -14,7 +14,7 @@ import SourceBadge from './SourceBadge';
 import {
   Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
   FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus,
-  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Brain, Upload, EyeOff
+  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Brain, Upload, EyeOff, Eye
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -57,6 +57,20 @@ export default function LeadDetailSheet() {
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'insights' | 'documents'>('info');
   const [confirmReset, setConfirmReset] = useState(false);
+  const [isMarkedViewed, setIsMarkedViewed] = useState(false);
+
+  // Sync viewed state when selectedLead changes
+  const leadIsNew = selectedLead?.status === 'new';
+  if (selectedLead && leadIsNew) {
+    try {
+      const stored = localStorage.getItem('viewedLeadIds');
+      const viewedSet: Set<string> = stored ? new Set(JSON.parse(stored)) : new Set();
+      const currentlyViewed = viewedSet.has(selectedLead.id);
+      if (currentlyViewed !== isMarkedViewed) {
+        setIsMarkedViewed(currentlyViewed);
+      }
+    } catch { /* ignore */ }
+  }
 
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
@@ -218,7 +232,15 @@ export default function LeadDetailSheet() {
                     {selectedLead.salutation === 'Frau' ? '♀' : '♂'}
                   </span>
                   <DialogHeader className="space-y-0">
-                    <DialogTitle className="text-lg font-bold tracking-tight leading-tight">{selectedLead.name}</DialogTitle>
+                    <div className="flex items-center gap-2">
+                      <DialogTitle className="text-lg font-bold tracking-tight leading-tight">{selectedLead.name}</DialogTitle>
+                      {leadIsNew && !isMarkedViewed && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider animate-pulse">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          Neu
+                        </span>
+                      )}
+                    </div>
                     <DialogDescription className="text-sm text-muted-foreground leading-tight">{selectedLead.position || 'Keine Position'}</DialogDescription>
                   </DialogHeader>
                 </div>
@@ -739,26 +761,39 @@ export default function LeadDetailSheet() {
                   </div>
                 </div>
               </div>
-            {/* Superadmin: Mark as no longer new */}
-            {isSuperadmin && selectedLead?.status === 'new' && (
+            {/* Superadmin: Toggle new marking */}
+            {isSuperadmin && leadIsNew && (
               <div className="flex justify-end px-6 pb-4">
                 <button
                   onClick={() => {
                     try {
                       const stored = localStorage.getItem('viewedLeadIds');
                       const arr: string[] = stored ? JSON.parse(stored) : [];
-                      if (!arr.includes(selectedLead.id)) arr.push(selectedLead.id);
-                      localStorage.setItem('viewedLeadIds', JSON.stringify(arr));
-                      toast({ title: 'Erledigt', description: 'Lead wird nicht mehr als "Neu" gekennzeichnet.' });
+                      if (isMarkedViewed) {
+                        const filtered = arr.filter(id => id !== selectedLead.id);
+                        localStorage.setItem('viewedLeadIds', JSON.stringify(filtered));
+                        setIsMarkedViewed(false);
+                        toast({ title: 'Erledigt', description: 'Lead wird wieder als "Neu" gekennzeichnet.' });
+                      } else {
+                        if (!arr.includes(selectedLead.id)) arr.push(selectedLead.id);
+                        localStorage.setItem('viewedLeadIds', JSON.stringify(arr));
+                        setIsMarkedViewed(true);
+                        toast({ title: 'Erledigt', description: 'Lead wird nicht mehr als "Neu" gekennzeichnet.' });
+                      }
                       window.dispatchEvent(new Event('storage'));
                     } catch {
                       toast({ title: 'Fehler', description: 'Die Markierung konnte nicht gespeichert werden.', variant: 'destructive' });
                     }
                   }}
-                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors",
+                    isMarkedViewed
+                      ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                      : "border-border bg-secondary text-foreground hover:bg-muted"
+                  )}
                 >
-                  <EyeOff className="h-4 w-4" />
-                  Nicht mehr als Neu kennzeichnen
+                  {isMarkedViewed ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                  {isMarkedViewed ? 'Als neu kennzeichnen' : 'Nicht mehr als Neu kennzeichnen'}
                 </button>
               </div>
             )}
