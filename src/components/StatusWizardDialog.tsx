@@ -41,7 +41,7 @@ interface Props {
 
 export default function StatusWizardDialog({ open, onOpenChange, wizardType, leadId, leadName }: Props) {
   const { updateLead, addActivity, employees, leads } = useLeads();
-  const { profile } = useAuth();
+  const { profile, isSuperadmin } = useAuth();
   const { toast } = useToast();
   const currentUser = profile?.display_name || 'System';
 
