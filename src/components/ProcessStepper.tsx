@@ -30,7 +30,8 @@ const statusToMainStep: Record<string, LeadStatus> = {
 };
 
 export default function ProcessStepper({ currentStatus, compact = false }: ProcessStepperProps) {
-  const currentIndex = mainFlow.indexOf(currentStatus);
+  const mappedStatus = statusToMainStep[currentStatus] || 'new';
+  const currentIndex = mainFlow.indexOf(mappedStatus);
   const isRejected = currentStatus === 'rejected';
 
   return (
