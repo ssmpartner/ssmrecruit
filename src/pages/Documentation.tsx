@@ -2,9 +2,15 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.27.0';
+const APP_VERSION = '2.28.0';
 
 const versionHistory = [
+  { version: '2.28.0', date: '25.03.2026', changes: [
+    'NEU-Badge Logik überarbeitet: Badge verschwindet erst beim erstmaligen Öffnen des Lead-Details (nicht mehr zeitbasiert nach 48h)',
+    'Superadmin-Funktion: «Nicht mehr als Neu kennzeichnen»-Button im Lead-Detail-Fenster – manuelle Kontrolle über NEU-Badge',
+    'Superadmins sehen NEU-Badge dauerhaft bis zur manuellen Markierung; andere Rollen markieren Leads automatisch beim Öffnen',
+    'Status-Wizard: Button-Text von «Wizard abschliessen» zu «Status festlegen» geändert',
+  ]},
   { version: '2.27.0', date: '24.03.2026', changes: [
     'Automatische Adress-Ergänzung beim Lead-Import (CSV, form-webhook, meta-webhook, tiktok-webhook): PLZ wird lokal via Schweizer PLZ-Datenbank aufgelöst, Mapbox-Fallback für fehlende Adressdaten',
     'Bulk-Adress-Enrichment: «Adressen ergänzen»-Button in der Leads-Tabelle (Superadmin) – ergänzt fehlende PLZ, Ort und Kanton für alle aktiven Leads',
