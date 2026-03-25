@@ -1,4 +1,4 @@
-export type LeadStatus = 'new' | 'contacted' | 'appointment' | 'follow_up' | 'hired' | 'rejected';
+export type LeadStatus = 'new' | 'contacted' | 'callback' | 'not_reached' | 'not_interested' | 'no_need' | 'not_suitable' | 'internal' | 'appointment' | 'follow_up' | 'hired' | 'rejected';
 
 export type DiscDimension = 'D' | 'I' | 'S' | 'C';
 
@@ -183,13 +183,19 @@ export interface Employee {
 }
 
 // Ordered status flow for employees
-export const statusFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
+export const statusFlow: LeadStatus[] = ['new', 'contacted', 'callback', 'not_reached', 'not_interested', 'no_need', 'not_suitable', 'internal', 'appointment', 'follow_up', 'hired', 'rejected'];
 
 export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boolean): LeadStatus[] {
   if (isAdmin) return statusFlow;
   const flowMap: Record<LeadStatus, LeadStatus[]> = {
     new: ['contacted', 'rejected'],
     contacted: ['appointment', 'rejected'],
+    callback: ['contacted', 'rejected'],
+    not_reached: ['contacted', 'rejected'],
+    not_interested: [],
+    no_need: [],
+    not_suitable: [],
+    internal: [],
     appointment: ['follow_up', 'rejected'],
     follow_up: ['hired', 'rejected'],
     hired: [],
@@ -201,6 +207,12 @@ export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boole
 export const statusConfig: Record<LeadStatus, { label: string; color: string }> = {
   new: { label: 'Neuer Lead', color: 'bg-blue-50 text-blue-700 border border-blue-200' },
   contacted: { label: 'Kontaktiert', color: 'bg-amber-50 text-amber-700 border border-amber-200' },
+  callback: { label: 'Rückruf', color: 'bg-yellow-50 text-yellow-700 border border-yellow-200' },
+  not_reached: { label: 'Nicht erreicht', color: 'bg-orange-50 text-orange-700 border border-orange-200' },
+  not_interested: { label: 'Nicht interessiert', color: 'bg-red-50 text-red-700 border border-red-200' },
+  no_need: { label: 'Kein Bedarf', color: 'bg-rose-50 text-rose-700 border border-rose-200' },
+  not_suitable: { label: 'Nicht passend', color: 'bg-slate-50 text-slate-700 border border-slate-200' },
+  internal: { label: 'Interne Stelle', color: 'bg-indigo-50 text-indigo-700 border border-indigo-200' },
   appointment: { label: 'Terminiert', color: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
   follow_up: { label: 'Follow-up', color: 'bg-violet-50 text-violet-700 border border-violet-200' },
   hired: { label: 'Eingestellt', color: 'bg-green-50 text-green-700 border border-green-200' },

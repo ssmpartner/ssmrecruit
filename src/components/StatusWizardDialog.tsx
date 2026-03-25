@@ -117,10 +117,11 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           if (newCount >= 3) {
             // Max 3 callbacks → escalate
             shouldWithdraw = true;
-            newStatus = 'rejected';
+            newStatus = 'not_reached';
             answers.escalated = true;
             addActivity(leadId, 'status_change', `Rückruflimit erreicht (${newCount}/3) – Lead wird entzogen und Superadmin zugewiesen`);
           } else {
+            newStatus = 'callback';
             // Update callback count
             await supabase.from('leads').update({ callback_count: newCount }).eq('id', leadId);
           }
@@ -129,23 +130,23 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
 
         case 'not_interested':
           answers.reason = notInterestedReason;
-          newStatus = 'rejected';
+          newStatus = 'not_interested';
           break;
 
         case 'not_reached':
           answers.attempts = attemptCount;
-          newStatus = 'rejected';
+          newStatus = 'not_reached';
           break;
 
         case 'no_need':
           answers.reason = noNeedReason;
-          newStatus = 'rejected';
+          newStatus = 'no_need';
           break;
 
         case 'not_suitable':
           answers.matching_failed = matchingFailed;
           answers.reason = matchingReason;
-          newStatus = 'rejected';
+          newStatus = 'not_suitable';
           break;
 
         case 'internal':
@@ -155,6 +156,7 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             return;
           }
           answers.confirmed = internalConfirmed;
+          newStatus = 'internal';
           shouldWithdraw = true;
           break;
       }
@@ -494,10 +496,12 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
 
                     switch (wizardType) {
                       case 'contacted': newStatus = 'contacted'; break;
-                      case 'callback': break;
-                      case 'not_interested': case 'not_reached': case 'no_need': case 'not_suitable':
-                        newStatus = 'rejected'; break;
-                      case 'internal': break;
+                      case 'callback': newStatus = 'callback'; break;
+                      case 'not_interested': newStatus = 'not_interested'; break;
+                      case 'not_reached': newStatus = 'not_reached'; break;
+                      case 'no_need': newStatus = 'no_need'; break;
+                      case 'not_suitable': newStatus = 'not_suitable'; break;
+                      case 'internal': newStatus = 'internal'; break;
                     }
 
                     await supabase.from('status_wizard_results').insert({
