@@ -68,7 +68,7 @@ export default function LeadsTable() {
   }, []);
 
   const markLeadViewed = useCallback((lead: Parameters<typeof setSelectedLead>[0]) => {
-    if (lead) {
+    if (lead && !isSuperadmin) {
       setViewedLeads(prev => {
         const next = new Set(prev);
         next.add(lead.id);
@@ -77,7 +77,7 @@ export default function LeadsTable() {
       });
     }
     setSelectedLead(lead);
-  }, [setSelectedLead]);
+  }, [setSelectedLead, isSuperadmin]);
 
   const lifecycleLeads = useMemo(() => {
     const lifecycle: LeadLifecycle = activeTab === 'active' ? 'active' : activeTab === 'archived' ? 'archived' : 'deleted';
