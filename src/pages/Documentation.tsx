@@ -2,9 +2,14 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.28.0';
+const APP_VERSION = '2.29.0';
 
 const versionHistory = [
+  { version: '2.29.0', date: '25.03.2026', changes: [
+    'NEU-Badge im Lead-Detail-Fenster: Pulsierendes grünes Badge neben dem Lead-Namen sichtbar',
+    'Toggle-Button für Superadmins: «Nicht mehr als Neu kennzeichnen» ↔ «Als neu kennzeichnen» – NEU-Badge kann ein-/ausgeblendet werden',
+    'Status-Wizard: Neuer Superadmin-Button «Status ohne Angaben festlegen» – erlaubt Statusänderung ohne Formular auszufüllen',
+  ]},
   { version: '2.28.0', date: '25.03.2026', changes: [
     'NEU-Badge Logik überarbeitet: Badge verschwindet erst beim erstmaligen Öffnen des Lead-Details (nicht mehr zeitbasiert nach 48h)',
     'Superadmin-Funktion: «Nicht mehr als Neu kennzeichnen»-Button im Lead-Detail-Fenster – manuelle Kontrolle über NEU-Badge',
