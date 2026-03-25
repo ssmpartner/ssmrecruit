@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin } from 'lucide-react';
 import EmailSettingsTab from '@/components/EmailSettingsTab';
 import NotificationRoleMatrix from '@/components/NotificationRoleMatrix';
+import { BRAND_ICONS } from '@/components/BrandIcons';
 import ProfileSettings from '@/components/ProfileSettings';
 import WizardsTab from '@/components/WizardsTab';
 import { useToast } from '@/hooks/use-toast';
@@ -1667,12 +1668,13 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
         {integrations.map((integration: any) => {
           const isExpanded = expandedId === integration.id;
           const isComingSoon = integration.id === 'linkedin' || integration.id === 'microsoft365';
+          const BrandIcon = BRAND_ICONS[integration.id];
           return (
             <div key={integration.id} className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <button onClick={() => !isComingSoon && setExpandedId(isExpanded ? null : integration.id)}
                 className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors" disabled={isComingSoon}>
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{integration.icon}</span>
+                  {BrandIcon ? <BrandIcon className="h-7 w-7" /> : <span className="text-2xl">{integration.icon}</span>}
                   <div>
                     <h3 className="font-semibold text-sm">{integration.name}</h3>
                     <p className="text-xs text-muted-foreground">{integration.description}</p>
