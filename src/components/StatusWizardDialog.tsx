@@ -117,10 +117,11 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           if (newCount >= 3) {
             // Max 3 callbacks → escalate
             shouldWithdraw = true;
-            newStatus = 'rejected';
+            newStatus = 'not_reached';
             answers.escalated = true;
             addActivity(leadId, 'status_change', `Rückruflimit erreicht (${newCount}/3) – Lead wird entzogen und Superadmin zugewiesen`);
           } else {
+            newStatus = 'callback';
             // Update callback count
             await supabase.from('leads').update({ callback_count: newCount }).eq('id', leadId);
           }
@@ -155,6 +156,7 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             return;
           }
           answers.confirmed = internalConfirmed;
+          newStatus = 'internal';
           shouldWithdraw = true;
           break;
       }
