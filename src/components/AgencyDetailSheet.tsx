@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, Save, Palette } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, Save, Palette, Navigation, Loader2 } from 'lucide-react';
 import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, AGENCY_COLORS, type Agency } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AgencyDetailSheetProps {
   agency: Agency | null;
@@ -25,8 +27,15 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
     language: 'de',
     allowedCantons: [] as string[],
     color: '#6B7280',
+    address: '',
+    plz: '',
+    city: '',
+    latitude: null as number | null,
+    longitude: null as number | null,
+    radiusKm: 30,
   });
   const [dirty, setDirty] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
 
   useEffect(() => {
     if (agency) {
@@ -37,10 +46,42 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
         language: agency.language || 'de',
         allowedCantons: [...(agency.allowedCantons || [])],
         color: agency.color || '#6B7280',
+        address: agency.address || '',
+        plz: agency.plz || '',
+        city: agency.city || '',
+        latitude: agency.latitude ?? null,
+        longitude: agency.longitude ?? null,
+        radiusKm: agency.radiusKm ?? 30,
       });
       setDirty(false);
     }
   }, [agency]);
+
+  const geocodeAddress = useCallback(async () => {
+    const query = [form.address, form.plz, form.city].filter(Boolean).join(', ');
+    if (!query.trim()) {
+      toast.error('Bitte zuerst eine Adresse eingeben');
+      return;
+    }
+    setGeocoding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('geocode-address', {
+        body: { address: query },
+      });
+      if (error) throw error;
+      if (data?.features?.length > 0) {
+        const [lng, lat] = data.features[0].center;
+        setForm(p => ({ ...p, latitude: lat, longitude: lng }));
+        setDirty(true);
+        toast.success(`Koordinaten ermittelt: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      } else {
+        toast.error('Adresse konnte nicht georeferenziert werden');
+      }
+    } catch {
+      toast.error('Geocoding fehlgeschlagen');
+    }
+    setGeocoding(false);
+  }, [form.address, form.plz, form.city]);
 
   if (!agency) return null;
 
@@ -75,12 +116,16 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
       language: form.language,
       allowedCantons: form.allowedCantons,
       color: form.color,
+      address: form.address,
+      plz: form.plz,
+      city: form.city,
+      latitude: form.latitude,
+      longitude: form.longitude,
+      radiusKm: form.radiusKm,
     });
     setDirty(false);
     toast.success('Agentur erfolgreich aktualisiert');
   };
-
-  const langLabel = (code: string) => AGENCY_LANGUAGES.find(l => l.code === code)?.name ?? code;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -126,25 +171,14 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
             <Label htmlFor="agency-name" className="flex items-center gap-1.5">
               <Building2 className="h-3.5 w-3.5" /> Agenturname
             </Label>
-            <Input
-              id="agency-name"
-              value={form.name}
-              onChange={e => update('name', e.target.value)}
-              placeholder="Agenturname"
-            />
+            <Input id="agency-name" value={form.name} onChange={e => update('name', e.target.value)} placeholder="Agenturname" />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="agency-email" className="flex items-center gap-1.5">
               <Mail className="h-3.5 w-3.5" /> Kontakt-E-Mail
             </Label>
-            <Input
-              id="agency-email"
-              type="email"
-              value={form.contactEmail}
-              onChange={e => update('contactEmail', e.target.value)}
-              placeholder="kontakt@agentur.ch"
-            />
+            <Input id="agency-email" type="email" value={form.contactEmail} onChange={e => update('contactEmail', e.target.value)} placeholder="kontakt@agentur.ch" />
           </div>
 
           <div className="space-y-2">
@@ -165,6 +199,76 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
               ))}
             </div>
           </div>
+
+          <Separator />
+
+          {/* Address section */}
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Standort & Umkreis</h3>
+
+          <div className="space-y-2">
+            <Label htmlFor="agency-address" className="flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5" /> Strasse / Nr.
+            </Label>
+            <Input id="agency-address" value={form.address} onChange={e => update('address', e.target.value)} placeholder="Musterstrasse 1" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="agency-plz">PLZ</Label>
+              <Input id="agency-plz" value={form.plz} onChange={e => update('plz', e.target.value)} placeholder="8000" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="agency-city">Ort</Label>
+              <Input id="agency-city" value={form.city} onChange={e => update('city', e.target.value)} placeholder="Zürich" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={geocodeAddress}
+              disabled={geocoding}
+              className="gap-1.5"
+            >
+              {geocoding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5" />}
+              Koordinaten ermitteln
+            </Button>
+            {form.latitude != null && form.longitude != null && (
+              <span className="text-xs text-muted-foreground">
+                📍 {form.latitude.toFixed(4)}, {form.longitude.toFixed(4)}
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Globe className="h-3.5 w-3.5" /> Umkreis für Lead-Zuweisung
+              </span>
+              <span className="text-sm font-bold text-primary">{form.radiusKm} km</span>
+            </Label>
+            <Slider
+              value={[form.radiusKm]}
+              onValueChange={([v]) => update('radiusKm', v)}
+              min={5}
+              max={100}
+              step={5}
+              className="py-2"
+            />
+            <div className="flex justify-between text-[10px] text-muted-foreground">
+              <span>5 km</span>
+              <span>50 km</span>
+              <span>100 km</span>
+            </div>
+          </div>
+
+          {!form.latitude && (form.address || form.plz) && (
+            <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-lg px-3 py-2">
+              ⚠️ Bitte Koordinaten ermitteln, damit die Umkreis-Verteilung funktioniert.
+            </p>
+          )}
 
           <Separator />
 
@@ -250,12 +354,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
           )}
 
           {/* Save button */}
-          <Button
-            onClick={handleSave}
-            disabled={!dirty}
-            className="w-full gap-2"
-            size="lg"
-          >
+          <Button onClick={handleSave} disabled={!dirty} className="w-full gap-2" size="lg">
             <Save className="h-4 w-4" /> Änderungen speichern
           </Button>
         </div>
