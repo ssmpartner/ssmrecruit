@@ -437,7 +437,7 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar mode="single" selected={aptForm.date} onSelect={(d) => setAptForm(prev => ({ ...prev, date: d }))}
-                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        disabled={isSuperadmin ? undefined : (date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                         initialFocus className={cn("p-3 pointer-events-auto")} />
                     </PopoverContent>
                   </Popover>
