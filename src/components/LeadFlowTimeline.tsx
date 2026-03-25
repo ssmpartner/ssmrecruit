@@ -19,7 +19,8 @@ interface LeadFlowTimelineProps {
 }
 
 export default function LeadFlowTimeline({ lead, activities }: LeadFlowTimelineProps) {
-  const currentIdx = mainFlow.indexOf(lead.status as LeadStatus);
+  const mappedStatus = statusToMainStep[lead.status as string] || 'new';
+  const currentIdx = mainFlow.indexOf(mappedStatus as LeadStatus);
   const isRejected = lead.status === 'rejected';
 
   // Extract status change activities for this lead to show timeline
