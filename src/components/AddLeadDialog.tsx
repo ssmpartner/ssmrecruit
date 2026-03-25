@@ -60,7 +60,7 @@ function SuggestionDropdown({ items, onSelect, visible }: { items: { label: stri
 
 export default function AddLeadDialog({ open: controlledOpen, onOpenChange: controlledOnOpenChange }: { open?: boolean; onOpenChange?: (open: boolean) => void } = {}) {
   const { addLead, agencies, employees, addAppointment, leads, leadSources } = useLeads();
-  const { profile } = useAuth();
+  const { profile, isSuperadmin } = useAuth();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen ?? internalOpen;
   const setOpen = controlledOnOpenChange ?? setInternalOpen;
