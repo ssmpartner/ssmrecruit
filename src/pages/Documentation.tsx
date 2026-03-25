@@ -2,9 +2,15 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.29.0';
+const APP_VERSION = '2.30.0';
 
 const versionHistory = [
+  { version: '2.30.0', date: '25.03.2026', changes: [
+    'Zurückgezogene Leads werden automatisch archiviert: Status-Wizard setzt bei Ablehnung (Nicht interessiert, Kein Bedarf, Nicht passend, Interne Stelle) den Lifecycle auf «archived»',
+    'Archiviert-Tab nur für Superadmins sichtbar: Nicht-Superadmins sehen den Tab nicht mehr in der Leads-Tabelle',
+    'Doppelte Leads: Vergleichsansicht zeigt Erstellungsdatum/-uhrzeit und Neu/Alt-Badge zur schnellen Unterscheidung',
+    'Bestehende zurückgezogene Leads (Status «rejected») wurden nachträglich nach «Archiviert» migriert (66 Leads)',
+  ]},
   { version: '2.29.0', date: '25.03.2026', changes: [
     'NEU-Badge im Lead-Detail-Fenster: Pulsierendes grünes Badge neben dem Lead-Namen sichtbar',
     'Toggle-Button für Superadmins: «Nicht mehr als Neu kennzeichnen» ↔ «Als neu kennzeichnen» – NEU-Badge kann ein-/ausgeblendet werden',
