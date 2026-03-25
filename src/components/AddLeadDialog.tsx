@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import AddressAutocomplete, { type AddressSuggestion } from './AddressAutocomplete';
 import { Plus, CalendarIcon, Phone, Video, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
