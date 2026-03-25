@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadLifecycle, statusConfig } from '@/lib/mock-data';
@@ -54,6 +54,18 @@ export default function LeadsTable() {
       return stored ? new Set(JSON.parse(stored)) : new Set();
     } catch { return new Set(); }
   });
+
+  // Re-sync when storage changes (e.g. from LeadDetailSheet button)
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const stored = localStorage.getItem('viewedLeadIds');
+        setViewedLeads(stored ? new Set(JSON.parse(stored)) : new Set());
+      } catch { /* ignore */ }
+    };
+    window.addEventListener('storage', sync);
+    return () => window.removeEventListener('storage', sync);
+  }, []);
 
   const markLeadViewed = useCallback((lead: Parameters<typeof setSelectedLead>[0]) => {
     if (lead) {
