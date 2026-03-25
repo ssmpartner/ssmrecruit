@@ -331,7 +331,7 @@ export default function LeadsTable() {
                   return (
                     <tr
                       key={lead.id}
-                      onClick={() => setSelectedLead(lead)}
+                      onClick={() => markLeadViewed(lead)}
                       className={cn(
                         "cursor-pointer border-b last:border-0 hover:bg-muted/50 transition-colors",
                         selectedIds.includes(lead.id) && "bg-primary/5"
