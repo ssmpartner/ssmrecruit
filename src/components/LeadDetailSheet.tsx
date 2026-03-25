@@ -761,26 +761,39 @@ export default function LeadDetailSheet() {
                   </div>
                 </div>
               </div>
-            {/* Superadmin: Mark as no longer new */}
-            {isSuperadmin && selectedLead?.status === 'new' && (
+            {/* Superadmin: Toggle new marking */}
+            {isSuperadmin && leadIsNew && (
               <div className="flex justify-end px-6 pb-4">
                 <button
                   onClick={() => {
                     try {
                       const stored = localStorage.getItem('viewedLeadIds');
                       const arr: string[] = stored ? JSON.parse(stored) : [];
-                      if (!arr.includes(selectedLead.id)) arr.push(selectedLead.id);
-                      localStorage.setItem('viewedLeadIds', JSON.stringify(arr));
-                      toast({ title: 'Erledigt', description: 'Lead wird nicht mehr als "Neu" gekennzeichnet.' });
+                      if (isMarkedViewed) {
+                        const filtered = arr.filter(id => id !== selectedLead.id);
+                        localStorage.setItem('viewedLeadIds', JSON.stringify(filtered));
+                        setIsMarkedViewed(false);
+                        toast({ title: 'Erledigt', description: 'Lead wird wieder als "Neu" gekennzeichnet.' });
+                      } else {
+                        if (!arr.includes(selectedLead.id)) arr.push(selectedLead.id);
+                        localStorage.setItem('viewedLeadIds', JSON.stringify(arr));
+                        setIsMarkedViewed(true);
+                        toast({ title: 'Erledigt', description: 'Lead wird nicht mehr als "Neu" gekennzeichnet.' });
+                      }
                       window.dispatchEvent(new Event('storage'));
                     } catch {
                       toast({ title: 'Fehler', description: 'Die Markierung konnte nicht gespeichert werden.', variant: 'destructive' });
                     }
                   }}
-                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors",
+                    isMarkedViewed
+                      ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                      : "border-border bg-secondary text-foreground hover:bg-muted"
+                  )}
                 >
-                  <EyeOff className="h-4 w-4" />
-                  Nicht mehr als Neu kennzeichnen
+                  {isMarkedViewed ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                  {isMarkedViewed ? 'Als neu kennzeichnen' : 'Nicht mehr als Neu kennzeichnen'}
                 </button>
               </div>
             )}
