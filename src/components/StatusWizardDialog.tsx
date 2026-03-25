@@ -480,6 +480,64 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
               className="rounded-md border px-4 py-2 text-sm hover:bg-muted transition-colors">
               Abbrechen
             </button>
+            {isSuperadmin && (
+              <button
+                onClick={async () => {
+                  setSubmitting(true);
+                  try {
+                    const lead = leads.find(l => l.id === leadId);
+                    const originalEmployeeId = lead?.employeeId || '';
+                    let newStatus = lead?.status || 'new';
+                    const shouldWithdraw = WITHDRAWAL_TYPES.includes(wizardType);
+
+                    switch (wizardType) {
+                      case 'contacted': newStatus = 'contacted'; break;
+                      case 'callback': break;
+                      case 'not_interested': case 'not_reached': case 'no_need': case 'not_suitable':
+                        newStatus = 'rejected'; break;
+                      case 'internal': break;
+                    }
+
+                    await supabase.from('status_wizard_results').insert({
+                      lead_id: leadId,
+                      wizard_type: wizardType,
+                      answers: { skipped_by_superadmin: true } as any,
+                      feedback: '',
+                      completed_by: currentUser,
+                      original_employee_id: originalEmployeeId,
+                      lead_withdrawn: shouldWithdraw,
+                      reassigned_to: shouldWithdraw ? SUPERADMIN_EMAIL : '',
+                    });
+
+                    updateLead(leadId, { status: newStatus });
+                    addActivity(leadId, 'status_change', `Status "${config.label}" ohne Angaben festgelegt (Superadmin)`);
+
+                    if (shouldWithdraw) {
+                      const superadmin = findSuperadminEmployee();
+                      if (superadmin) {
+                        await supabase.from('leads').update({
+                          original_employee_id: originalEmployeeId,
+                          employee_id: superadmin.id,
+                        }).eq('id', leadId);
+                        updateLead(leadId, { employeeId: superadmin.id });
+                      }
+                    }
+
+                    toast({ title: '✅ Status festgelegt', description: `"${config.label}" ohne Angaben gesetzt.` });
+                    resetForm();
+                    onOpenChange(false);
+                  } catch (err) {
+                    toast({ title: 'Fehler', description: 'Status konnte nicht gesetzt werden.', variant: 'destructive' });
+                  } finally {
+                    setSubmitting(false);
+                  }
+                }}
+                disabled={submitting}
+                className="rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 disabled:opacity-50 transition-colors"
+              >
+                Status ohne Angaben festlegen
+              </button>
+            )}
             <button onClick={handleSubmit} disabled={submitting}
               className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
               {submitting ? 'Speichere...' : 'Status festlegen'}
