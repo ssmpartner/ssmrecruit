@@ -10,19 +10,26 @@ export default function Agencies() {
   const { agencies, employees, leads, addAgency } = useLeads();
   const [open, setOpen] = useState(false);
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
-  const [form, setForm] = useState({
+  const defaultForm = {
     name: '',
     contactEmail: '',
     region: 'Deutschschweiz',
     language: 'de',
     allowedCantons: [] as string[],
-    color: AGENCY_COLORS[0],
-  });
+    color: AGENCY_COLORS[0] as string,
+    address: '',
+    plz: '',
+    city: '',
+    latitude: null as number | null,
+    longitude: null as number | null,
+    radiusKm: 30,
+  };
+  const [form, setForm] = useState(defaultForm);
 
   const handleAdd = () => {
     if (!form.name.trim() || !form.contactEmail.trim()) return;
     addAgency(form);
-    setForm({ name: '', contactEmail: '', region: 'Deutschschweiz', language: 'de', allowedCantons: [], color: AGENCY_COLORS[0] });
+    setForm({ ...defaultForm });
     setOpen(false);
   };
 

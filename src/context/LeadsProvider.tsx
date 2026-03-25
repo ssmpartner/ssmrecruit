@@ -64,6 +64,12 @@ function dbToAgency(row: any): Agency {
     language: row.language || 'de',
     allowedCantons: row.allowed_cantons || [],
     color: row.color || '#6B7280',
+    address: row.address || '',
+    plz: row.plz || '',
+    city: row.city || '',
+    latitude: row.latitude ?? null,
+    longitude: row.longitude ?? null,
+    radiusKm: row.radius_km ?? 30,
   };
 }
 
@@ -571,6 +577,12 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.language !== undefined) dbUpdates.language = updates.language;
     if (updates.allowedCantons !== undefined) dbUpdates.allowed_cantons = updates.allowedCantons;
     if (updates.color !== undefined) dbUpdates.color = updates.color;
+    if (updates.address !== undefined) dbUpdates.address = updates.address;
+    if (updates.plz !== undefined) dbUpdates.plz = updates.plz;
+    if (updates.city !== undefined) dbUpdates.city = updates.city;
+    if (updates.latitude !== undefined) dbUpdates.latitude = updates.latitude;
+    if (updates.longitude !== undefined) dbUpdates.longitude = updates.longitude;
+    if (updates.radiusKm !== undefined) dbUpdates.radius_km = updates.radiusKm;
     await supabase.from('agencies').update(dbUpdates).eq('id', id);
   }, []);
 

@@ -51,35 +51,53 @@ export type Database = {
       }
       agencies: {
         Row: {
+          address: string
           allowed_cantons: string[]
+          city: string
           color: string
           contact_email: string
           created_at: string
           id: string
           language: string
+          latitude: number | null
+          longitude: number | null
           name: string
+          plz: string
+          radius_km: number
           region: string
           updated_at: string
         }
         Insert: {
+          address?: string
           allowed_cantons?: string[]
+          city?: string
           color?: string
           contact_email: string
           created_at?: string
           id: string
           language?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
+          plz?: string
+          radius_km?: number
           region?: string
           updated_at?: string
         }
         Update: {
+          address?: string
           allowed_cantons?: string[]
+          city?: string
           color?: string
           contact_email?: string
           created_at?: string
           id?: string
           language?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
+          plz?: string
+          radius_km?: number
           region?: string
           updated_at?: string
         }
