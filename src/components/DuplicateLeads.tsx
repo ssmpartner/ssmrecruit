@@ -82,12 +82,22 @@ export default function DuplicateLeads() {
     toast.success('Leads erfolgreich zusammengeführt');
   };
 
-  const LeadCard = ({ lead, label }: { lead: Lead; label: string }) => {
+  const LeadCard = ({ lead, label, isNewer }: { lead: Lead; label: string; isNewer: boolean }) => {
     const agency = agencies.find(a => a.id === lead.agencyId);
     const employee = employees.find(e => e.id === lead.employeeId);
+    const createdDate = new Date(lead.createdAt);
     return (
-      <div className="rounded-lg border p-3 space-y-1.5 flex-1">
-        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <div className={`rounded-lg border p-3 space-y-1.5 flex-1 ${isNewer ? 'border-emerald-500/40 bg-emerald-500/5' : ''}`}>
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-muted-foreground">{label}</p>
+          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+            isNewer
+              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+              : 'bg-muted text-muted-foreground'
+          }`}>
+            {isNewer ? 'Neu' : 'Alt'}
+          </span>
+        </div>
         <p className="font-semibold text-sm">{lead.name}</p>
         <p className="text-xs text-muted-foreground">{lead.email}</p>
         <p className="text-xs text-muted-foreground">{lead.phone || '—'}</p>
@@ -95,6 +105,11 @@ export default function DuplicateLeads() {
         <p className="text-xs text-muted-foreground">{lead.position || '—'}</p>
         <p className="text-xs text-muted-foreground">Agentur: {agency?.name || '—'}</p>
         <p className="text-xs text-muted-foreground">Mitarbeiter: {employee?.name || '—'}</p>
+        <div className="pt-1 border-t mt-1">
+          <p className="text-[11px] text-muted-foreground">
+            📅 {createdDate.toLocaleDateString('de-CH')} um {createdDate.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' })}
+          </p>
+        </div>
       </div>
     );
   };
