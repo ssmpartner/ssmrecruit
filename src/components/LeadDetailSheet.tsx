@@ -462,7 +462,7 @@ export default function LeadDetailSheet() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="text-sm text-muted-foreground">Erstelldatum</label>
+                                  <label className="text-sm text-muted-foreground">Leaddatum</label>
                                   <Popover>
                                     <PopoverTrigger asChild>
                                       <button className={cn(inputCls, 'flex items-center gap-1.5 text-left')}>
