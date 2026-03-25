@@ -820,7 +820,7 @@ export default function PipelineFlow({ leads, employees = [], onSelectLead }: Pi
                 rules={data.rules}
                 wizardCount={data.wizardCount}
                 onOpenConfig={() => setEditingStatus(data.status)}
-                onClickNode={() => data.count > 0 && setViewingStatus(data.status)}
+                onClickNode={() => setViewingStatus(data.status)}
                 layout="horizontal"
               />
               {i < flowData.length - 1 && (
