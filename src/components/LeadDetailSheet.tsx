@@ -739,6 +739,34 @@ export default function LeadDetailSheet() {
                   </div>
                 </div>
               </div>
+            {/* Superadmin: Mark as no longer new */}
+            {isSuperadmin && selectedLead?.status === 'new' && (() => {
+              try {
+                const stored = localStorage.getItem('viewedLeadIds');
+                const viewedSet: Set<string> = stored ? new Set(JSON.parse(stored)) : new Set();
+                if (viewedSet.has(selectedLead.id)) return null;
+              } catch { /* show button */ }
+              return (
+                <div className="flex justify-end px-6 pb-4">
+                  <button
+                    onClick={() => {
+                      try {
+                        const stored = localStorage.getItem('viewedLeadIds');
+                        const arr: string[] = stored ? JSON.parse(stored) : [];
+                        if (!arr.includes(selectedLead.id)) arr.push(selectedLead.id);
+                        localStorage.setItem('viewedLeadIds', JSON.stringify(arr));
+                        toast({ title: 'Erledigt', description: 'Lead wird nicht mehr als "Neu" gekennzeichnet.' });
+                        window.dispatchEvent(new Event('storage'));
+                      } catch { /* ignore */ }
+                    }}
+                    className="inline-flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <EyeOff className="h-4 w-4" />
+                    Nicht mehr als Neu kennzeichnen
+                  </button>
+                </div>
+              );
+            })()}
             </>
           )}
         </DialogContent>
