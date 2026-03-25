@@ -7,10 +7,31 @@ interface ProcessStepperProps {
   compact?: boolean;
 }
 
-const mainFlow: LeadStatus[] = statusFlow.filter(s => s !== 'rejected');
+// Only main process steps – granular statuses are escalations within these
+const mainFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired'];
+
+// Map granular/escalation statuses to their parent main process step
+const statusToMainStep: Record<string, LeadStatus> = {
+  new: 'new',
+  contacted: 'contacted',
+  callback: 'contacted',
+  not_reached: 'contacted',
+  not_interested: 'contacted',
+  no_need: 'contacted',
+  not_suitable: 'contacted',
+  internal: 'contacted',
+  appointment: 'appointment',
+  interview_1: 'appointment',
+  insights: 'appointment',
+  interview_2: 'appointment',
+  follow_up: 'follow_up',
+  hired: 'hired',
+  rejected: 'new',
+};
 
 export default function ProcessStepper({ currentStatus, compact = false }: ProcessStepperProps) {
-  const currentIndex = mainFlow.indexOf(currentStatus);
+  const mappedStatus = statusToMainStep[currentStatus] || 'new';
+  const currentIndex = mainFlow.indexOf(mappedStatus);
   const isRejected = currentStatus === 'rejected';
 
   return (
