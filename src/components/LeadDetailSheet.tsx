@@ -141,7 +141,7 @@ export default function LeadDetailSheet() {
     if (form.plz !== selectedLead.plz) changes.push(`PLZ → ${form.plz} ${form.city}`);
     if (form.notes !== selectedLead.notes) changes.push(`Notizen aktualisiert`);
     if (isSuperadmin && form.source !== selectedLead.source) changes.push(`Quelle → "${leadSources.find(s => s.id === form.source)?.label || form.source}"`);
-    if (isSuperadmin && form.createdAt !== selectedLead.createdAt) changes.push(`Erstelldatum geändert`);
+    if (isSuperadmin && form.createdAt !== selectedLead.createdAt) changes.push(`Leaddatum geändert`);
 
     const updates: Partial<Record<string, any>> = { ...form };
     if (!isSuperadmin) { delete updates.source; delete updates.createdAt; }
