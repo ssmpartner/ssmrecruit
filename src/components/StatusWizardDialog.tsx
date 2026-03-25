@@ -482,7 +482,7 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             </button>
             <button onClick={handleSubmit} disabled={submitting}
               className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
-              {submitting ? 'Speichere...' : 'Wizard abschliessen'}
+              {submitting ? 'Speichere...' : 'Status festlegen'}
             </button>
           </div>
         </div>
