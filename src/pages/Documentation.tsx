@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.30.0';
+const APP_VERSION = '2.31.0';
 
 const versionHistory = [
+  { version: '2.31.0', date: '25.03.2026', changes: [
+    'Granulare Lead-Status: Neue spezifische Status «Rückruf», «Nicht erreicht», «Nicht interessiert», «Kein Bedarf», «Nicht passend» und «Interne Stelle» mit eigenen Farb-Badges in der Leads-Übersicht',
+    'Status-Wizard schreibt jetzt den exakten Status (z. B. not_reached, not_interested) statt generisch «rejected»',
+    'Superadmin-Skip-Modus («Status ohne Angaben festlegen») verwendet ebenfalls die spezifischen Status',
+    'Datenbank: Check-Constraint auf leads.status erweitert um alle neuen Status-Werte',
+    'Datenmigration: 17 bestehende rejected-Leads mit Wizard-Ergebnissen auf ihre spezifischen Status aktualisiert (8× Nicht erreicht, 6× Nicht interessiert, 3× Nicht passend)',
+  ]},
   { version: '2.30.0', date: '25.03.2026', changes: [
     'Zurückgezogene Leads werden automatisch archiviert: Status-Wizard setzt bei Ablehnung (Nicht interessiert, Kein Bedarf, Nicht passend, Interne Stelle) den Lifecycle auf «archived»',
     'Archiviert-Tab nur für Superadmins sichtbar: Nicht-Superadmins sehen den Tab nicht mehr in der Leads-Tabelle',
