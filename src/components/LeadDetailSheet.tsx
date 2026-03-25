@@ -141,7 +141,7 @@ export default function LeadDetailSheet() {
     if (form.plz !== selectedLead.plz) changes.push(`PLZ → ${form.plz} ${form.city}`);
     if (form.notes !== selectedLead.notes) changes.push(`Notizen aktualisiert`);
     if (isSuperadmin && form.source !== selectedLead.source) changes.push(`Quelle → "${leadSources.find(s => s.id === form.source)?.label || form.source}"`);
-    if (isSuperadmin && form.createdAt !== selectedLead.createdAt) changes.push(`Erstelldatum geändert`);
+    if (isSuperadmin && form.createdAt !== selectedLead.createdAt) changes.push(`Leaddatum geändert`);
 
     const updates: Partial<Record<string, any>> = { ...form };
     if (!isSuperadmin) { delete updates.source; delete updates.createdAt; }
@@ -462,7 +462,7 @@ export default function LeadDetailSheet() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="text-sm text-muted-foreground">Erstelldatum</label>
+                                  <label className="text-sm text-muted-foreground">Leaddatum</label>
                                   <Popover>
                                     <PopoverTrigger asChild>
                                       <button className={cn(inputCls, 'flex items-center gap-1.5 text-left')}>
@@ -473,6 +473,7 @@ export default function LeadDetailSheet() {
                                     <PopoverContent className="w-auto p-0" align="start">
                                       <Calendar mode="single" selected={form.createdAt ? new Date(form.createdAt) : undefined}
                                         onSelect={(date) => date && setForm(prev => ({ ...prev, createdAt: date.toISOString() }))}
+                                        disabled={(date) => date >= new Date(2026, 0, 1)}
                                         className={cn("p-3 pointer-events-auto")} />
                                     </PopoverContent>
                                   </Popover>
@@ -492,7 +493,7 @@ export default function LeadDetailSheet() {
                                 ['E-Mail', selectedLead.email],
                                 ['Telefon', selectedLead.phone],
                                 ['Position', selectedLead.position],
-                                ['Erstellt', new Date(selectedLead.createdAt).toLocaleDateString('de-CH')],
+                                ['Leaddatum', new Date(selectedLead.createdAt).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
                                ['Adresse', selectedLead.address],
                                ['Ort', selectedLead.plz || selectedLead.city ? `${selectedLead.plz} ${selectedLead.city}`.trim() : ''],
                                ['Kanton', selectedLead.canton ? `${selectedLead.canton} (${selectedLead.cantonCode})` : ''],
