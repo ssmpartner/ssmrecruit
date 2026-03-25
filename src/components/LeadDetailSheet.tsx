@@ -14,7 +14,7 @@ import SourceBadge from './SourceBadge';
 import {
   Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
   FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus,
-  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Brain, Upload
+  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Brain, Upload, EyeOff
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
