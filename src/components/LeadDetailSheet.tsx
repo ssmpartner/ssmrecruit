@@ -232,7 +232,15 @@ export default function LeadDetailSheet() {
                     {selectedLead.salutation === 'Frau' ? '♀' : '♂'}
                   </span>
                   <DialogHeader className="space-y-0">
-                    <DialogTitle className="text-lg font-bold tracking-tight leading-tight">{selectedLead.name}</DialogTitle>
+                    <div className="flex items-center gap-2">
+                      <DialogTitle className="text-lg font-bold tracking-tight leading-tight">{selectedLead.name}</DialogTitle>
+                      {leadIsNew && !isMarkedViewed && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider animate-pulse">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          Neu
+                        </span>
+                      )}
+                    </div>
                     <DialogDescription className="text-sm text-muted-foreground leading-tight">{selectedLead.position || 'Keine Position'}</DialogDescription>
                   </DialogHeader>
                 </div>
