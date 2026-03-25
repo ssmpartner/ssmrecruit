@@ -216,7 +216,7 @@ export default function LeadsTable() {
 
       {/* Sub-tabs */}
       <div className="flex gap-1 rounded-xl border bg-card p-1 shadow-sm">
-        {tabs.map(tab => (
+        {tabs.filter(tab => !tab.superadminOnly || isSuperadmin).map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
