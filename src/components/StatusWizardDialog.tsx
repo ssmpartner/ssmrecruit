@@ -520,8 +520,10 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
                         await supabase.from('leads').update({
                           original_employee_id: originalEmployeeId,
                           employee_id: superadmin.id,
+                          lead_lifecycle: 'archived',
                         }).eq('id', leadId);
-                        updateLead(leadId, { employeeId: superadmin.id });
+                        updateLead(leadId, { employeeId: superadmin.id, lifecycle: 'archived' });
+                        addActivity(leadId, 'status_change', `Lead archiviert (Grund: ${config.label})`);
                       }
                     }
 
