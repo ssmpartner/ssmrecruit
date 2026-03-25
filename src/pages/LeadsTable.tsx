@@ -165,7 +165,7 @@ export default function LeadsTable() {
 
   const tabs: { key: TabKey; label: string; icon: React.ReactNode; count: number; superadminOnly?: boolean }[] = [
     { key: 'active', label: 'Aktiv', icon: null, count: activeCount },
-    { key: 'archived', label: 'Archiviert', icon: <Archive className="h-3.5 w-3.5" />, count: archivedCount },
+    { key: 'archived', label: 'Archiviert', icon: <Archive className="h-3.5 w-3.5" />, count: archivedCount, superadminOnly: true },
     { key: 'deleted', label: 'Gelöscht', icon: <Trash2 className="h-3.5 w-3.5" />, count: deletedCount, superadminOnly: true },
     { key: 'duplicates', label: 'Doppelte Leads', icon: <Copy className="h-3.5 w-3.5" />, count: 0 },
   ];
