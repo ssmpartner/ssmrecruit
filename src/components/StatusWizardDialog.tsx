@@ -129,23 +129,23 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
 
         case 'not_interested':
           answers.reason = notInterestedReason;
-          newStatus = 'rejected';
+          newStatus = 'not_interested';
           break;
 
         case 'not_reached':
           answers.attempts = attemptCount;
-          newStatus = 'rejected';
+          newStatus = 'not_reached';
           break;
 
         case 'no_need':
           answers.reason = noNeedReason;
-          newStatus = 'rejected';
+          newStatus = 'no_need';
           break;
 
         case 'not_suitable':
           answers.matching_failed = matchingFailed;
           answers.reason = matchingReason;
-          newStatus = 'rejected';
+          newStatus = 'not_suitable';
           break;
 
         case 'internal':
