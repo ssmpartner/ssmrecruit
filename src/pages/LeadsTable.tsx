@@ -55,6 +55,18 @@ export default function LeadsTable() {
     } catch { return new Set(); }
   });
 
+  // Re-sync when storage changes (e.g. from LeadDetailSheet button)
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const stored = localStorage.getItem('viewedLeadIds');
+        setViewedLeads(stored ? new Set(JSON.parse(stored)) : new Set());
+      } catch { /* ignore */ }
+    };
+    window.addEventListener('storage', sync);
+    return () => window.removeEventListener('storage', sync);
+  }, []);
+
   const markLeadViewed = useCallback((lead: Parameters<typeof setSelectedLead>[0]) => {
     if (lead) {
       setViewedLeads(prev => {
