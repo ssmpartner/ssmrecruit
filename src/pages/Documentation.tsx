@@ -2,9 +2,17 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.32.0';
+const APP_VERSION = '2.33.0';
 
 const versionHistory = [
+  { version: '2.33.0', date: '25.03.2026', changes: [
+    'Agentur-Standortverwaltung: Adresse (Strasse, PLZ, Ort) kann pro Agentur hinterlegt werden – direkt im Agentur-Detail-Sheet',
+    'Geocoding für Agenturen: «Koordinaten ermitteln»-Button ermittelt Breitengrad/Längengrad via Mapbox Geocoding',
+    'Konfigurierbarer Einsatzradius: Jede Agentur kann einen Umkreis von 5–100 km für die Lead-Zuweisung festlegen (Slider)',
+    'Erweiterte Lead-Verteilungslogik: Priorisiert Kanton-basierte Zuweisung, nutzt geografische Nähe (Haversine) als Tiebreaker bei mehreren Kanton-Treffern, Radius-basierter Fallback wenn kein Kanton passt',
+    'Datenbank: Neue Spalten address, plz, city, latitude, longitude, radius_km in der agencies-Tabelle',
+    'Koordinaten-Anzeige: Ermittelte GPS-Koordinaten werden im Agentur-Detail angezeigt, Warnhinweis bei fehlenden Koordinaten',
+  ]},
   { version: '2.32.0', date: '25.03.2026', changes: [
     'Benachrichtigungs-Rollen-Matrix: Superadmins können pro Benachrichtigungstyp und Rolle (Superadmin, Admin, Backoffice, Teamleiter, Analyst) steuern, ob In-App- und/oder E-Mail-Benachrichtigungen aktiviert sind',
     'Neue DB-Tabelle notification_role_settings mit RLS (nur Superadmin-Schreibzugriff) und vorbefüllten Einstellungen für alle 14 Benachrichtigungstypen × 5 Rollen',
