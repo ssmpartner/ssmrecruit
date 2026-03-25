@@ -203,7 +203,7 @@ export default function Settings() {
         {/* Content */}
         <div className="flex-1 max-w-2xl space-y-6">
           {activeTab === 'profile' && <ProfileSettings />}
-          {activeTab === 'notifications' && <NotificationsTab notifPrefs={notifPrefs} updateNotifPrefs={updateNotifPrefs} toast={toast} />}
+          {activeTab === 'notifications' && <NotificationRoleMatrix />}
           {activeTab === 'users' && <UsersTab isSuperadmin={isSuperadmin} />}
           {activeTab === 'sources' && <LeadSourcesTab isSuperadmin={isSuperadmin} />}
           {activeTab === 'appointments' && <AppointmentsTab appointmentSettings={appointmentSettings} updateAppointmentSettings={updateAppointmentSettings} toast={toast} />}
