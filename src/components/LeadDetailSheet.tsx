@@ -473,6 +473,7 @@ export default function LeadDetailSheet() {
                                     <PopoverContent className="w-auto p-0" align="start">
                                       <Calendar mode="single" selected={form.createdAt ? new Date(form.createdAt) : undefined}
                                         onSelect={(date) => date && setForm(prev => ({ ...prev, createdAt: date.toISOString() }))}
+                                        disabled={(date) => date >= new Date(2026, 0, 1)}
                                         className={cn("p-3 pointer-events-auto")} />
                                     </PopoverContent>
                                   </Popover>
