@@ -59,6 +59,102 @@ const DEFAULT_RULES: EscalationRules = {
   follow_up: [{ id: 'esc-fu-1', name: 'Follow-up überfällig', enabled: true, thresholdDays: 3, testOnly: false, actions: [{ type: 'notify', notificationMessage: 'Follow-up seit 3 Tagen ausstehend!' }] }],
 };
 
+// ── Process step info for the visual overview ──
+interface ProcessStepInfo {
+  title: string;
+  description: string;
+  features: string[];
+  escalationStatuses: string[];
+  actions: { icon: typeof Phone; label: string; description: string }[];
+}
+
+const PROCESS_STEP_INFO: Record<string, ProcessStepInfo> = {
+  new: {
+    title: 'Schritt 1: Neuer Lead',
+    description: 'Lead wird erfasst, geprüft und dem Erstkontakt zugeführt.',
+    features: [
+      'Lead-Erfassung via TikTok, Meta, LinkedIn, Website, CSV-Import',
+      'Automatische PLZ → Kanton → Agentur-Zuweisung',
+      'KI-Duplikaterkennung & Lead-Zusammenführung',
+      'Adress-Autovervollständigung & Bulk-Enrichment',
+    ],
+    escalationStatuses: ['Rückruf', 'Nicht erreicht', 'Nicht interessiert', 'Kein Bedarf', 'Nicht passend', 'Interne Stelle'],
+    actions: [
+      { icon: MapPin, label: 'Auto-Zuweisung', description: 'PLZ → Kanton → Agentur & Mitarbeiter' },
+      { icon: Users, label: 'Duplikatprüfung', description: 'KI-basierte Erkennung & Zusammenführung' },
+      { icon: Phone, label: 'Erstkontakt', description: 'Telefon oder E-Mail Kontaktaufnahme' },
+    ],
+  },
+  contacted: {
+    title: 'Schritt 2: Kontaktiert',
+    description: 'Termin vereinbaren und DISC/Insights-Test versenden.',
+    features: [
+      'Terminvereinbarung (Telefon/Video/Vor Ort)',
+      'Video-Call via Jitsi mit Recording & Screensharing',
+      'DISC/Insights-Test-Link versenden',
+      'E-Mail-Templates mit Platzhaltern',
+      'Automatische Termin-Erinnerungen',
+    ],
+    escalationStatuses: ['Rückruf (mit Zähler)', 'Nicht erreicht'],
+    actions: [
+      { icon: Video, label: 'Termin erstellen', description: 'Telefon, Video oder Vor-Ort' },
+      { icon: Brain, label: 'Insights versenden', description: 'DISC-Persönlichkeitstest-Link' },
+      { icon: Mail, label: 'Einladung senden', description: 'Automatisierte E-Mail mit Template' },
+    ],
+  },
+  appointment: {
+    title: 'Schritt 3: Terminiert & Qualifizierung',
+    description: 'Erstgespräch, DISC-Auswertung und Dokumentenanforderung.',
+    features: [
+      'Erstgespräch durchführen (Jitsi Video-Call)',
+      'DISC-Test parallel – automatische Auswertung',
+      'Dokumente-Upload-Link senden (48h Ablauf)',
+      'Status-Wizard für strukturierte Bewertung',
+      'KI-Aufgabengenerierung pro Phase',
+      'Auto-Transition bei DISC-Abschluss → Follow-up',
+    ],
+    escalationStatuses: ['Nicht passend', 'Kein Bedarf'],
+    actions: [
+      { icon: Video, label: 'Gespräch führen', description: 'Video-Call mit Notizen' },
+      { icon: Upload, label: 'Dokumente anfordern', description: 'Upload-Link per E-Mail (48h)' },
+      { icon: Sparkles, label: 'KI-Aufgaben', description: 'Automatische Aufgabengenerierung' },
+    ],
+  },
+  follow_up: {
+    title: 'Schritt 4: Follow-up & Entscheidung',
+    description: 'DISC-Ergebnisse besprechen, Dokumente prüfen, finale Entscheidung.',
+    features: [
+      'DISC-Profil als Gesprächsgrundlage (D/I/S/C Visualisierung)',
+      'KI-Kandidatenanalyse & Match-Bewertung',
+      'Dokumente prüfen & validieren',
+      'Follow-up-Termin vereinbaren',
+      'Interne Freigabe → Einstellen oder Ablehnen',
+      'Status-Wizard schreibt exakten granularen Status',
+    ],
+    escalationStatuses: ['Nicht passend', 'Kein Bedarf', 'Nicht interessiert'],
+    actions: [
+      { icon: Brain, label: 'DISC-Profil nutzen', description: 'Ergebnisse als Leitfaden' },
+      { icon: FileText, label: 'Dokumente prüfen', description: 'CV, Zeugnisse validieren' },
+      { icon: Check, label: 'Entscheidung treffen', description: 'Einstellen oder Ablehnen' },
+    ],
+  },
+  hired: {
+    title: 'Schritt 5: Eingestellt',
+    description: 'Erfolgreiche Einstellung – Prozessdaten archiviert.',
+    features: [
+      'Vollständige Prozess-Historie & Aktivitätenprotokoll',
+      'DISC-Ergebnisse & Dokumente archiviert',
+      'Konversionsrate pro Quelle, Agentur & Mitarbeiter',
+      'Willkommensprozess via E-Mail-Automatisierung',
+    ],
+    escalationStatuses: [],
+    actions: [
+      { icon: Mail, label: 'Willkommen senden', description: 'Automatisierte Willkommens-E-Mail' },
+      { icon: FileText, label: 'Archivierung', description: 'Alle Daten werden archiviert' },
+    ],
+  },
+};
+
 const ACTION_ICONS = { notify: Bell, reassign: UserCog, status_change: ArrowRightLeft };
 const ACTION_LABELS = { notify: 'Benachrichtigung', reassign: 'Neuzuweisung', status_change: 'Status ändern' };
 
