@@ -57,6 +57,20 @@ export default function LeadDetailSheet() {
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'insights' | 'documents'>('info');
   const [confirmReset, setConfirmReset] = useState(false);
+  const [isMarkedViewed, setIsMarkedViewed] = useState(false);
+
+  // Sync viewed state when selectedLead changes
+  const leadIsNew = selectedLead?.status === 'new';
+  if (selectedLead && leadIsNew) {
+    try {
+      const stored = localStorage.getItem('viewedLeadIds');
+      const viewedSet: Set<string> = stored ? new Set(JSON.parse(stored)) : new Set();
+      const currentlyViewed = viewedSet.has(selectedLead.id);
+      if (currentlyViewed !== isMarkedViewed) {
+        setIsMarkedViewed(currentlyViewed);
+      }
+    } catch { /* ignore */ }
+  }
 
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
