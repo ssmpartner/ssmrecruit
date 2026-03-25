@@ -142,6 +142,12 @@ export interface Agency {
   language: string;
   allowedCantons: string[];
   color: string;
+  address: string;
+  plz: string;
+  city: string;
+  latitude: number | null;
+  longitude: number | null;
+  radiusKm: number;
 }
 
 export const AGENCY_COLORS = [
