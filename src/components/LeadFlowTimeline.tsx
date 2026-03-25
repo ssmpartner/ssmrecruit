@@ -6,6 +6,13 @@ import { type ActivityEntry } from '@/context/leads-context';
 const mainFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired'];
 const STEP_EMOJIS: Record<string, string> = { new: '🆕', contacted: '📞', appointment: '📅', follow_up: '🔄', hired: '✅', rejected: '❌' };
 
+const statusToMainStep: Record<string, LeadStatus> = {
+  new: 'new', contacted: 'contacted', callback: 'contacted', not_reached: 'contacted',
+  not_interested: 'contacted', no_need: 'contacted', not_suitable: 'contacted', internal: 'contacted',
+  appointment: 'appointment', interview_1: 'appointment', insights: 'appointment', interview_2: 'appointment',
+  follow_up: 'follow_up', hired: 'hired', rejected: 'new',
+};
+
 interface LeadFlowTimelineProps {
   lead: Lead;
   activities: ActivityEntry[];
