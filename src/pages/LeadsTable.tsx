@@ -48,7 +48,24 @@ export default function LeadsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(20);
 
-  const leadsWithActivities = useMemo(() => new Set(activities.map(a => a.leadId)), [activities]);
+  const [viewedLeads, setViewedLeads] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('viewedLeadIds');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch { return new Set(); }
+  });
+
+  const markLeadViewed = useCallback((lead: Parameters<typeof setSelectedLead>[0]) => {
+    if (lead) {
+      setViewedLeads(prev => {
+        const next = new Set(prev);
+        next.add(lead.id);
+        localStorage.setItem('viewedLeadIds', JSON.stringify([...next]));
+        return next;
+      });
+    }
+    setSelectedLead(lead);
+  }, [setSelectedLead]);
 
   const lifecycleLeads = useMemo(() => {
     const lifecycle: LeadLifecycle = activeTab === 'active' ? 'active' : activeTab === 'archived' ? 'archived' : 'deleted';
