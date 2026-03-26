@@ -23,6 +23,7 @@ export default function Agencies() {
     latitude: null as number | null,
     longitude: null as number | null,
     radiusKm: 30,
+    monthlyLeadQuota: null as number | null,
   };
   const [form, setForm] = useState(defaultForm);
 
