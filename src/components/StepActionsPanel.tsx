@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { 
   Phone, PhoneOff, PhoneForwarded, UserX, Building2, ArrowRight, 
   CalendarPlus, Brain, Send, CheckCircle2, Clock, FileText, Upload, 
-  Shield, Sparkles, AlertCircle, Ban, ThumbsDown
+  Shield, Sparkles, AlertCircle, Ban, ThumbsDown, ClipboardCheck, Eye, UserCheck, BarChart3, HelpCircle
 } from 'lucide-react';
 import { type LeadStatus, statusConfig } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
 import { useToast } from '@/hooks/use-toast';
 import StatusWizardDialog, { type WizardType } from './StatusWizardDialog';
+import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardDialog';
 
 interface StepActionsPanelProps {
   leadId: string;
