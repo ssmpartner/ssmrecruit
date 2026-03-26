@@ -566,6 +566,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       language: agency.language || 'de',
       allowed_cantons: agency.allowedCantons || [],
       color: agency.color || '#6B7280',
+      monthly_lead_quota: agency.monthlyLeadQuota ?? null,
     });
   }, []);
 

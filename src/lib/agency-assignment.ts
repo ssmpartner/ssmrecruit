@@ -30,6 +30,7 @@ export function resolveAssignmentByPlz(
   fallbackEmployeeId: string,
   leadLat?: number | null,
   leadLng?: number | null,
+  currentMonthLeadCounts?: Record<string, number>,
 ): { agencyId: string; employeeId: string } {
   let resolvedCanton = cantonCode;
   if (!resolvedCanton && plz) {
@@ -37,7 +38,13 @@ export function resolveAssignmentByPlz(
     if (loc) resolvedCanton = loc.cantonCode;
   }
 
-  const nonHq = agencies.filter(a => !a.name.toLowerCase().includes('hauptsitz'));
+  const isWithinQuota = (a: Agency) => {
+    if (a.monthlyLeadQuota === null || a.monthlyLeadQuota === undefined) return true;
+    const count = currentMonthLeadCounts?.[a.id] ?? 0;
+    return count < a.monthlyLeadQuota;
+  };
+
+  const nonHq = agencies.filter(a => !a.name.toLowerCase().includes('hauptsitz') && isWithinQuota(a));
 
   // Step 1: Canton-based matching
   if (resolvedCanton) {
