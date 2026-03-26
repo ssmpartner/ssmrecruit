@@ -1006,6 +1006,41 @@ Neue Leads (Monat);24`,
       },
     ],
   },
+  {
+    title: 'Rollenrechte im Lead-Modul',
+    description: 'Übersicht der Berechtigungen pro Rolle im Lead-Modul. Review-Rollen (Controlling, Geschäftsleitung, HR) haben eingeschränkten Zugriff.',
+    endpoints: [
+      {
+        method: 'GET', path: '/api/v1/roles/permissions', summary: 'Rollenberechtigungen abrufen', auth: true,
+        description: 'Gibt eine Übersicht der Berechtigungen pro Rolle im Lead-Modul zurück. Controlling: Nur Leads mit Status «ready_for_controlling» sichtbar – darf Insights, Matching, Dokumente ansehen + Controlling Wizard ausführen (Approve/Reject/Rückfrage). Geschäftsleitung: Nur «management_review» Leads – read-only Übersicht + Approve/Reject. HR: Nur «hr_processing» Leads – darf finalen Status «Eingestellt» setzen. Keine der Review-Rollen darf Leads erstellen, bearbeiten, archivieren, löschen oder Zuweisungen ändern.',
+        response: `{
+  "roles": {
+    "controlling": {
+      "visible_statuses": ["ready_for_controlling"],
+      "can_view": true, "can_edit": false, "can_create": false,
+      "can_archive": false, "can_delete": false,
+      "allowed_actions": ["approve", "reject", "query"],
+      "visible_tabs": ["info", "insights", "documents", "activity", "status"]
+    },
+    "geschaeftsleitung": {
+      "visible_statuses": ["management_review"],
+      "can_view": true, "can_edit": false, "can_create": false,
+      "can_archive": false, "can_delete": false,
+      "allowed_actions": ["approve", "reject"],
+      "visible_tabs": ["info", "insights", "documents", "activity", "status"]
+    },
+    "hr": {
+      "visible_statuses": ["hr_processing"],
+      "can_view": true, "can_edit": false, "can_create": false,
+      "can_archive": false, "can_delete": false,
+      "allowed_actions": ["approve"],
+      "visible_tabs": ["info", "insights", "documents", "activity", "status"]
+    }
+  }
+}`,
+      },
+    ],
+  },
 ];
 
 function EndpointCard({ endpoint }: { endpoint: ApiEndpoint }) {
