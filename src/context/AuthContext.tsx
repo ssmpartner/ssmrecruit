@@ -58,8 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(({ data }) => setRole((data?.role as AppRole) ?? null));
   };
 
-  // Auto-logout after 45 minutes of inactivity
+  // Auto-logout after 45 minutes of inactivity (skip if "Angemeldet bleiben" is active)
   useEffect(() => {
+    const rememberMe = localStorage.getItem('ssm_remember_me') === 'true';
+    if (rememberMe) return; // Skip auto-logout when user chose to stay logged in
+
     const INACTIVITY_TIMEOUT = 45 * 60 * 1000; // 45 minutes
     let timer: ReturnType<typeof setTimeout>;
 
