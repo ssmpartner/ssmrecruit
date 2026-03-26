@@ -92,8 +92,8 @@ async function resolveAgencyByLocation(supabase: any, cantonCode: string) {
   if (!cantonCode) return null;
   const { data: agencyId } = await supabase.rpc('resolve_agency_by_canton', { _canton_code: cantonCode });
   if (agencyId) {
-    const { data: employee } = await supabase.from('employees').select('id').eq('agency_id', agencyId).limit(1).single();
-    return { agencyId, employeeId: employee?.id };
+    const { data: empId } = await supabase.rpc('resolve_employee_by_agency', { _agency_id: agencyId });
+    return { agencyId, employeeId: empId };
   }
   return null;
 }
@@ -160,8 +160,8 @@ serve(async (req) => {
     if (!agencyId) throw new Error('Keine Agentur für Lead-Zuweisung gefunden');
 
     if (!employeeId) {
-      const { data: defaultEmployee } = await supabase.from('employees').select('id').eq('agency_id', agencyId).limit(1).single();
-      employeeId = defaultEmployee?.id || (await supabase.from('employees').select('id').limit(1).single()).data?.id;
+      const { data: empId } = await supabase.rpc('resolve_employee_by_agency', { _agency_id: agencyId });
+      employeeId = empId || (await supabase.from('employees').select('id').limit(1).single()).data?.id;
     }
     if (!employeeId) throw new Error('Kein Mitarbeiter für Lead-Zuweisung gefunden');
 

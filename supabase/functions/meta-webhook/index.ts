@@ -121,8 +121,8 @@ serve(async (req) => {
         const { data: resolvedAgency } = await supabase.rpc('resolve_agency_by_canton', { _canton_code: finalCantonCode });
         if (resolvedAgency) {
           agencyId = resolvedAgency;
-          const { data: emp } = await supabase.from('employees').select('id').eq('agency_id', agencyId).limit(1).single();
-          if (emp?.id) employeeId = emp.id;
+          const { data: empId } = await supabase.rpc('resolve_employee_by_agency', { _agency_id: agencyId });
+          if (empId) employeeId = empId;
         }
       }
 

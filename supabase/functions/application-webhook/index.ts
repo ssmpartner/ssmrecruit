@@ -268,13 +268,8 @@ serve(async (req) => {
             .limit(1)
             .single();
           const finalAgencyId = agencyId || hauptsitz?.id || (await supabase.from('agencies').select('id').limit(1).single()).data?.id;
-          const { data: employee } = await supabase
-            .from('employees')
-            .select('id')
-            .eq('agency_id', finalAgencyId!)
-            .limit(1)
-            .single();
-          const employeeId = employee?.id || (await supabase.from('employees').select('id').limit(1).single()).data?.id;
+          const { data: empId } = await supabase.rpc('resolve_employee_by_agency', { _agency_id: finalAgencyId });
+          const employeeId = empId || (await supabase.from('employees').select('id').limit(1).single()).data?.id;
 
           if (finalAgencyId && employeeId) {
             leadId = crypto.randomUUID();
