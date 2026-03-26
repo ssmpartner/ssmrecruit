@@ -1,0 +1,2 @@
+ALTER TABLE public.agencies ADD COLUMN monthly_lead_quota integer DEFAULT NULL;
+COMMENT ON COLUMN public.agencies.monthly_lead_quota IS 'NULL = unlimited, otherwise max leads per month via auto-assignment';

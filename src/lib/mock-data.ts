@@ -148,6 +148,7 @@ export interface Agency {
   latitude: number | null;
   longitude: number | null;
   radiusKm: number;
+  monthlyLeadQuota: number | null;
 }
 
 export const AGENCY_COLORS = [
@@ -233,7 +234,7 @@ export const sourceConfig: Record<LeadSource, { label: string; icon: string }> =
   csv_import: { label: 'CSV Import', icon: 'FileSpreadsheet' },
 };
 
-const defaultAgencyFields = { address: '', plz: '', city: '', latitude: null, longitude: null, radiusKm: 30 } as const;
+const defaultAgencyFields = { address: '', plz: '', city: '', latitude: null, longitude: null, radiusKm: 30, monthlyLeadQuota: null } as const;
 
 export const agencies: Agency[] = [
   { id: 'a1', name: 'Agentur Unteren-Schönbühl', contactEmail: 'info@agentur-schoenbuehl.ch', region: 'Deutschschweiz', language: 'de', allowedCantons: ['BE', 'SO'], color: '#3B82F6', ...defaultAgencyFields },
