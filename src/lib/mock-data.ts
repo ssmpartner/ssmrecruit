@@ -1,4 +1,4 @@
-export type LeadStatus = 'new' | 'contacted' | 'callback' | 'not_reached' | 'not_interested' | 'no_need' | 'not_suitable' | 'internal' | 'appointment' | 'follow_up' | 'hired' | 'rejected' | 'ready_for_controlling' | 'management_review' | 'hr_processing';
+export type LeadStatus = 'new' | 'contacted' | 'callback' | 'not_reached' | 'not_interested' | 'no_need' | 'not_suitable' | 'internal' | 'appointment' | 'follow_up' | 'hired' | 'rejected' | 'ready_for_controlling' | 'controlling_approved' | 'management_review' | 'management_approved' | 'hr_processing';
 
 export type DiscDimension = 'D' | 'I' | 'S' | 'C';
 
@@ -190,7 +190,7 @@ export interface Employee {
 }
 
 // Ordered status flow for employees
-export const statusFlow: LeadStatus[] = ['new', 'contacted', 'callback', 'not_reached', 'not_interested', 'no_need', 'not_suitable', 'internal', 'appointment', 'follow_up', 'ready_for_controlling', 'management_review', 'hr_processing', 'hired', 'rejected'];
+export const statusFlow: LeadStatus[] = ['new', 'contacted', 'callback', 'not_reached', 'not_interested', 'no_need', 'not_suitable', 'internal', 'appointment', 'follow_up', 'ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired', 'rejected'];
 
 export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boolean): LeadStatus[] {
   if (isAdmin) return statusFlow;
@@ -205,8 +205,10 @@ export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boole
     internal: [],
     appointment: ['follow_up', 'rejected'],
     follow_up: ['ready_for_controlling', 'hired', 'rejected'],
-    ready_for_controlling: ['management_review', 'rejected'],
-    management_review: ['hr_processing', 'rejected'],
+    ready_for_controlling: ['controlling_approved', 'rejected'],
+    controlling_approved: ['management_review'],
+    management_review: ['management_approved', 'rejected'],
+    management_approved: ['hr_processing'],
     hr_processing: ['hired', 'rejected'],
     hired: [],
     rejected: [],
@@ -226,7 +228,9 @@ export const statusConfig: Record<LeadStatus, { label: string; color: string }> 
   appointment: { label: 'Terminiert', color: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
   follow_up: { label: 'Follow-up', color: 'bg-violet-50 text-violet-700 border border-violet-200' },
   ready_for_controlling: { label: 'Controlling-Prüfung', color: 'bg-cyan-50 text-cyan-700 border border-cyan-200' },
+  controlling_approved: { label: 'Controlling Approved', color: 'bg-cyan-100 text-cyan-800 border border-cyan-300' },
   management_review: { label: 'Management Review', color: 'bg-purple-50 text-purple-700 border border-purple-200' },
+  management_approved: { label: 'Management Approved', color: 'bg-purple-100 text-purple-800 border border-purple-300' },
   hr_processing: { label: 'HR-Bearbeitung', color: 'bg-teal-50 text-teal-700 border border-teal-200' },
   hired: { label: 'Eingestellt', color: 'bg-green-50 text-green-700 border border-green-200' },
   rejected: { label: 'Abgelehnt', color: 'bg-red-50 text-red-700 border border-red-200' },
