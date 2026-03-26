@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
+import ApprovalLeadView from './ApprovalLeadView';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Calendar } from '@/components/ui/calendar';
@@ -191,9 +192,9 @@ export default function LeadDetailSheet() {
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-[90vw] w-[90vw] max-h-[90vh] h-[90vh] overflow-hidden flex flex-col p-0 gap-0 rounded-xl">
-          {selectedLead && (
-            <>
-              {/* Header */}
+          {selectedLead && isReviewRole ? (
+            <ApprovalLeadView onClose={() => onOpenChange(false)} />
+          ) : selectedLead && (
               <div className="border-b px-5 py-3 flex items-center gap-4 shrink-0 bg-card">
                 <div className="flex items-center gap-1">
                   <button onClick={goToPrev} disabled={!hasPrev}
