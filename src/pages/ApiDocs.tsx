@@ -87,6 +87,8 @@ const apiSections: ApiSection[] = [
   "approved_by_role": "",
   "approval_history": [],
   "is_read": false,
+  "assigned_approver_user_id": null,
+  "assigned_approver_role": "",
   "createdAt": "2025-03-01T00:00:00.000Z",
   "updatedAt": "2025-03-03T00:00:00.000Z"
 }`,
