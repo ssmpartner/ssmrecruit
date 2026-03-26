@@ -85,9 +85,9 @@ export default function LeadsTable() {
     
     // Role-based status filtering for review roles
     if (isControlling) {
-      filtered = filtered.filter(l => l.status === 'ready_for_controlling');
+      filtered = filtered.filter(l => l.status === 'ready_for_controlling' || l.status === 'controlling_approved');
     } else if (isGeschaeftsleitung) {
-      filtered = filtered.filter(l => l.status === 'management_review');
+      filtered = filtered.filter(l => l.status === 'management_review' || l.status === 'management_approved');
     } else if (isHR) {
       filtered = filtered.filter(l => l.status === 'hr_processing');
     }
