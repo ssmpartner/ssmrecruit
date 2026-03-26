@@ -676,40 +676,42 @@ export default function LeadDetailSheet() {
                           );
                         })()}
 
-                        <section>
-                          <h4 className="text-base font-semibold mb-3">Status ändern</h4>
-                          <div className="mb-3">
-                            <p className="text-sm text-muted-foreground mb-2">Admin (frei wählbar)</p>
-                            <div className="flex flex-wrap gap-1">
-                              {statusKeys.map(s => (
-                                <button key={s} onClick={() => changeStatus(s)}
-                                  className={`rounded-full px-3 py-1.5 text-sm font-medium border transition-colors ${
-                                    selectedLead.status === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary text-secondary-foreground border-transparent hover:border-primary/30'
-                                  }`}>
-                                  {statusConfig[s].label}
-                                </button>
-                              ))}
+                        {!isReviewRole && (
+                          <section>
+                            <h4 className="text-base font-semibold mb-3">Status ändern</h4>
+                            <div className="mb-3">
+                              <p className="text-sm text-muted-foreground mb-2">Admin (frei wählbar)</p>
+                              <div className="flex flex-wrap gap-1">
+                                {statusKeys.map(s => (
+                                  <button key={s} onClick={() => changeStatus(s)}
+                                    className={`rounded-full px-3 py-1.5 text-sm font-medium border transition-colors ${
+                                      selectedLead.status === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary text-secondary-foreground border-transparent hover:border-primary/30'
+                                    }`}>
+                                    {statusConfig[s].label}
+                                  </button>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground mb-2">Nächster Schritt</p>
-                            {(() => {
-                              const allowed = getAllowedNextStatuses(selectedLead.status, false);
-                              return allowed.length > 0 ? (
-                                <div className="flex flex-wrap gap-1">
-                                  {allowed.map(s => (
-                                     <button key={s} onClick={() => changeStatus(s)}
-                                       className="rounded-full px-3 py-1.5 text-sm font-medium border border-primary/30 bg-primary/5 hover:bg-primary hover:text-primary-foreground transition-colors">
-                                      → {statusConfig[s].label}
-                                    </button>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-muted-foreground italic">Endstatus erreicht</p>
-                              );
-                            })()}
-                          </div>
-                         </section>
+                            <div>
+                              <p className="text-sm text-muted-foreground mb-2">Nächster Schritt</p>
+                              {(() => {
+                                const allowed = getAllowedNextStatuses(selectedLead.status, false);
+                                return allowed.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {allowed.map(s => (
+                                       <button key={s} onClick={() => changeStatus(s)}
+                                         className="rounded-full px-3 py-1.5 text-sm font-medium border border-primary/30 bg-primary/5 hover:bg-primary hover:text-primary-foreground transition-colors">
+                                        → {statusConfig[s].label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground italic">Endstatus erreicht</p>
+                                );
+                              })()}
+                            </div>
+                           </section>
+                        )}
 
                          {isSuperadmin && selectedLead.status !== 'new' && (
                            <section className="pt-3 border-t border-border">
