@@ -7,11 +7,11 @@ import { toast } from 'sonner';
 export default function Login() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem('ssm_remember_email') || '');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => localStorage.getItem('ssm_remember_me') === 'true');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,6 +19,15 @@ export default function Login() {
     setLoading(true);
     const { error } = await signIn(email.trim(), password);
     setLoading(false);
+    if (!error) {
+      if (rememberMe) {
+        localStorage.setItem('ssm_remember_me', 'true');
+        localStorage.setItem('ssm_remember_email', email.trim());
+      } else {
+        localStorage.removeItem('ssm_remember_me');
+        localStorage.removeItem('ssm_remember_email');
+      }
+    }
     if (error) {
       toast.error(error.message === 'Invalid login credentials'
         ? 'Ungültige Anmeldedaten. Bitte prüfen Sie E-Mail und Passwort.'
