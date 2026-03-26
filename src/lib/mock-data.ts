@@ -61,7 +61,7 @@ export interface Lead {
   approvalStatus?: string;
   approvalHistory?: Array<{ role: string; action: string; user: string; timestamp: string }>;
   approvedByRole?: string;
-  isRead: boolean;
+  isRead?: boolean;
 }
 
 export interface Appointment {
