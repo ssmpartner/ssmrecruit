@@ -274,6 +274,8 @@ const appFeatures = [
     { name: 'Mitarbeiter', desc: 'Mitarbeiterprofile und Zuweisungen verwalten.' },
     { name: 'Prozesse', desc: 'Mehrstufige Recruiting-Prozesse mit Stepper-Ansicht, KI-generierten Richtlinien und Geltungsbereichen für Automatisierungen (Global/Agentur/Mitarbeiter).' },
     { name: 'Eskalationsprozesse', desc: 'Flexible Eskalationslogik pro Hauptprozess mit quellen-basierter Aktivierung, Regel-Engine, Wizard-Verknüpfung und Test-Modus.' },
+    { name: 'Approval-Prozess', desc: 'Mehrstufiger Freigabeprozess nach Follow-up: Controlling → Management → HR → Eingestellt. Jede Phase hat einen eigenen Wizard mit Checklisten und Aktionen.' },
+    { name: 'Approval-Wizards', desc: '3 phasenspezifische Wizards: Controlling Prüfung (Checkboxen für Insights/Matching/Dokumente), Management Review (Read-only Übersicht), HR Onboarding (Einstellung finalisieren).' },
     { name: 'Pipeline-Flow', desc: 'Interaktive Pipeline mit horizontaler und vertikaler Ansicht, farbiger Prozess-Wegleitung, Geschlechts-Icons bei Lead-Namen, Eskalations-Erkennung, Wizard-/Regelzuweisung und Test-Modus-Indikator.' },
     { name: 'PLZ-Auto-Zuweisung', desc: 'Automatische Agentur- und Mitarbeiterzuweisung basierend auf PLZ/Kanton bei Import und Webhook-Eingang. Automatische Adress-Ergänzung (PLZ→Ort/Kanton) bei allen Import-Methoden.' },
     { name: 'Dokument-Link Ablauf', desc: 'Upload-Links laufen nach 48h automatisch ab. Status (aktiv/abgelaufen/benutzt) wird im Dokumente-Tab angezeigt.' },
@@ -316,7 +318,7 @@ const appFeatures = [
   ]},
   { category: 'Administration', icon: '⚙️', features: [
     { name: 'Benutzerverwaltung', desc: 'Superadmins können Benutzer erstellen, Rollen zuweisen und Konten löschen.' },
-    { name: 'Rollensystem', desc: 'Fünf Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Teamleiter, Backoffice, Analyst.' },
+    { name: 'Rollensystem', desc: '8 Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Teamleiter, Backoffice, Analyst, Controlling (Prüfrolle), Geschäftsleitung (Freigaberolle), HR (Onboarding-Rolle).' },
     { name: 'Einstellungen', desc: 'Zentrale Konfiguration für Benachrichtigungen, Termine, Integrationen und API.' },
     { name: 'Profilverwaltung', desc: 'Benutzer können Name, E-Mail und Passwort in den Profileinstellungen ändern.' },
   ]},
