@@ -237,16 +237,45 @@ const apiSections: ApiSection[] = [
   },
   {
     title: 'Agenturen',
-    description: 'Agenturen und deren Kontaktdaten verwalten.',
+    description: 'Agenturen mit Standort, Umkreis und Kanton-Zuordnung verwalten.',
     endpoints: [
       {
         method: 'GET', path: '/api/v1/agencies', summary: 'Alle Agenturen abrufen', auth: true,
-        description: 'Liste aller Agenturen mit Kontaktdaten.',
+        description: 'Liste aller Agenturen mit Standort-Koordinaten, Umkreis und Kanton-Zuordnung.',
         response: `{
   "data": [
-    { "id": "a1", "name": "Agentur Unteren-Schönbühl", "contactEmail": "info@agentur-schoenbuehl.ch" }
+    {
+      "id": "a1",
+      "name": "Agentur Unteren-Schönbühl",
+      "contactEmail": "info@agentur-schoenbuehl.ch",
+      "address": "Bahnhofstrasse 5",
+      "plz": "3322",
+      "city": "Urtenen-Schönbühl",
+      "latitude": 47.0184,
+      "longitude": 7.4965,
+      "radiusKm": 30,
+      "allowedCantons": ["BE", "SO"],
+      "region": "Deutschschweiz",
+      "language": "de"
+    }
   ]
 }`,
+      },
+      {
+        method: 'PATCH', path: '/api/v1/agencies/:id', summary: 'Agentur aktualisieren', auth: true,
+        description: 'Aktualisiert Agentur-Daten inkl. Adresse, Koordinaten und Einsatzradius. Beim Speichern werden fehlende Koordinaten automatisch per Geocoding ermittelt.',
+        params: [{ name: 'id', type: 'string', required: true, description: 'Agentur-ID' }],
+        body: [
+          { name: 'name', type: 'string', required: false, description: 'Agenturname' },
+          { name: 'address', type: 'string', required: false, description: 'Strasse / Nr.' },
+          { name: 'plz', type: 'string', required: false, description: 'Postleitzahl' },
+          { name: 'city', type: 'string', required: false, description: 'Ort' },
+          { name: 'latitude', type: 'number', required: false, description: 'Breitengrad (wird automatisch ermittelt)' },
+          { name: 'longitude', type: 'number', required: false, description: 'Längengrad (wird automatisch ermittelt)' },
+          { name: 'radiusKm', type: 'number', required: false, description: 'Einsatzradius in km (5–100, Standard: 30)' },
+          { name: 'allowedCantons', type: 'string[]', required: false, description: 'Erlaubte Kantone für Lead-Zuweisung' },
+        ],
+        response: `{ "id": "a1", "latitude": 47.0184, "longitude": 7.4965, "radiusKm": 30 }`,
       },
     ],
   },
