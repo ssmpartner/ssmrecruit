@@ -2,9 +2,21 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.35.0';
+const APP_VERSION = '2.36.0';
 
 const versionHistory = [
+  { version: '2.36.0', date: '26.03.2026', changes: [
+    'Neue Rollen: Controlling, Geschäftsleitung und HR als reine Prüf- und Freigaberollen (Read + Action) – keine Bearbeitung, nur Approve/Reject/Rückfrage',
+    'Eskalationsprozess: Neuer 5-stufiger Approval-Flow nach Follow-up: Ready for Controlling → Controlling Approved → Management Review → Management Approved → HR Processing → Eingestellt',
+    'Rollenbasierte Dashboard-Ansichten: Controlling sieht «Zu prüfen», Geschäftsleitung sieht «Freigaben offen», HR sieht «Onboarding» – jeweils nur relevante Leads',
+    'Approval-Wizards: 3 neue Wizards (Controlling Prüfung, Management Review, HR Onboarding) mit spezifischen Checklisten und Aktionen pro Phase',
+    'Approval-History: Lead-Detail zeigt chronologischen Approval-Verlauf mit Rolle, Aktion, Benutzer und Zeitstempel im Status-Tab',
+    'Neue Lead-Felder: approval_stage, approval_status, approval_history (Array), approved_by_role – rückwärtskompatibel mit leeren Defaults',
+    '4 neue Eskalationsregeln: Follow-up → Controlling, Controlling → Management (+ Benachrichtigung GL), Management → HR (+ Zuweisung), HR → Eingestellt',
+    'Neue API-Endpunkte: PATCH /leads/:id/approve und PATCH /leads/:id/reject für programmatische Freigabe/Ablehnung',
+    'Neue Events: lead.approved.controlling, lead.approved.management, lead.processed.hr für Automations-Trigger',
+    'Sidebar-Einschränkung: Review-Rollen sehen nur Dashboard und Leads – keine administrativen Bereiche',
+  ]},
   { version: '2.35.0', date: '26.03.2026', changes: [
     'Hilfe-Center: Neue Seite unter /help mit 11 Kategorien und 28 durchsuchbaren Artikeln zu allen Systemfunktionen – für alle Benutzerrollen sichtbar',
     'Hilfe-Center: Echtzeit-Suche über Titel, Inhalt und Tags; Kategorien-Navigation mit aufklappbaren Artikellisten',
@@ -325,11 +337,14 @@ const techStack = [
 ];
 
 const roles = [
-  { role: 'Superadmin', color: 'bg-destructive/10 text-destructive', permissions: ['Vollzugriff auf alle Module', 'Benutzerverwaltung (erstellen, löschen)', 'Rollen zuweisen', 'Integrationen konfigurieren', 'CSV-Export', 'Leads dauerhaft löschen', 'Mehrfachauswahl & Bulk-Zuweisung', 'App-Einstellungen ändern'] },
-  { role: 'Admin', color: 'bg-primary/10 text-primary', permissions: ['Lead-Management (CRUD)', 'Mitarbeiter & Agenturen verwalten', 'Termine & Kalender', 'Analytics einsehen', 'Aufgaben verwalten'] },
+  { role: 'Superadmin', color: 'bg-destructive/10 text-destructive', permissions: ['Vollzugriff auf alle Module', 'Benutzerverwaltung (erstellen, löschen)', 'Rollen zuweisen (inkl. Controlling, GL, HR)', 'Integrationen konfigurieren', 'CSV-Export', 'Leads dauerhaft löschen', 'Mehrfachauswahl & Bulk-Zuweisung', 'App-Einstellungen ändern'] },
+  { role: 'Admin', color: 'bg-primary/10 text-primary', permissions: ['Lead-Management (CRUD)', 'Mitarbeiter & Agenturen verwalten', 'Termine & Kalender', 'Analytics einsehen', 'Aufgaben verwalten', 'Controlling/GL/HR-Rollen zuweisen'] },
   { role: 'Teamleiter', color: 'bg-emerald-600/10 text-emerald-600', permissions: ['Eigene Leads einsehen & bearbeiten', 'Pipeline-Ansicht', 'Aufgaben verwalten', 'Kalender & Termine', 'Statistik einsehen', 'Eigenes Profil bearbeiten'] },
   { role: 'Backoffice', color: 'bg-accent/50 text-accent-foreground', permissions: ['Leads einsehen & bearbeiten', 'Termine erstellen', 'Aufgaben bearbeiten', 'CSV-Import'] },
   { role: 'Analyst', color: 'bg-muted text-muted-foreground', permissions: ['Dashboard & Analytics (nur lesen)', 'Lead-Daten einsehen', 'Berichte exportieren'] },
+  { role: 'Controlling', color: 'bg-cyan-600/10 text-cyan-600', permissions: ['Nur Leads mit Status «Ready for Controlling»', 'Lead ansehen (read-only)', 'Insights / Matching / Dokumente prüfen', 'Approve → Management Review', 'Reject → Zurück an Follow-up', 'Rückfrage → Task erstellen'] },
+  { role: 'Geschäftsleitung', color: 'bg-purple-600/10 text-purple-600', permissions: ['Nur Leads mit Status «Management Review»', 'Read-only Übersicht (Score, Insights, Controlling-Entscheidung)', 'Approve → HR Processing', 'Reject → Zurück an Controlling'] },
+  { role: 'HR', color: 'bg-pink-600/10 text-pink-600', permissions: ['Nur Leads mit Status «HR Processing»', 'Lead ansehen', 'Onboarding starten', 'Finalen Status setzen → Eingestellt'] },
 ];
 
 function VersionHistoryTab() {
