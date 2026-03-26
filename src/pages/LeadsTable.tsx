@@ -35,6 +35,7 @@ const PAGE_SIZES: { value: PageSize; label: string }[] = [
 export default function LeadsTable() {
   const { leads, employees, agencies, leadSources, activities, setSelectedLead, updateLead } = useLeads();
   const { isSuperadmin, role, isControlling, isGeschaeftsleitung, isHR, isReviewRole } = useAuth();
+  const canManageLeads = !isReviewRole;
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
@@ -150,11 +151,11 @@ export default function LeadsTable() {
   const archivedCount = leads.filter(l => l.lifecycle === 'archived').length;
   const deletedCount = leads.filter(l => l.lifecycle === 'deleted').length;
 
-  const tabs: { key: TabKey; label: string; icon: React.ReactNode; count: number; superadminOnly?: boolean }[] = [
-    { key: 'active', label: 'Aktiv', icon: null, count: activeCount },
-    { key: 'archived', label: 'Archiviert', icon: <Archive className="h-3.5 w-3.5" />, count: archivedCount, superadminOnly: true },
-    { key: 'deleted', label: 'Gelöscht', icon: <Trash2 className="h-3.5 w-3.5" />, count: deletedCount, superadminOnly: true },
-    { key: 'duplicates', label: 'Doppelte Leads', icon: <Copy className="h-3.5 w-3.5" />, count: 0 },
+  const tabs: { key: TabKey; label: string; icon: React.ReactNode; count: number; superadminOnly?: boolean; hideForReview?: boolean }[] = [
+    { key: 'active', label: isControlling ? 'Zu prüfen' : isGeschaeftsleitung ? 'Freigaben offen' : isHR ? 'Onboarding' : 'Aktiv', icon: null, count: activeCount },
+    { key: 'archived', label: 'Archiviert', icon: <Archive className="h-3.5 w-3.5" />, count: archivedCount, superadminOnly: true, hideForReview: true },
+    { key: 'deleted', label: 'Gelöscht', icon: <Trash2 className="h-3.5 w-3.5" />, count: deletedCount, superadminOnly: true, hideForReview: true },
+    { key: 'duplicates', label: 'Doppelte Leads', icon: <Copy className="h-3.5 w-3.5" />, count: 0, hideForReview: true },
   ];
 
   // Generate page numbers for pagination
@@ -180,11 +181,14 @@ export default function LeadsTable() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
           <p className="text-muted-foreground">
-            {activeTab === 'duplicates' ? 'KI-basierte Duplikat-Erkennung' : `${filtered.length} von ${lifecycleLeads.length} Leads`}
+            {isReviewRole
+              ? `${filtered.length} Lead${filtered.length !== 1 ? 's' : ''} zur Bearbeitung`
+              : activeTab === 'duplicates' ? 'KI-basierte Duplikat-Erkennung' : `${filtered.length} von ${lifecycleLeads.length} Leads`
+            }
           </p>
         </div>
         <div className="flex gap-2">
-          {activeTab === 'active' && (
+          {activeTab === 'active' && canManageLeads && (
             <>
               <CsvImportDialog />
               {isSuperadmin && (
@@ -203,7 +207,7 @@ export default function LeadsTable() {
 
       {/* Sub-tabs */}
       <div className="flex gap-1 rounded-xl border bg-card p-1 shadow-sm">
-        {tabs.filter(tab => !tab.superadminOnly || isSuperadmin).map(tab => (
+        {tabs.filter(tab => (!tab.superadminOnly || isSuperadmin) && (!tab.hideForReview || !isReviewRole)).map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
@@ -231,7 +235,7 @@ export default function LeadsTable() {
       {/* Table Tabs */}
       {activeTab !== 'duplicates' && (
         <>
-          {isSuperadmin && <BulkActionsBar selectedIds={selectedIds} onClear={() => setSelectedIds([])} />}
+          {isSuperadmin && !isReviewRole && <BulkActionsBar selectedIds={selectedIds} onClear={() => setSelectedIds([])} />}
           <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4 shadow-sm">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <input
@@ -296,7 +300,7 @@ export default function LeadsTable() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
-                  {isSuperadmin && (
+                  {isSuperadmin && !isReviewRole && (
                     <th className="px-3 py-3 w-10">
                       <Checkbox
                         checked={paginatedLeads.length > 0 && selectedIds.length === paginatedLeads.length}
@@ -313,13 +317,13 @@ export default function LeadsTable() {
                   <th className="px-5 py-3 font-medium">Agentur</th>
                   <th className="px-5 py-3 font-medium">Zugewiesen</th>
                   <th className="px-5 py-3 font-medium">Datum</th>
-                  <th className="px-5 py-3 font-medium">Aktionen</th>
+                  {!isReviewRole && <th className="px-5 py-3 font-medium">Aktionen</th>}
                 </tr>
               </thead>
               <tbody>
                 {paginatedLeads.length === 0 && (
                   <tr>
-                    <td colSpan={isSuperadmin ? 11 : 10} className="px-5 py-12 text-center text-muted-foreground">
+                    <td colSpan={isSuperadmin && !isReviewRole ? 11 : isReviewRole ? 9 : 10} className="px-5 py-12 text-center text-muted-foreground">
                       {activeTab === 'archived' ? 'Keine archivierten Leads vorhanden.' : activeTab === 'deleted' ? 'Keine gelöschten Leads vorhanden.' : 'Keine Leads gefunden.'}
                     </td>
                   </tr>
@@ -336,7 +340,7 @@ export default function LeadsTable() {
                         selectedIds.includes(lead.id) && "bg-primary/5"
                       )}
                     >
-                      {isSuperadmin && (
+                      {isSuperadmin && !isReviewRole && (
                         <td className="px-3 py-3" onClick={e => e.stopPropagation()}>
                           <Checkbox
                             checked={selectedIds.includes(lead.id)}
@@ -384,9 +388,11 @@ export default function LeadsTable() {
                       </td>
                       <td className="px-5 py-3 text-xs text-muted-foreground">{emp?.name}</td>
                       <td className="px-5 py-3 text-xs text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString('de-CH')}</td>
-                      <td className="px-5 py-3">
-                        <LeadActions lead={lead} />
-                      </td>
+                      {!isReviewRole && (
+                        <td className="px-5 py-3">
+                          <LeadActions lead={lead} />
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

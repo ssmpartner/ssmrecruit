@@ -45,7 +45,7 @@ const appointmentTypeConfig = {
 export default function LeadDetailSheet() {
   const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings, leads, leadSources } = useLeads();
   const { toast } = useToast();
-  const { isSuperadmin, profile } = useAuth();
+  const { isSuperadmin, profile, isReviewRole, isControlling, isGeschaeftsleitung, isHR } = useAuth();
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
@@ -174,15 +174,18 @@ export default function LeadDetailSheet() {
   const inputCls = "h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
   const inputErr = (field: string) => fieldErrors[field] ? inputCls + ' border-destructive ring-1 ring-destructive/30' : inputCls;
 
-  const rightTabs = [
-    { key: 'info' as const, label: 'Info', icon: User },
-    { key: 'insights' as const, label: 'Insights', icon: Brain },
-    { key: 'documents' as const, label: 'Dokumente', icon: Upload },
-    { key: 'flow' as const, label: 'Flow', icon: Workflow },
-    { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length },
-    { key: 'activity' as const, label: 'Aktivität', icon: Activity },
-    { key: 'status' as const, label: 'Status', icon: FileText },
+  const allRightTabs = [
+    { key: 'info' as const, label: 'Info', icon: User, hideForReview: false },
+    { key: 'insights' as const, label: 'Insights', icon: Brain, hideForReview: false },
+    { key: 'documents' as const, label: 'Dokumente', icon: Upload, hideForReview: false },
+    { key: 'flow' as const, label: 'Flow', icon: Workflow, hideForReview: true },
+    { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length, hideForReview: true },
+    { key: 'activity' as const, label: 'Aktivität', icon: Activity, hideForReview: false },
+    { key: 'status' as const, label: 'Status', icon: FileText, hideForReview: false },
   ];
+  const rightTabs = isReviewRole
+    ? allRightTabs.filter(t => !t.hideForReview)
+    : allRightTabs;
 
   return (
     <>
@@ -313,9 +316,9 @@ export default function LeadDetailSheet() {
                         </button>
                       ))}
                     </div>
-                    {/* Edit/Save in header */}
+                    {/* Edit/Save in header - hidden for review roles */}
                     <div className="ml-auto shrink-0 pl-2">
-                      {rightTab === 'info' && (
+                      {rightTab === 'info' && !isReviewRole && (
                         !editing ? (
                            <button onClick={startEdit} className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
                              <Edit3 className="h-3.5 w-3.5" /> Bearbeiten
@@ -333,26 +336,28 @@ export default function LeadDetailSheet() {
                     {/* Info Tab */}
                     {rightTab === 'info' && (
                       <div className="space-y-4">
-                        {/* Assignment */}
-                        <section className="rounded-lg border bg-muted/30 p-3 space-y-2">
-                          <h4 className="text-sm font-semibold flex items-center gap-1.5"><UserCog className="h-4 w-4" /> Zuweisung</h4>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className="text-sm text-muted-foreground">Agentur</label>
-                              <select value={selectedLead.agencyId} onChange={e => changeAgency(e.target.value)} className={inputCls + ' mt-0.5'}>
-                                {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                              </select>
+                        {/* Assignment - hidden for review roles */}
+                        {!isReviewRole && (
+                          <section className="rounded-lg border bg-muted/30 p-3 space-y-2">
+                            <h4 className="text-sm font-semibold flex items-center gap-1.5"><UserCog className="h-4 w-4" /> Zuweisung</h4>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-sm text-muted-foreground">Agentur</label>
+                                <select value={selectedLead.agencyId} onChange={e => changeAgency(e.target.value)} className={inputCls + ' mt-0.5'}>
+                                  {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-sm text-muted-foreground">Mitarbeiter</label>
+                                <select value={selectedLead.employeeId} onChange={e => changeEmployee(e.target.value)} className={inputCls + ' mt-0.5'}>
+                                  {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                                </select>
+                              </div>
                             </div>
-                            <div>
-                              <label className="text-sm text-muted-foreground">Mitarbeiter</label>
-                              <select value={selectedLead.employeeId} onChange={e => changeEmployee(e.target.value)} className={inputCls + ' mt-0.5'}>
-                                {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                              </select>
-                            </div>
-                          </div>
-                        </section>
+                          </section>
+                        )}
 
-                        {editing ? (
+                        {editing && !isReviewRole ? (
                           <div className="space-y-2.5">
                             <div className="grid grid-cols-3 gap-2.5">
                               <div>
@@ -671,40 +676,42 @@ export default function LeadDetailSheet() {
                           );
                         })()}
 
-                        <section>
-                          <h4 className="text-base font-semibold mb-3">Status ändern</h4>
-                          <div className="mb-3">
-                            <p className="text-sm text-muted-foreground mb-2">Admin (frei wählbar)</p>
-                            <div className="flex flex-wrap gap-1">
-                              {statusKeys.map(s => (
-                                <button key={s} onClick={() => changeStatus(s)}
-                                  className={`rounded-full px-3 py-1.5 text-sm font-medium border transition-colors ${
-                                    selectedLead.status === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary text-secondary-foreground border-transparent hover:border-primary/30'
-                                  }`}>
-                                  {statusConfig[s].label}
-                                </button>
-                              ))}
+                        {!isReviewRole && (
+                          <section>
+                            <h4 className="text-base font-semibold mb-3">Status ändern</h4>
+                            <div className="mb-3">
+                              <p className="text-sm text-muted-foreground mb-2">Admin (frei wählbar)</p>
+                              <div className="flex flex-wrap gap-1">
+                                {statusKeys.map(s => (
+                                  <button key={s} onClick={() => changeStatus(s)}
+                                    className={`rounded-full px-3 py-1.5 text-sm font-medium border transition-colors ${
+                                      selectedLead.status === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary text-secondary-foreground border-transparent hover:border-primary/30'
+                                    }`}>
+                                    {statusConfig[s].label}
+                                  </button>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground mb-2">Nächster Schritt</p>
-                            {(() => {
-                              const allowed = getAllowedNextStatuses(selectedLead.status, false);
-                              return allowed.length > 0 ? (
-                                <div className="flex flex-wrap gap-1">
-                                  {allowed.map(s => (
-                                     <button key={s} onClick={() => changeStatus(s)}
-                                       className="rounded-full px-3 py-1.5 text-sm font-medium border border-primary/30 bg-primary/5 hover:bg-primary hover:text-primary-foreground transition-colors">
-                                      → {statusConfig[s].label}
-                                    </button>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-muted-foreground italic">Endstatus erreicht</p>
-                              );
-                            })()}
-                          </div>
-                         </section>
+                            <div>
+                              <p className="text-sm text-muted-foreground mb-2">Nächster Schritt</p>
+                              {(() => {
+                                const allowed = getAllowedNextStatuses(selectedLead.status, false);
+                                return allowed.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {allowed.map(s => (
+                                       <button key={s} onClick={() => changeStatus(s)}
+                                         className="rounded-full px-3 py-1.5 text-sm font-medium border border-primary/30 bg-primary/5 hover:bg-primary hover:text-primary-foreground transition-colors">
+                                        → {statusConfig[s].label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground italic">Endstatus erreicht</p>
+                                );
+                              })()}
+                            </div>
+                           </section>
+                        )}
 
                          {isSuperadmin && selectedLead.status !== 'new' && (
                            <section className="pt-3 border-t border-border">

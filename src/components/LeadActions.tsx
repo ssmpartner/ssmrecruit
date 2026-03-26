@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AlertTriangle, Archive, RotateCcw, Trash2 } from 'lucide-react';
 import { type Lead } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
+import { useAuth } from '@/context/AuthContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +22,11 @@ interface LeadActionsProps {
 
 export default function LeadActions({ lead }: LeadActionsProps) {
   const { archiveLead, deleteLead, restoreLead } = useLeads();
+  const { isReviewRole } = useAuth();
   const [confirmAction, setConfirmAction] = useState<'archive' | 'delete' | 'restore' | null>(null);
+
+  // Review roles cannot archive/delete/restore
+  if (isReviewRole) return null;
 
   const handleConfirm = () => {
     if (confirmAction === 'archive') {

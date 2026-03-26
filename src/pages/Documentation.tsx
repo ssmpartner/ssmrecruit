@@ -2,9 +2,19 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.37.0';
+const APP_VERSION = '2.38.0';
 
 const versionHistory = [
+  { version: '2.38.0', date: '26.03.2026', changes: [
+    'Lead-Modul: Rollenbasierte Sichtbarkeit – Controlling sieht nur «Ready for Controlling», Geschäftsleitung nur «Management Review», HR nur «HR Processing»',
+    'Lead-Modul: Review-Rollen können keine Leads erstellen, bearbeiten, archivieren oder löschen – nur ansehen und Approval-Aktionen ausführen',
+    'Lead-Detail: Zuweisung, Bearbeiten-Button und operative Tabs (Flow, Termine) sind für Review-Rollen ausgeblendet',
+    'Lead-Detail: Status-Tab zeigt für Review-Rollen nur den Approval-Verlauf, keine manuellen Statusänderungen',
+    'Lead-Tabelle: Tab-Labels passen sich der Rolle an – «Zu prüfen» (Controlling), «Freigaben offen» (GL), «Onboarding» (HR)',
+    'Lead-Tabelle: Archiv-, Lösch- und Duplikat-Tabs sowie Bulk-Aktionen sind für Review-Rollen ausgeblendet',
+    'Aktionen-Spalte: Für Review-Rollen komplett ausgeblendet – keine Archivierung oder Löschung möglich',
+    'Gelesen-Status: «is_read» wird jetzt persistent in der Datenbank gespeichert statt im localStorage',
+  ]},
   { version: '2.37.0', date: '26.03.2026', changes: [
     'Benutzerverwaltung: 3 neue Rollen (Controlling, Geschäftsleitung, HR) in der Benutzer-Verwaltung auswählbar – mit Rollenbeschreibung und farblicher Kennzeichnung',
     'Rollenfilter: Benutzerliste kann nach allen 8 Rollen gefiltert werden, inkl. Zähler pro Rolle',
