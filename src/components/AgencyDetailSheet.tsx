@@ -290,6 +290,48 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
             </p>
           )}
 
+          {/* Lead Quota */}
+          <div className="space-y-2">
+            <Label className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Users className="h-3.5 w-3.5" /> Monatliches Lead-Kontingent
+              </span>
+              <span className="text-sm font-bold text-primary">
+                {form.monthlyLeadQuota === null ? 'Unlimitiert' : `${form.monthlyLeadQuota} Leads`}
+              </span>
+            </Label>
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.monthlyLeadQuota === null}
+                  onChange={e => {
+                    if (e.target.checked) {
+                      update('monthlyLeadQuota', null);
+                    } else {
+                      update('monthlyLeadQuota', 50);
+                    }
+                  }}
+                  className="rounded border-input"
+                />
+                Unlimitiert
+              </label>
+            </div>
+            {form.monthlyLeadQuota !== null && (
+              <div className="flex items-center gap-3">
+                <Input
+                  type="number"
+                  min={1}
+                  max={9999}
+                  value={form.monthlyLeadQuota}
+                  onChange={e => update('monthlyLeadQuota', parseInt(e.target.value) || 1)}
+                  className="w-28"
+                />
+                <span className="text-sm text-muted-foreground">Leads / Monat</span>
+              </div>
+            )}
+          </div>
+
           <Separator />
 
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Regionale Einstellungen</h3>
