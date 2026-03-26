@@ -2,9 +2,18 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.33.0';
+const APP_VERSION = '2.34.0';
 
 const versionHistory = [
+  { version: '2.34.0', date: '26.03.2026', changes: [
+    'Geocoding-Fix: «Koordinaten ermitteln»-Button in der Agentur-Detailansicht funktioniert jetzt korrekt (API-Aufruf mit query statt address)',
+    'Auto-Geocoding beim Speichern: Wenn eine Agentur-Adresse vorhanden ist aber keine Koordinaten, werden diese automatisch beim Speichern ermittelt',
+    'Batch-Geocoding: Alle 8 Agentur-Standorte wurden automatisch via Mapbox geocodiert und die GPS-Koordinaten in der Datenbank gespeichert',
+    'Umkreis-basierte Lead-Zuweisung ist jetzt voll funktionsfähig: Distanz-Tiebreaker bei Kanton-Überschneidungen und Radius-Fallback greifen mit echten Koordinaten',
+    'Angemeldet-bleiben-Funktion: Bei aktivierter Checkbox wird die E-Mail gespeichert und die automatische Abmeldung nach 45 Min. Inaktivität übersprungen',
+    'Toast-Benachrichtigungen erscheinen jetzt zentriert oben (top-center) statt in der Ecke',
+    '«Nicht mehr als Neu kennzeichnen»-Status wird jetzt korrekt via useEffect aus localStorage geladen und bleibt persistent',
+  ]},
   { version: '2.33.0', date: '25.03.2026', changes: [
     'Agentur-Standortverwaltung: Adresse (Strasse, PLZ, Ort) kann pro Agentur hinterlegt werden – direkt im Agentur-Detail-Sheet',
     'Geocoding für Agenturen: «Koordinaten ermitteln»-Button ermittelt Breitengrad/Längengrad via Mapbox Geocoding',
