@@ -654,6 +654,36 @@ export default function LeadDetailSheet() {
 
                     {rightTab === 'status' && (
                       <div className="space-y-4">
+                        {/* Approval History */}
+                        {(() => {
+                          const approvalStatuses = ['ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired'];
+                          const approvalActivities = leadActivities.filter(a =>
+                            a.type === 'status_change' && approvalStatuses.some(s => a.description.toLowerCase().includes(s.replace(/_/g, ' ')) || a.description.includes('Controlling') || a.description.includes('Management') || a.description.includes('HR') || a.description.includes('Eingestellt') || a.description.includes('übergeben') || a.description.includes('Approved') || a.description.includes('freigegeben'))
+                          );
+                          if (approvalActivities.length === 0) return null;
+                          return (
+                            <section>
+                              <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                                <Shield className="h-4 w-4 text-primary" />
+                                Approval-Verlauf
+                              </h4>
+                              <div className="space-y-2">
+                                {approvalActivities.map(act => (
+                                  <div key={act.id} className="flex items-start gap-2.5 rounded-lg border bg-muted/30 p-3">
+                                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm">{act.description}</p>
+                                      <p className="text-xs text-muted-foreground mt-0.5">
+                                        {act.user} • {new Date(act.timestamp).toLocaleString('de-CH')}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </section>
+                          );
+                        })()}
+
                         <section>
                           <h4 className="text-base font-semibold mb-3">Status ändern</h4>
                           <div className="mb-3">
