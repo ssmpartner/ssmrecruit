@@ -42,7 +42,7 @@ const apiSections: ApiSection[] = [
           { name: 'canton', type: 'string', required: false, description: 'Filter nach Kanton-Code (ZH, BE, etc.)' },
           { name: 'search', type: 'string', required: false, description: 'Volltextsuche in Name, E-Mail, Telefon' },
         ],
-        response: `{
+         response: `{
   "data": [
     {
       "id": "l1",
@@ -53,6 +53,8 @@ const apiSections: ApiSection[] = [
       "source": "meta",
       "canton": "ZH",
       "position": "Frontend Entwickler",
+      "approval_stage": "",
+      "approval_status": "",
       "createdAt": "2025-03-01T00:00:00.000Z"
     }
   ],
@@ -63,7 +65,7 @@ const apiSections: ApiSection[] = [
         method: 'GET', path: '/api/v1/leads/:id', summary: 'Einzelnen Lead abrufen', auth: true,
         description: 'Gibt die vollständigen Daten eines einzelnen Leads zurück.',
         params: [{ name: 'id', type: 'string', required: true, description: 'Lead-ID' }],
-        response: `{
+         response: `{
   "id": "l1",
   "name": "Lukas Müller",
   "email": "lukas.mueller@email.ch",
@@ -79,6 +81,10 @@ const apiSections: ApiSection[] = [
   "employeeId": "e1",
   "position": "Frontend Entwickler",
   "notes": "",
+  "approval_stage": "",
+  "approval_status": "",
+  "approved_by_role": "",
+  "approval_history": [],
   "createdAt": "2025-03-01T00:00:00.000Z",
   "updatedAt": "2025-03-03T00:00:00.000Z"
 }`,
