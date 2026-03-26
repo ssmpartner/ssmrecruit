@@ -67,7 +67,7 @@ function MiniStat({ icon: Icon, label, value, color, onClick }: { icon: any; lab
 
 export default function Dashboard() {
   const { leads, employees, agencies, appointments, leadSources, setSelectedLead } = useLeads();
-  const { profile } = useAuth();
+  const { profile, isControlling, isGeschaeftsleitung, isHR, isReviewRole } = useAuth();
   const navigate = useNavigate();
   const [showAddLead, setShowAddLead] = useState(false);
   const [now, setNow] = useState(new Date());
@@ -137,6 +137,76 @@ export default function Dashboard() {
   const conversionRate = activeLeads.length > 0 ? ((hiredCount / activeLeads.length) * 100).toFixed(1) : '0';
 
   const displayName = profile?.display_name?.split(' ')[0] || 'User';
+
+  // Role-specific leads
+  const roleLeads = useMemo(() => {
+    if (isControlling) return activeLeads.filter(l => l.status === 'ready_for_controlling');
+    if (isGeschaeftsleitung) return activeLeads.filter(l => l.status === 'management_review');
+    if (isHR) return activeLeads.filter(l => l.status === 'hr_processing');
+    return [];
+  }, [activeLeads, isControlling, isGeschaeftsleitung, isHR]);
+
+  const roleTitle = isControlling ? 'Zu prüfen' : isGeschaeftsleitung ? 'Freigaben offen' : 'Onboarding';
+
+  // Review roles get a simplified dashboard
+  if (isReviewRole) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {getGreeting()}, {displayName} 👋
+            </h1>
+            <p className="text-muted-foreground">{formatDate(now)}</p>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 shadow-sm">
+              <Clock className="h-4 w-4" />
+              <span className="font-medium tabular-nums">{formatTime(now)}</span>
+            </div>
+          </div>
+        </div>
+
+        <MiniStat icon={Users} label={roleTitle} value={roleLeads.length} onClick={() => navigate('/leads')} />
+
+        <div className="rounded-xl border bg-card shadow-sm">
+          <div className="flex items-center justify-between p-6 pb-4">
+            <h3 className="text-base font-semibold">{roleTitle}</h3>
+            <a href="/leads" className="text-sm font-medium text-primary hover:underline">Alle anzeigen →</a>
+          </div>
+          <div className="px-6 pb-6">
+            {roleLeads.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4">Keine Leads zur Bearbeitung</p>
+            ) : (
+              <div className="space-y-3">
+                {roleLeads.slice(0, 10).map(lead => {
+                  const ag = agencies.find(a => a.id === lead.agencyId);
+                  return (
+                    <div
+                      key={lead.id}
+                      onClick={() => setSelectedLead(lead)}
+                      className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{lead.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{lead.position} · {ag?.name ?? '—'}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <SourceBadge source={lead.source} />
+                        <LeadStatusBadge status={lead.status} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <LeadDetailSheet />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
