@@ -274,9 +274,15 @@ const apiSections: ApiSection[] = [
           { name: 'longitude', type: 'number', required: false, description: 'Längengrad (wird automatisch ermittelt)' },
           { name: 'radiusKm', type: 'number', required: false, description: 'Einsatzradius in km (5–100, Standard: 30)' },
           { name: 'allowedCantons', type: 'string[]', required: false, description: 'Erlaubte Kantone für Lead-Zuweisung' },
+          { name: 'monthlyLeadQuota', type: 'number | null', required: false, description: 'Monatliches Lead-Kontingent (null = unlimitiert)' },
         ],
-        response: `{ "id": "a1", "latitude": 47.0184, "longitude": 7.4965, "radiusKm": 30 }`,
+        response: `{ "id": "a1", "latitude": 47.0184, "longitude": 7.4965, "radiusKm": 30, "monthlyLeadQuota": 50 }`,
       },
+    ],
+    notes: [
+      'Faire Mitarbeiter-Verteilung: Bei mehreren Mitarbeitern pro Agentur wird der Lead automatisch dem Mitarbeiter mit den wenigsten Leads im aktuellen Monat zugewiesen (Round-Robin).',
+      'Kontingent-Prüfung: Agenturen mit erreichtem monatlichen Kontingent werden von der automatischen Zuweisung ausgeschlossen. Der Lead wird dann der nächstbesten Agentur oder dem Hauptsitz zugewiesen.',
+    ],
     ],
   },
   {
