@@ -61,6 +61,7 @@ export type Database = {
           language: string
           latitude: number | null
           longitude: number | null
+          monthly_lead_quota: number | null
           name: string
           plz: string
           radius_km: number
@@ -78,6 +79,7 @@ export type Database = {
           language?: string
           latitude?: number | null
           longitude?: number | null
+          monthly_lead_quota?: number | null
           name: string
           plz?: string
           radius_km?: number
@@ -95,6 +97,7 @@ export type Database = {
           language?: string
           latitude?: number | null
           longitude?: number | null
+          monthly_lead_quota?: number | null
           name?: string
           plz?: string
           radius_km?: number
