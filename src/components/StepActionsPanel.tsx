@@ -266,14 +266,14 @@ export default function StepActionsPanel({
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  updateLead(leadId, { status: 'hired' });
-                  addActivity(leadId, 'status_change', 'Lead eingestellt – Freigabe erteilt');
-                  toast({ title: '🎉 Eingestellt!', description: `${leadName} wurde erfolgreich eingestellt.` });
+                  updateLead(leadId, { status: 'ready_for_controlling' });
+                  addActivity(leadId, 'status_change', 'Lead an Controlling übergeben');
+                  toast({ title: '📋 An Controlling übergeben', description: `${leadName} wird jetzt vom Controlling geprüft.` });
                 }}
                 disabled={!documentsCompleted}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
               >
-                <Shield className="h-4 w-4" /> Freigabe & Einstellen
+                <ClipboardCheck className="h-4 w-4" /> An Controlling übergeben
               </button>
               <button
                 onClick={() => {
@@ -294,6 +294,93 @@ export default function StepActionsPanel({
           </div>
         </div>
       </div>
+    );
+  }
+
+  // Step 5: Controlling Prüfung
+  if (leadStatus === 'ready_for_controlling' || leadStatus === 'controlling_approved') {
+    return (
+      <>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-6 w-6 rounded-full bg-cyan-100 flex items-center justify-center">
+              <ClipboardCheck className="h-3.5 w-3.5 text-cyan-700" />
+            </div>
+            <h4 className="text-sm font-semibold">Controlling Prüfung</h4>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Insights, Matching-Score und Dokumente prüfen. Freigabe oder Rückweisung.
+          </p>
+          <button onClick={() => openApprovalWizard('controlling')}
+            className="w-full flex items-center gap-3 rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-left hover:bg-cyan-100 transition-colors">
+            <ClipboardCheck className="h-5 w-5 text-cyan-700 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-cyan-800">Controlling Wizard öffnen</p>
+              <p className="text-[11px] text-cyan-600">Prüfung durchführen (Approve / Reject / Rückfrage)</p>
+            </div>
+          </button>
+        </div>
+        <ApprovalWizardDialog open={approvalWizardOpen} onOpenChange={setApprovalWizardOpen}
+          wizardType="controlling" leadId={leadId} leadName={leadName} />
+      </>
+    );
+  }
+
+  // Step 6: Management Review
+  if (leadStatus === 'management_review' || leadStatus === 'management_approved') {
+    return (
+      <>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-6 w-6 rounded-full bg-purple-100 flex items-center justify-center">
+              <Eye className="h-3.5 w-3.5 text-purple-700" />
+            </div>
+            <h4 className="text-sm font-semibold">Management Review</h4>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Read-only Übersicht der Ergebnisse. Freigabe oder Rückweisung an Controlling.
+          </p>
+          <button onClick={() => openApprovalWizard('management')}
+            className="w-full flex items-center gap-3 rounded-lg border border-purple-200 bg-purple-50 p-3 text-left hover:bg-purple-100 transition-colors">
+            <Eye className="h-5 w-5 text-purple-700 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-purple-800">Management Wizard öffnen</p>
+              <p className="text-[11px] text-purple-600">Übersicht prüfen (Approve / Reject)</p>
+            </div>
+          </button>
+        </div>
+        <ApprovalWizardDialog open={approvalWizardOpen} onOpenChange={setApprovalWizardOpen}
+          wizardType="management" leadId={leadId} leadName={leadName} />
+      </>
+    );
+  }
+
+  // Step 7: HR Processing
+  if (leadStatus === 'hr_processing') {
+    return (
+      <>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-6 w-6 rounded-full bg-teal-100 flex items-center justify-center">
+              <UserCheck className="h-3.5 w-3.5 text-teal-700" />
+            </div>
+            <h4 className="text-sm font-semibold">HR Bearbeitung</h4>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Onboarding-Prozess starten und finalen Status setzen.
+          </p>
+          <button onClick={() => openApprovalWizard('hr')}
+            className="w-full flex items-center gap-3 rounded-lg border border-teal-200 bg-teal-50 p-3 text-left hover:bg-teal-100 transition-colors">
+            <UserCheck className="h-5 w-5 text-teal-700 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-teal-800">HR Wizard öffnen</p>
+              <p className="text-[11px] text-teal-600">Onboarding starten & Einstellen</p>
+            </div>
+          </button>
+        </div>
+        <ApprovalWizardDialog open={approvalWizardOpen} onOpenChange={setApprovalWizardOpen}
+          wizardType="hr" leadId={leadId} leadName={leadName} />
+      </>
     );
   }
 
