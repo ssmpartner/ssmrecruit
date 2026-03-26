@@ -57,6 +57,10 @@ export interface Lead {
   notes: string;
   campaign: string;
   lifecycle: LeadLifecycle;
+  approvalStage: string;
+  approvalStatus: string;
+  approvalHistory: Array<{ role: string; action: string; user: string; timestamp: string }>;
+  approvedByRole: string;
 }
 
 export interface Appointment {

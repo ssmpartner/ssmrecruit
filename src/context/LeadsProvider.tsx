@@ -41,6 +41,10 @@ function dbToLead(row: any): Lead {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     lifecycle: row.lead_lifecycle || 'active',
+    approvalStage: row.approval_stage || '',
+    approvalStatus: row.approval_status || '',
+    approvalHistory: Array.isArray(row.approval_history) ? row.approval_history : [],
+    approvedByRole: row.approved_by_role || '',
   };
 }
 
