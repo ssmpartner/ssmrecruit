@@ -6,6 +6,8 @@ const APP_VERSION = '2.35.0';
 
 const versionHistory = [
   { version: '2.35.0', date: '26.03.2026', changes: [
+    'Hilfe-Center: Neue Seite unter /help mit 11 Kategorien und 28 durchsuchbaren Artikeln zu allen Systemfunktionen – für alle Benutzerrollen sichtbar',
+    'Hilfe-Center: Echtzeit-Suche über Titel, Inhalt und Tags; Kategorien-Navigation mit aufklappbaren Artikellisten',
     'Faire Mitarbeiter-Verteilung: Leads werden innerhalb einer Agentur gleichmässig auf alle Mitarbeiter verteilt – der Mitarbeiter mit den wenigsten Leads im aktuellen Monat erhält den nächsten Lead',
     'Neue DB-Funktion resolve_employee_by_agency: PostgreSQL-Funktion für faire Round-Robin-Verteilung bei Webhook-Leads (Meta, TikTok, Formular, Bewerbung)',
     'Monatliches Lead-Kontingent pro Agentur: Einstellbar als «Unlimitiert» oder mit fester Anzahl – bei Erreichen des Limits wird die Agentur von der automatischen Zuweisung ausgeschlossen',
