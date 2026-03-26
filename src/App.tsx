@@ -24,6 +24,7 @@ const Processes = lazy(() => import("./pages/Processes"));
 const Tasks = lazy(() => import("./pages/Tasks"));
 const ApiDocs = lazy(() => import("./pages/ApiDocs"));
 const Documentation = lazy(() => import("./pages/Documentation"));
+const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -115,6 +116,7 @@ const App = () => (
                 <Route path="/tasks" element={<Suspense fallback={<PageLoader />}><Tasks /></Suspense>} />
                 <Route path="/api-docs" element={<Suspense fallback={<PageLoader />}><ApiDocs /></Suspense>} />
                 <Route path="/documentation" element={<Suspense fallback={<PageLoader />}><Documentation /></Suspense>} />
+                <Route path="/help" element={<Suspense fallback={<PageLoader />}><HelpCenter /></Suspense>} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
