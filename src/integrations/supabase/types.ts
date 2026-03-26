@@ -942,6 +942,8 @@ export type Database = {
           approval_stage: string
           approval_status: string
           approved_by_role: string
+          assigned_approver_role: string
+          assigned_approver_user_id: string | null
           callback_count: number
           campaign: string
           canton: string
@@ -971,6 +973,8 @@ export type Database = {
           approval_stage?: string
           approval_status?: string
           approved_by_role?: string
+          assigned_approver_role?: string
+          assigned_approver_user_id?: string | null
           callback_count?: number
           campaign?: string
           canton?: string
@@ -1000,6 +1004,8 @@ export type Database = {
           approval_stage?: string
           approval_status?: string
           approved_by_role?: string
+          assigned_approver_role?: string
+          assigned_approver_user_id?: string | null
           callback_count?: number
           campaign?: string
           canton?: string
