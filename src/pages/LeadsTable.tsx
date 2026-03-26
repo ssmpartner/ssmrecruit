@@ -300,7 +300,7 @@ export default function LeadsTable() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
-                  {isSuperadmin && (
+                  {isSuperadmin && !isReviewRole && (
                     <th className="px-3 py-3 w-10">
                       <Checkbox
                         checked={paginatedLeads.length > 0 && selectedIds.length === paginatedLeads.length}
@@ -317,7 +317,7 @@ export default function LeadsTable() {
                   <th className="px-5 py-3 font-medium">Agentur</th>
                   <th className="px-5 py-3 font-medium">Zugewiesen</th>
                   <th className="px-5 py-3 font-medium">Datum</th>
-                  <th className="px-5 py-3 font-medium">Aktionen</th>
+                  {!isReviewRole && <th className="px-5 py-3 font-medium">Aktionen</th>}
                 </tr>
               </thead>
               <tbody>
