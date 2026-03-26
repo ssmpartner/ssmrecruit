@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.38.0';
+const APP_VERSION = '2.39.0';
 
 const versionHistory = [
+  { version: '2.39.0', date: '26.03.2026', changes: [
+    'Hilfe-Center: Neue Artikel zum Eskalations- und Approval-Prozess, Review-Rollen (Controlling, Geschäftsleitung, HR) und deren Einschränkungen',
+    'Hilfe-Center: NEU-Badge-Artikel aktualisiert – Gelesen-Status wird jetzt persistent in der Datenbank gespeichert',
+    'Hilfe-Center: Rollenübersicht erweitert auf 8 Rollen inkl. Beschreibung der Prüf- und Freigaberollen',
+    'Dokumentation: Funktionsliste und Rollen-Tab auf aktuellen Stand gebracht',
+    'API-Dokumentation: is_read-Feld im Lead-Schema ergänzt, Rollenberechtigungen-Endpunkt aktualisiert',
+  ]},
   { version: '2.38.0', date: '26.03.2026', changes: [
     'Lead-Modul: Rollenbasierte Sichtbarkeit – Controlling sieht nur «Ready for Controlling», Geschäftsleitung nur «Management Review», HR nur «HR Processing»',
     'Lead-Modul: Review-Rollen können keine Leads erstellen, bearbeiten, archivieren oder löschen – nur ansehen und Approval-Aktionen ausführen',
