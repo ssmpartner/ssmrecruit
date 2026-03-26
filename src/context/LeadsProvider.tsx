@@ -46,6 +46,8 @@ function dbToLead(row: any): Lead {
     approvalHistory: Array.isArray(row.approval_history) ? row.approval_history : [],
     approvedByRole: row.approved_by_role || '',
     isRead: row.is_read ?? false,
+    assignedApproverUserId: row.assigned_approver_user_id ?? null,
+    assignedApproverRole: row.assigned_approver_role || '',
   };
 }
 
