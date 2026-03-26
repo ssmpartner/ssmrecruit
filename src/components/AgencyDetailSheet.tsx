@@ -66,16 +66,19 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
     setGeocoding(true);
     try {
       const { data, error } = await supabase.functions.invoke('geocode-address', {
-        body: { address: query },
+        body: { query, types: 'address,place' },
       });
       if (error) throw error;
-      if (data?.features?.length > 0) {
-        const [lng, lat] = data.features[0].center;
+      const first = data?.suggestions?.[0];
+      if (first?.coordinates) {
+        const [lng, lat] = first.coordinates;
         setForm(p => ({ ...p, latitude: lat, longitude: lng }));
         setDirty(true);
         toast.success(`Koordinaten ermittelt: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        return { lat, lng };
       } else {
         toast.error('Adresse konnte nicht georeferenziert werden');
+        return null;
       }
     } catch {
       toast.error('Geocoding fehlgeschlagen');
