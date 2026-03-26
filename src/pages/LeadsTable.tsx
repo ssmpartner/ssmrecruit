@@ -323,7 +323,7 @@ export default function LeadsTable() {
               <tbody>
                 {paginatedLeads.length === 0 && (
                   <tr>
-                    <td colSpan={isSuperadmin ? 11 : 10} className="px-5 py-12 text-center text-muted-foreground">
+                    <td colSpan={isSuperadmin && !isReviewRole ? 11 : isReviewRole ? 9 : 10} className="px-5 py-12 text-center text-muted-foreground">
                       {activeTab === 'archived' ? 'Keine archivierten Leads vorhanden.' : activeTab === 'deleted' ? 'Keine gelöschten Leads vorhanden.' : 'Keine Leads gefunden.'}
                     </td>
                   </tr>
@@ -340,7 +340,7 @@ export default function LeadsTable() {
                         selectedIds.includes(lead.id) && "bg-primary/5"
                       )}
                     >
-                      {isSuperadmin && (
+                      {isSuperadmin && !isReviewRole && (
                         <td className="px-3 py-3" onClick={e => e.stopPropagation()}>
                           <Checkbox
                             checked={selectedIds.includes(lead.id)}
@@ -388,9 +388,11 @@ export default function LeadsTable() {
                       </td>
                       <td className="px-5 py-3 text-xs text-muted-foreground">{emp?.name}</td>
                       <td className="px-5 py-3 text-xs text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString('de-CH')}</td>
-                      <td className="px-5 py-3">
-                        <LeadActions lead={lead} />
-                      </td>
+                      {!isReviewRole && (
+                        <td className="px-5 py-3">
+                          <LeadActions lead={lead} />
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
