@@ -148,6 +148,7 @@ export interface Agency {
   latitude: number | null;
   longitude: number | null;
   radiusKm: number;
+  monthlyLeadQuota: number | null;
 }
 
 export const AGENCY_COLORS = [

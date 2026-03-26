@@ -33,6 +33,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
     latitude: null as number | null,
     longitude: null as number | null,
     radiusKm: 30,
+    monthlyLeadQuota: null as number | null,
   });
   const [dirty, setDirty] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
@@ -52,6 +53,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
         latitude: agency.latitude ?? null,
         longitude: agency.longitude ?? null,
         radiusKm: agency.radiusKm ?? 30,
+        monthlyLeadQuota: agency.monthlyLeadQuota ?? null,
       });
       setDirty(false);
     }
@@ -139,6 +141,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
       latitude: lat,
       longitude: lng,
       radiusKm: form.radiusKm,
+      monthlyLeadQuota: form.monthlyLeadQuota,
     });
     setDirty(false);
     toast.success('Agentur erfolgreich aktualisiert');
