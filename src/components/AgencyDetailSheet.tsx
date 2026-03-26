@@ -82,8 +82,10 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
       }
     } catch {
       toast.error('Geocoding fehlgeschlagen');
+      return null;
+    } finally {
+      setGeocoding(false);
     }
-    setGeocoding(false);
   }, [form.address, form.plz, form.city]);
 
   if (!agency) return null;
