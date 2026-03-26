@@ -117,6 +117,7 @@ const apiSections: ApiSection[] = [
           { name: 'status', type: 'string', required: false, description: 'Neuer Status' },
           { name: 'employeeId', type: 'string', required: false, description: 'Zuweisung an Mitarbeiter' },
           { name: 'notes', type: 'string', required: false, description: 'Notizen aktualisieren' },
+          { name: 'is_read', type: 'boolean', required: false, description: 'Gelesen-Status (NEU-Badge steuern)' },
         ],
         response: `{ "id": "l1", "status": "contacted", "updatedAt": "2026-03-18T10:05:00.000Z" }`,
       },
