@@ -82,8 +82,8 @@ const helpCategories: Category[] = [
       {
         id: 'l-5',
         title: 'NEU-Badge bei Leads',
-        content: 'Neue Leads erhalten ein pulsierendes grünes «NEU»-Badge. Dieses verschwindet automatisch, sobald der Lead zum ersten Mal geöffnet wird. Superadmins können den Badge manuell ein- oder ausblenden über «Nicht mehr als Neu kennzeichnen» bzw. «Als neu kennzeichnen».',
-        tags: ['neu', 'badge', 'markierung'],
+        content: 'Neue Leads erhalten ein pulsierendes grünes «NEU»-Badge. Dieses verschwindet automatisch, sobald der Lead zum ersten Mal geöffnet wird. Der Gelesen-Status (is_read) wird persistent in der Datenbank gespeichert und ist auf allen Geräten synchron. Superadmins können den Badge manuell ein- oder ausblenden über «Nicht mehr als Neu kennzeichnen» bzw. «Als neu kennzeichnen».',
+        tags: ['neu', 'badge', 'markierung', 'gelesen'],
       },
       {
         id: 'l-6',
@@ -102,8 +102,14 @@ const helpCategories: Category[] = [
       {
         id: 'p-1',
         title: 'Pipeline-Ansicht verstehen',
-        content: 'Die Pipeline zeigt Leads als Karten in Spalten, die den Hauptschritten des Recruiting-Prozesses entsprechen: Neuer Lead → Kontaktiert → Terminiert → Follow-Up → Eingestellt. Jede Karte zeigt den Lead-Namen, die Quelle und den aktuellen Detailstatus. Klicken Sie auf eine Karte, um den Lead zu öffnen.',
-        tags: ['pipeline', 'kanban', 'spalten', 'workflow'],
+        content: 'Die Pipeline zeigt Leads als Karten in Spalten, die den Hauptschritten des Recruiting-Prozesses entsprechen: Neuer Lead → Kontaktiert → Terminiert → Follow-Up → Eingestellt. Nach dem Follow-Up durchlaufen Leads optional den Eskalationsprozess: Ready for Controlling → Management Review → HR Processing → Eingestellt. Jede Karte zeigt den Lead-Namen, die Quelle und den aktuellen Detailstatus.',
+        tags: ['pipeline', 'kanban', 'spalten', 'workflow', 'eskalation'],
+      },
+      {
+        id: 'p-3',
+        title: 'Eskalations- und Approval-Prozess',
+        content: 'Nach abgeschlossenem Follow-Up wird ein Lead automatisch in den Freigabeprozess überführt: 1) Ready for Controlling – Controlling prüft Insights, Matching und Dokumente. 2) Management Review – Geschäftsleitung sieht Zusammenfassung und gibt frei. 3) HR Processing – HR führt Onboarding durch und setzt den finalen Status «Eingestellt». Jede Phase hat einen eigenen Wizard mit Checklisten und Aktionen (Approve, Reject, Rückfrage). Ablehnungen werden an die vorherige Phase zurückgewiesen.',
+        tags: ['eskalation', 'approval', 'controlling', 'management', 'hr', 'freigabe'],
       },
       {
         id: 'p-2',
@@ -254,14 +260,20 @@ const helpCategories: Category[] = [
       {
         id: 'r-1',
         title: 'Rollenübersicht',
-        content: 'Das System kennt fünf Rollen: Superadmin (volle Rechte), Admin (Verwaltung ohne Systemkonfiguration), Backoffice (Datenverwaltung), Teamleiter (eingeschränkt auf eigene Leads und operative Bereiche) und Analyst (nur Leserechte für Analysen). Die Rolle bestimmt, welche Menüpunkte und Funktionen sichtbar sind.',
-        tags: ['rollen', 'rechte', 'superadmin', 'admin', 'teamleiter'],
+        content: 'Das System kennt 8 Rollen: Superadmin (volle Rechte), Admin (Verwaltung ohne Systemkonfiguration), Backoffice (Datenverwaltung), Teamleiter (eingeschränkt auf eigene Leads), Analyst (nur Leserechte), Controlling (Prüfrolle für Freigabe-Phase), Geschäftsleitung (Management-Freigabe) und HR (Onboarding & Einstellung). Die Rolle bestimmt, welche Menüpunkte, Leads und Funktionen sichtbar sind.',
+        tags: ['rollen', 'rechte', 'superadmin', 'admin', 'teamleiter', 'controlling', 'hr'],
       },
       {
         id: 'r-2',
         title: 'Teamleiter-Einschränkungen',
         content: 'Teamleiter sehen nur Dashboard, Pipeline, Leads, Aufgaben, Kalender und Statistik. Administrative Bereiche (Agenturen, Mitarbeiter, Prozesse, API-Docs) sind ausgeblendet. In der Lead-Tabelle sehen Teamleiter nur ihre eigenen Leads.',
         tags: ['teamleiter', 'einschränkung', 'zugriff'],
+      },
+      {
+        id: 'r-3',
+        title: 'Review-Rollen: Controlling, Geschäftsleitung & HR',
+        content: 'Controlling, Geschäftsleitung und HR sind reine Prüf- und Freigaberollen. Sie sehen nur Leads im eigenen Zuständigkeitsbereich: Controlling → «Ready for Controlling», Geschäftsleitung → «Management Review», HR → «HR Processing». Diese Rollen können keine Leads erstellen, bearbeiten, archivieren oder löschen. Sie dürfen nur ihren jeweiligen Approval-Wizard ausführen (Approve, Reject, Rückfrage). In der Lead-Tabelle werden Tab-Labels rollenspezifisch angezeigt (z. B. «Zu prüfen» für Controlling). In der Lead-Detailansicht sind Bearbeiten-Button, Zuweisungsbereich und operative Tabs (Flow, Termine) ausgeblendet.',
+        tags: ['controlling', 'geschäftsleitung', 'hr', 'review', 'approval', 'einschränkung'],
       },
     ],
   },

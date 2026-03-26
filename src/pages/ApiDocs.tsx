@@ -55,6 +55,7 @@ const apiSections: ApiSection[] = [
       "position": "Frontend Entwickler",
       "approval_stage": "",
       "approval_status": "",
+      "is_read": false,
       "createdAt": "2025-03-01T00:00:00.000Z"
     }
   ],
@@ -85,6 +86,7 @@ const apiSections: ApiSection[] = [
   "approval_status": "",
   "approved_by_role": "",
   "approval_history": [],
+  "is_read": false,
   "createdAt": "2025-03-01T00:00:00.000Z",
   "updatedAt": "2025-03-03T00:00:00.000Z"
 }`,
