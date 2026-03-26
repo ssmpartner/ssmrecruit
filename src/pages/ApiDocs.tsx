@@ -42,7 +42,7 @@ const apiSections: ApiSection[] = [
           { name: 'canton', type: 'string', required: false, description: 'Filter nach Kanton-Code (ZH, BE, etc.)' },
           { name: 'search', type: 'string', required: false, description: 'Volltextsuche in Name, E-Mail, Telefon' },
         ],
-        response: `{
+         response: `{
   "data": [
     {
       "id": "l1",
@@ -53,6 +53,8 @@ const apiSections: ApiSection[] = [
       "source": "meta",
       "canton": "ZH",
       "position": "Frontend Entwickler",
+      "approval_stage": "",
+      "approval_status": "",
       "createdAt": "2025-03-01T00:00:00.000Z"
     }
   ],
@@ -63,7 +65,7 @@ const apiSections: ApiSection[] = [
         method: 'GET', path: '/api/v1/leads/:id', summary: 'Einzelnen Lead abrufen', auth: true,
         description: 'Gibt die vollständigen Daten eines einzelnen Leads zurück.',
         params: [{ name: 'id', type: 'string', required: true, description: 'Lead-ID' }],
-        response: `{
+         response: `{
   "id": "l1",
   "name": "Lukas Müller",
   "email": "lukas.mueller@email.ch",
@@ -79,6 +81,10 @@ const apiSections: ApiSection[] = [
   "employeeId": "e1",
   "position": "Frontend Entwickler",
   "notes": "",
+  "approval_stage": "",
+  "approval_status": "",
+  "approved_by_role": "",
+  "approval_history": [],
   "createdAt": "2025-03-01T00:00:00.000Z",
   "updatedAt": "2025-03-03T00:00:00.000Z"
 }`,
@@ -843,6 +849,118 @@ Neue Leads (Monat);24`,
       "coordinates": [8.5417, 47.3769]
     }
   ]
+}`,
+      },
+    ],
+  },
+  {
+    title: 'Approval-Prozess',
+    description: 'Leads im Eskalationsprozess freigeben oder ablehnen. Controlling, Geschäftsleitung und HR nutzen diese Endpunkte zur Bearbeitung.',
+    endpoints: [
+      {
+        method: 'PATCH', path: '/api/v1/leads/:id/approve', summary: 'Lead freigeben', auth: true,
+        description: 'Gibt einen Lead in der aktuellen Approval-Phase frei. Setzt den Status automatisch auf die nächste Phase. Aktualisiert approval_stage, approval_status und approval_history. Nur für die zuständige Rolle (Controlling, Geschäftsleitung, HR).',
+        params: [{ name: 'id', type: 'string', required: true, description: 'Lead-ID' }],
+        body: [
+          { name: 'role', type: 'string', required: true, description: 'Rolle des Freigebenden: controlling, geschaeftsleitung, hr' },
+          { name: 'note', type: 'string', required: false, description: 'Optionaler Kommentar zur Freigabe' },
+        ],
+        response: `{
+  "id": "l1",
+  "status": "management_review",
+  "approval_stage": "management",
+  "approval_status": "pending",
+  "approved_by_role": "controlling",
+  "approval_history": [
+    {
+      "role": "controlling",
+      "action": "approved",
+      "user": "Max Müller",
+      "timestamp": "2026-03-26T14:00:00.000Z"
+    }
+  ]
+}`,
+      },
+      {
+        method: 'PATCH', path: '/api/v1/leads/:id/reject', summary: 'Lead ablehnen / zurückweisen', auth: true,
+        description: 'Lehnt einen Lead in der aktuellen Approval-Phase ab oder weist ihn an die vorherige Phase zurück. Aktualisiert approval_history mit Ablehnungsgrund.',
+        params: [{ name: 'id', type: 'string', required: true, description: 'Lead-ID' }],
+        body: [
+          { name: 'role', type: 'string', required: true, description: 'Rolle des Ablehnenden: controlling, geschaeftsleitung, hr' },
+          { name: 'reason', type: 'string', required: true, description: 'Ablehnungsgrund' },
+          { name: 'return_to', type: 'string', required: false, description: 'Rückweisungs-Ziel: follow_up (Standard), ready_for_controlling' },
+        ],
+        response: `{
+  "id": "l1",
+  "status": "follow_up",
+  "approval_stage": "",
+  "approval_status": "rejected",
+  "approval_history": [
+    {
+      "role": "controlling",
+      "action": "rejected",
+      "user": "Max Müller",
+      "timestamp": "2026-03-26T14:00:00.000Z",
+      "reason": "Dokumente unvollständig"
+    }
+  ]
+}`,
+      },
+    ],
+  },
+  {
+    title: 'Events (Webhooks)',
+    description: 'System-Events die bei Approval-Aktionen ausgelöst werden. Diese Events können über E-Mail-Automationsregeln und Eskalationsprozesse abonniert werden.',
+    endpoints: [
+      {
+        method: 'POST', path: 'Event: lead.approved.controlling', summary: 'Controlling-Freigabe Event', auth: false,
+        description: 'Wird ausgelöst wenn ein Lead vom Controlling freigegeben wird. Trigger: Status wechselt von "ready_for_controlling" zu "controlling_approved". Automatische Folgeaktion: Status → "management_review", Benachrichtigung an Geschäftsleitung.',
+        body: [
+          { name: 'lead_id', type: 'string', required: true, description: 'Lead-ID' },
+          { name: 'approved_by', type: 'string', required: true, description: 'Name des Freigebenden' },
+          { name: 'role', type: 'string', required: true, description: 'Immer "controlling"' },
+        ],
+        response: `{
+  "event": "lead.approved.controlling",
+  "lead_id": "l1",
+  "new_status": "management_review",
+  "approved_by": "Max Müller",
+  "timestamp": "2026-03-26T14:00:00.000Z",
+  "next_action": "Benachrichtigung an Geschäftsleitung"
+}`,
+      },
+      {
+        method: 'POST', path: 'Event: lead.approved.management', summary: 'Management-Freigabe Event', auth: false,
+        description: 'Wird ausgelöst wenn ein Lead von der Geschäftsleitung freigegeben wird. Trigger: Status wechselt von "management_review" zu "management_approved". Automatische Folgeaktion: Status → "hr_processing", Zuweisung an HR.',
+        body: [
+          { name: 'lead_id', type: 'string', required: true, description: 'Lead-ID' },
+          { name: 'approved_by', type: 'string', required: true, description: 'Name des Freigebenden' },
+          { name: 'role', type: 'string', required: true, description: 'Immer "geschaeftsleitung"' },
+        ],
+        response: `{
+  "event": "lead.approved.management",
+  "lead_id": "l1",
+  "new_status": "hr_processing",
+  "approved_by": "CEO Name",
+  "timestamp": "2026-03-26T15:00:00.000Z",
+  "next_action": "Zuweisung an HR"
+}`,
+      },
+      {
+        method: 'POST', path: 'Event: lead.processed.hr', summary: 'HR-Abschluss Event', auth: false,
+        description: 'Wird ausgelöst wenn HR den Onboarding-Prozess abschliesst. Trigger: Status wechselt von "hr_processing" zu "hired". Finaler Status im Eskalationsprozess.',
+        body: [
+          { name: 'lead_id', type: 'string', required: true, description: 'Lead-ID' },
+          { name: 'processed_by', type: 'string', required: true, description: 'Name des HR-Mitarbeiters' },
+          { name: 'role', type: 'string', required: true, description: 'Immer "hr"' },
+        ],
+        response: `{
+  "event": "lead.processed.hr",
+  "lead_id": "l1",
+  "new_status": "hired",
+  "processed_by": "HR Name",
+  "timestamp": "2026-03-26T16:00:00.000Z",
+  "final": true
 }`,
       },
     ],
