@@ -34,7 +34,7 @@ const PAGE_SIZES: { value: PageSize; label: string }[] = [
 
 export default function LeadsTable() {
   const { leads, employees, agencies, leadSources, activities, setSelectedLead } = useLeads();
-  const { isSuperadmin } = useAuth();
+  const { isSuperadmin, role, isControlling, isGeschaeftsleitung, isHR, isReviewRole } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
@@ -81,8 +81,19 @@ export default function LeadsTable() {
 
   const lifecycleLeads = useMemo(() => {
     const lifecycle: LeadLifecycle = activeTab === 'active' ? 'active' : activeTab === 'archived' ? 'archived' : 'deleted';
-    return leads.filter(l => l.lifecycle === lifecycle);
-  }, [leads, activeTab]);
+    let filtered = leads.filter(l => l.lifecycle === lifecycle);
+    
+    // Role-based status filtering for review roles
+    if (isControlling) {
+      filtered = filtered.filter(l => l.status === 'ready_for_controlling');
+    } else if (isGeschaeftsleitung) {
+      filtered = filtered.filter(l => l.status === 'management_review');
+    } else if (isHR) {
+      filtered = filtered.filter(l => l.status === 'hr_processing');
+    }
+    
+    return filtered;
+  }, [leads, activeTab, isControlling, isGeschaeftsleitung, isHR]);
 
   const filtered = useMemo(() => {
     return lifecycleLeads.filter(l => {

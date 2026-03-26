@@ -35,14 +35,22 @@ Deno.serve(async (req) => {
       .eq("user_id", caller.id)
       .single();
 
-    if (callerRole?.role !== "superadmin") {
-      throw new Error("Nur Superadmins können Benutzer verwalten");
+    if (callerRole?.role !== "superadmin" && callerRole?.role !== "admin") {
+      throw new Error("Nur Superadmins und Admins können Benutzer verwalten");
     }
+
+    const isSuperadminCaller = callerRole?.role === "superadmin";
 
     const { action, ...payload } = await req.json();
 
     if (action === "create") {
       const { email, password, display_name, role } = payload;
+
+      // Admins can only assign review roles
+      const adminAllowedRoles = ['controlling', 'geschaeftsleitung', 'hr'];
+      if (!isSuperadminCaller && !adminAllowedRoles.includes(role)) {
+        throw new Error("Admins dürfen nur Controlling, Geschäftsleitung und HR Rollen zuweisen");
+      }
 
       // Create auth user
       const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -66,6 +74,12 @@ Deno.serve(async (req) => {
 
     if (action === "update_role") {
       const { user_id, role } = payload;
+
+      // Admins can only assign review roles
+      const adminAllowedRoles = ['controlling', 'geschaeftsleitung', 'hr'];
+      if (!isSuperadminCaller && !adminAllowedRoles.includes(role)) {
+        throw new Error("Admins dürfen nur Controlling, Geschäftsleitung und HR Rollen zuweisen");
+      }
 
       // Prevent removing the last superadmin
       if (role !== "superadmin") {
