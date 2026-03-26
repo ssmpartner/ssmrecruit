@@ -1,31 +1,25 @@
 project_id = "adettewqzanmkgnnjlop"
 
-[functions.generate-tasks]
-verify_jwt = false
-
-[functions.detect-duplicates]
-verify_jwt = false
-
-[functions.generate-guidelines]
-verify_jwt = false
-
-[functions.check-reminders]
-verify_jwt = false
-
-[functions.tiktok-webhook]
-verify_jwt = false
-
-[functions.meta-webhook]
-verify_jwt = false
-
-[functions.form-webhook]
-verify_jwt = false
-
-[functions.application-webhook]
-verify_jwt = false
-
-[functions.process-email-queue]
-verify_jwt = true
-
-[functions.mapbox-token]
-verify_jwt = false
+[functions]
+  [functions.application-webhook]
+    verify_jwt = false
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.check-reminders]
+    verify_jwt = false
+  [functions.detect-duplicates]
+    verify_jwt = false
+  [functions.form-webhook]
+    verify_jwt = false
+  [functions.generate-guidelines]
+    verify_jwt = false
+  [functions.generate-tasks]
+    verify_jwt = false
+  [functions.mapbox-token]
+    verify_jwt = false
+  [functions.meta-webhook]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.tiktok-webhook]
+    verify_jwt = false
