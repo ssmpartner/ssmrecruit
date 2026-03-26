@@ -33,7 +33,7 @@ const PAGE_SIZES: { value: PageSize; label: string }[] = [
 ];
 
 export default function LeadsTable() {
-  const { leads, employees, agencies, leadSources, activities, setSelectedLead } = useLeads();
+  const { leads, employees, agencies, leadSources, activities, setSelectedLead, updateLead } = useLeads();
   const { isSuperadmin, role, isControlling, isGeschaeftsleitung, isHR, isReviewRole } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -48,36 +48,12 @@ export default function LeadsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(20);
 
-  const [viewedLeads, setViewedLeads] = useState<Set<string>>(() => {
-    try {
-      const stored = localStorage.getItem('viewedLeadIds');
-      return stored ? new Set(JSON.parse(stored)) : new Set();
-    } catch { return new Set(); }
-  });
-
-  // Re-sync when storage changes (e.g. from LeadDetailSheet button)
-  useEffect(() => {
-    const sync = () => {
-      try {
-        const stored = localStorage.getItem('viewedLeadIds');
-        setViewedLeads(stored ? new Set(JSON.parse(stored)) : new Set());
-      } catch { /* ignore */ }
-    };
-    window.addEventListener('storage', sync);
-    return () => window.removeEventListener('storage', sync);
-  }, []);
-
   const markLeadViewed = useCallback((lead: Parameters<typeof setSelectedLead>[0]) => {
-    if (lead && !isSuperadmin) {
-      setViewedLeads(prev => {
-        const next = new Set(prev);
-        next.add(lead.id);
-        localStorage.setItem('viewedLeadIds', JSON.stringify([...next]));
-        return next;
-      });
+    if (lead && !isSuperadmin && !lead.isRead) {
+      updateLead(lead.id, { isRead: true });
     }
     setSelectedLead(lead);
-  }, [setSelectedLead, isSuperadmin]);
+  }, [setSelectedLead, isSuperadmin, updateLead]);
 
   const lifecycleLeads = useMemo(() => {
     const lifecycle: LeadLifecycle = activeTab === 'active' ? 'active' : activeTab === 'archived' ? 'archived' : 'deleted';
@@ -380,7 +356,7 @@ export default function LeadsTable() {
                             <p className="font-medium">{lead.name}</p>
                             <p className="text-xs text-muted-foreground">{lead.position}</p>
                           </div>
-                          {lead.status === 'new' && !viewedLeads.has(lead.id) && (
+                          {lead.status === 'new' && !lead.isRead && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider animate-pulse">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                               Neu

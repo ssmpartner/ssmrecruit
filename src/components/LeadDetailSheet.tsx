@@ -57,21 +57,8 @@ export default function LeadDetailSheet() {
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'insights' | 'documents'>('info');
   const [confirmReset, setConfirmReset] = useState(false);
-  const [isMarkedViewed, setIsMarkedViewed] = useState(false);
-
   const leadIsNew = selectedLead?.status === 'new';
-
-  // Sync viewed state from localStorage when selectedLead changes
-  useEffect(() => {
-    if (!selectedLead) return;
-    try {
-      const stored = localStorage.getItem('viewedLeadIds');
-      const viewedSet: Set<string> = stored ? new Set(JSON.parse(stored)) : new Set();
-      setIsMarkedViewed(viewedSet.has(selectedLead.id));
-    } catch {
-      setIsMarkedViewed(false);
-    }
-  }, [selectedLead?.id]);
+  const isMarkedViewed = selectedLead?.isRead ?? false;
 
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
@@ -798,24 +785,8 @@ export default function LeadDetailSheet() {
               <div className="flex justify-end px-6 pb-4">
                 <button
                   onClick={() => {
-                    try {
-                      const stored = localStorage.getItem('viewedLeadIds');
-                      const arr: string[] = stored ? JSON.parse(stored) : [];
-                      if (isMarkedViewed) {
-                        const filtered = arr.filter(id => id !== selectedLead.id);
-                        localStorage.setItem('viewedLeadIds', JSON.stringify(filtered));
-                        setIsMarkedViewed(false);
-                        toast({ title: 'Erledigt', description: 'Lead wird wieder als "Neu" gekennzeichnet.' });
-                      } else {
-                        if (!arr.includes(selectedLead.id)) arr.push(selectedLead.id);
-                        localStorage.setItem('viewedLeadIds', JSON.stringify(arr));
-                        setIsMarkedViewed(true);
-                        toast({ title: 'Erledigt', description: 'Lead wird nicht mehr als "Neu" gekennzeichnet.' });
-                      }
-                      window.dispatchEvent(new Event('storage'));
-                    } catch {
-                      toast({ title: 'Fehler', description: 'Die Markierung konnte nicht gespeichert werden.', variant: 'destructive' });
-                    }
+                    updateLead(selectedLead.id, { isRead: !isMarkedViewed });
+                    toast({ title: 'Erledigt', description: isMarkedViewed ? 'Lead wird wieder als "Neu" gekennzeichnet.' : 'Lead wird nicht mehr als "Neu" gekennzeichnet.' });
                   }}
                   className={cn(
                     "inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors",
