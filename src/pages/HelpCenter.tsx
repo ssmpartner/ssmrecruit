@@ -123,6 +123,7 @@ const helpCategories: Category[] = [
         content: 'Controlling, Geschäftsleitung und HR sehen keine vollständige Lead-Bearbeitungsmaske, sondern eine vereinfachte Approval-Ansicht. Diese zeigt nur die für den jeweiligen Prüfschritt relevanten Informationen: Lead-Kurzinfo (Name, Kontakt, Standort), Prüfergebnisse (Matching-Score, Insights-Status, DISC-Typ, Dokumentenanzahl), vorherige Freigaben und einen prominenten Button zum Starten des Approval-Wizards. Die Navigation erfolgt nur innerhalb der eigenen Queue (z. B. alle Leads mit «Ready for Controlling»).',
         tags: ['approval', 'ansicht', 'controlling', 'geschäftsleitung', 'hr', 'wizard', 'prüfung'],
       },
+    ],
   },
   {
     id: 'agencies',
