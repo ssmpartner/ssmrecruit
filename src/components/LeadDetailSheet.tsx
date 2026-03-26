@@ -194,7 +194,9 @@ export default function LeadDetailSheet() {
         <DialogContent className="max-w-[90vw] w-[90vw] max-h-[90vh] h-[90vh] overflow-hidden flex flex-col p-0 gap-0 rounded-xl">
           {selectedLead && isReviewRole ? (
             <ApprovalLeadView onClose={() => onOpenChange(false)} />
-          ) : selectedLead && (
+          ) : selectedLead ? (
+            <>
+              {/* Header */}
               <div className="border-b px-5 py-3 flex items-center gap-4 shrink-0 bg-card">
                 <div className="flex items-center gap-1">
                   <button onClick={goToPrev} disabled={!hasPrev}
@@ -809,7 +811,7 @@ export default function LeadDetailSheet() {
               </div>
             )}
             </>
-          )}
+          ) : null}
         </DialogContent>
       </Dialog>
 
