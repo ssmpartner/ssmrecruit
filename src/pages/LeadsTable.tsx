@@ -35,6 +35,7 @@ const PAGE_SIZES: { value: PageSize; label: string }[] = [
 export default function LeadsTable() {
   const { leads, employees, agencies, leadSources, activities, setSelectedLead, updateLead } = useLeads();
   const { isSuperadmin, role, isControlling, isGeschaeftsleitung, isHR, isReviewRole } = useAuth();
+  const canManageLeads = !isReviewRole;
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
