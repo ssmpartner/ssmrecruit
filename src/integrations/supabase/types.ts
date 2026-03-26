@@ -1318,6 +1318,10 @@ export type Database = {
         Args: { _canton_code: string }
         Returns: string
       }
+      resolve_employee_by_agency: {
+        Args: { _agency_id: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "superadmin" | "admin" | "backoffice" | "analyst" | "teamleiter"

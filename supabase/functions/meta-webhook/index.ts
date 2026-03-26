@@ -75,8 +75,8 @@ async function getDefaultAssignment(supabase: any) {
   const { data: hauptsitz } = await supabase.from('agencies').select('id').ilike('name', '%hauptsitz%').limit(1).single();
   const agencyId = hauptsitz?.id || (await supabase.from('agencies').select('id').limit(1).single()).data?.id;
   if (!agencyId) throw new Error('No agency found');
-  const { data: emp } = await supabase.from('employees').select('id').eq('agency_id', agencyId).limit(1).single();
-  const employeeId = emp?.id || (await supabase.from('employees').select('id').limit(1).single()).data?.id;
+  const { data: empId } = await supabase.rpc('resolve_employee_by_agency', { _agency_id: agencyId });
+  const employeeId = empId || (await supabase.from('employees').select('id').limit(1).single()).data?.id;
   if (!employeeId) throw new Error('No employee found');
   return { agencyId, employeeId };
 }
@@ -121,8 +121,8 @@ serve(async (req) => {
         const { data: resolvedAgency } = await supabase.rpc('resolve_agency_by_canton', { _canton_code: finalCantonCode });
         if (resolvedAgency) {
           agencyId = resolvedAgency;
-          const { data: emp } = await supabase.from('employees').select('id').eq('agency_id', agencyId).limit(1).single();
-          if (emp?.id) employeeId = emp.id;
+          const { data: empId } = await supabase.rpc('resolve_employee_by_agency', { _agency_id: agencyId });
+          if (empId) employeeId = empId;
         }
       }
 

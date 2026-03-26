@@ -31,6 +31,7 @@ export function resolveAssignmentByPlz(
   leadLat?: number | null,
   leadLng?: number | null,
   currentMonthLeadCounts?: Record<string, number>,
+  currentMonthEmployeeLeadCounts?: Record<string, number>,
 ): { agencyId: string; employeeId: string } {
   let resolvedCanton = cantonCode;
   if (!resolvedCanton && plz) {
@@ -53,7 +54,7 @@ export function resolveAssignmentByPlz(
       .sort((a, b) => (a.allowedCantons?.length || 99) - (b.allowedCantons?.length || 99));
 
     if (cantonMatches.length === 1) {
-      return pickEmployee(cantonMatches[0].id, employees, fallbackEmployeeId);
+      return pickEmployee(cantonMatches[0].id, employees, fallbackEmployeeId, currentMonthEmployeeLeadCounts);
     }
 
     // Multiple canton matches → use distance as tiebreaker if coordinates available
@@ -63,14 +64,13 @@ export function resolveAssignmentByPlz(
         const nearest = withCoords
           .map(a => ({ agency: a, dist: haversineKm(leadLat, leadLng, a.latitude!, a.longitude!) }))
           .sort((a, b) => a.dist - b.dist)[0];
-        return pickEmployee(nearest.agency.id, employees, fallbackEmployeeId);
+        return pickEmployee(nearest.agency.id, employees, fallbackEmployeeId, currentMonthEmployeeLeadCounts);
       }
-      // No coords → pick first canton match
-      return pickEmployee(cantonMatches[0].id, employees, fallbackEmployeeId);
+      return pickEmployee(cantonMatches[0].id, employees, fallbackEmployeeId, currentMonthEmployeeLeadCounts);
     }
 
     if (cantonMatches.length > 0) {
-      return pickEmployee(cantonMatches[0].id, employees, fallbackEmployeeId);
+      return pickEmployee(cantonMatches[0].id, employees, fallbackEmployeeId, currentMonthEmployeeLeadCounts);
     }
   }
 
@@ -83,7 +83,7 @@ export function resolveAssignmentByPlz(
       .sort((a, b) => a.dist - b.dist);
 
     if (withinRadius.length > 0) {
-      return pickEmployee(withinRadius[0].agency.id, employees, fallbackEmployeeId);
+      return pickEmployee(withinRadius[0].agency.id, employees, fallbackEmployeeId, currentMonthEmployeeLeadCounts);
     }
   }
 
@@ -95,10 +95,18 @@ function pickEmployee(
   agencyId: string,
   employees: Employee[],
   fallbackEmployeeId: string,
+  employeeLeadCounts?: Record<string, number>,
 ): { agencyId: string; employeeId: string } {
   const agencyEmployees = employees.filter(e => e.agencyId === agencyId);
-  return {
-    agencyId,
-    employeeId: agencyEmployees[0]?.id || fallbackEmployeeId,
-  };
+  if (agencyEmployees.length === 0) {
+    return { agencyId, employeeId: fallbackEmployeeId };
+  }
+  if (agencyEmployees.length === 1 || !employeeLeadCounts) {
+    return { agencyId, employeeId: agencyEmployees[0].id };
+  }
+  // Fair distribution: pick employee with fewest leads this month
+  const sorted = [...agencyEmployees].sort(
+    (a, b) => (employeeLeadCounts[a.id] ?? 0) - (employeeLeadCounts[b.id] ?? 0)
+  );
+  return { agencyId, employeeId: sorted[0].id };
 }
