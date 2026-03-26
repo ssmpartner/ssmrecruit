@@ -237,33 +237,33 @@ const apiSections: ApiSection[] = [
   },
   {
     title: 'Agenturen',
-    description: 'Agenturen mit Standort, Umkreis und Kanton-Zuordnung verwalten.',
+    description: 'Agenturen mit Standort, Umkreis, Kanton-Zuordnung und monatlichem Lead-Kontingent verwalten. Bei mehreren Mitarbeitern pro Agentur erfolgt eine faire Round-Robin-Verteilung basierend auf der monatlichen Lead-Anzahl pro Mitarbeiter.',
     endpoints: [
       {
         method: 'GET', path: '/api/v1/agencies', summary: 'Alle Agenturen abrufen', auth: true,
-        description: 'Liste aller Agenturen mit Standort-Koordinaten, Umkreis und Kanton-Zuordnung.',
+        description: 'Liste aller Agenturen mit Standort-Koordinaten, Umkreis, Kanton-Zuordnung und Kontingent.',
         response: `{
   "data": [
     {
       "id": "a1",
-      "name": "Agentur Unteren-Schönbühl",
-      "contactEmail": "info@agentur-schoenbuehl.ch",
-      "address": "Bahnhofstrasse 5",
-      "plz": "3322",
-      "city": "Urtenen-Schönbühl",
-      "latitude": 47.0184,
-      "longitude": 7.4965,
+      "name": "Agentur Bern",
+      "contactEmail": "bern@agentur.ch",
+      "address": "Musterstrasse 1",
+      "plz": "3000",
+      "city": "Bern",
+      "latitude": 46.9480,
+      "longitude": 7.4474,
       "radiusKm": 30,
       "allowedCantons": ["BE", "SO"],
-      "region": "Deutschschweiz",
-      "language": "de"
+      "monthlyLeadQuota": 50,
+      "color": "#3B82F6"
     }
   ]
 }`,
       },
       {
         method: 'PATCH', path: '/api/v1/agencies/:id', summary: 'Agentur aktualisieren', auth: true,
-        description: 'Aktualisiert Agentur-Daten inkl. Adresse, Koordinaten und Einsatzradius. Beim Speichern werden fehlende Koordinaten automatisch per Geocoding ermittelt.',
+        description: 'Aktualisiert Agentur-Daten inkl. Adresse, Koordinaten, Einsatzradius und Kontingent. Beim Speichern werden fehlende Koordinaten automatisch per Geocoding ermittelt.',
         params: [{ name: 'id', type: 'string', required: true, description: 'Agentur-ID' }],
         body: [
           { name: 'name', type: 'string', required: false, description: 'Agenturname' },
@@ -278,11 +278,6 @@ const apiSections: ApiSection[] = [
         ],
         response: `{ "id": "a1", "latitude": 47.0184, "longitude": 7.4965, "radiusKm": 30, "monthlyLeadQuota": 50 }`,
       },
-    ],
-    notes: [
-      'Faire Mitarbeiter-Verteilung: Bei mehreren Mitarbeitern pro Agentur wird der Lead automatisch dem Mitarbeiter mit den wenigsten Leads im aktuellen Monat zugewiesen (Round-Robin).',
-      'Kontingent-Prüfung: Agenturen mit erreichtem monatlichen Kontingent werden von der automatischen Zuweisung ausgeschlossen. Der Lead wird dann der nächstbesten Agentur oder dem Hauptsitz zugewiesen.',
-    ],
     ],
   },
   {
