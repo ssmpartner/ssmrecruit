@@ -320,13 +320,23 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.functions.invoke('manage-users', {
-      body: { action: 'list' },
-    });
-    if (error) {
-      toast({ title: 'Fehler', description: 'Benutzer konnten nicht geladen werden', variant: 'destructive' });
-    } else {
-      setUsers(data.users || []);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({ title: 'Sitzung abgelaufen', description: 'Bitte melden Sie sich erneut an.', variant: 'destructive' });
+        setLoading(false);
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('manage-users', {
+        body: { action: 'list' },
+      });
+      if (error) {
+        toast({ title: 'Fehler', description: 'Benutzer konnten nicht geladen werden', variant: 'destructive' });
+      } else {
+        setUsers(data.users || []);
+      }
+    } catch {
+      toast({ title: 'Fehler', description: 'Verbindungsfehler', variant: 'destructive' });
     }
     setLoading(false);
   }, [toast]);
