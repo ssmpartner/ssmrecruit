@@ -13,14 +13,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { type NotificationMethod } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter';
+type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter' | 'controlling' | 'geschaeftsleitung' | 'hr';
 
 const roleConfig: Record<SystemRole, { label: string; color: string; description: string }> = {
   superadmin: { label: 'Superadmin', color: 'bg-destructive text-destructive-foreground', description: 'Vollzugriff – kann alles verwalten inkl. Benutzer & Einstellungen' },
-  admin: { label: 'Admin', color: 'bg-primary text-primary-foreground', description: 'Kann Leads, Mitarbeiter & Agenturen verwalten' },
+  admin: { label: 'Admin', color: 'bg-primary text-primary-foreground', description: 'Kann Leads, Mitarbeiter & Agenturen verwalten und Controlling/GL/HR-Rollen zuweisen' },
   teamleiter: { label: 'Teamleiter', color: 'bg-emerald-600 text-white', description: 'Eigene Leads bearbeiten, Pipeline, Aufgaben, Kalender & Statistik' },
   backoffice: { label: 'Backoffice', color: 'bg-warning text-warning-foreground', description: 'Kann Leads bearbeiten, zuweisen und Status ändern' },
   analyst: { label: 'Analyst', color: 'bg-info text-info-foreground', description: 'Nur Lesezugriff auf Dashboard & Analytics' },
+  controlling: { label: 'Controlling', color: 'bg-cyan-600 text-white', description: 'Prüft Leads nach Vorselektion – kontrolliert Matching, Insights & Dokumente, kann freigeben oder zurückweisen' },
+  geschaeftsleitung: { label: 'Geschäftsleitung', color: 'bg-purple-600 text-white', description: 'Prüft freigegebene Leads auf Management-Stufe – kann final freigeben oder ablehnen' },
+  hr: { label: 'HR', color: 'bg-pink-600 text-white', description: 'Bearbeitet final freigegebene Leads im HR-Prozess – führt Abschluss bis «Eingestellt» weiter' },
 };
 
 interface Integration {
@@ -166,7 +169,8 @@ export default function Settings() {
     }
   };
 
-  const { isSuperadmin } = useAuth();
+  const { isSuperadmin, role } = useAuth();
+  const isAdmin = role === 'admin';
 
   return (
     <div>
@@ -205,7 +209,7 @@ export default function Settings() {
         <div className="flex-1 max-w-2xl space-y-6">
           {activeTab === 'profile' && <ProfileSettings />}
           {activeTab === 'notifications' && <NotificationRoleMatrix />}
-          {activeTab === 'users' && <UsersTab isSuperadmin={isSuperadmin} />}
+          {activeTab === 'users' && <UsersTab isSuperadmin={isSuperadmin} isAdmin={isAdmin} />}
           {activeTab === 'sources' && <LeadSourcesTab isSuperadmin={isSuperadmin} />}
           {activeTab === 'appointments' && <AppointmentsTab appointmentSettings={appointmentSettings} updateAppointmentSettings={updateAppointmentSettings} toast={toast} />}
           {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}
@@ -300,14 +304,19 @@ function NotificationsTab({ notifPrefs, updateNotifPrefs, toast }: any) {
   );
 }
 
-function UsersTab({ isSuperadmin }: { isSuperadmin: boolean }) {
+function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: boolean }) {
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'backoffice' as SystemRole });
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const canManageUsers = isSuperadmin || isAdmin;
+  const adminAllowedRoles: SystemRole[] = ['controlling', 'geschaeftsleitung', 'hr'];
+  const availableRoles = isSuperadmin ? Object.keys(roleConfig) as SystemRole[] : adminAllowedRoles;
+  const defaultRole = isSuperadmin ? 'backoffice' : 'controlling';
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: defaultRole as SystemRole });
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -369,15 +378,21 @@ function UsersTab({ isSuperadmin }: { isSuperadmin: boolean }) {
     }
   };
 
-  if (!isSuperadmin) {
+  if (!canManageUsers) {
     return (
       <div className="rounded-xl border bg-card p-8 text-center">
         <Shield className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
         <h2 className="text-lg font-semibold">Zugriff verweigert</h2>
-        <p className="text-sm text-muted-foreground mt-1">Nur Superadmins können Benutzer verwalten.</p>
+        <p className="text-sm text-muted-foreground mt-1">Nur Superadmins und Admins können Benutzer verwalten.</p>
       </div>
     );
   }
+
+  const filteredUsers = roleFilter === 'all' ? users : users.filter((u: any) => u.role === roleFilter);
+  const roleCounts = Object.keys(roleConfig).reduce((acc, key) => {
+    acc[key] = users.filter((u: any) => u.role === key).length;
+    return acc;
+  }, {} as Record<string, number>);
 
   return (
     <>
@@ -414,8 +429,8 @@ function UsersTab({ isSuperadmin }: { isSuperadmin: boolean }) {
                 <label className="text-sm font-medium">Rolle</label>
                 <select value={form.role} onChange={(e) => setForm(p => ({ ...p, role: e.target.value as SystemRole }))}
                   className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
-                  {Object.entries(roleConfig).map(([key, cfg]) => (
-                    <option key={key} value={key}>{cfg.label}</option>
+                  {availableRoles.map((key) => (
+                    <option key={key} value={key}>{roleConfig[key].label}</option>
                   ))}
                 </select>
                 <p className="mt-1 text-xs text-muted-foreground">{roleConfig[form.role].description}</p>
@@ -431,12 +446,17 @@ function UsersTab({ isSuperadmin }: { isSuperadmin: boolean }) {
       </div>
 
       <div className="flex flex-wrap gap-2">
+        <button onClick={() => setRoleFilter('all')}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${roleFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary hover:bg-muted'}`}>
+          Alle ({users.length})
+        </button>
         {Object.entries(roleConfig).map(([key, cfg]) => (
-          <div key={key} className="flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5">
+          <button key={key} onClick={() => setRoleFilter(key)}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors ${roleFilter === key ? 'bg-primary text-primary-foreground' : 'bg-secondary hover:bg-muted'}`}>
             <span className={`inline-block h-2 w-2 rounded-full ${cfg.color}`} />
             <span className="text-xs font-medium">{cfg.label}</span>
-            <span className="text-xs text-muted-foreground">– {cfg.description}</span>
-          </div>
+            <span className="text-xs opacity-70">({roleCounts[key] || 0})</span>
+          </button>
         ))}
       </div>
 
@@ -456,9 +476,9 @@ function UsersTab({ isSuperadmin }: { isSuperadmin: boolean }) {
               </tr>
             </thead>
             <tbody>
-              {users.map((u: any) => {
+              {filteredUsers.map((u: any) => {
                 const role = (u.role || 'analyst') as SystemRole;
-                const cfg = roleConfig[role];
+                const cfg = roleConfig[role] || roleConfig.analyst;
                 const initials = (u.display_name || u.email || '?').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
                 const isSelf = u.id === currentUser?.id;
                 return (
@@ -474,10 +494,10 @@ function UsersTab({ isSuperadmin }: { isSuperadmin: boolean }) {
                     </td>
                     <td className="px-5 py-3">
                       <select value={role} onChange={(e) => handleChangeRole(u.id, e.target.value as SystemRole)}
-                        disabled={isSelf}
+                        disabled={isSelf || (!isSuperadmin && !adminAllowedRoles.includes(role))}
                         className="h-8 rounded-lg border bg-background px-2 text-xs font-medium outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
-                        {Object.entries(roleConfig).map(([key, c]) => (
-                          <option key={key} value={key}>{c.label}</option>
+                        {(isSuperadmin ? Object.keys(roleConfig) as SystemRole[] : adminAllowedRoles).map((key) => (
+                          <option key={key} value={key}>{roleConfig[key].label}</option>
                         ))}
                       </select>
                     </td>

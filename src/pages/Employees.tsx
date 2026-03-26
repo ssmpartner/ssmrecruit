@@ -281,6 +281,9 @@ export default function Employees() {
                   <option value="teamleiter">Teamleiter</option>
                   <option value="backoffice">Backoffice</option>
                   <option value="analyst">Analyst</option>
+                  <option value="controlling">Controlling</option>
+                  <option value="geschaeftsleitung">Geschäftsleitung</option>
+                  <option value="hr">HR</option>
                   <option value="admin">Admin</option>
                   <option value="superadmin">Superadmin</option>
                 </select>

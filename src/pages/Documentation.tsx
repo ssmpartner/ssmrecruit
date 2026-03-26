@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.36.0';
+const APP_VERSION = '2.37.0';
 
 const versionHistory = [
+  { version: '2.37.0', date: '26.03.2026', changes: [
+    'Benutzerverwaltung: 3 neue Rollen (Controlling, Geschäftsleitung, HR) in der Benutzer-Verwaltung auswählbar – mit Rollenbeschreibung und farblicher Kennzeichnung',
+    'Rollenfilter: Benutzerliste kann nach allen 8 Rollen gefiltert werden, inkl. Zähler pro Rolle',
+    'Admin-Zugriff: Admins können jetzt die Benutzerverwaltung nutzen und Controlling/GL/HR-Rollen zuweisen',
+    'Mitarbeiter-Konvertierung: Beim Umwandeln eines Mitarbeiters in einen System-Benutzer sind die neuen Rollen auswählbar',
+    'Rechte-Integration: Review-Rollen sehen nur Dashboard + Leads, keine administrativen Bereiche in der Sidebar',
+  ]},
   { version: '2.36.0', date: '26.03.2026', changes: [
     'Neue Rollen: Controlling, Geschäftsleitung und HR als reine Prüf- und Freigaberollen (Read + Action) – keine Bearbeitung, nur Approve/Reject/Rückfrage',
     'Eskalationsprozess: Neuer 5-stufiger Approval-Flow nach Follow-up: Ready for Controlling → Controlling Approved → Management Review → Management Approved → HR Processing → Eingestellt',

@@ -854,6 +854,47 @@ Neue Leads (Monat);24`,
     ],
   },
   {
+    title: 'Benutzer & Rollen',
+    description: 'Benutzer erstellen, Rollen zuweisen und verwalten. Superadmins haben Vollzugriff, Admins können Controlling/GL/HR-Rollen zuweisen.',
+    endpoints: [
+      {
+        method: 'GET', path: '/api/v1/users', summary: 'Alle Benutzer abrufen', auth: true,
+        description: 'Gibt eine Liste aller System-Benutzer mit Rollen und Profildaten zurück. Nur für Superadmins und Admins.',
+        response: `{
+  "users": [
+    {
+      "id": "uuid",
+      "email": "max@firma.ch",
+      "display_name": "Max Müller",
+      "role": "controlling",
+      "created_at": "2026-03-01T00:00:00.000Z"
+    }
+  ]
+}`,
+      },
+      {
+        method: 'POST', path: '/api/v1/users', summary: 'Benutzer erstellen', auth: true,
+        description: 'Erstellt einen neuen System-Benutzer mit Rolle. Admins dürfen nur Controlling, Geschäftsleitung und HR zuweisen.',
+        body: [
+          { name: 'email', type: 'string', required: true, description: 'E-Mail-Adresse' },
+          { name: 'password', type: 'string', required: true, description: 'Passwort (min. 8 Zeichen)' },
+          { name: 'display_name', type: 'string', required: true, description: 'Anzeigename' },
+          { name: 'role', type: 'string', required: true, description: 'Rolle: superadmin, admin, teamleiter, backoffice, analyst, controlling, geschaeftsleitung, hr' },
+        ],
+        response: `{ "success": true, "user_id": "uuid" }`,
+      },
+      {
+        method: 'PATCH', path: '/api/v1/users/:id/role', summary: 'Rolle ändern', auth: true,
+        description: 'Ändert die Rolle eines Benutzers. Admins dürfen nur Controlling, Geschäftsleitung und HR zuweisen.',
+        params: [{ name: 'id', type: 'string', required: true, description: 'Benutzer-ID' }],
+        body: [
+          { name: 'role', type: 'string', required: true, description: 'Neue Rolle' },
+        ],
+        response: `{ "success": true }`,
+      },
+    ],
+  },
+  {
     title: 'Approval-Prozess',
     description: 'Leads im Eskalationsprozess freigeben oder ablehnen. Controlling, Geschäftsleitung und HR nutzen diese Endpunkte zur Bearbeitung.',
     endpoints: [
