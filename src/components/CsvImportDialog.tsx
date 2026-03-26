@@ -95,7 +95,7 @@ function autoMapHeaders(csvHeaders: string[]): Record<number, string> {
 }
 
 export default function CsvImportDialog() {
-  const { addLead, agencies, employees } = useLeads();
+  const { addLead, agencies, employees, leads } = useLeads();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<'upload' | 'map' | 'preview' | 'importing'>('upload');
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
