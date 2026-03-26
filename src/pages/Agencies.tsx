@@ -134,6 +134,10 @@ export default function Agencies() {
           const agencyEmployees = employees.filter(e => e.agencyId === agency.id);
           const agencyLeads = leads.filter(l => l.agencyId === agency.id);
           const hired = agencyLeads.filter(l => l.status === 'hired').length;
+          // Current month lead count
+          const now = new Date();
+          const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+          const monthLeads = agencyLeads.filter(l => l.createdAt >= monthStart).length;
 
           return (
             <div
@@ -186,6 +190,18 @@ export default function Agencies() {
                     <p className="text-lg font-bold">{hired}</p>
                     <p className="text-xs text-muted-foreground">Eingestellt</p>
                   </div>
+                </div>
+
+                {/* Quota indicator */}
+                <div className="mt-3 flex items-center justify-between rounded-lg border px-3 py-2">
+                  <span className="text-xs text-muted-foreground">Kontingent</span>
+                  {agency.monthlyLeadQuota === null ? (
+                    <Badge variant="secondary" className="text-xs">Unlimitiert</Badge>
+                  ) : (
+                    <Badge variant={monthLeads >= agency.monthlyLeadQuota ? 'destructive' : 'secondary'} className="text-xs">
+                      {monthLeads} / {agency.monthlyLeadQuota}
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>

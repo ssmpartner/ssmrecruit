@@ -211,7 +211,14 @@ export default function CsvImportDialog() {
         let finalEmployeeId = explicitEmployee || defaultEmployee;
 
         if (!explicitAgency && resolvedCantonCode) {
-          const resolved = resolveAssignmentByPlz(row.plz || '', resolvedCantonCode, agencies, employees, defaultAgency, defaultEmployee);
+          // Calculate current month lead counts for quota enforcement
+          const now = new Date();
+          const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+          const currentMonthLeadCounts: Record<string, number> = {};
+          leads.filter(l => l.createdAt >= monthStart).forEach(l => {
+            currentMonthLeadCounts[l.agencyId] = (currentMonthLeadCounts[l.agencyId] || 0) + 1;
+          });
+          const resolved = resolveAssignmentByPlz(row.plz || '', resolvedCantonCode, agencies, employees, defaultAgency, defaultEmployee, undefined, undefined, currentMonthLeadCounts);
           finalAgencyId = resolved.agencyId;
           if (!explicitEmployee) finalEmployeeId = resolved.employeeId;
         }
