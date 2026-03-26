@@ -109,11 +109,23 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
     setDirty(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name.trim() || !form.contactEmail.trim()) {
       toast.error('Name und E-Mail sind erforderlich');
       return;
     }
+
+    // Auto-geocode if address present but no coordinates
+    let lat = form.latitude;
+    let lng = form.longitude;
+    if (!lat && (form.address || form.plz || form.city)) {
+      const result = await geocodeAddress();
+      if (result) {
+        lat = result.lat;
+        lng = result.lng;
+      }
+    }
+
     updateAgency(agency.id, {
       name: form.name,
       contactEmail: form.contactEmail,
@@ -124,8 +136,8 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
       address: form.address,
       plz: form.plz,
       city: form.city,
-      latitude: form.latitude,
-      longitude: form.longitude,
+      latitude: lat,
+      longitude: lng,
       radiusKm: form.radiusKm,
     });
     setDirty(false);
