@@ -215,10 +215,12 @@ export default function CsvImportDialog() {
           const now = new Date();
           const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
           const currentMonthLeadCounts: Record<string, number> = {};
+          const currentMonthEmployeeLeadCounts: Record<string, number> = {};
           leads.filter(l => l.createdAt >= monthStart).forEach(l => {
             currentMonthLeadCounts[l.agencyId] = (currentMonthLeadCounts[l.agencyId] || 0) + 1;
+            currentMonthEmployeeLeadCounts[l.employeeId] = (currentMonthEmployeeLeadCounts[l.employeeId] || 0) + 1;
           });
-          const resolved = resolveAssignmentByPlz(row.plz || '', resolvedCantonCode, agencies, employees, defaultAgency, defaultEmployee, undefined, undefined, currentMonthLeadCounts);
+          const resolved = resolveAssignmentByPlz(row.plz || '', resolvedCantonCode, agencies, employees, defaultAgency, defaultEmployee, undefined, undefined, currentMonthLeadCounts, currentMonthEmployeeLeadCounts);
           finalAgencyId = resolved.agencyId;
           if (!explicitEmployee) finalEmployeeId = resolved.employeeId;
         }
