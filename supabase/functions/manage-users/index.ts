@@ -75,6 +75,12 @@ Deno.serve(async (req) => {
     if (action === "update_role") {
       const { user_id, role } = payload;
 
+      // Admins can only assign review roles
+      const adminAllowedRoles = ['controlling', 'geschaeftsleitung', 'hr'];
+      if (!isSuperadminCaller && !adminAllowedRoles.includes(role)) {
+        throw new Error("Admins dürfen nur Controlling, Geschäftsleitung und HR Rollen zuweisen");
+      }
+
       // Prevent removing the last superadmin
       if (role !== "superadmin") {
         const { data: superadmins } = await supabaseAdmin
