@@ -304,6 +304,10 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.position !== undefined) dbUpdates.position = updates.position;
     if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
     if (updates.createdAt !== undefined) dbUpdates.created_at = updates.createdAt;
+    if (updates.approvalStage !== undefined) dbUpdates.approval_stage = updates.approvalStage;
+    if (updates.approvalStatus !== undefined) dbUpdates.approval_status = updates.approvalStatus;
+    if (updates.approvalHistory !== undefined) dbUpdates.approval_history = updates.approvalHistory;
+    if (updates.approvedByRole !== undefined) dbUpdates.approved_by_role = updates.approvedByRole;
     dbUpdates.updated_at = updatedAt;
 
     await supabase.from('leads').update(dbUpdates).eq('id', id);
