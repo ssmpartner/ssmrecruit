@@ -938,6 +938,10 @@ export type Database = {
         Row: {
           address: string
           agency_id: string
+          approval_history: Json
+          approval_stage: string
+          approval_status: string
+          approved_by_role: string
           callback_count: number
           campaign: string
           canton: string
@@ -962,6 +966,10 @@ export type Database = {
         Insert: {
           address?: string
           agency_id: string
+          approval_history?: Json
+          approval_stage?: string
+          approval_status?: string
+          approved_by_role?: string
           callback_count?: number
           campaign?: string
           canton?: string
@@ -986,6 +994,10 @@ export type Database = {
         Update: {
           address?: string
           agency_id?: string
+          approval_history?: Json
+          approval_stage?: string
+          approval_status?: string
+          approved_by_role?: string
           callback_count?: number
           campaign?: string
           canton?: string

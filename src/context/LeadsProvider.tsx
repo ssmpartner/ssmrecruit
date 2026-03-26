@@ -41,6 +41,10 @@ function dbToLead(row: any): Lead {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     lifecycle: row.lead_lifecycle || 'active',
+    approvalStage: row.approval_stage || '',
+    approvalStatus: row.approval_status || '',
+    approvalHistory: Array.isArray(row.approval_history) ? row.approval_history : [],
+    approvedByRole: row.approved_by_role || '',
   };
 }
 
@@ -300,6 +304,10 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.position !== undefined) dbUpdates.position = updates.position;
     if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
     if (updates.createdAt !== undefined) dbUpdates.created_at = updates.createdAt;
+    if (updates.approvalStage !== undefined) dbUpdates.approval_stage = updates.approvalStage;
+    if (updates.approvalStatus !== undefined) dbUpdates.approval_status = updates.approvalStatus;
+    if (updates.approvalHistory !== undefined) dbUpdates.approval_history = updates.approvalHistory;
+    if (updates.approvedByRole !== undefined) dbUpdates.approved_by_role = updates.approvedByRole;
     dbUpdates.updated_at = updatedAt;
 
     await supabase.from('leads').update(dbUpdates).eq('id', id);
