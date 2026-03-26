@@ -951,6 +951,7 @@ export type Database = {
           email: string
           employee_id: string
           id: string
+          is_read: boolean
           lead_lifecycle: string
           name: string
           notes: string
@@ -979,6 +980,7 @@ export type Database = {
           email: string
           employee_id: string
           id: string
+          is_read?: boolean
           lead_lifecycle?: string
           name: string
           notes?: string
@@ -1007,6 +1009,7 @@ export type Database = {
           email?: string
           employee_id?: string
           id?: string
+          is_read?: boolean
           lead_lifecycle?: string
           name?: string
           notes?: string
