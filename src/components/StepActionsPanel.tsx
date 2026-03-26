@@ -42,10 +42,17 @@ export default function StepActionsPanel({
   const { toast } = useToast();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [activeWizardType, setActiveWizardType] = useState<WizardType>('contacted');
+  const [approvalWizardOpen, setApprovalWizardOpen] = useState(false);
+  const [approvalWizardType, setApprovalWizardType] = useState<ApprovalWizardType>('controlling');
 
   const openWizard = (type: WizardType) => {
     setActiveWizardType(type);
     setWizardOpen(true);
+  };
+
+  const openApprovalWizard = (type: ApprovalWizardType) => {
+    setApprovalWizardType(type);
+    setApprovalWizardOpen(true);
   };
 
   // Step 1: New Lead
