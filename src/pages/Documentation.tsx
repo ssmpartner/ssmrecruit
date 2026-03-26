@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.34.0';
+const APP_VERSION = '2.35.0';
 
 const versionHistory = [
+  { version: '2.35.0', date: '26.03.2026', changes: [
+    'Faire Mitarbeiter-Verteilung: Leads werden innerhalb einer Agentur gleichmässig auf alle Mitarbeiter verteilt – der Mitarbeiter mit den wenigsten Leads im aktuellen Monat erhält den nächsten Lead',
+    'Neue DB-Funktion resolve_employee_by_agency: PostgreSQL-Funktion für faire Round-Robin-Verteilung bei Webhook-Leads (Meta, TikTok, Formular, Bewerbung)',
+    'Monatliches Lead-Kontingent pro Agentur: Einstellbar als «Unlimitiert» oder mit fester Anzahl – bei Erreichen des Limits wird die Agentur von der automatischen Zuweisung ausgeschlossen',
+    'Kontingent-Anzeige in Agentur-Karten: Aktuelle monatliche Auslastung (z. B. «12 / 50») mit farblicher Hervorhebung bei Erreichen des Limits',
+    'CSV-Import berücksichtigt jetzt sowohl Agentur-Kontingente als auch die faire Mitarbeiter-Verteilung',
+  ]},
   { version: '2.34.0', date: '26.03.2026', changes: [
     'Geocoding-Fix: «Koordinaten ermitteln»-Button in der Agentur-Detailansicht funktioniert jetzt korrekt (API-Aufruf mit query statt address)',
     'Auto-Geocoding beim Speichern: Wenn eine Agentur-Adresse vorhanden ist aber keine Koordinaten, werden diese automatisch beim Speichern ermittelt',
