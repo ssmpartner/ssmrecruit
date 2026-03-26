@@ -87,6 +87,8 @@ const apiSections: ApiSection[] = [
   "approved_by_role": "",
   "approval_history": [],
   "is_read": false,
+  "assigned_approver_user_id": null,
+  "assigned_approver_role": "",
   "createdAt": "2025-03-01T00:00:00.000Z",
   "updatedAt": "2025-03-03T00:00:00.000Z"
 }`,
@@ -120,6 +122,8 @@ const apiSections: ApiSection[] = [
           { name: 'employeeId', type: 'string', required: false, description: 'Zuweisung an Mitarbeiter' },
           { name: 'notes', type: 'string', required: false, description: 'Notizen aktualisieren' },
           { name: 'is_read', type: 'boolean', required: false, description: 'Gelesen-Status (NEU-Badge steuern)' },
+          { name: 'assigned_approver_user_id', type: 'string | null', required: false, description: 'Optionale Zuweisung an einen bestimmten Approver (User-ID)' },
+          { name: 'assigned_approver_role', type: 'string', required: false, description: 'Approval-Rolle (controlling, geschaeftsleitung, hr)' },
         ],
         response: `{ "id": "l1", "status": "contacted", "updatedAt": "2026-03-18T10:05:00.000Z" }`,
       },

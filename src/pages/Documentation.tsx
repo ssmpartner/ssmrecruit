@@ -2,9 +2,19 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.39.0';
+const APP_VERSION = '2.40.0';
 
 const versionHistory = [
+  { version: '2.40.0', date: '26.03.2026', changes: [
+    'Approval-Ansicht: Vereinfachte, rollenbasierte Lead-Ansicht für Controlling, Geschäftsleitung und HR – statt voller Lead-Maske wird eine reduzierte Prüfansicht angezeigt',
+    'Controlling-Ansicht: Lead-Kurzinfo, Matching-Score, Insights-Status, DISC-Typ, Dokumentenanzahl und Controlling Wizard in einer übersichtlichen Karte',
+    'Geschäftsleitung-Ansicht: Management-Zusammenfassung mit Prüfergebnissen, Controlling-Entscheidung und Management Wizard',
+    'HR-Ansicht: Onboarding-Status mit vorherigen Freigaben und HR Wizard für finale Einstellung',
+    'Approval-Navigation: Review-Rollen navigieren nur durch Leads in ihrer eigenen Queue (Pfeiltasten mit Zähler)',
+    'Prominente Aktions-Buttons: Grosse, zentrierte CTA-Buttons zum Starten des jeweiligen Approval-Wizards',
+    'Optionale Approver-Zuweisung vorbereitet: Neue DB-Felder assigned_approver_user_id und assigned_approver_role für zukünftige Benutzer-basierte Zuweisung',
+    'Hilfe-Center und API-Dokumentation entsprechend aktualisiert',
+  ]},
   { version: '2.39.0', date: '26.03.2026', changes: [
     'Hilfe-Center: Neue Artikel zum Eskalations- und Approval-Prozess, Review-Rollen (Controlling, Geschäftsleitung, HR) und deren Einschränkungen',
     'Hilfe-Center: NEU-Badge-Artikel aktualisiert – Gelesen-Status wird jetzt persistent in der Datenbank gespeichert',
@@ -299,6 +309,8 @@ const appFeatures = [
     { name: 'Prozesse', desc: 'Mehrstufige Recruiting-Prozesse mit Stepper-Ansicht, KI-generierten Richtlinien und Geltungsbereichen für Automatisierungen (Global/Agentur/Mitarbeiter).' },
     { name: 'Eskalationsprozesse', desc: 'Flexible Eskalationslogik pro Hauptprozess mit quellen-basierter Aktivierung, Regel-Engine, Wizard-Verknüpfung und Test-Modus.' },
     { name: 'Approval-Prozess', desc: 'Mehrstufiger Freigabeprozess nach Follow-up: Controlling → Management → HR → Eingestellt. Jede Phase hat einen eigenen Wizard mit Checklisten und Aktionen.' },
+    { name: 'Approval-Ansicht', desc: 'Vereinfachte, rollenspezifische Lead-Ansicht für Review-Rollen. Zeigt nur relevante Informationen (Kurzinfo, Prüfergebnisse, vorherige Freigaben) und den Approval-Wizard – keine vollständige Lead-Maske.' },
+    { name: 'Approver-Zuweisung', desc: 'Optionale Zuweisung eines Approval-Schritts an einen bestimmten Benutzer (assigned_approver_user_id). Ermöglicht sowohl Pool-Sicht (alle der Rolle) als auch persönliche Zuweisung.' },
     { name: 'Approval-Wizards', desc: '3 phasenspezifische Wizards: Controlling Prüfung (Checkboxen für Insights/Matching/Dokumente), Management Review (Read-only Übersicht), HR Onboarding (Einstellung finalisieren).' },
     { name: 'Pipeline-Flow', desc: 'Interaktive Pipeline mit horizontaler und vertikaler Ansicht, farbiger Prozess-Wegleitung, Geschlechts-Icons bei Lead-Namen, Eskalations-Erkennung, Wizard-/Regelzuweisung und Test-Modus-Indikator.' },
     { name: 'PLZ-Auto-Zuweisung', desc: 'Automatische Agentur- und Mitarbeiterzuweisung basierend auf PLZ/Kanton bei Import und Webhook-Eingang. Automatische Adress-Ergänzung (PLZ→Ort/Kanton) bei allen Import-Methoden.' },

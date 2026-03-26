@@ -62,6 +62,8 @@ export interface Lead {
   approvalHistory?: Array<{ role: string; action: string; user: string; timestamp: string }>;
   approvedByRole?: string;
   isRead?: boolean;
+  assignedApproverUserId?: string | null;
+  assignedApproverRole?: string;
 }
 
 export interface Appointment {
