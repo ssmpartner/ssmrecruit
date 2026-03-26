@@ -66,21 +66,26 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
     setGeocoding(true);
     try {
       const { data, error } = await supabase.functions.invoke('geocode-address', {
-        body: { address: query },
+        body: { query, types: 'address,place' },
       });
       if (error) throw error;
-      if (data?.features?.length > 0) {
-        const [lng, lat] = data.features[0].center;
+      const first = data?.suggestions?.[0];
+      if (first?.coordinates) {
+        const [lng, lat] = first.coordinates;
         setForm(p => ({ ...p, latitude: lat, longitude: lng }));
         setDirty(true);
         toast.success(`Koordinaten ermittelt: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        return { lat, lng };
       } else {
         toast.error('Adresse konnte nicht georeferenziert werden');
+        return null;
       }
     } catch {
       toast.error('Geocoding fehlgeschlagen');
+      return null;
+    } finally {
+      setGeocoding(false);
     }
-    setGeocoding(false);
   }, [form.address, form.plz, form.city]);
 
   if (!agency) return null;
@@ -104,11 +109,23 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
     setDirty(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name.trim() || !form.contactEmail.trim()) {
       toast.error('Name und E-Mail sind erforderlich');
       return;
     }
+
+    // Auto-geocode if address present but no coordinates
+    let lat = form.latitude;
+    let lng = form.longitude;
+    if (!lat && (form.address || form.plz || form.city)) {
+      const result = await geocodeAddress();
+      if (result) {
+        lat = result.lat;
+        lng = result.lng;
+      }
+    }
+
     updateAgency(agency.id, {
       name: form.name,
       contactEmail: form.contactEmail,
@@ -119,8 +136,8 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
       address: form.address,
       plz: form.plz,
       city: form.city,
-      latitude: form.latitude,
-      longitude: form.longitude,
+      latitude: lat,
+      longitude: lng,
       radiusKm: form.radiusKm,
     });
     setDirty(false);
