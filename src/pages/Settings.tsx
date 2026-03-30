@@ -81,6 +81,16 @@ export default function Settings() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [integrationsLoading, setIntegrationsLoading] = useState(false);
 
+  // Listen for cross-component tab navigation (e.g. from WizardsTab)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const tab = (e as CustomEvent).detail as SettingsTab;
+      if (tab) setActiveTab(tab);
+    };
+    window.addEventListener('settings-navigate', handler);
+    return () => window.removeEventListener('settings-navigate', handler);
+  }, []);
+
   // Load integrations from DB
   const loadIntegrations = useCallback(async () => {
     setIntegrationsLoading(true);
