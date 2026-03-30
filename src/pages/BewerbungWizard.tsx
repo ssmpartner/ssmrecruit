@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CheckCircle2, Loader2, AlertCircle, Upload, X, File, ChevronRight, ChevronLeft, Briefcase, TrendingUp, ArrowRight, Info } from 'lucide-react';
+import bewerbungHero from '@/assets/bewerbung-hero.jpg';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -629,9 +630,13 @@ function Shell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-6 sm:py-10 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-card rounded-2xl shadow-xl overflow-hidden border border-border">
-          <div className="bg-[var(--gradient-primary)] px-6 sm:px-8 py-6 text-primary-foreground">
-            <h1 className="text-2xl font-bold tracking-tight font-heading">SSM Recruit</h1>
-            <p className="text-primary-foreground/70 mt-1 text-sm">Jetzt bewerben – einfach, schnell und sicher.</p>
+          <div className="relative h-44 sm:h-52 overflow-hidden">
+            <img src={bewerbungHero} alt="SSM Team bei der Arbeit" className="w-full h-full object-cover object-center" />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/50 to-transparent" />
+            <div className="absolute bottom-0 left-0 px-6 sm:px-8 pb-5">
+              <h1 className="text-2xl font-bold tracking-tight font-heading text-primary-foreground drop-shadow-md">SSM Recruit</h1>
+              <p className="text-primary-foreground/80 mt-1 text-sm drop-shadow-sm">Jetzt bewerben – einfach, schnell und sicher.</p>
+            </div>
           </div>
           <div className="p-5 sm:p-8">{children}</div>
         </div>
