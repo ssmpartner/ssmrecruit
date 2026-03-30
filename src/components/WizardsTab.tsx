@@ -49,6 +49,13 @@ const STEP_TYPES: { value: WizardStep['type']; label: string; icon: typeof Video
   { value: 'decision', label: 'Entscheidung (Ja/Nein)', icon: ToggleLeft },
 ];
 
+const WIZARD_TYPES = [
+  { value: 'recruiting', label: 'Recruiting' },
+  { value: 'sales', label: 'Sales' },
+  { value: 'application', label: 'Bewerbung' },
+  { value: 'custom', label: 'Custom' },
+];
+
 const uid = () => crypto.randomUUID();
 
 const emptyOption = (): WizardOption => ({ id: uid(), label: '', value: '', next_step_id: '', triggers: [] });
@@ -127,130 +134,7 @@ function WizardList({ wizards, loading, onEdit, onDuplicate, onDelete, onToggle,
         </CardContent>
       </Card>
 
-      {/* Bewerbungs-Wizard inline admin */}
-      <BewerbungWizardInline />
     </div>
-  );
-}
-
-// ── Bewerbungs-Wizard Inline Admin ──
-function BewerbungWizardInline() {
-  const [expanded, setExpanded] = useState(false);
-  const [config, setConfig] = useState<any>({ operations_open: false, hiring_periods: [] });
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [newPeriod, setNewPeriod] = useState({ label: '', value: '' });
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (!expanded) return;
-    setLoading(true);
-    supabase.from('app_settings').select('value').eq('key', 'application_wizard').single()
-      .then(({ data }) => {
-        if (data?.value) setConfig(data.value as any);
-        setLoading(false);
-      });
-  }, [expanded]);
-
-  const save = async (updated: any) => {
-    setSaving(true);
-    setConfig(updated);
-    const { error } = await supabase.from('app_settings').update({ value: updated }).eq('key', 'application_wizard');
-    setSaving(false);
-    if (error) {
-      toast({ title: 'Fehler', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Gespeichert', description: 'Bewerbungs-Wizard Konfiguration aktualisiert.' });
-    }
-  };
-
-  return (
-    <Card className="border-l-4 border-l-accent">
-      <CardContent className="p-4 space-y-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-accent/20 flex items-center justify-center">
-              <ClipboardList className="h-4.5 w-4.5 text-accent-foreground" />
-            </div>
-            <div>
-              <p className="font-medium text-sm">Bewerbungs-Wizard</p>
-              <p className="text-xs text-muted-foreground">Öffentliches Bewerbungsformular unter /bewerbung</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <a href="/bewerbung" target="_blank" rel="noopener"
-              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
-              <ExternalLink className="h-3.5 w-3.5" /> Vorschau
-            </a>
-            <Button variant="outline" size="sm" onClick={() => setExpanded(!expanded)}>
-              <Pencil className="h-3.5 w-3.5 mr-1" />
-              {expanded ? 'Schliessen' : 'Konfigurieren'}
-              <ChevronDown className={`h-3.5 w-3.5 ml-1 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-            </Button>
-          </div>
-        </div>
-
-        {expanded && (
-          <div className="mt-4 pt-4 border-t space-y-4">
-            {loading ? (
-              <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
-            ) : (
-              <>
-                {/* Operations toggle */}
-                <div className="rounded-lg border bg-background p-4 space-y-2">
-                  <h4 className="text-sm font-semibold">Stellenverfügbarkeit</h4>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Operations / Innendienst offen</p>
-                      <p className="text-xs text-muted-foreground">Wenn deaktiviert, sehen Bewerber einen Hinweis zu Spontanbewerbung.</p>
-                    </div>
-                    <Switch checked={config.operations_open ?? false} onCheckedChange={v => save({ ...config, operations_open: v })} />
-                  </div>
-                </div>
-
-                {/* Hiring Periods */}
-                <div className="rounded-lg border bg-background p-4 space-y-3">
-                  <h4 className="text-sm font-semibold">Finanzcoach – Einstellungszeiträume</h4>
-                  <p className="text-xs text-muted-foreground">Verfügbare Zeiträume für Finanzcoach-Bewerber.</p>
-                  <div className="space-y-2">
-                    {(config.hiring_periods || []).map((p: any, i: number) => (
-                      <div key={i} className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
-                        <span className="text-sm flex-1">{p.label}</span>
-                        <span className="text-xs text-muted-foreground">{p.value}</span>
-                        <button onClick={() => save({ ...config, hiring_periods: config.hiring_periods.filter((_: any, idx: number) => idx !== i) })}
-                          className="text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input className="flex-1 h-9" placeholder="Label (z.B. Q1 2027)" value={newPeriod.label} onChange={e => setNewPeriod(p => ({ ...p, label: e.target.value }))} />
-                    <Input className="w-32 h-9" placeholder="Wert (Q1-2027)" value={newPeriod.value} onChange={e => setNewPeriod(p => ({ ...p, value: e.target.value }))} />
-                    <Button size="sm" className="h-9" onClick={() => {
-                      if (!newPeriod.label || !newPeriod.value) return;
-                      save({ ...config, hiring_periods: [...(config.hiring_periods || []), newPeriod] });
-                      setNewPeriod({ label: '', value: '' });
-                    }}><Plus className="h-4 w-4" /></Button>
-                  </div>
-                </div>
-
-                {/* Link */}
-                <div className="rounded-lg border bg-background p-4 space-y-2">
-                  <h4 className="text-sm font-semibold">Bewerbungs-Link</h4>
-                  <div className="flex items-center gap-2 bg-muted rounded-lg px-3 py-2">
-                    <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <code className="text-xs flex-1 break-all">{window.location.origin}/bewerbung</code>
-                    <button onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/bewerbung`);
-                      toast({ title: 'Kopiert', description: 'Link in die Zwischenablage kopiert.' });
-                    }} className="text-muted-foreground hover:text-primary"><Copy className="h-4 w-4" /></button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }
 
@@ -508,9 +392,7 @@ function WizardEditor({ wizard, onSave, onBack, allWizards }: {
               <Select value={draft.type} onValueChange={v => patch({ type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="recruiting">Recruiting</SelectItem>
-                  <SelectItem value="sales">Sales</SelectItem>
-                  <SelectItem value="custom">Custom</SelectItem>
+                  {WIZARD_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -523,6 +405,22 @@ function WizardEditor({ wizard, onSave, onBack, allWizards }: {
             <Switch checked={draft.status === 'active'} onCheckedChange={v => patch({ status: v ? 'active' : 'inactive' })} />
             <Label>{draft.status === 'active' ? 'Aktiv' : 'Inaktiv'}</Label>
           </div>
+          {draft.type === 'application' && (
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Öffentliche URL</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <code className="text-xs text-muted-foreground bg-muted rounded px-2 py-1">{window.location.origin}/bewerbung</code>
+                    <button onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/bewerbung`);
+                    }} className="text-muted-foreground hover:text-primary"><Copy className="h-3.5 w-3.5" /></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="steps" className="space-y-3 pt-2">
@@ -544,20 +442,107 @@ function WizardEditor({ wizard, onSave, onBack, allWizards }: {
           </div>
         </TabsContent>
 
-        <TabsContent value="logic" className="pt-2">
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-              <AlertTriangle className="h-10 w-10 mb-3 text-muted-foreground/40" />
-              <p className="font-medium">Regel-Engine kommt bald</p>
-              <p className="text-xs mt-1">Hier werden Automationen, Scoring und Matching-Logiken konfiguriert.</p>
-            </CardContent>
-          </Card>
+        <TabsContent value="logic" className="pt-2 space-y-4">
+          {draft.type === 'application' ? (
+            <ApplicationLogicEditor rules={draft.rules as any[]} onChange={r => patch({ rules: r })} />
+          ) : (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                <AlertTriangle className="h-10 w-10 mb-3 text-muted-foreground/40" />
+                <p className="font-medium">Regel-Engine kommt bald</p>
+                <p className="text-xs mt-1">Hier werden Automationen, Scoring und Matching-Logiken konfiguriert.</p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="preview" className="pt-2">
           <WizardPreview steps={draft.steps} />
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+// ── Application Logic Editor (for Bewerbungs-Wizard) ──
+function ApplicationLogicEditor({ rules, onChange }: { rules: any[]; onChange: (r: any[]) => void }) {
+  const { toast } = useToast();
+  const [newPeriod, setNewPeriod] = useState({ label: '', value: '' });
+
+  const getRule = (key: string) => rules.find(r => r.key === key);
+  const updateRule = (key: string, value: any) => {
+    const updated = rules.map(r => r.key === key ? { ...r, value } : r);
+    onChange(updated);
+  };
+
+  const operationsOpen = getRule('operations_open')?.value ?? false;
+  const hiringPeriods: { label: string; value: string }[] = getRule('hiring_periods')?.value ?? [];
+
+  return (
+    <div className="space-y-4">
+      {/* Operations toggle */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <CardTitle className="text-sm">Stellenverfügbarkeit</CardTitle>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Operations / Innendienst offen</p>
+              <p className="text-xs text-muted-foreground">Wenn deaktiviert, sehen Bewerber einen Hinweis zu Spontanbewerbung.</p>
+            </div>
+            <Switch checked={operationsOpen} onCheckedChange={v => updateRule('operations_open', v)} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Hiring Periods */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <CardTitle className="text-sm">Finanzcoach – Einstellungszeiträume</CardTitle>
+          <p className="text-xs text-muted-foreground">Verfügbare Zeiträume für Finanzcoach-Bewerber.</p>
+          <div className="space-y-2">
+            {hiringPeriods.map((p, i) => (
+              <div key={i} className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
+                <span className="text-sm flex-1">{p.label}</span>
+                <span className="text-xs text-muted-foreground">{p.value}</span>
+                <button onClick={() => updateRule('hiring_periods', hiringPeriods.filter((_, idx) => idx !== i))}
+                  className="text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input className="flex-1 h-9" placeholder="Label (z.B. Q1 2027)" value={newPeriod.label} onChange={e => setNewPeriod(p => ({ ...p, label: e.target.value }))} />
+            <Input className="w-32 h-9" placeholder="Wert (Q1-2027)" value={newPeriod.value} onChange={e => setNewPeriod(p => ({ ...p, value: e.target.value }))} />
+            <Button size="sm" className="h-9" onClick={() => {
+              if (!newPeriod.label || !newPeriod.value) return;
+              updateRule('hiring_periods', [...hiringPeriods, newPeriod]);
+              setNewPeriod({ label: '', value: '' });
+            }}><Plus className="h-4 w-4" /></Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bewerbungs-Link */}
+      <Card>
+        <CardContent className="p-4 space-y-2">
+          <CardTitle className="text-sm">Bewerbungs-Link</CardTitle>
+          <div className="flex items-center gap-2 bg-muted rounded-lg px-3 py-2">
+            <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+            <code className="text-xs flex-1 break-all">{window.location.origin}/bewerbung</code>
+            <button onClick={() => {
+              navigator.clipboard.writeText(`${window.location.origin}/bewerbung`);
+              toast({ title: 'Kopiert', description: 'Link in die Zwischenablage kopiert.' });
+            }} className="text-muted-foreground hover:text-primary"><Copy className="h-4 w-4" /></button>
+          </div>
+          <p className="text-xs text-muted-foreground">Dieser Link kann auf der Website, in E-Mails oder Social Media geteilt werden.</p>
+        </CardContent>
+      </Card>
+
+      <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4">
+        <p className="text-xs text-muted-foreground">
+          <strong>Hinweis:</strong> Die Bewerbungs-Logik (Positionsauswahl, konditionale Schritte, Dokumenten-Upload) wird über die Schritte-Konfiguration und diese Regeln gesteuert. 
+          Änderungen werden erst nach dem Speichern wirksam.
+        </p>
+      </div>
     </div>
   );
 }

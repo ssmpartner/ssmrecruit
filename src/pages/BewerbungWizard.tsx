@@ -86,7 +86,7 @@ export default function BewerbungWizard() {
   const [captchaB] = useState(() => Math.floor(Math.random() * 20) + 1);
   const captchaCorrect = captchaA + captchaB;
 
-  // Load config
+  // Load config from wizards table
   useEffect(() => {
     async function load() {
       try {
@@ -96,14 +96,16 @@ export default function BewerbungWizard() {
         const agenciesRes = await fetch(`${SUPABASE_URL}/rest/v1/agencies?select=id,name&order=name`, { headers });
         const agenciesData = await agenciesRes.json();
 
-        // Load wizard config from app_settings
-        const settingsRes = await fetch(`${SUPABASE_URL}/rest/v1/app_settings?key=eq.application_wizard`, { headers });
-        const settingsData = await settingsRes.json();
+        // Load wizard config from wizards table (type=application)
+        const wizardRes = await fetch(`${SUPABASE_URL}/rest/v1/wizards?type=eq.application&status=eq.active&limit=1`, { headers });
+        const wizardData = await wizardRes.json();
 
-        const wizardConfig = settingsData?.[0]?.value || {};
+        const rules: any[] = wizardData?.[0]?.rules || [];
+        const getRule = (key: string) => rules.find((r: any) => r.key === key)?.value;
+
         setConfig({
-          operations_open: wizardConfig.operations_open ?? false,
-          hiring_periods: wizardConfig.hiring_periods ?? [],
+          operations_open: getRule('operations_open') ?? false,
+          hiring_periods: getRule('hiring_periods') ?? [],
           agencies: Array.isArray(agenciesData) ? agenciesData : [],
         });
       } catch (e) {
