@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin, X } from 'lucide-react';
 import EmailSettingsTab from '@/components/EmailSettingsTab';
 import NotificationRoleMatrix from '@/components/NotificationRoleMatrix';
 import { BRAND_ICONS } from '@/components/BrandIcons';
@@ -56,7 +56,7 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'profile' | 'notifications' | 'users' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'email' | 'integrations' | 'api';
+type SettingsTab = 'profile' | 'notifications' | 'users' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'email' | 'integrations' | 'api' | 'bewerbung';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
   { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name, E-Mail & Passwort' },
@@ -66,6 +66,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[
   { id: 'appointments', label: 'Termine & Video', icon: CalendarDays, desc: 'Terminplanung & Video-Calls' },
   { id: 'insights', label: 'Insights / DISC', icon: Brain, desc: 'Persönlichkeitstest-Einstellungen' },
   { id: 'wizards', label: 'Wizards', icon: Wand2, desc: 'Wizard-Abläufe verwalten' },
+  { id: 'bewerbung', label: 'Bewerbungs-Wizard', icon: ClipboardList, desc: 'Bewerbungsformular verwalten' },
   { id: 'email', label: 'E-Mail Automationen', icon: Mail, desc: 'Templates & Regeln verwalten' },
   { id: 'integrations', label: 'Integrationen', icon: Plug, desc: 'Lead-Quellen & Webhooks' },
   { id: 'api', label: 'API-Schlüssel', icon: Key, desc: 'API-Keys generieren & verwalten' },
@@ -228,6 +229,7 @@ export default function Settings() {
             />
           )}
           {activeTab === 'api' && <ApiKeysTab toast={toast} />}
+          {activeTab === 'bewerbung' && <BewerbungWizardAdmin toast={toast} />}
         </div>
       </div>
     </div>
@@ -2094,6 +2096,118 @@ function ApiKeysTab({ toast }: any) {
   -H "Authorization: Bearer rf_live_sk_..." \\
   -H "Content-Type: application/json"`}</pre>
         <p className="text-xs text-muted-foreground">💡 Für die produktive Nutzung wird Lovable Cloud benötigt. Die API-Endpunkte werden dann automatisch bereitgestellt.</p>
+      </div>
+    </>
+  );
+}
+
+// ─── Bewerbungs-Wizard Admin ────────────────────────────────
+
+function BewerbungWizardAdmin({ toast }: { toast: any }) {
+  const [config, setConfig] = useState<any>({
+    operations_open: false,
+    hiring_periods: [],
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [newPeriod, setNewPeriod] = useState({ label: '', value: '' });
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase.from('app_settings').select('value').eq('key', 'application_wizard').single();
+      if (data?.value) setConfig(data.value as any);
+      setLoading(false);
+    }
+    load();
+  }, []);
+
+  const save = async (updated: any) => {
+    setSaving(true);
+    setConfig(updated);
+    const { error } = await supabase.from('app_settings').update({ value: updated }).eq('key', 'application_wizard');
+    setSaving(false);
+    if (error) {
+      toast({ title: 'Fehler', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Gespeichert', description: 'Bewerbungs-Wizard Konfiguration aktualisiert.' });
+    }
+  };
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-lg font-semibold">Bewerbungs-Wizard Verwaltung</h2>
+          <p className="text-xs text-muted-foreground">Konfiguration des öffentlichen Bewerbungsformulars unter /bewerbung</p>
+        </div>
+        <a href="/bewerbung" target="_blank" rel="noopener"
+          className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium">
+          <ExternalLink className="h-3.5 w-3.5" /> Wizard öffnen
+        </a>
+      </div>
+
+      {/* Operations Open */}
+      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4 mb-4">
+        <h3 className="text-sm font-semibold">Stellenverfügbarkeit</h3>
+        <ToggleRow
+          label="Operations / Innendienst offen"
+          description="Wenn deaktiviert, sehen Bewerber einen Hinweis zu Spontanbewerbung."
+          checked={config.operations_open ?? false}
+          onChange={v => save({ ...config, operations_open: v })}
+        />
+      </div>
+
+      {/* Hiring Periods */}
+      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4 mb-4">
+        <h3 className="text-sm font-semibold">Finanzcoach – Einstellungszeiträume</h3>
+        <p className="text-xs text-muted-foreground">Verfügbare Zeiträume für Finanzcoach-Bewerber.</p>
+
+        <div className="space-y-2">
+          {(config.hiring_periods || []).map((p: any, i: number) => (
+            <div key={i} className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
+              <span className="text-sm flex-1">{p.label}</span>
+              <span className="text-xs text-muted-foreground">{p.value}</span>
+              <button onClick={() => {
+                const updated = { ...config, hiring_periods: config.hiring_periods.filter((_: any, idx: number) => idx !== i) };
+                save(updated);
+              }} className="text-muted-foreground hover:text-destructive">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <input className="flex-1 h-9 rounded-lg border border-input px-3 text-sm bg-background"
+            placeholder="Label (z.B. Q1 2027)" value={newPeriod.label} onChange={e => setNewPeriod(p => ({ ...p, label: e.target.value }))} />
+          <input className="w-32 h-9 rounded-lg border border-input px-3 text-sm bg-background"
+            placeholder="Wert (Q1-2027)" value={newPeriod.value} onChange={e => setNewPeriod(p => ({ ...p, value: e.target.value }))} />
+          <button onClick={() => {
+            if (!newPeriod.label || !newPeriod.value) return;
+            save({ ...config, hiring_periods: [...(config.hiring_periods || []), newPeriod] });
+            setNewPeriod({ label: '', value: '' });
+          }} className="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90">
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Wizard Link */}
+      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+        <h3 className="text-sm font-semibold">Bewerbungs-Link</h3>
+        <div className="flex items-center gap-2 bg-muted rounded-lg px-3 py-2">
+          <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+          <code className="text-xs flex-1 break-all">{window.location.origin}/bewerbung</code>
+          <button onClick={() => {
+            navigator.clipboard.writeText(`${window.location.origin}/bewerbung`);
+            toast({ title: 'Kopiert', description: 'Link in die Zwischenablage kopiert.' });
+          }} className="text-muted-foreground hover:text-primary">
+            <Copy className="h-4 w-4" />
+          </button>
+        </div>
+        <p className="text-xs text-muted-foreground">Dieser Link kann auf der Website, in E-Mails oder Social Media geteilt werden.</p>
       </div>
     </>
   );

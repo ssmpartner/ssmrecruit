@@ -32,6 +32,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const InsightsFormPage = lazy(() => import("./pages/InsightsFormPage"));
 const DocumentUploadPage = lazy(() => import("./pages/DocumentUploadPage"));
 const ApplicationFormPage = lazy(() => import("./pages/ApplicationFormPage"));
+const BewerbungWizard = lazy(() => import("./pages/BewerbungWizard"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -91,6 +92,7 @@ const App = () => (
               <Route path="/insights-form" element={<Suspense fallback={<FullScreenLoader />}><InsightsFormPage /></Suspense>} />
               <Route path="/document-upload" element={<Suspense fallback={<FullScreenLoader />}><DocumentUploadPage /></Suspense>} />
               <Route path="/apply" element={<Suspense fallback={<FullScreenLoader />}><ApplicationFormPage /></Suspense>} />
+              <Route path="/bewerbung" element={<Suspense fallback={<FullScreenLoader />}><BewerbungWizard /></Suspense>} />
 
               {/* Protected routes – providers inside so DB queries only run when authenticated */}
               <Route element={
