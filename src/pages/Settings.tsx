@@ -56,7 +56,7 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'profile' | 'notifications' | 'users' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'email' | 'integrations' | 'api';
+type SettingsTab = 'profile' | 'notifications' | 'users' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'email' | 'integrations' | 'api' | 'bewerbung';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
   { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name, E-Mail & Passwort' },
@@ -66,6 +66,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[
   { id: 'appointments', label: 'Termine & Video', icon: CalendarDays, desc: 'Terminplanung & Video-Calls' },
   { id: 'insights', label: 'Insights / DISC', icon: Brain, desc: 'Persönlichkeitstest-Einstellungen' },
   { id: 'wizards', label: 'Wizards', icon: Wand2, desc: 'Wizard-Abläufe verwalten' },
+  { id: 'bewerbung', label: 'Bewerbungs-Wizard', icon: ClipboardList, desc: 'Bewerbungsformular verwalten' },
   { id: 'email', label: 'E-Mail Automationen', icon: Mail, desc: 'Templates & Regeln verwalten' },
   { id: 'integrations', label: 'Integrationen', icon: Plug, desc: 'Lead-Quellen & Webhooks' },
   { id: 'api', label: 'API-Schlüssel', icon: Key, desc: 'API-Keys generieren & verwalten' },
@@ -228,6 +229,7 @@ export default function Settings() {
             />
           )}
           {activeTab === 'api' && <ApiKeysTab toast={toast} />}
+          {activeTab === 'bewerbung' && <BewerbungWizardAdmin toast={toast} />}
         </div>
       </div>
     </div>
