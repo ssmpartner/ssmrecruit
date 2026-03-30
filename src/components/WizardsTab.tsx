@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Copy, Trash2, Eye, ArrowLeft, GripVertical, Play, ChevronRight, Video, ListChecks, ToggleLeft, Loader2, AlertTriangle } from 'lucide-react';
+import { Plus, Pencil, Copy, Trash2, Eye, ArrowLeft, GripVertical, Play, ChevronRight, Video, ListChecks, ToggleLeft, Loader2, AlertTriangle, ExternalLink, ClipboardList } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -124,6 +124,36 @@ function WizardList({ wizards, loading, onEdit, onDuplicate, onDelete, onToggle,
               </TableBody>
             </Table>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Bewerbungs-Wizard special card */}
+      <Card className="border-l-4 border-l-accent">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-accent/20 flex items-center justify-center">
+                <ClipboardList className="h-4.5 w-4.5 text-accent-foreground" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">Bewerbungs-Wizard</p>
+                <p className="text-xs text-muted-foreground">Öffentliches Bewerbungsformular unter /bewerbung</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <a href="/bewerbung" target="_blank" rel="noopener"
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
+                <ExternalLink className="h-3.5 w-3.5" /> Vorschau
+              </a>
+              <Button variant="outline" size="sm" onClick={() => {
+                // Navigate to bewerbung tab in settings
+                const event = new CustomEvent('settings-navigate', { detail: 'bewerbung' });
+                window.dispatchEvent(event);
+              }}>
+                <Pencil className="h-3.5 w-3.5 mr-1" /> Konfigurieren
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
