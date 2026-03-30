@@ -464,6 +464,89 @@ function WizardEditor({ wizard, onSave, onBack, allWizards }: {
   );
 }
 
+// ── Application Logic Editor (for Bewerbungs-Wizard) ──
+function ApplicationLogicEditor({ rules, onChange }: { rules: any[]; onChange: (r: any[]) => void }) {
+  const { toast } = useToast();
+  const [newPeriod, setNewPeriod] = useState({ label: '', value: '' });
+
+  const getRule = (key: string) => rules.find(r => r.key === key);
+  const updateRule = (key: string, value: any) => {
+    const updated = rules.map(r => r.key === key ? { ...r, value } : r);
+    onChange(updated);
+  };
+
+  const operationsOpen = getRule('operations_open')?.value ?? false;
+  const hiringPeriods: { label: string; value: string }[] = getRule('hiring_periods')?.value ?? [];
+
+  return (
+    <div className="space-y-4">
+      {/* Operations toggle */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <CardTitle className="text-sm">Stellenverfügbarkeit</CardTitle>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Operations / Innendienst offen</p>
+              <p className="text-xs text-muted-foreground">Wenn deaktiviert, sehen Bewerber einen Hinweis zu Spontanbewerbung.</p>
+            </div>
+            <Switch checked={operationsOpen} onCheckedChange={v => updateRule('operations_open', v)} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Hiring Periods */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <CardTitle className="text-sm">Finanzcoach – Einstellungszeiträume</CardTitle>
+          <p className="text-xs text-muted-foreground">Verfügbare Zeiträume für Finanzcoach-Bewerber.</p>
+          <div className="space-y-2">
+            {hiringPeriods.map((p, i) => (
+              <div key={i} className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
+                <span className="text-sm flex-1">{p.label}</span>
+                <span className="text-xs text-muted-foreground">{p.value}</span>
+                <button onClick={() => updateRule('hiring_periods', hiringPeriods.filter((_, idx) => idx !== i))}
+                  className="text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input className="flex-1 h-9" placeholder="Label (z.B. Q1 2027)" value={newPeriod.label} onChange={e => setNewPeriod(p => ({ ...p, label: e.target.value }))} />
+            <Input className="w-32 h-9" placeholder="Wert (Q1-2027)" value={newPeriod.value} onChange={e => setNewPeriod(p => ({ ...p, value: e.target.value }))} />
+            <Button size="sm" className="h-9" onClick={() => {
+              if (!newPeriod.label || !newPeriod.value) return;
+              updateRule('hiring_periods', [...hiringPeriods, newPeriod]);
+              setNewPeriod({ label: '', value: '' });
+            }}><Plus className="h-4 w-4" /></Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bewerbungs-Link */}
+      <Card>
+        <CardContent className="p-4 space-y-2">
+          <CardTitle className="text-sm">Bewerbungs-Link</CardTitle>
+          <div className="flex items-center gap-2 bg-muted rounded-lg px-3 py-2">
+            <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+            <code className="text-xs flex-1 break-all">{window.location.origin}/bewerbung</code>
+            <button onClick={() => {
+              navigator.clipboard.writeText(`${window.location.origin}/bewerbung`);
+              toast({ title: 'Kopiert', description: 'Link in die Zwischenablage kopiert.' });
+            }} className="text-muted-foreground hover:text-primary"><Copy className="h-4 w-4" /></button>
+          </div>
+          <p className="text-xs text-muted-foreground">Dieser Link kann auf der Website, in E-Mails oder Social Media geteilt werden.</p>
+        </CardContent>
+      </Card>
+
+      <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4">
+        <p className="text-xs text-muted-foreground">
+          <strong>Hinweis:</strong> Die Bewerbungs-Logik (Positionsauswahl, konditionale Schritte, Dokumenten-Upload) wird über die Schritte-Konfiguration und diese Regeln gesteuert. 
+          Änderungen werden erst nach dem Speichern wirksam.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── Main export ──
 export default function WizardsTab() {
   const [wizards, setWizards] = useState<Wizard[]>([]);
