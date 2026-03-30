@@ -392,9 +392,7 @@ function WizardEditor({ wizard, onSave, onBack, allWizards }: {
               <Select value={draft.type} onValueChange={v => patch({ type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="recruiting">Recruiting</SelectItem>
-                  <SelectItem value="sales">Sales</SelectItem>
-                  <SelectItem value="custom">Custom</SelectItem>
+                  {WIZARD_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -407,6 +405,22 @@ function WizardEditor({ wizard, onSave, onBack, allWizards }: {
             <Switch checked={draft.status === 'active'} onCheckedChange={v => patch({ status: v ? 'active' : 'inactive' })} />
             <Label>{draft.status === 'active' ? 'Aktiv' : 'Inaktiv'}</Label>
           </div>
+          {draft.type === 'application' && (
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Öffentliche URL</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <code className="text-xs text-muted-foreground bg-muted rounded px-2 py-1">{window.location.origin}/bewerbung</code>
+                    <button onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/bewerbung`);
+                    }} className="text-muted-foreground hover:text-primary"><Copy className="h-3.5 w-3.5" /></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="steps" className="space-y-3 pt-2">
@@ -428,14 +442,18 @@ function WizardEditor({ wizard, onSave, onBack, allWizards }: {
           </div>
         </TabsContent>
 
-        <TabsContent value="logic" className="pt-2">
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-              <AlertTriangle className="h-10 w-10 mb-3 text-muted-foreground/40" />
-              <p className="font-medium">Regel-Engine kommt bald</p>
-              <p className="text-xs mt-1">Hier werden Automationen, Scoring und Matching-Logiken konfiguriert.</p>
-            </CardContent>
-          </Card>
+        <TabsContent value="logic" className="pt-2 space-y-4">
+          {draft.type === 'application' ? (
+            <ApplicationLogicEditor rules={draft.rules as any[]} onChange={r => patch({ rules: r })} />
+          ) : (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                <AlertTriangle className="h-10 w-10 mb-3 text-muted-foreground/40" />
+                <p className="font-medium">Regel-Engine kommt bald</p>
+                <p className="text-xs mt-1">Hier werden Automationen, Scoring und Matching-Logiken konfiguriert.</p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="preview" className="pt-2">
