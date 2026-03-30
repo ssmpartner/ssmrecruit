@@ -138,6 +138,98 @@ function WizardList({ wizards, loading, onEdit, onDuplicate, onDelete, onToggle,
   );
 }
 
+// ── Step editor ──
+function StepEditor({ step, steps, onChange, onRemove }: {
+  step: WizardStep;
+  steps: WizardStep[];
+  onChange: (s: WizardStep) => void;
+  onRemove: () => void;
+}) {
+  const update = (patch: Partial<WizardStep>) => onChange({ ...step, ...patch });
+  const setOption = (idx: number, patch: Partial<WizardOption>) => {
+    const opts = [...step.options];
+    opts[idx] = { ...opts[idx], ...patch };
+    update({ options: opts });
+  };
+
+  return (
+    <Card className="border-l-4 border-l-primary/60">
+      <CardContent className="pt-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+            <span className="text-xs font-semibold uppercase text-muted-foreground">
+              {STEP_TYPES.find(t => t.value === step.type)?.label ?? step.type}
+            </span>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onRemove}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label className="text-xs">Titel</Label>
+            <Input value={step.title} onChange={e => update({ title: e.target.value })} placeholder="Step Titel" />
+          </div>
+          <div>
+            <Label className="text-xs">Typ</Label>
+            <Select value={step.type} onValueChange={v => update({ type: v as WizardStep['type'] })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {STEP_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-xs">Beschreibung / Content</Label>
+          <Textarea value={step.content} onChange={e => update({ content: e.target.value })} rows={2} placeholder="Beschreibung oder Content" />
+        </div>
+
+        {(step.type === 'choice' || step.type === 'decision') && (
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold">Optionen</Label>
+            {step.options.map((opt, idx) => (
+              <div key={opt.id} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
+                <div>
+                  <Label className="text-[10px] text-muted-foreground">Label</Label>
+                  <Input value={opt.label} onChange={e => setOption(idx, { label: e.target.value })} placeholder="Label" className="h-8 text-sm" />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-muted-foreground">Wert</Label>
+                  <Input value={opt.value} onChange={e => setOption(idx, { value: e.target.value })} placeholder="value" className="h-8 text-sm" />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-muted-foreground">Next Step</Label>
+                  <Select value={opt.next_step_id || '__none'} onValueChange={v => setOption(idx, { next_step_id: v === '__none' ? '' : v })}>
+                    <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">— Kein —</SelectItem>
+                      {steps.filter(s => s.id !== step.id).map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.title || `Step ${steps.indexOf(s) + 1}`}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {step.type === 'choice' && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => update({ options: step.options.filter((_, i) => i !== idx) })}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            {step.type === 'choice' && (
+              <Button variant="outline" size="sm" onClick={() => update({ options: [...step.options, emptyOption()] })}>
+                <Plus className="h-3 w-3 mr-1" /> Option
+              </Button>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // ── Preview ──
 function WizardPreview({ steps }: { steps: WizardStep[] }) {
   const [currentIdx, setCurrentIdx] = useState(0);
