@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Copy, Trash2, Eye, ArrowLeft, GripVertical, Play, ChevronRight, Video, ListChecks, ToggleLeft, Loader2, AlertTriangle, ExternalLink, ClipboardList } from 'lucide-react';
+import { Plus, Pencil, Copy, Trash2, Eye, ArrowLeft, GripVertical, Play, ChevronRight, Video, ListChecks, ToggleLeft, Loader2, AlertTriangle, ExternalLink, ClipboardList, Link2, X, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -127,36 +127,130 @@ function WizardList({ wizards, loading, onEdit, onDuplicate, onDelete, onToggle,
         </CardContent>
       </Card>
 
-      {/* Bewerbungs-Wizard special card */}
-      <Card className="border-l-4 border-l-accent">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-accent/20 flex items-center justify-center">
-                <ClipboardList className="h-4.5 w-4.5 text-accent-foreground" />
-              </div>
-              <div>
-                <p className="font-medium text-sm">Bewerbungs-Wizard</p>
-                <p className="text-xs text-muted-foreground">Öffentliches Bewerbungsformular unter /bewerbung</p>
-              </div>
+      {/* Bewerbungs-Wizard inline admin */}
+      <BewerbungWizardInline />
+    </div>
+  );
+}
+
+// ── Bewerbungs-Wizard Inline Admin ──
+function BewerbungWizardInline() {
+  const [expanded, setExpanded] = useState(false);
+  const [config, setConfig] = useState<any>({ operations_open: false, hiring_periods: [] });
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [newPeriod, setNewPeriod] = useState({ label: '', value: '' });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!expanded) return;
+    setLoading(true);
+    supabase.from('app_settings').select('value').eq('key', 'application_wizard').single()
+      .then(({ data }) => {
+        if (data?.value) setConfig(data.value as any);
+        setLoading(false);
+      });
+  }, [expanded]);
+
+  const save = async (updated: any) => {
+    setSaving(true);
+    setConfig(updated);
+    const { error } = await supabase.from('app_settings').update({ value: updated }).eq('key', 'application_wizard');
+    setSaving(false);
+    if (error) {
+      toast({ title: 'Fehler', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Gespeichert', description: 'Bewerbungs-Wizard Konfiguration aktualisiert.' });
+    }
+  };
+
+  return (
+    <Card className="border-l-4 border-l-accent">
+      <CardContent className="p-4 space-y-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-accent/20 flex items-center justify-center">
+              <ClipboardList className="h-4.5 w-4.5 text-accent-foreground" />
             </div>
-            <div className="flex items-center gap-2">
-              <a href="/bewerbung" target="_blank" rel="noopener"
-                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
-                <ExternalLink className="h-3.5 w-3.5" /> Vorschau
-              </a>
-              <Button variant="outline" size="sm" onClick={() => {
-                // Navigate to bewerbung tab in settings
-                const event = new CustomEvent('settings-navigate', { detail: 'bewerbung' });
-                window.dispatchEvent(event);
-              }}>
-                <Pencil className="h-3.5 w-3.5 mr-1" /> Konfigurieren
-              </Button>
+            <div>
+              <p className="font-medium text-sm">Bewerbungs-Wizard</p>
+              <p className="text-xs text-muted-foreground">Öffentliches Bewerbungsformular unter /bewerbung</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          <div className="flex items-center gap-2">
+            <a href="/bewerbung" target="_blank" rel="noopener"
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
+              <ExternalLink className="h-3.5 w-3.5" /> Vorschau
+            </a>
+            <Button variant="outline" size="sm" onClick={() => setExpanded(!expanded)}>
+              <Pencil className="h-3.5 w-3.5 mr-1" />
+              {expanded ? 'Schliessen' : 'Konfigurieren'}
+              <ChevronDown className={`h-3.5 w-3.5 ml-1 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+            </Button>
+          </div>
+        </div>
+
+        {expanded && (
+          <div className="mt-4 pt-4 border-t space-y-4">
+            {loading ? (
+              <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+            ) : (
+              <>
+                {/* Operations toggle */}
+                <div className="rounded-lg border bg-background p-4 space-y-2">
+                  <h4 className="text-sm font-semibold">Stellenverfügbarkeit</h4>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">Operations / Innendienst offen</p>
+                      <p className="text-xs text-muted-foreground">Wenn deaktiviert, sehen Bewerber einen Hinweis zu Spontanbewerbung.</p>
+                    </div>
+                    <Switch checked={config.operations_open ?? false} onCheckedChange={v => save({ ...config, operations_open: v })} />
+                  </div>
+                </div>
+
+                {/* Hiring Periods */}
+                <div className="rounded-lg border bg-background p-4 space-y-3">
+                  <h4 className="text-sm font-semibold">Finanzcoach – Einstellungszeiträume</h4>
+                  <p className="text-xs text-muted-foreground">Verfügbare Zeiträume für Finanzcoach-Bewerber.</p>
+                  <div className="space-y-2">
+                    {(config.hiring_periods || []).map((p: any, i: number) => (
+                      <div key={i} className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
+                        <span className="text-sm flex-1">{p.label}</span>
+                        <span className="text-xs text-muted-foreground">{p.value}</span>
+                        <button onClick={() => save({ ...config, hiring_periods: config.hiring_periods.filter((_: any, idx: number) => idx !== i) })}
+                          className="text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input className="flex-1 h-9" placeholder="Label (z.B. Q1 2027)" value={newPeriod.label} onChange={e => setNewPeriod(p => ({ ...p, label: e.target.value }))} />
+                    <Input className="w-32 h-9" placeholder="Wert (Q1-2027)" value={newPeriod.value} onChange={e => setNewPeriod(p => ({ ...p, value: e.target.value }))} />
+                    <Button size="sm" className="h-9" onClick={() => {
+                      if (!newPeriod.label || !newPeriod.value) return;
+                      save({ ...config, hiring_periods: [...(config.hiring_periods || []), newPeriod] });
+                      setNewPeriod({ label: '', value: '' });
+                    }}><Plus className="h-4 w-4" /></Button>
+                  </div>
+                </div>
+
+                {/* Link */}
+                <div className="rounded-lg border bg-background p-4 space-y-2">
+                  <h4 className="text-sm font-semibold">Bewerbungs-Link</h4>
+                  <div className="flex items-center gap-2 bg-muted rounded-lg px-3 py-2">
+                    <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <code className="text-xs flex-1 break-all">{window.location.origin}/bewerbung</code>
+                    <button onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/bewerbung`);
+                      toast({ title: 'Kopiert', description: 'Link in die Zwischenablage kopiert.' });
+                    }} className="text-muted-foreground hover:text-primary"><Copy className="h-4 w-4" /></button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
