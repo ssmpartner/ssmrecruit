@@ -88,8 +88,8 @@ const helpCategories: Category[] = [
       {
         id: 'l-6',
         title: 'Doppelte Leads erkennen',
-        content: 'Das System prüft automatisch auf Duplikate anhand von E-Mail, Telefonnummer und Name. Im Duplikate-Bereich können Sie Leads vergleichen (mit Erstellungsdatum und Neu/Alt-Badge) und entscheiden, ob sie zusammengeführt oder beibehalten werden sollen.',
-        tags: ['duplikate', 'zusammenführen', 'merge'],
+        content: 'Das System prüft automatisch auf Duplikate anhand von E-Mail (90 % Konfidenz), Telefonnummer (40–75 %) und Name (60 %). Wird beim Import (Webhook, CSV, manuell) ein Duplikat erkannt, wird der neue Lead automatisch dem Hauptsitz zugewiesen statt normal verteilt. Die Notiz enthält einen ⚠️-Hinweis mit dem Namen und der ID des bestehenden Leads. Im Lead-Detail erscheint ein gelber Warn-Banner mit Konfidenz-Score und Grund. Von dort können Sie den bestehenden Lead ansehen oder beide Leads zusammenführen.',
+        tags: ['duplikate', 'zusammenführen', 'merge', 'hauptsitz', 'konfidenz'],
       },
     ],
   },
@@ -298,8 +298,8 @@ const helpCategories: Category[] = [
       {
         id: 'i-2',
         title: 'Webhooks einrichten',
-        content: 'Für Meta und TikTok Lead Ads stehen Webhook-Endpunkte zur Verfügung, die eingehende Leads automatisch erfassen. Die Konfiguration erfolgt in den Integrationseinstellungen. Leads werden automatisch der zuständigen Agentur zugewiesen und durchlaufen die Duplikatsprüfung.',
-        tags: ['webhook', 'meta', 'tiktok', 'automatisch'],
+        content: 'Für Meta und TikTok Lead Ads stehen Webhook-Endpunkte zur Verfügung, die eingehende Leads automatisch erfassen. Alle Webhooks (Meta, TikTok, Website-Formular, Bewerbung) prüfen eingehende Leads automatisch auf Duplikate anhand von E-Mail, Telefon und Name. Wird ein Duplikat erkannt, wird der Lead dem Hauptsitz zugewiesen statt normal verteilt, damit Admins den Fall prüfen können.',
+        tags: ['webhook', 'meta', 'tiktok', 'automatisch', 'duplikat'],
       },
     ],
   },
