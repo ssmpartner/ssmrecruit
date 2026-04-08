@@ -165,18 +165,38 @@ serve(async (req) => {
     }
     if (!employeeId) throw new Error('Kein Mitarbeiter für Lead-Zuweisung gefunden');
 
-    // Check for duplicate
-    const { data: existing } = await supabase.from('leads').select('id, name').eq('email', email).limit(1).single();
-    if (existing) {
-      return new Response(JSON.stringify({
-        success: true, duplicate: true,
-        message: `Lead mit E-Mail ${email} existiert bereits (${existing.name})`,
-        lead_id: existing.id,
-      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    // Check for duplicate - if found, assign to Hauptsitz for review
+    let isDuplicate = false;
+    let duplicateNote = '';
+    const { data: existing } = await supabase
+      .from('leads')
+      .select('id, name, email, phone')
+      .eq('lead_lifecycle', 'active')
+      .or(`email.ilike.${email},phone.eq.${phone}`)
+      .limit(5);
+
+    if (existing && existing.length > 0) {
+      const match = existing.find((l: any) => 
+        l.email?.toLowerCase() === email.toLowerCase() ||
+        (phone && phone.length >= 8 && l.phone?.replace(/[\s\-\.\(\)]/g, '') === phone.replace(/[\s\-\.\(\)]/g, ''))
+      );
+      if (match) {
+        isDuplicate = true;
+        duplicateNote = `⚠️ Mögliches Duplikat von "${match.name}" (ID: ${match.id}). `;
+        // Override assignment to Hauptsitz
+        const { data: hauptsitz } = await supabase.from('agencies').select('id').ilike('name', '%hauptsitz%').limit(1).single();
+        if (hauptsitz) {
+          agencyId = hauptsitz.id;
+          const { data: empId } = await supabase.rpc('resolve_employee_by_agency', { _agency_id: agencyId });
+          if (empId) employeeId = empId;
+        }
+      }
     }
 
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
+
+    const leadNotes = duplicateNote + (notes ? `Website-Formular (${formSource}): ${notes}` : `Automatisch importiert via Website-Formular (${formSource})`);
 
     const { data, error } = await supabase.from('leads').insert({
       id, name, email, phone,
@@ -184,7 +204,7 @@ serve(async (req) => {
       canton: finalCanton, canton_code: finalCantonCode,
       source: 'website', status: 'new', campaign,
       agency_id: agencyId, employee_id: employeeId,
-      notes: notes ? `Website-Formular (${formSource}): ${notes}` : `Automatisch importiert via Website-Formular (${formSource})`,
+      notes: leadNotes,
       created_at: now, updated_at: now,
     }).select().single();
 
@@ -204,9 +224,18 @@ serve(async (req) => {
       description: `${name} wurde via Website-Formular importiert.`, lead_id: id,
     });
 
+    if (isDuplicate) {
+      await supabase.from('notifications').insert({
+        title: 'Duplikat erkannt – Lead zur Prüfung',
+        type: 'duplicate_detected',
+        description: `${name} wurde als mögliches Duplikat erkannt und dem Hauptsitz zur Prüfung zugewiesen.`,
+        lead_id: id,
+      });
+    }
+
     return new Response(JSON.stringify({
-      success: true, lead_id: id,
-      message: `Lead ${name} erfolgreich erstellt`,
+      success: true, lead_id: id, duplicate: isDuplicate,
+      message: isDuplicate ? `Lead ${name} als mögliches Duplikat erkannt – zur Prüfung zugewiesen` : `Lead ${name} erfolgreich erstellt`,
       enriched: { city: finalCity, canton: finalCanton, cantonCode: finalCantonCode },
     }), { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {

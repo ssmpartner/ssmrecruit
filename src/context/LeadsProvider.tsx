@@ -404,10 +404,33 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         }
 
         if (score >= 50 && reasons.length > 0) {
+          // Reassign to Hauptsitz for review
+          const hauptsitz = agencies.find(a => a.name.toLowerCase().includes('hauptsitz'));
+          if (hauptsitz) {
+            const hauptsitzEmployee = employees.find(e => e.agencyId === hauptsitz.id);
+            const duplicateNote = `⚠️ Mögliches Duplikat von "${other.name}" (ID: ${other.id}). `;
+            const updatedNotes = duplicateNote + (newLead.notes || '');
+            
+            // Update lead assignment to Hauptsitz
+            setLeads(prev => prev.map(l => l.id === newLead.id ? {
+              ...l,
+              agencyId: hauptsitz.id,
+              employeeId: hauptsitzEmployee?.id || l.employeeId,
+              notes: updatedNotes,
+            } : l));
+
+            // Persist to DB
+            supabase.from('leads').update({
+              agency_id: hauptsitz.id,
+              employee_id: hauptsitzEmployee?.id || newLead.employeeId,
+              notes: updatedNotes,
+            }).eq('id', newLead.id);
+          }
+
           addNotification({
             type: 'duplicate_detected',
-            title: 'Mögliches Duplikat erkannt',
-            description: `"${newLead.name}" und "${other.name}" (${Math.min(score, 100)}% Übereinstimmung): ${reasons.join(', ')}`,
+            title: 'Duplikat erkannt – Lead zur Prüfung',
+            description: `"${newLead.name}" ist ein mögliches Duplikat von "${other.name}" (${Math.min(score, 100)}%) – dem Hauptsitz zur Prüfung zugewiesen.`,
             leadId: newLead.id,
           });
           break; // Only notify for first match
@@ -416,7 +439,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.error('Auto duplicate check failed:', e);
     }
-  }, [addNotification]);
+  }, [addNotification, agencies, employees]);
 
   const addLead = useCallback(async (leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>) => {
     const id = `l${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;

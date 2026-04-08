@@ -159,13 +159,35 @@ serve(async (req) => {
       const id = crypto.randomUUID();
       const now = new Date().toISOString();
 
+      // Check for duplicate - assign to Hauptsitz if found
+      let finalAgencyId = agencyId;
+      let finalEmployeeId = employeeId;
+      let isDuplicate = false;
+      let duplicateNote = '';
+
+      if (email && !email.includes('@unknown.com')) {
+        const { data: existing } = await supabase
+          .from('leads')
+          .select('id, name')
+          .ilike('email', (email as string))
+          .eq('lead_lifecycle', 'active')
+          .limit(1)
+          .single();
+        if (existing) {
+          isDuplicate = true;
+          duplicateNote = `⚠️ Mögliches Duplikat von "${existing.name}" (ID: ${existing.id}). `;
+          finalAgencyId = defaultAgencyId;
+          finalEmployeeId = defaultEmployeeId;
+        }
+      }
+
       const { data, error } = await supabase.from('leads').insert({
         id, name, email: email as string, phone: phone as string,
         city: finalCity as string, plz: plz as string,
         canton: finalCanton, canton_code: finalCantonCode,
         source: 'tiktok', status: 'new', campaign,
-        agency_id: agencyId, employee_id: employeeId,
-        notes: 'Automatisch importiert via TikTok Lead Ads',
+        agency_id: finalAgencyId, employee_id: finalEmployeeId,
+        notes: duplicateNote + 'Automatisch importiert via TikTok Lead Ads',
         created_at: now, updated_at: now,
       }).select().single();
 
@@ -174,7 +196,11 @@ serve(async (req) => {
       } else {
         inserted.push(data);
         await supabase.from('activities').insert({ id: crypto.randomUUID(), lead_id: id, type: 'status_change', description: 'Lead automatisch via TikTok Lead Ads importiert', user: 'System', created_at: now });
-        await supabase.from('notifications').insert({ title: 'Neuer TikTok Lead', type: 'new_lead', description: `${name} wurde via TikTok Lead Ads importiert.`, lead_id: id });
+        if (isDuplicate) {
+          await supabase.from('notifications').insert({ title: 'Duplikat erkannt – Lead zur Prüfung', type: 'duplicate_detected', description: `${name} wurde als mögliches Duplikat erkannt und dem Hauptsitz zugewiesen.`, lead_id: id });
+        } else {
+          await supabase.from('notifications').insert({ title: 'Neuer TikTok Lead', type: 'new_lead', description: `${name} wurde via TikTok Lead Ads importiert.`, lead_id: id });
+        }
       }
     }
 
