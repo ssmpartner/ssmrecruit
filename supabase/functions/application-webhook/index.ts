@@ -249,11 +249,12 @@ serve(async (req) => {
     try {
       const fullName = `${candidate.first_name} ${candidate.last_name}`.trim();
       if (fullName && candidate.email) {
-        // Check for existing lead
+        // Check for existing lead (duplicate)
         const { data: existing } = await supabase
           .from('leads')
           .select('id')
           .eq('email', candidate.email)
+          .eq('lead_lifecycle', 'active')
           .limit(1)
           .single();
 
@@ -271,7 +272,34 @@ serve(async (req) => {
           const { data: empId } = await supabase.rpc('resolve_employee_by_agency', { _agency_id: finalAgencyId });
           const employeeId = empId || (await supabase.from('employees').select('id').limit(1).single()).data?.id;
 
-          if (finalAgencyId && employeeId) {
+          // Check for potential duplicates by phone or name
+          let isDuplicate = false;
+          let duplicateNote = '';
+          let assignAgencyId = finalAgencyId;
+          let assignEmployeeId = employeeId;
+
+          if (candidate.phone && candidate.phone.length >= 8) {
+            const { data: phoneMatch } = await supabase
+              .from('leads')
+              .select('id, name')
+              .eq('lead_lifecycle', 'active')
+              .limit(50);
+            if (phoneMatch) {
+              const normPhone = candidate.phone.replace(/[\s\-\.\(\)]/g, '');
+              const match = phoneMatch.find((l: any) => l.phone && l.phone.replace(/[\s\-\.\(\)]/g, '') === normPhone);
+              if (match) {
+                isDuplicate = true;
+                duplicateNote = `⚠️ Mögliches Duplikat von "${match.name}" (ID: ${match.id}). `;
+                if (hauptsitz) {
+                  assignAgencyId = hauptsitz.id;
+                  const { data: hEmp } = await supabase.rpc('resolve_employee_by_agency', { _agency_id: hauptsitz.id });
+                  if (hEmp) assignEmployeeId = hEmp;
+                }
+              }
+            }
+          }
+
+          if (assignAgencyId && assignEmployeeId) {
             leadId = crypto.randomUUID();
             await supabase.from('leads').insert({
               id: leadId,
@@ -283,9 +311,9 @@ serve(async (req) => {
               address: candidate.address,
               source: 'website',
               status: 'new',
-              agency_id: finalAgencyId,
-              employee_id: employeeId,
-              notes: `Bewerbung eingegangen via Website-Formular`,
+              agency_id: assignAgencyId,
+              employee_id: assignEmployeeId,
+              notes: duplicateNote + `Bewerbung eingegangen via Website-Formular`,
               position: candidate.salutation,
             });
 
@@ -296,6 +324,15 @@ serve(async (req) => {
               description: `Bewerbung automatisch via Website-Formular importiert`,
               user: 'System',
             });
+
+            if (isDuplicate) {
+              await supabase.from('notifications').insert({
+                title: 'Duplikat erkannt – Bewerbung zur Prüfung',
+                type: 'duplicate_detected',
+                description: `${fullName} wurde als mögliches Duplikat erkannt und dem Hauptsitz zugewiesen.`,
+                lead_id: leadId,
+              });
+            }
           }
         }
 
