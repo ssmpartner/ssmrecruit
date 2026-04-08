@@ -353,6 +353,54 @@ export default function LeadDetailSheet() {
                     {/* Info Tab */}
                     {rightTab === 'info' && (
                       <div className="space-y-4">
+                        {/* Duplicate Warning */}
+                        {duplicatesForLead.length > 0 && (
+                          <section className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 space-y-2">
+                            <h4 className="text-sm font-semibold flex items-center gap-1.5 text-destructive">
+                              <AlertTriangle className="h-4 w-4" />
+                              {duplicatesForLead.length} mögliche{duplicatesForLead.length > 1 ? ' Duplikate' : 's Duplikat'} erkannt
+                            </h4>
+                            {duplicatesForLead.map((dup, i) => {
+                              const otherId = dup.leadId1 === selectedLead!.id ? dup.leadId2 : dup.leadId1;
+                              const otherLead = leads.find(l => l.id === otherId);
+                              if (!otherLead) return null;
+                              return (
+                                <div key={i} className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-medium truncate">{otherLead.name}</span>
+                                      <span className={cn(
+                                        "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                                        dup.confidence >= 80 ? "bg-destructive/15 text-destructive" : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                                      )}>
+                                        {dup.confidence}%
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground truncate">{otherLead.email} • {otherLead.phone || '—'}</p>
+                                    <p className="text-xs text-muted-foreground">{dup.reason}</p>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                    <button
+                                      onClick={() => { setSelectedLead(otherLead); }}
+                                      className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted transition-colors"
+                                    >
+                                      <Eye className="h-3 w-3" /> Ansehen
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        mergeLead(selectedLead!.id, otherId, {});
+                                        toast({ title: '✅ Zusammengeführt', description: `"${otherLead.name}" wurde als Duplikat markiert.` });
+                                      }}
+                                      className="inline-flex items-center gap-1 rounded-md bg-destructive/10 text-destructive px-2.5 py-1 text-xs font-semibold hover:bg-destructive/20 transition-colors"
+                                    >
+                                      <GitMerge className="h-3 w-3" /> Zusammenführen
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </section>
+                        )}
                         {/* Assignment - hidden for review roles */}
                         {!isReviewRole && (
                           <section className="rounded-lg border bg-muted/30 p-3 space-y-2">
