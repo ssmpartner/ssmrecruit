@@ -2,9 +2,18 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.40.0';
+const APP_VERSION = '2.41.0';
 
 const versionHistory = [
+  { version: '2.41.0', date: '08.04.2026', changes: [
+    'Duplikaterkennung: Automatische Erkennung von doppelten Leads bei jedem Import (Webhook, CSV, manuell) – basierend auf E-Mail, Telefon und Name',
+    'Duplikat-Zuweisung: Erkannte Duplikate werden automatisch dem Hauptsitz zugewiesen statt normal verteilt – zur manuellen Prüfung durch Admins',
+    'Lead-Detail: Neuer Duplikat-Warn-Banner im Info-Tab zeigt potenzielle Duplikate mit Konfidenz-Score und Grund an',
+    'Lead-Detail: Buttons zum Ansehen und Zusammenführen von Duplikaten direkt im Warn-Banner',
+    'Webhooks: form-webhook, meta-webhook, tiktok-webhook und application-webhook nutzen zentrale Duplikatprüfung vor der Zuweisung',
+    'Duplikat-Notiz: Erkannte Duplikate erhalten automatisch eine ⚠️-Notiz mit Verweis auf den existierenden Lead',
+    'Benachrichtigung: Bei Duplikat-Erkennung wird eine System-Benachrichtigung (duplicate_detected) erstellt',
+  ]},
   { version: '2.40.0', date: '26.03.2026', changes: [
     'Approval-Ansicht: Vereinfachte, rollenbasierte Lead-Ansicht für Controlling, Geschäftsleitung und HR – statt voller Lead-Maske wird eine reduzierte Prüfansicht angezeigt',
     'Controlling-Ansicht: Lead-Kurzinfo, Matching-Score, Insights-Status, DISC-Typ, Dokumentenanzahl und Controlling Wizard in einer übersichtlichen Karte',
