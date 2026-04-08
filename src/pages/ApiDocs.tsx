@@ -335,7 +335,7 @@ Lukas Müller,lukas@email.ch,+41 44 123 45 67,8001,Zürich,ZH,new,meta,Frontend 
     endpoints: [
       {
         method: 'POST', path: '/functions/v1/form-webhook', summary: 'Lead per Website-Formular erstellen', auth: false,
-        description: 'Empfängt Lead-Daten von externen Website-Formularen. Unterstützt flexible Feldnamen (DE/EN). Duplikatprüfung per E-Mail. Automatische Zuweisung an Agentur Hauptsitz.',
+        description: 'Empfängt Lead-Daten von externen Website-Formularen. Unterstützt flexible Feldnamen (DE/EN). Automatische Duplikatprüfung per E-Mail, Telefon und Name – erkannte Duplikate werden dem Hauptsitz zugewiesen statt normal verteilt.',
         body: [
           { name: 'name', type: 'string', required: true, description: 'Vollständiger Name (auch: vorname, full_name, fullName)' },
           { name: 'email', type: 'string', required: true, description: 'E-Mail-Adresse (auch: e_mail)' },
@@ -350,15 +350,19 @@ Lukas Müller,lukas@email.ch,+41 44 123 45 67,8001,Zürich,ZH,new,meta,Frontend 
         response: `{
   "success": true,
   "lead_id": "uuid",
-  "message": "Lead Max Mustermann erfolgreich erstellt"
+  "message": "Lead Max Mustermann erfolgreich erstellt",
+  "duplicate_detected": false
 }
 
-// Bei Duplikat (Status 200):
+// Bei Duplikat-Erkennung (Lead wird Hauptsitz zugewiesen):
 {
   "success": true,
-  "duplicate": true,
-  "message": "Lead mit E-Mail ... existiert bereits",
-  "lead_id": "uuid"
+  "lead_id": "uuid",
+  "duplicate_detected": true,
+  "duplicate_of": "existing-lead-id",
+  "duplicate_confidence": 90,
+  "duplicate_reason": "Gleiche E-Mail-Adresse",
+  "message": "Lead erstellt – Duplikat erkannt, Hauptsitz zugewiesen"
 }`,
       },
     ],
@@ -369,7 +373,7 @@ Lukas Müller,lukas@email.ch,+41 44 123 45 67,8001,Zürich,ZH,new,meta,Frontend 
     endpoints: [
       {
         method: 'POST', path: '/functions/v1/application-webhook', summary: 'Bewerbung einreichen', auth: false,
-        description: 'Empfängt Bewerbungsdaten inkl. Datei-Uploads (multipart/form-data). Unbekannte Felder werden automatisch in custom_fields gespeichert. Status: complete, incomplete oder spam_suspected.',
+        description: 'Empfängt Bewerbungsdaten inkl. Datei-Uploads (multipart/form-data). Unbekannte Felder werden automatisch in custom_fields gespeichert. Duplikatprüfung per E-Mail, Telefon und Name – erkannte Duplikate werden dem Hauptsitz zugewiesen. Status: complete, incomplete oder spam_suspected.',
         body: [
           { name: 'first_name', type: 'string', required: true, description: 'Vorname (auch: vorname)' },
           { name: 'last_name', type: 'string', required: true, description: 'Nachname (auch: nachname)' },
