@@ -561,7 +561,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.role !== undefined) dbUpdates.role = updates.role;
     if (updates.agencyId !== undefined) dbUpdates.agency_id = updates.agencyId;
     if (updates.avatar !== undefined) dbUpdates.avatar = updates.avatar;
-    await supabase.from('employees').update(dbUpdates).eq('id', id);
+    await supabase.from('employees').update(dbUpdates as any).eq('id', id);
   }, []);
 
   const deleteEmployee = useCallback(async (id: string) => {
@@ -600,7 +600,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.longitude !== undefined) dbUpdates.longitude = updates.longitude;
     if (updates.radiusKm !== undefined) dbUpdates.radius_km = updates.radiusKm;
     if (updates.monthlyLeadQuota !== undefined) dbUpdates.monthly_lead_quota = updates.monthlyLeadQuota;
-    await supabase.from('agencies').update(dbUpdates).eq('id', id);
+    await supabase.from('agencies').update(dbUpdates as any).eq('id', id);
   }, []);
 
   const submitDiscTest = useCallback(async (leadId: string, answers: number[]) => {
