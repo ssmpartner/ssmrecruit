@@ -128,20 +128,48 @@ serve(async (req) => {
 
       const id = crypto.randomUUID();
       const now = new Date().toISOString();
+
+      // Check for duplicate - assign to Hauptsitz if found
+      let finalAgencyId = agencyId;
+      let finalEmployeeId = employeeId;
+      let isDuplicate = false;
+      let duplicateNote = '';
+      
+      if (email && !email.includes('@unknown.com')) {
+        const { data: existing } = await supabase
+          .from('leads')
+          .select('id, name')
+          .ilike('email', email)
+          .eq('lead_lifecycle', 'active')
+          .limit(1)
+          .single();
+        if (existing) {
+          isDuplicate = true;
+          duplicateNote = `⚠️ Mögliches Duplikat von "${existing.name}" (ID: ${existing.id}). `;
+          finalAgencyId = defaults.agencyId; // Hauptsitz
+          finalEmployeeId = defaults.employeeId;
+        }
+      }
+
       const { data, error } = await supabase.from('leads').insert({
         id, name, email, phone,
         city: finalCity, plz,
         canton: finalCanton, canton_code: finalCantonCode,
         source: 'meta', status: 'new', campaign,
-        agency_id: agencyId, employee_id: employeeId,
-        notes: 'Automatisch importiert via Meta Lead Ads',
+        agency_id: finalAgencyId, employee_id: finalEmployeeId,
+        notes: duplicateNote + 'Automatisch importiert via Meta Lead Ads',
         created_at: now, updated_at: now,
       }).select().single();
 
       if (error) { console.error('Error inserting Meta lead:', error); return; }
       inserted.push(data);
       await supabase.from('activities').insert({ id: crypto.randomUUID(), lead_id: id, type: 'status_change', description: 'Lead automatisch via Meta Lead Ads importiert', user: 'System', created_at: now });
-      await supabase.from('notifications').insert({ title: 'Neuer Meta Lead', type: 'new_lead', description: `${name} wurde via Meta Lead Ads importiert.`, lead_id: id });
+      
+      if (isDuplicate) {
+        await supabase.from('notifications').insert({ title: 'Duplikat erkannt – Lead zur Prüfung', type: 'duplicate_detected', description: `${name} wurde als mögliches Duplikat erkannt und dem Hauptsitz zugewiesen.`, lead_id: id });
+      } else {
+        await supabase.from('notifications').insert({ title: 'Neuer Meta Lead', type: 'new_lead', description: `${name} wurde via Meta Lead Ads importiert.`, lead_id: id });
+      }
     }
 
     if (body.object === 'page' && body.entry && Array.isArray(body.entry)) {
