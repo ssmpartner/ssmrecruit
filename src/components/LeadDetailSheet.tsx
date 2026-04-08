@@ -68,6 +68,19 @@ export default function LeadDetailSheet() {
   );
 
   const activeLeads = useMemo(() => leads.filter(l => l.lifecycle === 'active'), [leads]);
+
+  // Duplicate detection for current lead
+  const duplicatesForLead = useMemo(() => {
+    if (!selectedLead) return [];
+    const otherLeads = activeLeads.filter(l => l.id !== selectedLead.id);
+    if (otherLeads.length === 0) return [];
+    const allForScan = [selectedLead, ...otherLeads].map(l => ({
+      id: l.id, name: l.name, email: l.email, phone: l.phone,
+      plz: l.plz, city: l.city, position: l.position,
+    }));
+    const results = detectDuplicates(allForScan);
+    return results.filter(d => d.leadId1 === selectedLead.id || d.leadId2 === selectedLead.id);
+  }, [selectedLead, activeLeads]);
   const currentIndex = useMemo(() => selectedLead ? activeLeads.findIndex(l => l.id === selectedLead.id) : -1, [selectedLead, activeLeads]);
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex >= 0 && currentIndex < activeLeads.length - 1;
