@@ -45,7 +45,7 @@ const appointmentTypeConfig = {
 } as const;
 
 export default function LeadDetailSheet() {
-  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings, leads, leadSources } = useLeads();
+  const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings, leads, leadSources, mergeLead } = useLeads();
   const { toast } = useToast();
   const { isSuperadmin, profile, isReviewRole, isControlling, isGeschaeftsleitung, isHR } = useAuth();
   const [editing, setEditing] = useState(false);
