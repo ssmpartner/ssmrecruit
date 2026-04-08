@@ -15,8 +15,9 @@ import SourceBadge from './SourceBadge';
 import {
   Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
   FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus,
-  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Brain, Upload, EyeOff, Eye, Shield, CheckCircle2
+  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Brain, Upload, EyeOff, Eye, Shield, CheckCircle2, AlertTriangle, GitMerge
 } from 'lucide-react';
+import { detectDuplicates, type DuplicatePair } from '@/lib/duplicate-detection';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import VideoCallDialog from './VideoCallDialog';
