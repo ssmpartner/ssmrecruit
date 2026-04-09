@@ -256,7 +256,7 @@ export const actionGateway = {
  * Notify about problematic sessions (compliance flags, high error rate, etc.)
  */
 export async function notifyProblematicSession(sessionId: string, reason: string, leadId?: string) {
-  await db.from('notifications').insert({
+  await dbHelper.from('notifications').insert({
     type: 'ai_voice_problematic_session',
     title: '🚨 Problematische Session erkannt',
     description: `Session ${sessionId.slice(0, 8)}: ${reason}`,
@@ -268,7 +268,7 @@ export async function notifyProblematicSession(sessionId: string, reason: string
  * Notify about compliance violations.
  */
 export async function notifyComplianceFlag(ruleName: string, sessionId: string, detail: string, leadId?: string) {
-  await db.from('notifications').insert({
+  await dbHelper.from('notifications').insert({
     type: 'ai_voice_compliance_flag',
     title: `🛡️ Compliance-Verletzung: ${ruleName}`,
     description: `Session ${sessionId.slice(0, 8)}: ${detail}`,
@@ -281,7 +281,7 @@ export async function notifyComplianceFlag(ruleName: string, sessionId: string, 
  */
 export async function notifyBudgetWarning(scope: string, current: number, limit: number) {
   const pct = ((current / limit) * 100).toFixed(0);
-  await db.from('notifications').insert({
+  await dbHelper.from('notifications').insert({
     type: 'ai_voice_budget_warning',
     title: `💰 Budgetwarnung: ${scope}`,
     description: `${pct}% des Budgets erreicht (${current.toFixed(2)} / ${limit.toFixed(2)} CHF)`,
@@ -293,7 +293,7 @@ export async function notifyBudgetWarning(scope: string, current: number, limit:
  * Notify when a candidate requests to speak to a human.
  */
 export async function notifyHumanHandover(sessionId: string, agentName: string, leadId?: string) {
-  await db.from('notifications').insert({
+  await dbHelper.from('notifications').insert({
     type: 'ai_voice_human_handover',
     title: '👤 Kandidat möchte Mensch sprechen',
     description: `Während Session ${sessionId.slice(0, 8)} mit ${agentName} wurde eine Übergabe an einen Mitarbeiter angefordert.`,
