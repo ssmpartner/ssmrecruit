@@ -612,8 +612,8 @@ function SessionStatusBadge({ status }: { status: string }) {
 }
 
 function SentimentBadge({ sentiment }: { sentiment: string }) {
-  if (sentiment === 'positive') return <Badge className="bg-green-100 text-green-800 text-[10px]">Positiv</Badge>;
-  if (sentiment === 'negative') return <Badge className="bg-red-100 text-red-800 text-[10px]">Negativ</Badge>;
+  if (sentiment === 'positive') return <Badge variant="default" className="text-[10px]">Positiv</Badge>;
+  if (sentiment === 'negative') return <Badge variant="destructive" className="text-[10px]">Negativ</Badge>;
   return <Badge variant="outline" className="text-[10px]">Neutral</Badge>;
 }
 
