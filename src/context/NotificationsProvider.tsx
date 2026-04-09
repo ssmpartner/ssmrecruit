@@ -16,6 +16,9 @@ const CONTROLLING_ALLOWED_TYPES = new Set([
   'task_created',
   'task_overdue',
   'system',
+  'ai_voice_escalation',
+  'ai_voice_status_suggested',
+  'ai_voice_status_changed',
 ]);
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
@@ -84,6 +87,16 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         insights_completed: 'insightsCompleted',
         document_uploaded: 'documentUploaded',
         process_step_changed: 'processStepChanged',
+        ai_voice_escalation: 'aiVoiceEscalation',
+        ai_voice_callback_requested: 'aiVoiceCallbackRequested',
+        ai_voice_human_handover: 'aiVoiceHumanHandover',
+        ai_voice_appointment_prepared: 'aiVoiceAppointmentPrepared',
+        ai_voice_status_suggested: 'aiVoiceStatusSuggested',
+        ai_voice_status_changed: 'aiVoiceStatusChanged',
+        ai_voice_followup_created: 'aiVoiceFollowupCreated',
+        ai_voice_problematic_session: 'aiVoiceProblematicSession',
+        ai_voice_compliance_flag: 'aiVoiceComplianceFlag',
+        ai_voice_budget_warning: 'aiVoiceBudgetWarning',
       };
 
       const prefKey = typeMap[data.type];
