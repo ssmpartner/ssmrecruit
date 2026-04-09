@@ -164,6 +164,7 @@ export default function ApprovalLeadView({ onClose }: ApprovalLeadViewProps) {
                   { icon: MapPin, label: 'Standort', value: `${selectedLead.plz} ${selectedLead.city}`.trim() },
                   { icon: Calendar, label: 'Leaddatum', value: new Date(selectedLead.createdAt).toLocaleDateString('de-CH') },
                   { icon: User, label: 'Betreuer', value: employee?.name || '—' },
+                  { icon: Building2, label: 'Agentur', value: agency?.name || '—' },
                 ].filter(item => !(isControlling && (item as any).hideForControlling)).map(item => (
                   <div key={item.label} className="rounded-lg bg-muted/40 p-2.5">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5">
@@ -180,6 +181,42 @@ export default function ApprovalLeadView({ onClose }: ApprovalLeadViewProps) {
                 </div>
               )}
             </div>
+
+            {/* SSM Karriereplan */}
+            {careerPlan && (
+              <div className="rounded-xl border bg-card p-4">
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><GraduationCap className="h-4 w-4 text-amber-600" /> SSM Karriereplan – {careerPlan.position}</h3>
+                <div className="space-y-2">
+                  {careerPlan.levels.map((level, i) => (
+                    <div key={i} className="rounded-lg border p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-bold flex items-center gap-1.5">
+                          <Award className="h-3.5 w-3.5 text-amber-600" />{level.name}
+                        </span>
+                        <span className="text-xs font-medium rounded-full bg-amber-100 text-amber-800 px-2 py-0.5">
+                          {level.scorePoints} Score-Punkte
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="rounded bg-muted/40 p-2">
+                          <span className="text-muted-foreground">Fixlohn:</span>{' '}
+                          <span className="font-medium">CHF {level.fixSalary.toLocaleString('de-CH')}</span>
+                        </div>
+                        <div className="rounded bg-muted/40 p-2">
+                          <span className="text-muted-foreground">Spesen:</span>{' '}
+                          <span className="font-medium">CHF {level.expenses.toLocaleString('de-CH')}</span>
+                        </div>
+                      </div>
+                      {level.requirements.length > 0 && (
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          <span className="font-medium">Anforderungen:</span> {level.requirements.join(' • ')}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Controlling: Matching + Insights + Dokumente */}
             {(isControlling || isGeschaeftsleitung) && (
@@ -207,6 +244,54 @@ export default function ApprovalLeadView({ onClose }: ApprovalLeadViewProps) {
                     <p className="text-[10px] text-muted-foreground">Dokumente</p>
                   </div>
                 </div>
+
+                {/* DISC Detail Scores */}
+                {discScores && (
+                  <div className="mt-3 rounded-lg border p-3">
+                    <p className="text-xs font-semibold mb-2">DISC-Profil</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {(['D', 'I', 'S', 'C'] as const).map(key => {
+                        const val = (discScores as any)[key] ?? 0;
+                        const colors: Record<string, string> = { D: 'bg-red-500', I: 'bg-yellow-500', S: 'bg-green-500', C: 'bg-blue-500' };
+                        const labels: Record<string, string> = { D: 'Dominant', I: 'Initiativ', S: 'Stetig', C: 'Gewissenhaft' };
+                        return (
+                          <div key={key} className="text-center">
+                            <div className="h-16 flex items-end justify-center mb-1">
+                              <div className={cn("w-6 rounded-t", colors[key])} style={{ height: `${Math.max(val, 5)}%` }} />
+                            </div>
+                            <p className="text-xs font-bold">{val}%</p>
+                            <p className="text-[10px] text-muted-foreground">{labels[key]}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Motivator Scores */}
+                {motivatorScores && (
+                  <div className="mt-3 rounded-lg border p-3">
+                    <p className="text-xs font-semibold mb-2">Motivatoren</p>
+                    <div className="space-y-1.5">
+                      {Object.entries(motivatorScores).map(([key, val]) => {
+                        const colors: Record<string, string> = {
+                          individualistisch: 'bg-violet-500', oekonomisch: 'bg-orange-500',
+                          theoretisch: 'bg-blue-500', sozial: 'bg-green-500',
+                          aesthetisch: 'bg-pink-500', traditionell: 'bg-gray-500'
+                        };
+                        return (
+                          <div key={key} className="flex items-center gap-2">
+                            <span className="text-[10px] w-24 text-muted-foreground capitalize">{key}</span>
+                            <div className="flex-1 h-2 rounded-full bg-muted">
+                              <div className={cn("h-2 rounded-full", colors[key] || 'bg-primary')} style={{ width: `${val}%` }} />
+                            </div>
+                            <span className="text-[10px] font-medium w-8 text-right">{val}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
