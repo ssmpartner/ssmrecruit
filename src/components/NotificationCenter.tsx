@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Check, CheckCheck, Trash2, UserPlus, CalendarDays, ArrowRightLeft, Brain, Zap, Info, X, Copy, ClipboardList, AlertTriangle, FileText, Upload, GitBranch } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2, UserPlus, CalendarDays, ArrowRightLeft, Brain, Zap, Info, X, Copy, ClipboardList, AlertTriangle, FileText, Upload, GitBranch, Phone, PhoneCall, Shield, DollarSign, Flag, Bot } from 'lucide-react';
 import { useNotifications } from '@/context/useNotifications';
 import { type NotificationType } from '@/context/notifications-context';
 import { formatDistanceToNow } from 'date-fns';
@@ -26,6 +26,17 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string }> = {
   process_step_changed: { icon: GitBranch, color: 'text-purple-500 bg-purple-500/10' },
   reminder: { icon: Bell, color: 'text-orange-500 bg-orange-500/10' },
   system: { icon: Info, color: 'text-muted-foreground bg-muted' },
+  // AI Voice Agent
+  ai_voice_escalation: { icon: AlertTriangle, color: 'text-red-500 bg-red-500/10' },
+  ai_voice_callback_requested: { icon: PhoneCall, color: 'text-orange-500 bg-orange-500/10' },
+  ai_voice_human_handover: { icon: UserPlus, color: 'text-amber-500 bg-amber-500/10' },
+  ai_voice_appointment_prepared: { icon: CalendarDays, color: 'text-emerald-500 bg-emerald-500/10' },
+  ai_voice_status_suggested: { icon: Bot, color: 'text-blue-500 bg-blue-500/10' },
+  ai_voice_status_changed: { icon: Bot, color: 'text-violet-500 bg-violet-500/10' },
+  ai_voice_followup_created: { icon: ClipboardList, color: 'text-indigo-500 bg-indigo-500/10' },
+  ai_voice_problematic_session: { icon: Flag, color: 'text-red-600 bg-red-600/10' },
+  ai_voice_compliance_flag: { icon: Shield, color: 'text-red-500 bg-red-500/10' },
+  ai_voice_budget_warning: { icon: DollarSign, color: 'text-yellow-600 bg-yellow-600/10' },
 };
 
 export default function NotificationCenter() {

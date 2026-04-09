@@ -15,7 +15,18 @@ export type NotificationType =
   | 'insights_completed'
   | 'document_uploaded'
   | 'process_step_changed'
-  | 'system';
+  | 'system'
+  // AI Voice Agent types
+  | 'ai_voice_escalation'
+  | 'ai_voice_callback_requested'
+  | 'ai_voice_human_handover'
+  | 'ai_voice_appointment_prepared'
+  | 'ai_voice_status_suggested'
+  | 'ai_voice_status_changed'
+  | 'ai_voice_followup_created'
+  | 'ai_voice_problematic_session'
+  | 'ai_voice_compliance_flag'
+  | 'ai_voice_budget_warning';
 
 export interface AppNotification {
   id: string;
@@ -44,6 +55,17 @@ export interface NotificationPreferences {
   insightsCompleted: boolean;
   documentUploaded: boolean;
   processStepChanged: boolean;
+  // AI Voice
+  aiVoiceEscalation: boolean;
+  aiVoiceCallbackRequested: boolean;
+  aiVoiceHumanHandover: boolean;
+  aiVoiceAppointmentPrepared: boolean;
+  aiVoiceStatusSuggested: boolean;
+  aiVoiceStatusChanged: boolean;
+  aiVoiceFollowupCreated: boolean;
+  aiVoiceProblematicSession: boolean;
+  aiVoiceComplianceFlag: boolean;
+  aiVoiceBudgetWarning: boolean;
 }
 
 export const defaultNotificationPreferences: NotificationPreferences = {
@@ -63,6 +85,16 @@ export const defaultNotificationPreferences: NotificationPreferences = {
   insightsCompleted: true,
   documentUploaded: true,
   processStepChanged: true,
+  aiVoiceEscalation: true,
+  aiVoiceCallbackRequested: true,
+  aiVoiceHumanHandover: true,
+  aiVoiceAppointmentPrepared: true,
+  aiVoiceStatusSuggested: true,
+  aiVoiceStatusChanged: true,
+  aiVoiceFollowupCreated: true,
+  aiVoiceProblematicSession: true,
+  aiVoiceComplianceFlag: true,
+  aiVoiceBudgetWarning: true,
 };
 
 export interface NotificationsContextType {
