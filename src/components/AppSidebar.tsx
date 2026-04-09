@@ -1,8 +1,10 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, LogOut, PanelLeftClose, PanelLeft, HelpCircle, Bot } from 'lucide-react';
+import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, LogOut, PanelLeftClose, PanelLeft, HelpCircle, Bot, ChevronDown, ChevronRight, Rocket, FlaskConical, Megaphone, PhoneCall, Hash, BookOpen, Zap, AlertTriangle, TrendingUp, DollarSign, Shield, Settings2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSidebarState } from '@/context/SidebarContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useState } from 'react';
+import { useAIVoicePermissions } from '@/hooks/useAIVoicePermissions';
 
 const allNavItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: null, excludeRoles: [] as string[] },
@@ -13,7 +15,23 @@ const allNavItems = [
   { to: '/agencies', icon: Building2, label: 'Agenturen', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[], excludeRoles: [] as string[] },
   { to: '/employees', icon: UserCog, label: 'Mitarbeiter', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[], excludeRoles: [] as string[] },
   { to: '/analytics', icon: BarChart3, label: 'Statistik', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
-  { to: '/ai-voice', icon: Bot, label: 'AI Voice Agent', roles: ['superadmin', 'admin', 'teamleiter', 'backoffice', 'analyst'] as string[], excludeRoles: [] as string[] },
+];
+
+const aiVoiceSubItems = [
+  { to: '/ai-voice/dashboard', icon: BarChart3, label: 'Übersicht', tab: 'dashboard' },
+  { to: '/ai-voice/studio', icon: Bot, label: 'Agent Studio', tab: 'studio' },
+  { to: '/ai-voice/deployments', icon: Rocket, label: 'Deployments', tab: 'deployments' },
+  { to: '/ai-voice/test', icon: FlaskConical, label: 'Test Center', tab: 'test' },
+  { to: '/ai-voice/campaigns', icon: Megaphone, label: 'Kampagnen', tab: 'campaigns' },
+  { to: '/ai-voice/sessions', icon: PhoneCall, label: 'Sessions', tab: 'sessions' },
+  { to: '/ai-voice/numbers', icon: Hash, label: 'Nummern', tab: 'numbers' },
+  { to: '/ai-voice/knowledge', icon: BookOpen, label: 'Knowledge', tab: 'knowledge' },
+  { to: '/ai-voice/actions', icon: Zap, label: 'Actions', tab: 'actions' },
+  { to: '/ai-voice/escalations', icon: AlertTriangle, label: 'Eskalationen', tab: 'escalations' },
+  { to: '/ai-voice/analytics', icon: TrendingUp, label: 'Analytics', tab: 'analytics' },
+  { to: '/ai-voice/costs', icon: DollarSign, label: 'Kosten', tab: 'costs' },
+  { to: '/ai-voice/compliance', icon: Shield, label: 'Compliance', tab: 'compliance' },
+  { to: '/ai-voice/providers', icon: Settings2, label: 'Provider', tab: 'providers' },
 ];
 
 const allBottomItems = [
@@ -24,20 +42,20 @@ const allBottomItems = [
   { to: '/help', icon: HelpCircle, label: 'Hilfe-Center', roles: null, excludeRoles: [] as string[] },
 ];
 
-function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed }: { to: string; icon: React.ElementType; label: string; isActive: boolean; collapsed: boolean }) {
+function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed, indent = false }: { to: string; icon: React.ElementType; label: string; isActive: boolean; collapsed: boolean; indent?: boolean }) {
   const link = (
     <NavLink
       to={to}
       className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
         collapsed ? 'justify-center' : ''
-      } ${
+      } ${indent && !collapsed ? 'pl-9' : ''} ${
         isActive
           ? 'bg-sidebar-accent text-sidebar-primary shadow-sm'
           : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
       }`}
     >
-      <Icon className="h-[18px] w-[18px] shrink-0" />
-      {!collapsed && label}
+      <Icon className={`shrink-0 ${indent ? 'h-[15px] w-[15px]' : 'h-[18px] w-[18px]'}`} />
+      {!collapsed && <span className={indent ? 'text-xs' : ''}>{label}</span>}
     </NavLink>
   );
 
@@ -58,9 +76,14 @@ export default function AppSidebar() {
   const navigate = useNavigate();
   const { signOut, profile, user, role, loading } = useAuth();
   const { collapsed, toggle } = useSidebarState();
+  const perms = useAIVoicePermissions();
 
-  // Don't render nav items until role is fully resolved
+  const isAiVoiceActive = location.pathname.startsWith('/ai-voice');
+  const [aiVoiceOpen, setAiVoiceOpen] = useState(isAiVoiceActive);
+
   const roleReady = !loading && role !== null;
+
+  const canSeeAiVoice = roleReady && perms.canAccessModule;
 
   const navItems = roleReady ? allNavItems.filter(item => {
     if (item.roles && !item.roles.includes(role!)) return false;
@@ -73,9 +96,19 @@ export default function AppSidebar() {
     return true;
   }) : [];
 
+  const visibleSubItems = aiVoiceSubItems.filter(item => perms.canAccessTab(item.tab as any));
+
   const handleLogout = async () => {
     await signOut();
     navigate('/login');
+  };
+
+  const handleAiVoiceToggle = () => {
+    if (collapsed) {
+      navigate('/ai-voice/dashboard');
+      return;
+    }
+    setAiVoiceOpen(prev => !prev);
   };
 
   return (
@@ -96,9 +129,60 @@ export default function AppSidebar() {
             </div>
           ))
         ) : (
-          navItems.map(({ to, icon, label }) => (
-            <SidebarNavItem key={to} to={to} icon={icon} label={label} isActive={location.pathname === to} collapsed={collapsed} />
-          ))
+          <>
+            {navItems.map(({ to, icon, label }) => (
+              <SidebarNavItem key={to} to={to} icon={icon} label={label} isActive={location.pathname === to} collapsed={collapsed} />
+            ))}
+
+            {/* AI Voice Agent collapsible section */}
+            {canSeeAiVoice && (
+              <>
+                {collapsed ? (
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => navigate('/ai-voice/dashboard')}
+                        className={`flex w-full items-center justify-center rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                          isAiVoiceActive
+                            ? 'bg-sidebar-accent text-sidebar-primary shadow-sm'
+                            : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
+                        }`}
+                      >
+                        <Bot className="h-[18px] w-[18px] shrink-0" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="font-medium">AI Voice Agent</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleAiVoiceToggle}
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                        isAiVoiceActive
+                          ? 'bg-sidebar-accent/40 text-sidebar-primary'
+                          : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
+                      }`}
+                    >
+                      <Bot className="h-[18px] w-[18px] shrink-0" />
+                      <span className="flex-1 text-left">AI Voice Agent</span>
+                      {aiVoiceOpen || isAiVoiceActive ? (
+                        <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                      ) : (
+                        <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                      )}
+                    </button>
+                    {(aiVoiceOpen || isAiVoiceActive) && (
+                      <div className="space-y-0.5 mt-0.5">
+                        {visibleSubItems.map(({ to, icon, label }) => (
+                          <SidebarNavItem key={to} to={to} icon={icon} label={label} isActive={location.pathname === to} collapsed={false} indent />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </>
         )}
       </nav>
 
@@ -128,7 +212,6 @@ export default function AppSidebar() {
             Abmelden
           </button>
         )}
-
 
         <button
           onClick={toggle}
