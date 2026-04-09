@@ -124,13 +124,13 @@ export default function ApprovalLeadView({ onClose }: ApprovalLeadViewProps) {
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Lead-Kurzinfo</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {[
-                  { icon: Mail, label: 'E-Mail', value: selectedLead.email },
-                  { icon: Phone, label: 'Telefon', value: selectedLead.phone },
+                  { icon: Mail, label: 'E-Mail', value: selectedLead.email, hideForControlling: true },
+                  { icon: Phone, label: 'Telefon', value: selectedLead.phone, hideForControlling: true },
                   { icon: Briefcase, label: 'Position', value: selectedLead.position },
                   { icon: MapPin, label: 'Standort', value: `${selectedLead.plz} ${selectedLead.city}`.trim() },
                   { icon: Calendar, label: 'Leaddatum', value: new Date(selectedLead.createdAt).toLocaleDateString('de-CH') },
                   { icon: User, label: 'Betreuer', value: employee?.name || '—' },
-                ].map(item => (
+                ].filter(item => !(isControlling && (item as any).hideForControlling)).map(item => (
                   <div key={item.label} className="rounded-lg bg-muted/40 p-2.5">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5">
                       <item.icon className="h-3 w-3" />{item.label}

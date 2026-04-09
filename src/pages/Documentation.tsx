@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.41.0';
+const APP_VERSION = '2.42.0';
 
 const versionHistory = [
+  { version: '2.42.0', date: '09.04.2026', changes: [
+    'Controlling-Rolle: Zugriff strikt auf Leads im Sub-Status «Ready for Controlling» beschränkt – kein Zugriff auf andere Prozess-Schritte oder bereits freigegebene Leads',
+    'Controlling-Rolle: Telefonnummer und E-Mail-Adresse werden in der Lead-Tabelle und der Approval-Ansicht ausgeblendet',
+    'Controlling-Rolle: Sichtbar sind Name, Lead-Datum, Position, Standort, Betreuer, Insights/DISC-Ergebnisse und Dokumentenstatus',
+    'Controlling-Rolle: Kein Zugriff auf Gesamtanzahl Leads, Dashboard-Statistiken oder andere Bereiche',
+    'API-Dokumentation: Controlling-Berechtigungen auf Sub-Step-Ebene dokumentiert',
+  ]},
   { version: '2.41.0', date: '08.04.2026', changes: [
     'Duplikaterkennung: Automatische Erkennung von doppelten Leads bei jedem Import (Webhook, CSV, manuell) – basierend auf E-Mail, Telefon und Name',
     'Duplikat-Zuweisung: Erkannte Duplikate werden automatisch dem Hauptsitz zugewiesen statt normal verteilt – zur manuellen Prüfung durch Admins',
