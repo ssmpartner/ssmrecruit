@@ -102,7 +102,7 @@ async function runProductionTestSuite(): Promise<TestReport> {
 
   // Agent config completeness (check mock agents for required fields)
   const mockAgents = getMockAgents();
-  const agentsWithPrompt = mockAgents.filter(a => a.systemPrompt && a.systemPrompt.length > 10);
+  const agentsWithPrompt = mockAgents.filter(a => a.description && a.description.length > 10);
   tests.push({
     id: 'agent_config',
     category: 'Agententest',
