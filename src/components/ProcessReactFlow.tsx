@@ -612,7 +612,7 @@ export default function ProcessReactFlow({ leads }: ProcessReactFlowProps) {
 
       {/* ── Save Draft Dialog ── */}
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-        <DialogContent className="max-w-sm z-[200]">
+        <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Entwurf speichern</DialogTitle></DialogHeader>
           <div className="space-y-3 mt-2">
             <div>
@@ -633,7 +633,7 @@ export default function ProcessReactFlow({ leads }: ProcessReactFlowProps) {
 
       {/* ── Edit Node Dialog ── */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-md z-[200]">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit3 className="h-5 w-5 text-primary" />
