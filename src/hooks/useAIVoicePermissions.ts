@@ -1,56 +1,47 @@
 import { useAuth } from '@/context/AuthContext';
 
 /**
- * AI Voice Agent – Role-Based Permissions
- *
- * Rollen-Matrix:
- * ┌─────────────────────┬────────────┬───────┬──────────────┬────────────┬──────────────┐
- * │ Bereich             │ Superadmin │ Admin │ Agenturleiter│ Mitarbeiter│ QA/Compliance│
- * ├─────────────────────┼────────────┼───────┼──────────────┼────────────┼──────────────┤
- * │ Dashboard           │ ✓ voll     │ ✓     │ ✓ eigene Ag. │ ✗          │ ✓ read-only  │
- * │ Agent Studio        │ ✓ CRUD     │ ✓ RW  │ ✓ read-only  │ ✗          │ ✗            │
- * │ Deployments         │ ✓ global   │ ✓ own │ ✓ own agency │ ✗          │ ✗            │
- * │ Test Center         │ ✓          │ ✓     │ ✓ own agency │ ✗          │ ✗            │
- * │ Kampagnen           │ ✓          │ ✓     │ ✓ read-only  │ ✗          │ ✗            │
- * │ Sessions            │ ✓          │ ✓     │ ✓ own agency │ ✓ own only │ ✓ review     │
- * │ Nummern             │ ✓          │ ✓ RO  │ ✗            │ ✗          │ ✗            │
- * │ Knowledge           │ ✓          │ ✓     │ ✓ read-only  │ ✗          │ ✓ approve    │
- * │ Actions             │ ✓          │ ✓     │ ✗            │ ✗          │ ✗            │
- * │ Eskalationen        │ ✓          │ ✓     │ ✓ own agency │ ✓ assigned │ ✓ read       │
- * │ Analytics           │ ✓          │ ✓     │ ✓ own agency │ ✗          │ ✓ read       │
- * │ Kosten              │ ✓          │ ✗     │ ✗            │ ✗          │ ✗            │
- * │ Compliance          │ ✓          │ ✗     │ ✗            │ ✗          │ ✓ full       │
- * │ Provider Settings   │ ✓          │ ✗     │ ✗            │ ✗          │ ✗            │
- * └─────────────────────┴────────────┴───────┴──────────────┴────────────┴──────────────┘
+ * AI Voice Agent – Role-Based Permissions (Extended)
  */
 
 type AIVoiceTab =
-  | 'dashboard' | 'studio' | 'deployments' | 'test' | 'campaigns'
-  | 'sessions' | 'numbers' | 'knowledge' | 'actions' | 'escalations'
-  | 'analytics' | 'costs' | 'compliance' | 'providers';
+  | 'dashboard' | 'live' | 'alerts'
+  | 'studio' | 'deployments' | 'campaigns' | 'sessions' | 'escalations'
+  | 'knowledge' | 'actions' | 'compliance' | 'guidelines'
+  | 'numbers' | 'providers' | 'api-webhooks' | 'costs' | 'kill-switch'
+  | 'analytics' | 'audit' | 'reviews' | 'test'
+  | 'docs';
 
 type AppRole = string;
 
-/** Which tabs each role may see */
 const TAB_ACCESS: Record<string, AIVoiceTab[]> = {
   superadmin: [
-    'dashboard', 'studio', 'deployments', 'test', 'campaigns',
-    'sessions', 'numbers', 'knowledge', 'actions', 'escalations',
-    'analytics', 'costs', 'compliance', 'providers',
+    'dashboard', 'live', 'alerts',
+    'studio', 'deployments', 'campaigns', 'sessions', 'escalations',
+    'knowledge', 'actions', 'compliance', 'guidelines',
+    'numbers', 'providers', 'api-webhooks', 'costs', 'kill-switch',
+    'analytics', 'audit', 'reviews', 'test',
+    'docs',
   ],
   admin: [
-    'dashboard', 'studio', 'deployments', 'test', 'campaigns',
-    'sessions', 'numbers', 'knowledge', 'actions', 'escalations', 'analytics',
+    'dashboard', 'live', 'alerts',
+    'studio', 'deployments', 'campaigns', 'sessions', 'escalations',
+    'knowledge', 'actions', 'guidelines',
+    'numbers',
+    'analytics', 'reviews', 'test',
+    'docs',
   ],
   teamleiter: [
-    'dashboard', 'studio', 'deployments', 'test', 'campaigns',
-    'sessions', 'knowledge', 'escalations', 'analytics',
+    'dashboard', 'live', 'alerts',
+    'studio', 'deployments', 'campaigns', 'sessions', 'escalations',
+    'knowledge', 'guidelines',
+    'analytics', 'test',
+    'docs',
   ],
   backoffice: ['sessions', 'escalations'],
-  analyst: ['dashboard', 'analytics', 'sessions', 'compliance'],
+  analyst: ['dashboard', 'analytics', 'sessions', 'compliance', 'audit', 'reviews'],
 };
 
-/** Action-level permissions */
 interface AIVoiceActions {
   canCreateAgent: boolean;
   canEditAgent: boolean;
@@ -72,11 +63,9 @@ interface AIVoiceActions {
   canManageEscalations: boolean;
   canApproveKnowledge: boolean;
   canMarkProblematicSessions: boolean;
-  /** Whether data should be scoped to user's own agency */
+  canUseKillSwitch: boolean;
   agencyScoped: boolean;
-  /** Whether data should be scoped to user's own assigned items */
   userScoped: boolean;
-  /** Read-only mode for studio/campaigns */
   readOnlyStudio: boolean;
   readOnlyCampaigns: boolean;
 }
@@ -88,7 +77,7 @@ const FULL_ACCESS: AIVoiceActions = {
   canViewAuditLogs: true, canStopLiveAgents: true, canSwitchEnvironment: true,
   canManageCampaigns: true, canRunTests: true, canViewCosts: true,
   canViewSessions: true, canViewAllSessions: true, canManageEscalations: true,
-  canApproveKnowledge: true, canMarkProblematicSessions: true,
+  canApproveKnowledge: true, canMarkProblematicSessions: true, canUseKillSwitch: true,
   agencyScoped: false, userScoped: false, readOnlyStudio: false, readOnlyCampaigns: false,
 };
 
@@ -99,76 +88,32 @@ const NO_ACCESS: AIVoiceActions = {
   canViewAuditLogs: false, canStopLiveAgents: false, canSwitchEnvironment: false,
   canManageCampaigns: false, canRunTests: false, canViewCosts: false,
   canViewSessions: false, canViewAllSessions: false, canManageEscalations: false,
-  canApproveKnowledge: false, canMarkProblematicSessions: false,
+  canApproveKnowledge: false, canMarkProblematicSessions: false, canUseKillSwitch: false,
   agencyScoped: false, userScoped: false, readOnlyStudio: false, readOnlyCampaigns: false,
 };
 
 function getActions(role: AppRole | null): AIVoiceActions {
   switch (role) {
-    case 'superadmin':
-      return FULL_ACCESS;
-
+    case 'superadmin': return FULL_ACCESS;
     case 'admin':
-      return {
-        ...FULL_ACCESS,
-        canConfigureProviders: false,
-        canSetCostLimits: false,
-        canManageComplianceRules: false,
-        canManageDeploymentsGlobal: false,
-        canSwitchEnvironment: false,
-        canViewCosts: false,
-        canManageDeploymentsOwn: true,
-      };
-
+      return { ...FULL_ACCESS, canConfigureProviders: false, canSetCostLimits: false, canManageComplianceRules: false, canManageDeploymentsGlobal: false, canSwitchEnvironment: false, canViewCosts: false, canUseKillSwitch: false, canManageDeploymentsOwn: true };
     case 'teamleiter':
-      return {
-        ...NO_ACCESS,
-        canViewSessions: true,
-        canManageEscalations: true,
-        canRunTests: true,
-        canManageDeploymentsOwn: true,
-        agencyScoped: true,
-        readOnlyStudio: true,
-        readOnlyCampaigns: true,
-      };
-
+      return { ...NO_ACCESS, canViewSessions: true, canManageEscalations: true, canRunTests: true, canManageDeploymentsOwn: true, agencyScoped: true, readOnlyStudio: true, readOnlyCampaigns: true };
     case 'backoffice':
-      return {
-        ...NO_ACCESS,
-        canViewSessions: true,
-        canManageEscalations: true,
-        userScoped: true,
-      };
-
+      return { ...NO_ACCESS, canViewSessions: true, canManageEscalations: true, userScoped: true };
     case 'analyst':
-      return {
-        ...NO_ACCESS,
-        canViewSessions: true,
-        canViewAllSessions: true,
-        canViewAuditLogs: true,
-        canMarkProblematicSessions: true,
-      };
-
-    default:
-      return NO_ACCESS;
+      return { ...NO_ACCESS, canViewSessions: true, canViewAllSessions: true, canViewAuditLogs: true, canMarkProblematicSessions: true };
+    default: return NO_ACCESS;
   }
 }
 
 export function useAIVoicePermissions() {
   const { role } = useAuth();
-
   const allowedTabs = TAB_ACCESS[role ?? ''] ?? [];
   const actions = getActions(role);
-
   const canAccessModule = allowedTabs.length > 0;
   const canAccessTab = (tab: AIVoiceTab) => allowedTabs.includes(tab);
   const visibleTabs = allowedTabs;
 
-  return {
-    role,
-    canAccessModule,
-    canAccessTab,
-    visibleTabs,
-    ...actions,
-  };
+  return { role, canAccessModule, canAccessTab, visibleTabs, ...actions };
 }
