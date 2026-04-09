@@ -33,6 +33,7 @@ const DOC_SECTIONS: DocSection[] = [
       { id: 'architecture', label: 'Technische Grundarchitektur' },
       { id: 'target-architecture', label: 'Zielarchitektur (Produktivbetrieb)' },
       { id: 'openai-integration', label: 'OpenAI Realtime Integration' },
+      { id: 'twilio-integration', label: 'Twilio Telephonie-Integration' },
       { id: 'components', label: 'Komponentenübersicht' },
       { id: 'datamodel-overview', label: 'Datenmodell-Überblick' },
       { id: 'provider-abstraction', label: 'Provider-Abstraktion' },
