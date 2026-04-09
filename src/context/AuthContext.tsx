@@ -46,20 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadUserData = (userId: string) => {
-    supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-      .then(({ data }) => setProfile(data as Profile | null));
-
-    supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .single()
-      .then(({ data }) => setRole((data?.role as AppRole) ?? null));
+  const loadUserData = async (userId: string) => {
+    const [profileRes, roleRes] = await Promise.all([
+      supabase.from('profiles').select('*').eq('id', userId).single(),
+      supabase.from('user_roles').select('role').eq('user_id', userId).single(),
+    ]);
+    setProfile(profileRes.data as Profile | null);
+    setRole((roleRes.data?.role as AppRole) ?? null);
   };
 
   // Auto-logout after 45 minutes of inactivity (skip if "Angemeldet bleiben" is active)
