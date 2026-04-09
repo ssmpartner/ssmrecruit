@@ -112,6 +112,24 @@ const helpCategories: Category[] = [
         tags: ['eskalation', 'approval', 'controlling', 'management', 'hr', 'freigabe'],
       },
       {
+        id: 'p-5',
+        title: 'Controlling-Prüfung (Sub-Step)',
+        content: 'Die Controlling-Prüfung ist ein Sub-Step innerhalb von Schritt 4 «Follow-up & Entscheidung». Ein Lead wird automatisch dem Controlling zugewiesen, sobald der Mitarbeiter auf «Lead vollständig abschliessen» klickt – vorausgesetzt, Insights/DISC sind abgeschlossen und alle Pflichtdokumente vorhanden. Das Controlling hat zwei Optionen: 1) Selektionieren – mit Scoring (Perfekt/Sehr gut/Gut) und optionaler Begründung → Lead wird an die Geschäftsleitung weitergeleitet. 2) Ablehnen – mit Pflicht-Begründung → Lead wird gesperrt (Read-Only für den Mitarbeiter). Optional kann eine Rückfrage als Task an den zuständigen Mitarbeiter erstellt werden.',
+        tags: ['controlling', 'prüfung', 'sub-step', 'scoring', 'selektionieren', 'ablehnen'],
+      },
+      {
+        id: 'p-6',
+        title: 'Freeze-Mechanik nach Controlling-Entscheid',
+        content: 'Nach einem Controlling-Entscheid (Selektioniert oder Abgelehnt) wird der Lead für den zuständigen Mitarbeiter automatisch gesperrt: Telefonnummer, E-Mail und Dokumente sind nicht mehr sichtbar. Der Mitarbeiter sieht weiterhin den Status, das Scoring und die Begründung des Controlling-Entscheids. Superadmins haben keine Einschränkungen und behalten vollen Zugriff auf alle Daten.',
+        tags: ['freeze', 'gesperrt', 'read-only', 'datenschutz', 'controlling'],
+      },
+      {
+        id: 'p-7',
+        title: 'Controlling-Eskalation',
+        content: 'Wenn das Controlling keine Entscheidung innerhalb von 2 Tagen trifft, wird eine automatische Erinnerungs-Benachrichtigung gesendet. Nach 5 Tagen ohne Entscheidung erfolgt eine Eskalation an den Admin/Superadmin. Diese Fristen können in den Eskalationsregeln unter Prozesse → Schritt 4 angepasst werden.',
+        tags: ['eskalation', 'controlling', 'frist', 'erinnerung', 'sla'],
+      },
+      {
         id: 'p-2',
         title: 'Rückruf-Logik & automatischer Lead-Entzug',
         content: 'Nach 3 fehlgeschlagenen Kontaktversuchen (Status «Nicht erreicht») wird der Lead automatisch dem zugewiesenen Mitarbeiter entzogen und dem Superadmin zur erneuten Bearbeitung zugewiesen. Der ursprüngliche Mitarbeiter bleibt in der Statistik als Erstbearbeiter erfasst.',

@@ -2,9 +2,20 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.45.0';
+const APP_VERSION = '2.46.0';
 
 const versionHistory = [
+  { version: '2.46.0', date: '09.04.2026', changes: [
+    'Controlling-Integration vollständig synchronisiert: Sub-Steps «Controlling Prüfung», «Selektioniert (Controlling)» und «Abgelehnt» konsistent in Prozess-Stepper, Pipeline-Flow, Flow-Diagramm und Lead-Detail',
+    'ProcessStepper: Alle Controlling/GL/HR-Status (ready_for_controlling, controlling_approved, management_review, management_approved, hr_processing) korrekt auf Schritt 4 gemappt',
+    'Pipeline-Flow Info: Schritt 4 zeigt jetzt Sub-Steps, Scoring-System, Freeze-Mechanik und Eskalationsregeln',
+    'Eskalationsregeln: Controlling-Prüfung überfällig nach 2 Tagen (Erinnerung) + Eskalation an Admin nach 5 Tagen',
+    'Benachrichtigungen: Spezifische Texte für Controlling-Selektionierung und -Ablehnung',
+    'Lead-Detail: Controlling-Scoring und Begründung auch für Superadmins/Review-Rollen sichtbar (nicht nur bei Freeze)',
+    'Hilfe-Center: Neuer Abschnitt «Controlling-Prüfung» mit detaillierten Artikeln',
+    'API-Dokumentation: Controlling-spezifische Felder (controlling_status, controlling_score, controlling_comment) dokumentiert',
+    'Rollenverwaltung: Controlling-Berechtigungen präzisiert (Sub-Step-Zugriff, Datenschutz, Entscheidungslogik)',
+  ]},
   { version: '2.45.0', date: '09.04.2026', changes: [
     'Freeze-Funktion: Nach Controlling-Entscheid (Selektioniert oder Abgelehnt) wird der Lead für Mitarbeiter gesperrt (Read-Only)',
     'Datenschutz: Telefonnummer, E-Mail und Dokumente sind nach Controlling-Entscheid für Mitarbeiter nicht mehr sichtbar',
@@ -421,8 +432,19 @@ const roles = [
   { role: 'Teamleiter', color: 'bg-emerald-600/10 text-emerald-600', permissions: ['Eigene Leads einsehen & bearbeiten', 'Pipeline-Ansicht', 'Aufgaben verwalten', 'Kalender & Termine', 'Statistik einsehen', 'Eigenes Profil bearbeiten'] },
   { role: 'Backoffice', color: 'bg-accent/50 text-accent-foreground', permissions: ['Leads einsehen & bearbeiten', 'Termine erstellen', 'Aufgaben bearbeiten', 'CSV-Import'] },
   { role: 'Analyst', color: 'bg-muted text-muted-foreground', permissions: ['Dashboard & Analytics (nur lesen)', 'Lead-Daten einsehen', 'Berichte exportieren'] },
-  { role: 'Controlling', color: 'bg-cyan-600/10 text-cyan-600', permissions: ['Nur Leads mit Status «Ready for Controlling»', 'Lead ansehen (read-only)', 'Insights / Matching / Dokumente prüfen', 'Approve → Management Review', 'Reject → Zurück an Follow-up', 'Rückfrage → Task erstellen'] },
-  { role: 'Geschäftsleitung', color: 'bg-purple-600/10 text-purple-600', permissions: ['Nur Leads mit Status «Management Review»', 'Read-only Übersicht (Score, Insights, Controlling-Entscheidung)', 'Approve → HR Processing', 'Reject → Zurück an Controlling'] },
+  { role: 'Controlling', color: 'bg-cyan-600/10 text-cyan-600', permissions: [
+    'Zugriff nur auf Leads im Sub-Status «Controlling Prüfung» (ready_for_controlling)',
+    'Kein Zugriff auf andere Prozess-Schritte oder Gesamtanzahl Leads',
+    'Sichtbar: Name, Lead-Datum, Position, Standort, Betreuer, Insights/DISC, Dokumentenstatus',
+    'Ausgeblendet: Telefonnummer, E-Mail-Adresse',
+    'Controlling Wizard: Selektionieren (mit Scoring: Perfekt/Sehr gut/Gut) oder Ablehnen (Pflicht-Begründung)',
+    'Selektioniert → Lead an Geschäftsleitung (management_review)',
+    'Abgelehnt → Lead gesperrt (Read-Only, lifecycle=closed)',
+    'Rückfrage → Task mit hoher Priorität an zuständigen Mitarbeiter',
+    'Eskalation: Erinnerung nach 2 Tagen, Admin-Eskalation nach 5 Tagen',
+    'Pflicht zur objektiven Bewertung – kein Zugriff auf Kontaktdaten',
+  ]},
+  { role: 'Geschäftsleitung', color: 'bg-purple-600/10 text-purple-600', permissions: ['Nur Leads mit Status «Management Review»', 'Read-only Übersicht (Score, Insights, Controlling-Entscheidung inkl. Scoring)', 'Approve → HR Processing', 'Reject → Zurück an Controlling'] },
   { role: 'HR', color: 'bg-pink-600/10 text-pink-600', permissions: ['Nur Leads mit Status «HR Processing»', 'Lead ansehen', 'Onboarding starten', 'Finalen Status setzen → Eingestellt'] },
 ];
 
