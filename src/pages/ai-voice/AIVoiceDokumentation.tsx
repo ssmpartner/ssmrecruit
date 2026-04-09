@@ -33,6 +33,7 @@ const DOC_SECTIONS: DocSection[] = [
       { id: 'architecture', label: 'Technische Grundarchitektur' },
       { id: 'target-architecture', label: 'Zielarchitektur (Produktivbetrieb)' },
       { id: 'openai-integration', label: 'OpenAI Realtime Integration' },
+      { id: 'twilio-integration', label: 'Twilio Telephonie-Integration' },
       { id: 'components', label: 'Komponentenübersicht' },
       { id: 'datamodel-overview', label: 'Datenmodell-Überblick' },
       { id: 'provider-abstraction', label: 'Provider-Abstraktion' },
@@ -270,6 +271,79 @@ function SetupContent() {
         </div>
 
         <InfoBox type="warning">OpenAI darf niemals direkte ungeprüfte Statusänderungen in SSM Recruit auslösen. Jede Aktion muss das Action Gateway passieren und den Rollout-Modus respektieren.</InfoBox>
+      </DocBlock>
+      <DocBlock id="twilio-integration" title="Twilio Telephonie-Integration" icon={Phone}>
+        <p>Twilio ist als <strong>Telephonie-Provider</strong> für das AI Voice Agent Modul vorgesehen. Die Integration ist architektonisch vorbereitet, aber noch nicht produktiv aktiv.</p>
+
+        <h4 className="font-semibold text-sm mt-4">Warum Twilio noch nicht live ist</h4>
+        <ul className="list-disc list-inside space-y-1 mt-2">
+          <li>Die Kernlogik (Agenten, Kampagnen, Knowledge, Governance) wird zuerst stabilisiert</li>
+          <li>Das Railway Voice Backend muss zuerst deployed und getestet werden</li>
+          <li>Twilio-Credentials und Nummern müssen beschafft und konfiguriert werden</li>
+          <li>Der Mock-Modus erlaubt vollständiges Testen ohne externe Abhängigkeiten</li>
+        </ul>
+
+        <h4 className="font-semibold text-sm mt-4">Architektureinbindung</h4>
+        <div className="space-y-2 mt-2">
+          {[
+            { title: 'Twilio → Railway', desc: 'Twilio sendet Webhooks (Voice, Status, Recording) an das Railway Voice Backend. Media Streams werden per WebSocket übertragen.' },
+            { title: 'Railway → Twilio', desc: 'Das Railway Backend initiiert Outbound-Calls über die Twilio REST API und steuert laufende Calls (Hold, Transfer, DTMF).' },
+            { title: 'Kein direkter Zugriff', desc: 'Weder das SSM Recruit Frontend noch das Core Backend kommunizieren direkt mit Twilio. Alles läuft über Railway.' },
+            { title: 'Nummernverwaltung', desc: 'Voice Numbers werden in SSM Recruit verwaltet und mit Twilio-Nummern verknüpft. Die Zuordnung zu Agenten und Agenturen erfolgt im Core Backend.' },
+          ].map(p => (
+            <div key={p.title} className="p-3 rounded-lg border">
+              <p className="font-medium text-sm text-foreground">{p.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <h4 className="font-semibold text-sm mt-4">Benötigte Konfigurationen für Live-Betrieb</h4>
+        <div className="overflow-x-auto mt-2">
+          <table className="w-full text-xs border">
+            <thead>
+              <tr className="bg-muted">
+                <th className="p-2 text-left font-medium">Konfiguration</th>
+                <th className="p-2 text-left font-medium">Beschreibung</th>
+                <th className="p-2 text-left font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { name: 'Account SID', desc: 'Twilio-Konto-Identifikator', status: 'Placeholder' },
+                { name: 'Auth Token', desc: 'Authentifizierungstoken für REST API', status: 'Placeholder' },
+                { name: 'API Key & Secret', desc: 'Für Media Streams und Realtime-Zugriff', status: 'Placeholder' },
+                { name: 'Phone Number(s)', desc: 'Schweizer Rufnummern (+41)', status: 'Zu beschaffen' },
+                { name: 'TwiML App', desc: 'Konfiguration für Inbound-Routing', status: 'Zu erstellen' },
+                { name: 'Webhook URLs', desc: 'Zeigen auf Railway Voice Backend', status: 'Vorbereitet' },
+                { name: 'Recording Storage', desc: 'Aufnahmen in SSM Recruit Storage', status: 'Architektur definiert' },
+              ].map(r => (
+                <tr key={r.name} className="border-t">
+                  <td className="p-2 font-medium">{r.name}</td>
+                  <td className="p-2 text-muted-foreground">{r.desc}</td>
+                  <td className="p-2"><Badge variant="outline" className="text-[10px]">{r.status}</Badge></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h4 className="font-semibold text-sm mt-4">Call-Flow (Outbound)</h4>
+        <div className="space-y-1 mt-2">
+          {[
+            '1. SSM Recruit startet Kampagne → Core Backend sendet Call-Request an Railway',
+            '2. Railway ruft Twilio REST API auf → Outbound-Call wird initiiert',
+            '3. Twilio verbindet den Anruf → Status-Callback an Railway',
+            '4. Twilio öffnet Media Stream (WebSocket) → Audio an Railway',
+            '5. Railway leitet Audio an OpenAI Realtime API weiter',
+            '6. OpenAI verarbeitet und antwortet → Audio zurück über Railway → Twilio → Kandidat',
+            '7. Bei Gesprächsende: Railway schliesst Session, sendet Summary an Core Backend',
+          ].map(step => (
+            <p key={step} className="text-xs text-muted-foreground">{step}</p>
+          ))}
+        </div>
+
+        <InfoBox type="info">Twilio wird ausschliesslich über das Railway Voice Backend angesprochen. Im aktuellen Vorbereitungsmodus werden alle Calls vom Mock-Provider simuliert.</InfoBox>
       </DocBlock>
 
 
