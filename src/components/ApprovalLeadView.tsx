@@ -186,7 +186,7 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
           </div>
           <div className="h-5 w-px bg-border" />
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className={cn("shrink-0 text-xl font-bold", selectedLead.salutation === 'Frau' ? "text-pink-500" : "text-blue-500")}>
                 {selectedLead.salutation === 'Frau' ? '♀' : '♂'}
               </span>
@@ -199,6 +199,13 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
           <div className={cn("shrink-0 rounded-lg border px-3 py-1.5 text-xs font-bold", roleBgColor, roleColor)}>
             <Shield className="h-3 w-3 inline mr-1" />{roleLabel}-Ansicht
           </div>
+          <button
+            onClick={onClose}
+            className="shrink-0 ml-2 flex h-8 w-8 items-center justify-center rounded-lg border bg-background text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+            title="Schliessen"
+          >
+            <XCircle className="h-4 w-4" />
+          </button>
         </div>
 
         {/* Tabs */}
