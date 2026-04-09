@@ -75,3 +75,14 @@ export {
   WebhookDispatcher,
   InboundWebhookHandler,
 } from './webhook-service';
+
+// OpenAI Session Context
+export {
+  type OpenAISessionContext,
+  type OpenAIToolDefinition,
+  type OpenAIRealtimeConfig,
+  buildSessionContext,
+  composeSystemPrompt,
+  buildRealtimeConfig,
+  getOpenAIToolDefinitions,
+} from './openai-session-context';
