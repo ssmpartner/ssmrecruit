@@ -40,6 +40,9 @@ const DOC_SECTIONS: DocSection[] = [
       { id: 'api-layers', label: 'API-Schichten' },
       { id: 'mock-mode', label: 'Mock-Betrieb' },
       { id: 'production-mode', label: 'Produktivbetrieb' },
+      { id: 'golive-prerequisites', label: 'Technische Voraussetzungen Livebetrieb' },
+      { id: 'golive-errors', label: 'Typische Fehlerbilder' },
+      { id: 'golive-sequence', label: 'Empfohlene Inbetriebnahme-Reihenfolge' },
     ],
   },
   {
