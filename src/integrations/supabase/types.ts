@@ -106,6 +106,813 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_agent_deployments: {
+        Row: {
+          agent_id: string
+          config: Json
+          created_at: string
+          deployed_at: string | null
+          deployed_by: string
+          environment: string
+          id: string
+          status: string
+          updated_at: string
+          version_id: string | null
+        }
+        Insert: {
+          agent_id: string
+          config?: Json
+          created_at?: string
+          deployed_at?: string | null
+          deployed_by?: string
+          environment?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          version_id?: string | null
+        }
+        Update: {
+          agent_id?: string
+          config?: Json
+          created_at?: string
+          deployed_at?: string | null
+          deployed_by?: string
+          environment?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_deployments_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_agent_deployments_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agent_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agent_versions: {
+        Row: {
+          agent_id: string
+          config_snapshot: Json
+          created_at: string
+          created_by: string
+          greeting_message: string
+          id: string
+          notes: string
+          system_prompt: string
+          version: string
+        }
+        Insert: {
+          agent_id: string
+          config_snapshot?: Json
+          created_at?: string
+          created_by?: string
+          greeting_message?: string
+          id?: string
+          notes?: string
+          system_prompt?: string
+          version?: string
+        }
+        Update: {
+          agent_id?: string
+          config_snapshot?: Json
+          created_at?: string
+          created_by?: string
+          greeting_message?: string
+          id?: string
+          notes?: string
+          system_prompt?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_versions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agents: {
+        Row: {
+          agency_id: string | null
+          agent_type: string
+          assigned_user_id: string | null
+          config: Json
+          created_at: string
+          description: string
+          fallback_message: string
+          greeting_message: string
+          id: string
+          is_active: boolean
+          language: string
+          lead_sources: string[]
+          max_turns: number
+          name: string
+          system_prompt: string
+          telephony_provider_id: string | null
+          test_only: boolean
+          updated_at: string
+          voice_ai_provider_id: string | null
+          voice_id: string
+        }
+        Insert: {
+          agency_id?: string | null
+          agent_type?: string
+          assigned_user_id?: string | null
+          config?: Json
+          created_at?: string
+          description?: string
+          fallback_message?: string
+          greeting_message?: string
+          id?: string
+          is_active?: boolean
+          language?: string
+          lead_sources?: string[]
+          max_turns?: number
+          name: string
+          system_prompt?: string
+          telephony_provider_id?: string | null
+          test_only?: boolean
+          updated_at?: string
+          voice_ai_provider_id?: string | null
+          voice_id?: string
+        }
+        Update: {
+          agency_id?: string | null
+          agent_type?: string
+          assigned_user_id?: string | null
+          config?: Json
+          created_at?: string
+          description?: string
+          fallback_message?: string
+          greeting_message?: string
+          id?: string
+          is_active?: boolean
+          language?: string
+          lead_sources?: string[]
+          max_turns?: number
+          name?: string
+          system_prompt?: string
+          telephony_provider_id?: string | null
+          test_only?: boolean
+          updated_at?: string
+          voice_ai_provider_id?: string | null
+          voice_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agents_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_agents_telephony_provider_id_fkey"
+            columns: ["telephony_provider_id"]
+            isOneToOne: false
+            referencedRelation: "ai_provider_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_agents_voice_ai_provider_id_fkey"
+            columns: ["voice_ai_provider_id"]
+            isOneToOne: false
+            referencedRelation: "ai_provider_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_compliance_rules: {
+        Row: {
+          config: Json
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          name: string
+          rule_type: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          rule_type?: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          rule_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_provider_configs: {
+        Row: {
+          api_key_placeholder: string
+          config: Json
+          created_at: string
+          endpoint_url: string
+          id: string
+          name: string
+          production_mode: boolean
+          provider_category: string
+          provider_type: string
+          sandbox_mode: boolean
+          status: string
+          updated_at: string
+          webhook_url_placeholder: string
+        }
+        Insert: {
+          api_key_placeholder?: string
+          config?: Json
+          created_at?: string
+          endpoint_url?: string
+          id?: string
+          name: string
+          production_mode?: boolean
+          provider_category?: string
+          provider_type?: string
+          sandbox_mode?: boolean
+          status?: string
+          updated_at?: string
+          webhook_url_placeholder?: string
+        }
+        Update: {
+          api_key_placeholder?: string
+          config?: Json
+          created_at?: string
+          endpoint_url?: string
+          id?: string
+          name?: string
+          production_mode?: boolean
+          provider_category?: string
+          provider_type?: string
+          sandbox_mode?: boolean
+          status?: string
+          updated_at?: string
+          webhook_url_placeholder?: string
+        }
+        Relationships: []
+      }
+      ai_voice_action_logs: {
+        Row: {
+          action_data: Json
+          action_type: string
+          created_at: string
+          id: string
+          result: string
+          session_id: string
+        }
+        Insert: {
+          action_data?: Json
+          action_type?: string
+          created_at?: string
+          id?: string
+          result?: string
+          session_id: string
+        }
+        Update: {
+          action_data?: Json
+          action_type?: string
+          created_at?: string
+          id?: string
+          result?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_voice_action_logs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_voice_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_voice_campaigns: {
+        Row: {
+          agency_id: string | null
+          agent_id: string
+          campaign_type: string
+          config: Json
+          created_at: string
+          description: string
+          id: string
+          max_calls_per_day: number
+          name: string
+          schedule_end: string | null
+          schedule_start: string | null
+          status: string
+          target_lead_sources: string[]
+          target_statuses: string[]
+          updated_at: string
+        }
+        Insert: {
+          agency_id?: string | null
+          agent_id: string
+          campaign_type?: string
+          config?: Json
+          created_at?: string
+          description?: string
+          id?: string
+          max_calls_per_day?: number
+          name: string
+          schedule_end?: string | null
+          schedule_start?: string | null
+          status?: string
+          target_lead_sources?: string[]
+          target_statuses?: string[]
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string | null
+          agent_id?: string
+          campaign_type?: string
+          config?: Json
+          created_at?: string
+          description?: string
+          id?: string
+          max_calls_per_day?: number
+          name?: string
+          schedule_end?: string | null
+          schedule_start?: string | null
+          status?: string
+          target_lead_sources?: string[]
+          target_statuses?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_voice_campaigns_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_campaigns_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_voice_cost_logs: {
+        Row: {
+          agent_id: string | null
+          amount: number
+          cost_type: string
+          created_at: string
+          currency: string
+          description: string
+          id: string
+          provider_id: string | null
+          session_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          amount?: number
+          cost_type?: string
+          created_at?: string
+          currency?: string
+          description?: string
+          id?: string
+          provider_id?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          amount?: number
+          cost_type?: string
+          created_at?: string
+          currency?: string
+          description?: string
+          id?: string
+          provider_id?: string | null
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_voice_cost_logs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_cost_logs_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "ai_provider_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_cost_logs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_voice_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_voice_escalations: {
+        Row: {
+          agent_id: string
+          assigned_employee_id: string | null
+          created_at: string
+          id: string
+          lead_id: string | null
+          priority: string
+          reason: string
+          resolution_notes: string
+          resolved_at: string | null
+          session_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          assigned_employee_id?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          priority?: string
+          reason?: string
+          resolution_notes?: string
+          resolved_at?: string | null
+          session_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          assigned_employee_id?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          priority?: string
+          reason?: string
+          resolution_notes?: string
+          resolved_at?: string | null
+          session_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_voice_escalations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_escalations_assigned_employee_id_fkey"
+            columns: ["assigned_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_escalations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_escalations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_voice_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_voice_knowledge_items: {
+        Row: {
+          agent_id: string | null
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id?: string | null
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string | null
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_voice_knowledge_items_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_voice_numbers: {
+        Row: {
+          agency_id: string | null
+          agent_id: string | null
+          created_at: string
+          direction: string
+          display_name: string
+          id: string
+          phone_number: string
+          provider_id: string | null
+          provider_number_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agency_id?: string | null
+          agent_id?: string | null
+          created_at?: string
+          direction?: string
+          display_name?: string
+          id?: string
+          phone_number: string
+          provider_id?: string | null
+          provider_number_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string | null
+          agent_id?: string | null
+          created_at?: string
+          direction?: string
+          display_name?: string
+          id?: string
+          phone_number?: string
+          provider_id?: string | null
+          provider_number_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_voice_numbers_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_numbers_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_numbers_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "ai_provider_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_voice_sessions: {
+        Row: {
+          agent_id: string
+          campaign_id: string | null
+          created_at: string
+          direction: string
+          duration_seconds: number
+          ended_at: string | null
+          id: string
+          is_test: boolean
+          lead_id: string | null
+          metadata: Json
+          number_id: string | null
+          outcome: string
+          recording_url: string
+          sentiment: string
+          started_at: string | null
+          status: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          campaign_id?: string | null
+          created_at?: string
+          direction?: string
+          duration_seconds?: number
+          ended_at?: string | null
+          id?: string
+          is_test?: boolean
+          lead_id?: string | null
+          metadata?: Json
+          number_id?: string | null
+          outcome?: string
+          recording_url?: string
+          sentiment?: string
+          started_at?: string | null
+          status?: string
+          summary?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          campaign_id?: string | null
+          created_at?: string
+          direction?: string
+          duration_seconds?: number
+          ended_at?: string | null
+          id?: string
+          is_test?: boolean
+          lead_id?: string | null
+          metadata?: Json
+          number_id?: string | null
+          outcome?: string
+          recording_url?: string
+          sentiment?: string
+          started_at?: string | null
+          status?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_voice_sessions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_sessions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ai_voice_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_sessions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_sessions_number_id_fkey"
+            columns: ["number_id"]
+            isOneToOne: false
+            referencedRelation: "ai_voice_numbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_voice_test_runs: {
+        Row: {
+          agent_id: string
+          created_at: string
+          duration_ms: number
+          id: string
+          result: Json
+          run_by: string
+          scenario_config: Json
+          scenario_name: string
+          status: string
+          version_id: string | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          duration_ms?: number
+          id?: string
+          result?: Json
+          run_by?: string
+          scenario_config?: Json
+          scenario_name?: string
+          status?: string
+          version_id?: string | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          duration_ms?: number
+          id?: string
+          result?: Json
+          run_by?: string
+          scenario_config?: Json
+          scenario_name?: string
+          status?: string
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_voice_test_runs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_voice_test_runs_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agent_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_voice_turns: {
+        Row: {
+          audio_url: string
+          confidence: number
+          created_at: string
+          duration_ms: number
+          id: string
+          metadata: Json
+          role: string
+          session_id: string
+          transcript: string
+          turn_index: number
+        }
+        Insert: {
+          audio_url?: string
+          confidence?: number
+          created_at?: string
+          duration_ms?: number
+          id?: string
+          metadata?: Json
+          role?: string
+          session_id: string
+          transcript?: string
+          turn_index?: number
+        }
+        Update: {
+          audio_url?: string
+          confidence?: number
+          created_at?: string
+          duration_ms?: number
+          id?: string
+          metadata?: Json
+          role?: string
+          session_id?: string
+          transcript?: string
+          turn_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_voice_turns_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_voice_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           key: string

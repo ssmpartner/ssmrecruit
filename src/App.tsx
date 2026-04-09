@@ -33,6 +33,7 @@ const InsightsFormPage = lazy(() => import("./pages/InsightsFormPage"));
 const DocumentUploadPage = lazy(() => import("./pages/DocumentUploadPage"));
 const ApplicationFormPage = lazy(() => import("./pages/ApplicationFormPage"));
 const BewerbungWizard = lazy(() => import("./pages/BewerbungWizard"));
+const AIVoiceAgent = lazy(() => import("./pages/AIVoiceAgent"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -141,6 +142,7 @@ const App = () => (
                 <Route path="/api-docs" element={<Suspense fallback={<PageLoader />}><ApiDocs /></Suspense>} />
                 <Route path="/documentation" element={<Suspense fallback={<PageLoader />}><Documentation /></Suspense>} />
                 <Route path="/help" element={<Suspense fallback={<PageLoader />}><HelpCenter /></Suspense>} />
+                <Route path="/ai-voice" element={<Suspense fallback={<PageLoader />}><AIVoiceAgent /></Suspense>} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
