@@ -444,6 +444,77 @@ setProviderAdapter('telephony', new TwilioAdapter(config));`} />
         </ol>
         <InfoBox type="warning">Vor dem Livebetrieb müssen Compliance-Regeln, Budgetgrenzen und Kill-Switch-Konfiguration geprüft werden.</InfoBox>
       </DocBlock>
+
+      <DocBlock id="golive-prerequisites" title="Technische Voraussetzungen für Livebetrieb" icon={Shield}>
+        <p>Bevor das AI Voice Agent Modul produktiv geschaltet werden kann, müssen folgende technische Voraussetzungen erfüllt sein:</p>
+        <div className="overflow-x-auto mt-3">
+          <table className="w-full text-xs border">
+            <thead>
+              <tr className="bg-muted">
+                <th className="p-2 text-left font-medium">Komponente</th>
+                <th className="p-2 text-left font-medium">Voraussetzung</th>
+                <th className="p-2 text-left font-medium">Prüfung</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { comp: 'OpenAI', req: 'API Key konfiguriert, Realtime-Endpoint erreichbar', check: 'Health Check → OpenAI konfiguriert' },
+                { comp: 'Twilio', req: 'Account SID, Auth Token, Rufnummer, Webhooks konfiguriert', check: 'Health Check → Twilio vorbereitet' },
+                { comp: 'Railway', req: 'Voice Backend deployed, URL erreichbar, Health-Endpoint antwortet', check: 'Health Check → Railway Backend URL' },
+                { comp: 'Action Gateway', req: 'Service-Token generiert, Signaturvalidierung aktiv', check: 'Health Check → Action Gateway' },
+                { comp: 'Provider Settings', req: 'Mind. 1 Telephonie- und 1 Voice-AI-Provider aktiv', check: 'Health Check → Provider Settings' },
+                { comp: 'Agenten', req: 'Mind. 1 Agent mit Prompt, Regeln und Knowledge', check: 'Health Check → Agenten' },
+                { comp: 'Kampagnen', req: 'Mind. 1 Kampagne mit Agent-Zuweisung und Zielgruppe', check: 'Health Check → Kampagnen' },
+                { comp: 'Compliance', req: 'Pflichtoffenlegung, verbotene Aussagen, Kill-Switch konfiguriert', check: 'Manuell unter Qualität → Compliance' },
+                { comp: 'Budgets', req: 'Tages- und Gesamtbudgets für Agenten und Kampagnen gesetzt', check: 'Manuell unter Infrastruktur → Cost Control' },
+              ].map(r => (
+                <tr key={r.comp} className="border-t">
+                  <td className="p-2 font-medium">{r.comp}</td>
+                  <td className="p-2 text-muted-foreground">{r.req}</td>
+                  <td className="p-2 text-muted-foreground">{r.check}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <InfoBox type="info">Alle Health Checks sind unter Übersicht → Warnungen & Status einsehbar und werden bei jedem Seitenaufruf automatisch ausgeführt.</InfoBox>
+      </DocBlock>
+
+      <DocBlock id="golive-errors" title="Typische Fehlerbilder" icon={AlertTriangle}>
+        <p>Die folgenden Fehlerklassen können im Betrieb auftreten:</p>
+        <div className="space-y-2 mt-3">
+          {[
+            { cls: 'configuration_error', title: 'Konfigurationsfehler', desc: 'Fehlende oder ungültige Provider-Einstellungen, URLs oder Tokens. Tritt typischerweise bei Ersteinrichtung oder nach Änderungen auf.', action: 'Konfiguration unter Infrastruktur prüfen und ergänzen.' },
+            { cls: 'auth_error', title: 'Authentifizierungsfehler', desc: 'Ungültiger Service-Token, abgelaufene Credentials oder fehlende Berechtigungen zwischen Systemen.', action: 'Service-Tokens erneuern, Provider-Credentials prüfen.' },
+            { cls: 'provider_error', title: 'Provider-Fehler', desc: 'Timeouts, Ratenlimits oder Ausfälle bei OpenAI oder Twilio.', action: 'Provider-Status prüfen, Retry-Logik greift automatisch.' },
+            { cls: 'session_error', title: 'Session-Fehler', desc: 'Call kann nicht hergestellt werden, Audio-Stream bricht ab oder Session bleibt in Zwischenstatus hängen.', action: 'Session-Details prüfen, bei Häufung Kill-Switch erwägen.' },
+            { cls: 'action_error', title: 'Action-Fehler', desc: 'Vorgeschlagene Aktion konnte nicht ausgeführt werden (z.B. Lead nicht gefunden, Status-Übergang ungültig).', action: 'Action Logs prüfen, Datenintegrität sicherstellen.' },
+            { cls: 'webhook_error', title: 'Webhook-Fehler', desc: 'Event konnte nicht zugestellt werden. Dead-Letter-Queue nach 3 Versuchen.', action: 'Endpoint-Verfügbarkeit prüfen, Retry Queue leeren.' },
+            { cls: 'compliance_error', title: 'Compliance-Fehler', desc: 'Agent hat gegen Gesprächsregeln verstossen (verbotene Aussage, fehlende Offenlegung).', action: 'Session-Review durchführen, Agent-Regeln verschärfen.' },
+          ].map(e => (
+            <div key={e.cls} className="p-3 rounded-lg border">
+              <p className="font-medium text-sm text-foreground">{e.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{e.desc}</p>
+              <p className="text-xs mt-1"><strong>Empfohlene Massnahme:</strong> {e.action}</p>
+            </div>
+          ))}
+        </div>
+      </DocBlock>
+
+      <DocBlock id="golive-sequence" title="Empfohlene Inbetriebnahme-Reihenfolge" icon={Layers}>
+        <p>Die folgende Reihenfolge minimiert Risiken und ermöglicht schrittweise Validierung:</p>
+        <ol className="list-decimal list-inside space-y-3 mt-3">
+          <li><strong>Agenten & Knowledge Base</strong> – Alle Inhalte, Prompts und Gesprächsregeln vorbereiten und intern reviewen.</li>
+          <li><strong>Provider-Konfiguration</strong> – OpenAI API Key und Twilio Credentials eintragen, Provider-Einträge aktivieren.</li>
+          <li><strong>Railway Deployment</strong> – Voice Backend deployen, Health-Endpoint prüfen, URL im System hinterlegen.</li>
+          <li><strong>Service-Token & Gateway</strong> – Interne Authentifizierung zwischen Railway und Core Backend sicherstellen.</li>
+          <li><strong>Shadow-Deployment</strong> – Erste Kampagne im Shadow-Modus starten. Nur Logging, keine echten Aktionen.</li>
+          <li><strong>Recommendation-Modus</strong> – Aktionen werden vorgeschlagen, aber nicht ausgeführt. Manuelle Überprüfung durch Team.</li>
+          <li><strong>Assisted-Modus</strong> – Aktionen werden nach manueller Freigabe ausgeführt. Eskalationspfade validieren.</li>
+          <li><strong>Autonomer Betrieb</strong> – Nur für unkritische Aktionen und nach ausreichender Validierungsphase.</li>
+        </ol>
+        <InfoBox type="warning">Autonomer Betrieb sollte nur nach mindestens 2 Wochen stabilem Assisted-Betrieb und einem Compliance-Review aktiviert werden.</InfoBox>
+      </DocBlock>
     </div>
   );
 }
