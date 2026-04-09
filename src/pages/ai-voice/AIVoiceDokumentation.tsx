@@ -31,6 +31,7 @@ const DOC_SECTIONS: DocSection[] = [
     subsections: [
       { id: 'goal', label: 'Ziel des Moduls' },
       { id: 'architecture', label: 'Technische Grundarchitektur' },
+      { id: 'target-architecture', label: 'Zielarchitektur (Produktivbetrieb)' },
       { id: 'components', label: 'Komponentenübersicht' },
       { id: 'datamodel-overview', label: 'Datenmodell-Überblick' },
       { id: 'provider-abstraction', label: 'Provider-Abstraktion' },
@@ -161,6 +162,27 @@ function SetupContent() {
           <ArchLayer title="Provider-Schicht" desc="Adapter-Interfaces für Telephony, Voice-AI, Transcription, Storage und Webhooks. Mock-Implementierungen ermöglichen sofortiges Testen." color="primary" />
           <ArchLayer title="Daten-Schicht" desc="14 spezialisierte Datenbanktabellen mit RLS-Policies, Audit-Logging und rollenbasiertem Zugriff." color="primary" />
         </div>
+      </DocBlock>
+
+      <DocBlock id="target-architecture" title="Zielarchitektur (Produktivbetrieb)" icon={Server}>
+        <p>Für den späteren Echtbetrieb ist eine 5-Schichten-Architektur vorgesehen:</p>
+        <div className="space-y-3 mt-3">
+          {[
+            { title: '1. SSM Recruit Frontend', desc: 'React-basierte Verwaltung. Keine direkte Kommunikation mit Twilio oder OpenAI. Kommuniziert ausschliesslich mit dem Core Backend.' },
+            { title: '2. SSM Recruit Core Backend (Lovable Cloud)', desc: 'Edge Functions + PostgreSQL. Verantwortlich für Datenhaltung, RLS, Action Gateway, Audit Logging, Budget-Kontrolle. Empfängt Webhook-Events vom Railway Voice Backend.' },
+            { title: '3. Railway Voice Backend (externer Orchestrator)', desc: 'Node.js/TypeScript-Service auf Railway. Zuständig für Echtzeit-Session-Steuerung, Twilio Media Stream Handling, OpenAI WebSocket-Bridge, Turn-by-Turn-Verarbeitung und Webhook-Dispatch an SSM Recruit.' },
+            { title: '4. OpenAI Realtime API', desc: 'Voice AI Provider. Empfängt Audio-Streams vom Railway Backend via WebSocket, liefert KI-generierte Antworten in Echtzeit zurück.' },
+            { title: '5. Twilio Telephony', desc: 'Telefonie-Provider für SIP, Nummernverwaltung und Media Streams. Webhooks zeigen auf das Railway Voice Backend, nicht direkt auf SSM Recruit.' },
+          ].map(layer => (
+            <div key={layer.title} className="p-3 rounded-lg border">
+              <p className="font-medium text-sm text-foreground">{layer.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{layer.desc}</p>
+            </div>
+          ))}
+        </div>
+        <InfoBox type="info">
+          Die vollständige Architektur-Konfiguration und der Kommunikationsfluss sind unter <strong>Infrastruktur → Architektur</strong> einsehbar und konfigurierbar.
+        </InfoBox>
       </DocBlock>
 
       <DocBlock id="components" title="Komponentenübersicht" icon={Layers}>
