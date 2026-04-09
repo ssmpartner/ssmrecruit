@@ -148,6 +148,12 @@ export const actionGateway = {
       await logToTimeline(request, executionMode, actionDef, resultMessage);
     }
 
+    // Create notification for relevant actions
+    await createAIVoiceNotification(request, executionMode, actionDef, resultMessage);
+
+    // Create tasks for escalation-type actions
+    await createAIVoiceTask(request, executionMode, actionDef);
+
     return { id: resultId, action_type: request.action_type, execution_mode: executionMode, success, result_message: resultMessage, timestamp };
   },
 
