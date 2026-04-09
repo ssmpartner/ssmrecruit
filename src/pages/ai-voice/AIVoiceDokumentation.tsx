@@ -801,7 +801,7 @@ function ComplianceContent() {
           <li>Negativem Sentiment über mehr als 3 Turns</li>
           <li>Compliance-Verstoss (verbotene Aussage, fehlende Offenlegung)</li>
           <li>Kandidat fordert Gesprächsbeendigung</li>
-          <li>Ungewöhnlich lange Dauer (> konfiguriertes Maximum)</li>
+          <li>Ungewöhnlich lange Dauer (&gt; konfiguriertes Maximum)</li>
           <li>Technische Fehler oder Provider-Timeouts</li>
         </ul>
         <p className="mt-2">Geflaggte Sessions erscheinen im <strong>Session Review</strong>-Bereich und können manuell überprüft und bewertet werden.</p>
