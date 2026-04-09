@@ -64,9 +64,9 @@ export default function ApprovalLeadView({ onClose }: ApprovalLeadViewProps) {
     if (!selectedLead) return;
     (async () => {
       const [assessRes, insRes, discRes, docsRes, wizRes] = await Promise.all([
-        supabase.from('assessment_results').select('match_result').eq('lead_id', selectedLead.id).order('completed_at', { ascending: false }).limit(1),
+        supabase.from('assessment_results').select('match_result, disc_scores, motivator_scores').eq('lead_id', selectedLead.id).order('completed_at', { ascending: false }).limit(1),
         supabase.from('insights_requests').select('status').eq('lead_id', selectedLead.id).order('created_at', { ascending: false }).limit(1),
-        supabase.from('disc_results').select('dominant_type').eq('lead_id', selectedLead.id).order('completed_at', { ascending: false }).limit(1),
+        supabase.from('disc_results').select('dominant_type, scores').eq('lead_id', selectedLead.id).order('completed_at', { ascending: false }).limit(1),
         supabase.from('document_uploads').select('id').eq('lead_id', selectedLead.id),
         supabase.from('status_wizard_results').select('wizard_type, answers').eq('lead_id', selectedLead.id).order('created_at', { ascending: false }),
       ]);
@@ -74,7 +74,9 @@ export default function ApprovalLeadView({ onClose }: ApprovalLeadViewProps) {
       if (assessRes.data?.[0]) {
         const mr = assessRes.data[0].match_result as any;
         setMatchScore(mr?.overall_score ?? mr?.overallScore ?? null);
-      } else { setMatchScore(null); }
+        setDiscScores(assessRes.data[0].disc_scores as Record<string, number> | null);
+        setMotivatorScores(assessRes.data[0].motivator_scores as Record<string, number> | null);
+      } else { setMatchScore(null); setDiscScores(null); setMotivatorScores(null); }
 
       setInsightsStatus(insRes.data?.[0]?.status === 'completed' ? 'Abgeschlossen' : 'Ausstehend');
       setDiscType(discRes.data?.[0]?.dominant_type ?? '—');
@@ -84,6 +86,19 @@ export default function ApprovalLeadView({ onClose }: ApprovalLeadViewProps) {
       setControllingDecision(ctrlResult ? 'Freigegeben' : (isGeschaeftsleitung || isHR ? 'Freigegeben (auto)' : '—'));
     })();
   }, [selectedLead?.id]);
+
+  // Load career plan matching the lead's position
+  useEffect(() => {
+    if (!selectedLead?.position) { setCareerPlan(null); return; }
+    supabase.from('career_plans').select('*').eq('is_active', true)
+      .then(({ data }) => {
+        const match = (data as CareerPlan[] | null)?.find(p => 
+          selectedLead.position.toLowerCase().includes(p.position.toLowerCase()) || 
+          p.position.toLowerCase().includes(selectedLead.position.toLowerCase())
+        );
+        setCareerPlan(match ?? null);
+      });
+  }, [selectedLead?.position]);
 
   const leadActivities = selectedLead ? activities.filter(a => a.leadId === selectedLead.id) : [];
   const approvalActivities = leadActivities.filter(a =>
