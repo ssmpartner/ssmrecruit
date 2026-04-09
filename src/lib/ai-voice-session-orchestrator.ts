@@ -192,25 +192,15 @@ export async function orchestrateSession(ctx: OrchestrationContext): Promise<Orc
   // 6. Build session context for OpenAI (prepared but not sent in mock mode)
   let realtimeConfig;
   try {
-    const sessionCtx = buildSessionContext(
-      {
-        id: agent.id,
-        name: agent.name,
-        display_name: agent.display_name,
-        greeting: agent.greeting_message || agent.greeting_text,
-        objective: agent.objective,
-        tone_style: agent.tone_style,
-        identity_mode: agent.identity_mode,
-        language: agent.language,
-        max_turns: agent.max_turns,
-        max_duration_seconds: agent.max_call_duration_seconds,
-        system_prompt: agent.system_prompt,
-      },
-      ctx.leadId ? { id: ctx.leadId, type: 'lead' } : null,
-      (knowledge || []).map(k => ({ title: k.title, content: k.content, category: k.category })),
-      actionPermissions,
-      { rollout_mode: ctx.rolloutMode, required_disclosures: [], forbidden_statements: [] }
-    );
+    const sessionCtx = await buildSessionContext({
+      agentId: ctx.agentId,
+      sessionId: ctx.sessionId,
+      leadId: ctx.leadId,
+      candidateId: ctx.candidateId,
+      campaignId: ctx.campaignId,
+      direction: ctx.direction,
+      isTest: ctx.isMock,
+    });
     realtimeConfig = buildRealtimeConfig(sessionCtx);
     events.push(createEvent('ai_joined', 'KI-Kontext vorbereitet', { model: realtimeConfig.model }));
   } catch {
