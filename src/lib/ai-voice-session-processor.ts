@@ -2,8 +2,9 @@
  * AI Voice Session Processor
  * Bridges mock/real voice sessions with the Action Gateway.
  * After a session ends, processes suggested actions through the gateway.
+ * Also triggers notifications for problematic sessions and human handovers.
  */
-import { actionGateway, type ActionRequest, type ActionType, type RolloutMode } from './ai-voice-action-gateway';
+import { actionGateway, type ActionRequest, type ActionType, type RolloutMode, notifyProblematicSession, notifyHumanHandover } from './ai-voice-action-gateway';
 import type { MockSession, SuggestedAction } from './ai-voice-mock';
 
 // Map mock suggested action types to gateway action types
@@ -84,6 +85,16 @@ export async function processSessionActions(
     confidence: 1.0,
     payload: { text: `Zusammenfassung: ${session.summary} | Stimmung: ${session.sentiment} | Dauer: ${session.durationSeconds}s` },
   });
+
+  // Notify for problematic sessions (negative sentiment or escalation)
+  if (session.sentiment === 'negative' || session.outcome === 'escalated') {
+    await notifyProblematicSession(session.id, `Stimmung: ${session.sentiment}, Ergebnis: ${session.outcome}`, leadId);
+  }
+
+  // Notify for human handover requests
+  if (session.outcome === 'escalated') {
+    await notifyHumanHandover(session.id, agentId, leadId);
+  }
 
   return actionGateway.processBatch(requests);
 }
