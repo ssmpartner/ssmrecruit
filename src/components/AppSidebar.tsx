@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, LogOut, PanelLeftClose, PanelLeft, HelpCircle, Bot, ChevronDown, ChevronRight, Rocket, FlaskConical, Megaphone, PhoneCall, Hash, BookOpen, Zap, AlertTriangle, TrendingUp, DollarSign, Shield, Settings2 } from 'lucide-react';
+import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, LogOut, PanelLeftClose, PanelLeft, HelpCircle, Bot, ChevronDown, ChevronRight, Rocket, FlaskConical, Megaphone, PhoneCall, Hash, BookOpen, Zap, AlertTriangle, TrendingUp, DollarSign, Shield, Settings2, Activity, Bell, MessageSquare, Webhook, XOctagon, Eye, FileSearch, History } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSidebarState } from '@/context/SidebarContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -17,21 +17,60 @@ const allNavItems = [
   { to: '/analytics', icon: BarChart3, label: 'Statistik', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
 ];
 
-const aiVoiceSubItems = [
-  { to: '/ai-voice/dashboard', icon: BarChart3, label: 'Übersicht', tab: 'dashboard' },
-  { to: '/ai-voice/studio', icon: Bot, label: 'Agent Studio', tab: 'studio' },
-  { to: '/ai-voice/deployments', icon: Rocket, label: 'Deployments', tab: 'deployments' },
-  { to: '/ai-voice/test', icon: FlaskConical, label: 'Test Center', tab: 'test' },
-  { to: '/ai-voice/campaigns', icon: Megaphone, label: 'Kampagnen', tab: 'campaigns' },
-  { to: '/ai-voice/sessions', icon: PhoneCall, label: 'Sessions', tab: 'sessions' },
-  { to: '/ai-voice/numbers', icon: Hash, label: 'Nummern', tab: 'numbers' },
-  { to: '/ai-voice/knowledge', icon: BookOpen, label: 'Knowledge', tab: 'knowledge' },
-  { to: '/ai-voice/actions', icon: Zap, label: 'Actions', tab: 'actions' },
-  { to: '/ai-voice/escalations', icon: AlertTriangle, label: 'Eskalationen', tab: 'escalations' },
-  { to: '/ai-voice/analytics', icon: TrendingUp, label: 'Analytics', tab: 'analytics' },
-  { to: '/ai-voice/costs', icon: DollarSign, label: 'Kosten', tab: 'costs' },
-  { to: '/ai-voice/compliance', icon: Shield, label: 'Compliance', tab: 'compliance' },
-  { to: '/ai-voice/providers', icon: Settings2, label: 'Provider', tab: 'providers' },
+// Grouped AI Voice sub-navigation
+const aiVoiceGroups = [
+  {
+    label: 'Übersicht',
+    items: [
+      { to: '/ai-voice/dashboard', icon: BarChart3, label: 'Dashboard', tab: 'dashboard' },
+      { to: '/ai-voice/live', icon: Activity, label: 'Live Monitoring', tab: 'live' },
+      { to: '/ai-voice/alerts', icon: Bell, label: 'Warnungen', tab: 'alerts' },
+    ],
+  },
+  {
+    label: 'Betrieb',
+    items: [
+      { to: '/ai-voice/studio', icon: Bot, label: 'Agenten', tab: 'studio' },
+      { to: '/ai-voice/deployments', icon: Rocket, label: 'Deployments', tab: 'deployments' },
+      { to: '/ai-voice/campaigns', icon: Megaphone, label: 'Kampagnen', tab: 'campaigns' },
+      { to: '/ai-voice/sessions', icon: PhoneCall, label: 'Sessions', tab: 'sessions' },
+      { to: '/ai-voice/escalations', icon: AlertTriangle, label: 'Eskalationen', tab: 'escalations' },
+    ],
+  },
+  {
+    label: 'Wissen & Steuerung',
+    items: [
+      { to: '/ai-voice/knowledge', icon: BookOpen, label: 'Knowledge Base', tab: 'knowledge' },
+      { to: '/ai-voice/actions', icon: Zap, label: 'Action Rules', tab: 'actions' },
+      { to: '/ai-voice/compliance', icon: Shield, label: 'Compliance Rules', tab: 'compliance' },
+      { to: '/ai-voice/guidelines', icon: MessageSquare, label: 'Gesprächsrichtlinien', tab: 'guidelines' },
+    ],
+  },
+  {
+    label: 'Infrastruktur',
+    items: [
+      { to: '/ai-voice/numbers', icon: Hash, label: 'Voice Numbers', tab: 'numbers' },
+      { to: '/ai-voice/providers', icon: Settings2, label: 'Provider', tab: 'providers' },
+      { to: '/ai-voice/api-webhooks', icon: Webhook, label: 'API & Webhooks', tab: 'api-webhooks' },
+      { to: '/ai-voice/costs', icon: DollarSign, label: 'Cost Control', tab: 'costs' },
+      { to: '/ai-voice/kill-switch', icon: XOctagon, label: 'Kill Switch', tab: 'kill-switch' },
+    ],
+  },
+  {
+    label: 'Qualität & Analyse',
+    items: [
+      { to: '/ai-voice/analytics', icon: TrendingUp, label: 'Analytics', tab: 'analytics' },
+      { to: '/ai-voice/audit', icon: FileSearch, label: 'Audit Log', tab: 'audit' },
+      { to: '/ai-voice/reviews', icon: Eye, label: 'Session Reviews', tab: 'reviews' },
+      { to: '/ai-voice/test', icon: FlaskConical, label: 'Test Center', tab: 'test' },
+    ],
+  },
+  {
+    label: 'Dokumentation',
+    items: [
+      { to: '/ai-voice/docs', icon: FileText, label: 'Dokumentation', tab: 'docs' },
+    ],
+  },
 ];
 
 const allBottomItems = [
@@ -42,20 +81,20 @@ const allBottomItems = [
   { to: '/help', icon: HelpCircle, label: 'Hilfe-Center', roles: null, excludeRoles: [] as string[] },
 ];
 
-function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed, indent = false }: { to: string; icon: React.ElementType; label: string; isActive: boolean; collapsed: boolean; indent?: boolean }) {
+function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed, indent = false, small = false }: { to: string; icon: React.ElementType; label: string; isActive: boolean; collapsed: boolean; indent?: boolean; small?: boolean }) {
   const link = (
     <NavLink
       to={to}
-      className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
         collapsed ? 'justify-center' : ''
-      } ${indent && !collapsed ? 'pl-9' : ''} ${
+      } ${indent && !collapsed ? 'pl-8' : ''} ${small ? 'py-1.5' : ''} ${
         isActive
           ? 'bg-sidebar-accent text-sidebar-primary shadow-sm'
           : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
       }`}
     >
-      <Icon className={`shrink-0 ${indent ? 'h-[15px] w-[15px]' : 'h-[18px] w-[18px]'}`} />
-      {!collapsed && <span className={indent ? 'text-xs' : ''}>{label}</span>}
+      <Icon className={`shrink-0 ${small ? 'h-3.5 w-3.5' : 'h-[18px] w-[18px]'}`} />
+      {!collapsed && <span className={small ? 'text-xs' : 'text-sm'}>{label}</span>}
     </NavLink>
   );
 
@@ -67,14 +106,13 @@ function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed, indent = f
       </Tooltip>
     );
   }
-
   return link;
 }
 
 export default function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut, profile, user, role, loading } = useAuth();
+  const { signOut, role, loading } = useAuth();
   const { collapsed, toggle } = useSidebarState();
   const perms = useAIVoicePermissions();
 
@@ -82,7 +120,6 @@ export default function AppSidebar() {
   const [aiVoiceOpen, setAiVoiceOpen] = useState(isAiVoiceActive);
 
   const roleReady = !loading && role !== null;
-
   const canSeeAiVoice = roleReady && perms.canAccessModule;
 
   const navItems = roleReady ? allNavItems.filter(item => {
@@ -96,19 +133,14 @@ export default function AppSidebar() {
     return true;
   }) : [];
 
-  const visibleSubItems = aiVoiceSubItems.filter(item => perms.canAccessTab(item.tab as any));
+  // Filter AI voice groups by permission
+  const visibleGroups = aiVoiceGroups
+    .map(g => ({ ...g, items: g.items.filter(item => perms.canAccessTab(item.tab as any)) }))
+    .filter(g => g.items.length > 0);
 
   const handleLogout = async () => {
     await signOut();
     navigate('/login');
-  };
-
-  const handleAiVoiceToggle = () => {
-    if (collapsed) {
-      navigate('/ai-voice/dashboard');
-      return;
-    }
-    setAiVoiceOpen(prev => !prev);
   };
 
   return (
@@ -156,8 +188,8 @@ export default function AppSidebar() {
                 ) : (
                   <>
                     <button
-                      onClick={handleAiVoiceToggle}
-                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                      onClick={() => setAiVoiceOpen(prev => !prev)}
+                      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 mt-2 ${
                         isAiVoiceActive
                           ? 'bg-sidebar-accent/40 text-sidebar-primary'
                           : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
@@ -171,10 +203,27 @@ export default function AppSidebar() {
                         <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-60" />
                       )}
                     </button>
+
                     {(aiVoiceOpen || isAiVoiceActive) && (
-                      <div className="space-y-0.5 mt-0.5">
-                        {visibleSubItems.map(({ to, icon, label }) => (
-                          <SidebarNavItem key={to} to={to} icon={icon} label={label} isActive={location.pathname === to} collapsed={false} indent />
+                      <div className="mt-1 space-y-1">
+                        {visibleGroups.map(group => (
+                          <div key={group.label}>
+                            <p className="px-8 py-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
+                              {group.label}
+                            </p>
+                            {group.items.map(item => (
+                              <SidebarNavItem
+                                key={item.to}
+                                to={item.to}
+                                icon={item.icon}
+                                label={item.label}
+                                isActive={location.pathname === item.to}
+                                collapsed={false}
+                                indent
+                                small
+                              />
+                            ))}
+                          </div>
                         ))}
                       </div>
                     )}
@@ -194,29 +243,20 @@ export default function AppSidebar() {
         {collapsed ? (
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-              <button
-                onClick={handleLogout}
-                className="flex w-full items-center justify-center rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200"
-              >
+              <button onClick={handleLogout} className="flex w-full items-center justify-center rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200">
                 <LogOut className="h-[18px] w-[18px]" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" className="font-medium">Abmelden</TooltipContent>
           </Tooltip>
         ) : (
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200"
-          >
+          <button onClick={handleLogout} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200">
             <LogOut className="h-[18px] w-[18px]" />
             Abmelden
           </button>
         )}
 
-        <button
-          onClick={toggle}
-          className="flex w-full items-center justify-center rounded-xl px-3 py-2 mt-1 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/40 transition-all duration-200"
-        >
+        <button onClick={toggle} className="flex w-full items-center justify-center rounded-xl px-3 py-2 mt-1 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/40 transition-all duration-200">
           {collapsed ? <PanelLeft className="h-[18px] w-[18px]" /> : <PanelLeftClose className="h-[18px] w-[18px]" />}
         </button>
       </div>
