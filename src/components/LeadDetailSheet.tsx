@@ -68,10 +68,12 @@ export default function LeadDetailSheet() {
     (selectedLead.status === 'controlling_approved' || selectedLead.status === 'rejected' ||
      selectedLead.status === 'management_review' || selectedLead.status === 'hr_processing' || selectedLead.status === 'hired');
 
-  // Load controlling wizard result for frozen leads (scoring + reason)
+  // Load controlling wizard result for leads that went through controlling (scoring + reason)
+  const hasControllingStatus = selectedLead != null &&
+    ['controlling_approved', 'rejected', 'management_review', 'hr_processing', 'hired'].includes(selectedLead.status);
   const [controllingResult, setControllingResult] = useState<{ scoring?: string; reason?: string; action?: string } | null>(null);
   useEffect(() => {
-    if (!selectedLead || !isFrozenForEmployee) { setControllingResult(null); return; }
+    if (!selectedLead || !hasControllingStatus) { setControllingResult(null); return; }
     supabase.from('status_wizard_results').select('answers, feedback, wizard_type')
       .eq('lead_id', selectedLead.id).eq('wizard_type', 'controlling_approval')
       .order('created_at', { ascending: false }).limit(1)
@@ -81,7 +83,7 @@ export default function LeadDetailSheet() {
           setControllingResult({ scoring: a?.scoring, reason: data[0].feedback || a?.reject_reason, action: a?.controlling_action || a?.action });
         } else { setControllingResult(null); }
       });
-  }, [selectedLead?.id, isFrozenForEmployee]);
+  }, [selectedLead?.id, hasControllingStatus]);
 
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
@@ -333,7 +335,7 @@ export default function LeadDetailSheet() {
                       </div>
                     </div>
                   ) : (
-                  <div className="p-4">
+                  <div className="p-4 space-y-4">
                     <LeadActionPanel
                       leadId={selectedLead.id}
                       leadName={selectedLead.name}
@@ -344,6 +346,37 @@ export default function LeadDetailSheet() {
                       }}
                       onNavigateToTab={(tab) => setRightTab(tab as any)}
                     />
+                    {/* Controlling Scoring & Begründung for superadmins/review roles */}
+                    {controllingResult && !isFrozenForEmployee && (
+                      <div className="rounded-xl border border-cyan-200 bg-cyan-50/50 p-3 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Shield className="h-4 w-4 text-cyan-700" />
+                          <h4 className="text-xs font-bold text-cyan-800">Controlling Entscheid</h4>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg bg-background p-2.5 border">
+                          <span className="text-xs text-muted-foreground">Entscheid</span>
+                          <span className={cn("text-xs font-bold",
+                            controllingResult.action === 'selektionieren' ? 'text-emerald-700' : 'text-destructive'
+                          )}>
+                            {controllingResult.action === 'selektionieren' ? 'Selektioniert' : 'Abgelehnt'}
+                          </span>
+                        </div>
+                        {controllingResult.scoring && (
+                          <div className="flex items-center justify-between rounded-lg bg-background p-2.5 border">
+                            <span className="text-xs text-muted-foreground">Scoring</span>
+                            <span className="text-xs font-bold">
+                              {controllingResult.scoring === 'perfekt' ? 'Perfekt' : controllingResult.scoring === 'sehr_gut' ? 'Sehr gut' : 'Gut'}
+                            </span>
+                          </div>
+                        )}
+                        {controllingResult.reason && (
+                          <div className="rounded-lg bg-background p-2.5 border">
+                            <span className="text-xs text-muted-foreground block mb-1">Begründung</span>
+                            <p className="text-xs">{controllingResult.reason}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   )}
 
