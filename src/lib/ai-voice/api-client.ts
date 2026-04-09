@@ -25,15 +25,15 @@ function ok<T>(data: T): ApiResponse<T> {
   return { success: true, data, meta: { timestamp: new Date().toISOString(), requestId: crypto.randomUUID() } };
 }
 
-function err(e: unknown): ApiResponse {
-  if (e instanceof ApiError) return e.toResponse();
+function err(e: unknown): ApiResponse<any> {
+  if (e instanceof ApiError) return e.toResponse() as ApiResponse<any>;
   const msg = e instanceof Error ? e.message : 'Unknown error';
-  return new ApiError('INTERNAL', msg, 500).toResponse();
+  return new ApiError('INTERNAL', msg, 500).toResponse() as ApiResponse<any>;
 }
 
 async function paginate<T>(
   table: string,
-  filters: PaginationParams & Record<string, unknown>,
+  filters: Record<string, any>,
   buildQuery: (q: any) => any,
 ): Promise<PaginatedResponse<T>> {
   const page = Math.max(1, filters.page ?? 1);
