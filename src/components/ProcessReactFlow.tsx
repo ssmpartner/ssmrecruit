@@ -458,7 +458,7 @@ export default function ProcessReactFlow({ leads }: ProcessReactFlowProps) {
 
   // ── Render ──
   const containerClass = fullscreen
-    ? 'fixed inset-0 z-[100] bg-background flex flex-col'
+    ? 'fixed inset-0 z-40 bg-background flex flex-col'
     : 'space-y-3';
 
   return (
