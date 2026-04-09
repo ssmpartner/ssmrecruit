@@ -59,6 +59,7 @@ const DOC_SECTIONS: DocSection[] = [
       { id: 'session-lifecycle', label: 'Session-Lebenszyklus' },
       { id: 'cost-control', label: 'Kostenkontrolle' },
       { id: 'monitoring', label: 'Monitoring' },
+      { id: 'test-vs-prod', label: 'Testbetrieb vs. Produktivbetrieb' },
     ],
   },
   {
@@ -695,6 +696,61 @@ function OperationsContent() {
           <li>Provider-Health-Status</li>
           <li>Kill-Switch-Status (global und pro Agent)</li>
         </ul>
+      </DocBlock>
+
+      <DocBlock id="test-vs-prod" title="Testbetrieb vs. Produktivbetrieb" icon={Shield}>
+        <p>SSM Recruit unterscheidet klar zwischen <strong>Testbetrieb</strong> (Mock-Provider, simulierte Daten) und <strong>Produktivbetrieb</strong> (echte Provider, echte Leads).</p>
+
+        <div className="overflow-x-auto mt-3">
+          <table className="w-full text-xs border">
+            <thead>
+              <tr className="bg-muted">
+                <th className="p-2 text-left font-medium">Aspekt</th>
+                <th className="p-2 text-left font-medium">Testbetrieb</th>
+                <th className="p-2 text-left font-medium">Produktivbetrieb</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { a: 'Telefonie', t: 'Mock-Provider simuliert Anrufe', p: 'Twilio stellt echte Verbindungen her' },
+                { a: 'Voice AI', t: 'Vordefinierte Gesprächsverläufe', p: 'OpenAI Realtime verarbeitet Echtzeit-Audio' },
+                { a: 'Backend', t: 'Lokaler Mock-Orchestrator', p: 'Railway Voice Backend (deployed)' },
+                { a: 'Aktionen', t: 'Vorgeschlagen, nicht ausgeführt', p: 'Je nach Rollout-Modus ausgeführt' },
+                { a: 'Kosten', t: 'Simuliert (0 CHF real)', p: 'Echte API-Kosten' },
+                { a: 'Daten', t: 'Dummy-Leads, keine echten Änderungen', p: 'Echte Leads, echte Statusänderungen' },
+                { a: 'Compliance', t: 'Regeln geprüft ohne Konsequenz', p: 'Verstösse lösen Eskalation aus' },
+                { a: 'Health Checks', t: 'Prüfen Konfiguration und Bereitschaft', p: 'Prüfen Live-Verbindungen und Uptime' },
+              ].map(r => (
+                <tr key={r.a} className="border-t">
+                  <td className="p-2 font-medium">{r.a}</td>
+                  <td className="p-2 text-muted-foreground">{r.t}</td>
+                  <td className="p-2 text-muted-foreground">{r.p}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h4 className="font-semibold text-sm mt-4">Testarten im Test Center</h4>
+        <div className="space-y-2 mt-2">
+          {[
+            { name: 'Konfigurationstest', desc: 'Prüft ob alle Provider, URLs und Tokens konfiguriert sind.' },
+            { name: 'Agententest', desc: 'Validiert Agent-Profile (Prompt, Regeln, Knowledge).' },
+            { name: 'Kampagnentest', desc: 'Prüft ob Kampagnen mit Agenten und Zielgruppen verknüpft sind.' },
+            { name: 'Session-Orchestrator-Test', desc: 'Testet den Session-Lifecycle mit Mock-Provider.' },
+            { name: 'Action-Gateway-Test', desc: 'Validiert die 15 Action-Typen und Berechtigungen.' },
+            { name: 'OpenAI-Konfigurationstest', desc: 'Prüft Realtime-Endpoint und Session-Kontext-Builder.' },
+            { name: 'Provider-Vorbereitungstest', desc: 'Verifiziert Provider-Einträge und Twilio-Platzhalter.' },
+            { name: 'End-to-End Vorbereitungstest', desc: 'Gesamtbewertung der Produktionsbereitschaft.' },
+          ].map(t => (
+            <div key={t.name} className="p-3 rounded-lg border">
+              <p className="font-medium text-sm">{t.name}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <InfoBox type="info">Alle Tests im Test Center verwenden reale Datenbank-Abfragen. Die Ergebnisse spiegeln den tatsächlichen Konfigurationsstand wider – keine Fake-Erfolgswerte.</InfoBox>
       </DocBlock>
     </div>
   );
