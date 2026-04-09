@@ -2,8 +2,10 @@
  * AI Voice Action Gateway
  * Central orchestrator for all actions triggered by AI Voice sessions.
  * Handles execution modes: shadow, recommendation, assisted, autonomous.
+ * Integrates with SSM Recruit notifications and task system.
  */
 import { supabase } from '@/integrations/supabase/client';
+import type { NotificationType } from '@/context/notifications-context';
 
 // ── Action Types ──────────────────────────────────────────────────
 export type ActionType =
