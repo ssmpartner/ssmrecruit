@@ -108,39 +108,81 @@ export type Database = {
       }
       ai_agent_deployments: {
         Row: {
+          agency_id: string | null
           agent_id: string
+          campaign_id: string | null
+          candidate_id: string | null
           config: Json
           created_at: string
+          created_by_user: string
           deployed_at: string | null
           deployed_by: string
+          deployment_scope: string
+          end_at: string | null
           environment: string
           id: string
+          is_enabled: boolean
+          lead_source: string | null
+          priority: number
+          rollout_mode: string
+          start_at: string | null
           status: string
+          team_id: string | null
+          test_group_id: string | null
           updated_at: string
+          user_id: string | null
           version_id: string | null
         }
         Insert: {
+          agency_id?: string | null
           agent_id: string
+          campaign_id?: string | null
+          candidate_id?: string | null
           config?: Json
           created_at?: string
+          created_by_user?: string
           deployed_at?: string | null
           deployed_by?: string
+          deployment_scope?: string
+          end_at?: string | null
           environment?: string
           id?: string
+          is_enabled?: boolean
+          lead_source?: string | null
+          priority?: number
+          rollout_mode?: string
+          start_at?: string | null
           status?: string
+          team_id?: string | null
+          test_group_id?: string | null
           updated_at?: string
+          user_id?: string | null
           version_id?: string | null
         }
         Update: {
+          agency_id?: string | null
           agent_id?: string
+          campaign_id?: string | null
+          candidate_id?: string | null
           config?: Json
           created_at?: string
+          created_by_user?: string
           deployed_at?: string | null
           deployed_by?: string
+          deployment_scope?: string
+          end_at?: string | null
           environment?: string
           id?: string
+          is_enabled?: boolean
+          lead_source?: string | null
+          priority?: number
+          rollout_mode?: string
+          start_at?: string | null
           status?: string
+          team_id?: string | null
+          test_group_id?: string | null
           updated_at?: string
+          user_id?: string | null
           version_id?: string | null
         }
         Relationships: [
@@ -162,37 +204,67 @@ export type Database = {
       }
       ai_agent_versions: {
         Row: {
+          action_permissions_json: Json
           agent_id: string
           config_snapshot: Json
+          conversation_rules: Json
           created_at: string
           created_by: string
+          escalation_rules_json: Json
+          forbidden_statements: Json
           greeting_message: string
           id: string
+          is_published: boolean
+          knowledge_binding_json: Json
           notes: string
+          prompt_system: string
+          required_disclosures: Json
+          status: string
           system_prompt: string
           version: string
+          version_number: number
         }
         Insert: {
+          action_permissions_json?: Json
           agent_id: string
           config_snapshot?: Json
+          conversation_rules?: Json
           created_at?: string
           created_by?: string
+          escalation_rules_json?: Json
+          forbidden_statements?: Json
           greeting_message?: string
           id?: string
+          is_published?: boolean
+          knowledge_binding_json?: Json
           notes?: string
+          prompt_system?: string
+          required_disclosures?: Json
+          status?: string
           system_prompt?: string
           version?: string
+          version_number?: number
         }
         Update: {
+          action_permissions_json?: Json
           agent_id?: string
           config_snapshot?: Json
+          conversation_rules?: Json
           created_at?: string
           created_by?: string
+          escalation_rules_json?: Json
+          forbidden_statements?: Json
           greeting_message?: string
           id?: string
+          is_published?: boolean
+          knowledge_binding_json?: Json
           notes?: string
+          prompt_system?: string
+          required_disclosures?: Json
+          status?: string
           system_prompt?: string
           version?: string
+          version_number?: number
         }
         Relationships: [
           {
@@ -206,68 +278,119 @@ export type Database = {
       }
       ai_agents: {
         Row: {
+          active_version_id: string | null
           agency_id: string | null
           agent_type: string
+          allow_auto_actions: boolean
+          allow_human_handover: boolean
           assigned_user_id: string | null
           config: Json
           created_at: string
+          created_by: string
+          deleted_at: string | null
           description: string
+          display_name: string
           fallback_message: string
           greeting_message: string
+          greeting_text: string
           id: string
+          identity_mode: string
           is_active: boolean
+          knowledge_mode: string
           language: string
+          language_supported: string[]
           lead_sources: string[]
+          max_call_duration_seconds: number
           max_turns: number
           name: string
+          objective: string
+          require_approval_mode: boolean
+          slug: string
+          status: string
           system_prompt: string
           telephony_provider_id: string | null
           test_only: boolean
+          tone_style: string
           updated_at: string
+          updated_by: string
           voice_ai_provider_id: string | null
           voice_id: string
         }
         Insert: {
+          active_version_id?: string | null
           agency_id?: string | null
           agent_type?: string
+          allow_auto_actions?: boolean
+          allow_human_handover?: boolean
           assigned_user_id?: string | null
           config?: Json
           created_at?: string
+          created_by?: string
+          deleted_at?: string | null
           description?: string
+          display_name?: string
           fallback_message?: string
           greeting_message?: string
+          greeting_text?: string
           id?: string
+          identity_mode?: string
           is_active?: boolean
+          knowledge_mode?: string
           language?: string
+          language_supported?: string[]
           lead_sources?: string[]
+          max_call_duration_seconds?: number
           max_turns?: number
           name: string
+          objective?: string
+          require_approval_mode?: boolean
+          slug?: string
+          status?: string
           system_prompt?: string
           telephony_provider_id?: string | null
           test_only?: boolean
+          tone_style?: string
           updated_at?: string
+          updated_by?: string
           voice_ai_provider_id?: string | null
           voice_id?: string
         }
         Update: {
+          active_version_id?: string | null
           agency_id?: string | null
           agent_type?: string
+          allow_auto_actions?: boolean
+          allow_human_handover?: boolean
           assigned_user_id?: string | null
           config?: Json
           created_at?: string
+          created_by?: string
+          deleted_at?: string | null
           description?: string
+          display_name?: string
           fallback_message?: string
           greeting_message?: string
+          greeting_text?: string
           id?: string
+          identity_mode?: string
           is_active?: boolean
+          knowledge_mode?: string
           language?: string
+          language_supported?: string[]
           lead_sources?: string[]
+          max_call_duration_seconds?: number
           max_turns?: number
           name?: string
+          objective?: string
+          require_approval_mode?: boolean
+          slug?: string
+          status?: string
           system_prompt?: string
           telephony_provider_id?: string | null
           test_only?: boolean
+          tone_style?: string
           updated_at?: string
+          updated_by?: string
           voice_ai_provider_id?: string | null
           voice_id?: string
         }
@@ -295,84 +418,147 @@ export type Database = {
           },
         ]
       }
+      ai_audit_logs: {
+        Row: {
+          action: string
+          changed_at: string
+          changed_by: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          action: string
+          changed_at?: string
+          changed_by?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          action?: string
+          changed_at?: string
+          changed_by?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
       ai_compliance_rules: {
         Row: {
+          applies_to: string
           config: Json
           created_at: string
           description: string
           id: string
           is_active: boolean
           name: string
+          rule_json: Json
           rule_type: string
+          severity: string
           updated_at: string
         }
         Insert: {
+          applies_to?: string
           config?: Json
           created_at?: string
           description?: string
           id?: string
           is_active?: boolean
           name: string
+          rule_json?: Json
           rule_type?: string
+          severity?: string
           updated_at?: string
         }
         Update: {
+          applies_to?: string
           config?: Json
           created_at?: string
           description?: string
           id?: string
           is_active?: boolean
           name?: string
+          rule_json?: Json
           rule_type?: string
+          severity?: string
           updated_at?: string
         }
         Relationships: []
       }
       ai_provider_configs: {
         Row: {
+          account_sid_placeholder: string
           api_key_placeholder: string
+          auth_type: string
           config: Json
           created_at: string
           endpoint_url: string
           id: string
+          is_default: boolean
           name: string
           production_mode: boolean
           provider_category: string
+          provider_code: string
           provider_type: string
+          region: string
           sandbox_mode: boolean
+          secret_placeholder: string
           status: string
           updated_at: string
           webhook_url_placeholder: string
+          websocket_url: string
         }
         Insert: {
+          account_sid_placeholder?: string
           api_key_placeholder?: string
+          auth_type?: string
           config?: Json
           created_at?: string
           endpoint_url?: string
           id?: string
+          is_default?: boolean
           name: string
           production_mode?: boolean
           provider_category?: string
+          provider_code?: string
           provider_type?: string
+          region?: string
           sandbox_mode?: boolean
+          secret_placeholder?: string
           status?: string
           updated_at?: string
           webhook_url_placeholder?: string
+          websocket_url?: string
         }
         Update: {
+          account_sid_placeholder?: string
           api_key_placeholder?: string
+          auth_type?: string
           config?: Json
           created_at?: string
           endpoint_url?: string
           id?: string
+          is_default?: boolean
           name?: string
           production_mode?: boolean
           provider_category?: string
+          provider_code?: string
           provider_type?: string
+          region?: string
           sandbox_mode?: boolean
+          secret_placeholder?: string
           status?: string
           updated_at?: string
           webhook_url_placeholder?: string
+          websocket_url?: string
         }
         Relationships: []
       }
@@ -380,26 +566,50 @@ export type Database = {
         Row: {
           action_data: Json
           action_type: string
+          ai_agent_id: string | null
           created_at: string
+          executed_by: string
+          execution_mode: string
           id: string
+          payload_json: Json
+          reason: string
           result: string
+          result_json: Json
           session_id: string
+          target_id: string
+          target_type: string
         }
         Insert: {
           action_data?: Json
           action_type?: string
+          ai_agent_id?: string | null
           created_at?: string
+          executed_by?: string
+          execution_mode?: string
           id?: string
+          payload_json?: Json
+          reason?: string
           result?: string
+          result_json?: Json
           session_id: string
+          target_id?: string
+          target_type?: string
         }
         Update: {
           action_data?: Json
           action_type?: string
+          ai_agent_id?: string | null
           created_at?: string
+          executed_by?: string
+          execution_mode?: string
           id?: string
+          payload_json?: Json
+          reason?: string
           result?: string
+          result_json?: Json
           session_id?: string
+          target_id?: string
+          target_type?: string
         }
         Relationships: [
           {
@@ -417,16 +627,24 @@ export type Database = {
           agent_id: string
           campaign_type: string
           config: Json
+          cost_limit_daily: number
+          cost_limit_total: number
           created_at: string
+          created_by: string
           description: string
           id: string
           max_calls_per_day: number
           name: string
+          retry_rules_json: Json
           schedule_end: string | null
           schedule_start: string | null
+          scheduling_rules_json: Json
+          source_filters_json: Json
           status: string
           target_lead_sources: string[]
+          target_scope_json: Json
           target_statuses: string[]
+          timezone: string
           updated_at: string
         }
         Insert: {
@@ -434,16 +652,24 @@ export type Database = {
           agent_id: string
           campaign_type?: string
           config?: Json
+          cost_limit_daily?: number
+          cost_limit_total?: number
           created_at?: string
+          created_by?: string
           description?: string
           id?: string
           max_calls_per_day?: number
           name: string
+          retry_rules_json?: Json
           schedule_end?: string | null
           schedule_start?: string | null
+          scheduling_rules_json?: Json
+          source_filters_json?: Json
           status?: string
           target_lead_sources?: string[]
+          target_scope_json?: Json
           target_statuses?: string[]
+          timezone?: string
           updated_at?: string
         }
         Update: {
@@ -451,16 +677,24 @@ export type Database = {
           agent_id?: string
           campaign_type?: string
           config?: Json
+          cost_limit_daily?: number
+          cost_limit_total?: number
           created_at?: string
+          created_by?: string
           description?: string
           id?: string
           max_calls_per_day?: number
           name?: string
+          retry_rules_json?: Json
           schedule_end?: string | null
           schedule_start?: string | null
+          scheduling_rules_json?: Json
+          source_filters_json?: Json
           status?: string
           target_lead_sources?: string[]
+          target_scope_json?: Json
           target_statuses?: string[]
+          timezone?: string
           updated_at?: string
         }
         Relationships: [
@@ -489,8 +723,13 @@ export type Database = {
           currency: string
           description: string
           id: string
+          logged_at: string
           provider_id: string | null
+          provider_name: string
           session_id: string | null
+          total_cost: number
+          unit_price: number
+          units: number
         }
         Insert: {
           agent_id?: string | null
@@ -500,8 +739,13 @@ export type Database = {
           currency?: string
           description?: string
           id?: string
+          logged_at?: string
           provider_id?: string | null
+          provider_name?: string
           session_id?: string | null
+          total_cost?: number
+          unit_price?: number
+          units?: number
         }
         Update: {
           agent_id?: string | null
@@ -511,8 +755,13 @@ export type Database = {
           currency?: string
           description?: string
           id?: string
+          logged_at?: string
           provider_id?: string | null
+          provider_name?: string
           session_id?: string | null
+          total_cost?: number
+          unit_price?: number
+          units?: number
         }
         Relationships: [
           {
@@ -542,7 +791,11 @@ export type Database = {
         Row: {
           agent_id: string
           assigned_employee_id: string | null
+          assigned_to_role: string
+          assigned_to_user_id: string | null
           created_at: string
+          due_at: string | null
+          escalation_type: string
           id: string
           lead_id: string | null
           priority: string
@@ -556,7 +809,11 @@ export type Database = {
         Insert: {
           agent_id: string
           assigned_employee_id?: string | null
+          assigned_to_role?: string
+          assigned_to_user_id?: string | null
           created_at?: string
+          due_at?: string | null
+          escalation_type?: string
           id?: string
           lead_id?: string | null
           priority?: string
@@ -570,7 +827,11 @@ export type Database = {
         Update: {
           agent_id?: string
           assigned_employee_id?: string | null
+          assigned_to_role?: string
+          assigned_to_user_id?: string | null
           created_at?: string
+          due_at?: string | null
+          escalation_type?: string
           id?: string
           lead_id?: string | null
           priority?: string
@@ -615,36 +876,66 @@ export type Database = {
       ai_voice_knowledge_items: {
         Row: {
           agent_id: string | null
+          approval_status: string
+          approved_for_live_calls: boolean
           category: string
           content: string
+          content_type: string
           created_at: string
           id: string
           is_active: boolean
+          language: string
+          owner_id: string
+          risk_class: string
+          scope_type: string
           tags: string[]
           title: string
           updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+          version: number
         }
         Insert: {
           agent_id?: string | null
+          approval_status?: string
+          approved_for_live_calls?: boolean
           category?: string
           content?: string
+          content_type?: string
           created_at?: string
           id?: string
           is_active?: boolean
+          language?: string
+          owner_id?: string
+          risk_class?: string
+          scope_type?: string
           tags?: string[]
           title: string
           updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+          version?: number
         }
         Update: {
           agent_id?: string | null
+          approval_status?: string
+          approved_for_live_calls?: boolean
           category?: string
           content?: string
+          content_type?: string
           created_at?: string
           id?: string
           is_active?: boolean
+          language?: string
+          owner_id?: string
+          risk_class?: string
+          scope_type?: string
           tags?: string[]
           title?: string
           updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+          version?: number
         }
         Relationships: [
           {
@@ -660,40 +951,64 @@ export type Database = {
         Row: {
           agency_id: string | null
           agent_id: string | null
+          country: string
           created_at: string
           direction: string
           display_name: string
           id: string
+          label: string
+          number_type: string
           phone_number: string
           provider_id: string | null
           provider_number_id: string
+          region: string
+          routing_rules_json: Json
           status: string
+          supports_inbound: boolean
+          supports_outbound: boolean
+          supports_recording: boolean
           updated_at: string
         }
         Insert: {
           agency_id?: string | null
           agent_id?: string | null
+          country?: string
           created_at?: string
           direction?: string
           display_name?: string
           id?: string
+          label?: string
+          number_type?: string
           phone_number: string
           provider_id?: string | null
           provider_number_id?: string
+          region?: string
+          routing_rules_json?: Json
           status?: string
+          supports_inbound?: boolean
+          supports_outbound?: boolean
+          supports_recording?: boolean
           updated_at?: string
         }
         Update: {
           agency_id?: string | null
           agent_id?: string | null
+          country?: string
           created_at?: string
           direction?: string
           display_name?: string
           id?: string
+          label?: string
+          number_type?: string
           phone_number?: string
           provider_id?: string | null
           provider_number_id?: string
+          region?: string
+          routing_rules_json?: Json
           status?: string
+          supports_inbound?: boolean
+          supports_outbound?: boolean
+          supports_recording?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -722,63 +1037,111 @@ export type Database = {
       }
       ai_voice_sessions: {
         Row: {
+          agency_id: string | null
           agent_id: string
+          assigned_user_id: string | null
           campaign_id: string | null
+          candidate_id: string | null
+          cost_ai: number
+          cost_telephony: number
+          cost_total: number
           created_at: string
           direction: string
           duration_seconds: number
           ended_at: string | null
+          escalation_status: string
           id: string
           is_test: boolean
           lead_id: string | null
           metadata: Json
           number_id: string | null
           outcome: string
+          phone_number_from: string
+          phone_number_to: string
+          provider_call_id: string
+          provider_id: string | null
           recording_url: string
+          result_reason: string
+          result_type: string
           sentiment: string
+          session_uid: string
           started_at: string | null
           status: string
           summary: string
+          summary_status: string
+          transcript_status: string
           updated_at: string
         }
         Insert: {
+          agency_id?: string | null
           agent_id: string
+          assigned_user_id?: string | null
           campaign_id?: string | null
+          candidate_id?: string | null
+          cost_ai?: number
+          cost_telephony?: number
+          cost_total?: number
           created_at?: string
           direction?: string
           duration_seconds?: number
           ended_at?: string | null
+          escalation_status?: string
           id?: string
           is_test?: boolean
           lead_id?: string | null
           metadata?: Json
           number_id?: string | null
           outcome?: string
+          phone_number_from?: string
+          phone_number_to?: string
+          provider_call_id?: string
+          provider_id?: string | null
           recording_url?: string
+          result_reason?: string
+          result_type?: string
           sentiment?: string
+          session_uid?: string
           started_at?: string | null
           status?: string
           summary?: string
+          summary_status?: string
+          transcript_status?: string
           updated_at?: string
         }
         Update: {
+          agency_id?: string | null
           agent_id?: string
+          assigned_user_id?: string | null
           campaign_id?: string | null
+          candidate_id?: string | null
+          cost_ai?: number
+          cost_telephony?: number
+          cost_total?: number
           created_at?: string
           direction?: string
           duration_seconds?: number
           ended_at?: string | null
+          escalation_status?: string
           id?: string
           is_test?: boolean
           lead_id?: string | null
           metadata?: Json
           number_id?: string | null
           outcome?: string
+          phone_number_from?: string
+          phone_number_to?: string
+          provider_call_id?: string
+          provider_id?: string | null
           recording_url?: string
+          result_reason?: string
+          result_type?: string
           sentiment?: string
+          session_uid?: string
           started_at?: string | null
           status?: string
           summary?: string
+          summary_status?: string
+          transcript_status?: string
           updated_at?: string
         }
         Relationships: [
@@ -814,39 +1177,63 @@ export type Database = {
       }
       ai_voice_test_runs: {
         Row: {
+          actual_result_json: Json
           agent_id: string
           created_at: string
           duration_ms: number
+          expected_result_json: Json
           id: string
+          notes: string
+          pass_fail_status: string
           result: Json
           run_by: string
           scenario_config: Json
           scenario_name: string
           status: string
+          target_id: string
+          test_mode: string
+          test_name: string
+          test_target_type: string
           version_id: string | null
         }
         Insert: {
+          actual_result_json?: Json
           agent_id: string
           created_at?: string
           duration_ms?: number
+          expected_result_json?: Json
           id?: string
+          notes?: string
+          pass_fail_status?: string
           result?: Json
           run_by?: string
           scenario_config?: Json
           scenario_name?: string
           status?: string
+          target_id?: string
+          test_mode?: string
+          test_name?: string
+          test_target_type?: string
           version_id?: string | null
         }
         Update: {
+          actual_result_json?: Json
           agent_id?: string
           created_at?: string
           duration_ms?: number
+          expected_result_json?: Json
           id?: string
+          notes?: string
+          pass_fail_status?: string
           result?: Json
           run_by?: string
           scenario_config?: Json
           scenario_name?: string
           status?: string
+          target_id?: string
+          test_mode?: string
+          test_name?: string
+          test_target_type?: string
           version_id?: string | null
         }
         Relationships: [
@@ -868,38 +1255,53 @@ export type Database = {
       }
       ai_voice_turns: {
         Row: {
+          action_executed_json: Json
+          action_suggested_json: Json
           audio_url: string
           confidence: number
           created_at: string
           duration_ms: number
           id: string
+          interpreted_intent: string
+          latency_ms: number
           metadata: Json
           role: string
           session_id: string
+          speaker: string
           transcript: string
           turn_index: number
         }
         Insert: {
+          action_executed_json?: Json
+          action_suggested_json?: Json
           audio_url?: string
           confidence?: number
           created_at?: string
           duration_ms?: number
           id?: string
+          interpreted_intent?: string
+          latency_ms?: number
           metadata?: Json
           role?: string
           session_id: string
+          speaker?: string
           transcript?: string
           turn_index?: number
         }
         Update: {
+          action_executed_json?: Json
+          action_suggested_json?: Json
           audio_url?: string
           confidence?: number
           created_at?: string
           duration_ms?: number
           id?: string
+          interpreted_intent?: string
+          latency_ms?: number
           metadata?: Json
           role?: string
           session_id?: string
+          speaker?: string
           transcript?: string
           turn_index?: number
         }
