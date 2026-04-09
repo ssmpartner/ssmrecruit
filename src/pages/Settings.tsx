@@ -1140,6 +1140,12 @@ function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
           icon={<RefreshCw className="h-4 w-4" />} />
       </div>
 
+      {/* ── Report Briefvorlage (Letterhead) ── */}
+      <LetterheadSettings toast={toast} />
+
+      {/* ── Beispiel Assessment Report ── */}
+      <SampleReportDownload toast={toast} />
+
       {/* Intro Text */}
       <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
         <h3 className="text-sm font-semibold flex items-center gap-2"><FileText className="h-4 w-4 text-muted-foreground" /> Einleitungstext</h3>
