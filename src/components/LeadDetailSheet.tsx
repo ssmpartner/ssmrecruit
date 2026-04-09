@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
 import ApprovalLeadView from './ApprovalLeadView';
+import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Calendar } from '@/components/ui/calendar';
@@ -61,6 +62,26 @@ export default function LeadDetailSheet() {
   const [confirmReset, setConfirmReset] = useState(false);
   const leadIsNew = selectedLead?.status === 'new';
   const isMarkedViewed = selectedLead?.isRead ?? false;
+
+  // Freeze logic: after Controlling decision, employees lose access to phone/email/docs and lead is read-only
+  const isFrozenForEmployee = !isSuperadmin && !isReviewRole && selectedLead != null &&
+    (selectedLead.status === 'controlling_approved' || selectedLead.status === 'rejected' ||
+     selectedLead.status === 'management_review' || selectedLead.status === 'hr_processing' || selectedLead.status === 'hired');
+
+  // Load controlling wizard result for frozen leads (scoring + reason)
+  const [controllingResult, setControllingResult] = useState<{ scoring?: string; reason?: string; action?: string } | null>(null);
+  useEffect(() => {
+    if (!selectedLead || !isFrozenForEmployee) { setControllingResult(null); return; }
+    supabase.from('status_wizard_results').select('answers, feedback, wizard_type')
+      .eq('lead_id', selectedLead.id).eq('wizard_type', 'controlling_approval')
+      .order('created_at', { ascending: false }).limit(1)
+      .then(({ data }) => {
+        if (data?.[0]) {
+          const a = data[0].answers as any;
+          setControllingResult({ scoring: a?.scoring, reason: data[0].feedback || a?.reject_reason, action: a?.controlling_action || a?.action });
+        } else { setControllingResult(null); }
+      });
+  }, [selectedLead?.id, isFrozenForEmployee]);
 
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
@@ -190,17 +211,19 @@ export default function LeadDetailSheet() {
   const inputErr = (field: string) => fieldErrors[field] ? inputCls + ' border-destructive ring-1 ring-destructive/30' : inputCls;
 
   const allRightTabs = [
-    { key: 'info' as const, label: 'Info', icon: User, hideForReview: false },
-    { key: 'insights' as const, label: 'Insights', icon: Brain, hideForReview: false },
-    { key: 'documents' as const, label: 'Dokumente', icon: Upload, hideForReview: false },
-    { key: 'flow' as const, label: 'Flow', icon: Workflow, hideForReview: true },
-    { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length, hideForReview: true },
-    { key: 'activity' as const, label: 'Aktivität', icon: Activity, hideForReview: false },
-    { key: 'status' as const, label: 'Status', icon: FileText, hideForReview: false },
+    { key: 'info' as const, label: 'Info', icon: User, hideForReview: false, hideWhenFrozen: false },
+    { key: 'insights' as const, label: 'Insights', icon: Brain, hideForReview: false, hideWhenFrozen: false },
+    { key: 'documents' as const, label: 'Dokumente', icon: Upload, hideForReview: false, hideWhenFrozen: true },
+    { key: 'flow' as const, label: 'Flow', icon: Workflow, hideForReview: true, hideWhenFrozen: false },
+    { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length, hideForReview: true, hideWhenFrozen: false },
+    { key: 'activity' as const, label: 'Aktivität', icon: Activity, hideForReview: false, hideWhenFrozen: false },
+    { key: 'status' as const, label: 'Status', icon: FileText, hideForReview: false, hideWhenFrozen: false },
   ];
   const rightTabs = isReviewRole
     ? allRightTabs.filter(t => !t.hideForReview)
-    : allRightTabs;
+    : isFrozenForEmployee
+      ? allRightTabs.filter(t => !t.hideWhenFrozen)
+      : allRightTabs;
 
   return (
     <>
@@ -271,6 +294,45 @@ export default function LeadDetailSheet() {
               <div className="flex-1 flex overflow-hidden">
                 {/* LEFT: Actions Panel */}
                 <div className="w-[360px] shrink-0 border-r overflow-y-auto">
+                  {isFrozenForEmployee ? (
+                    <div className="p-4 space-y-4">
+                      <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <EyeOff className="h-5 w-5 text-amber-700" />
+                          <h3 className="text-sm font-bold text-amber-800">Lead gesperrt (Read-Only)</h3>
+                        </div>
+                        <p className="text-xs text-amber-700 mb-3">
+                          Dieser Lead wurde vom Controlling geprüft. Telefon, E-Mail und Dokumente sind nicht mehr zugänglich.
+                        </p>
+                        {controllingResult && (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between rounded-lg bg-background p-2.5 border">
+                              <span className="text-xs text-muted-foreground">Status</span>
+                              <span className={cn("text-xs font-bold",
+                                controllingResult.action === 'selektionieren' ? 'text-emerald-700' : 'text-destructive'
+                              )}>
+                                {controllingResult.action === 'selektionieren' ? 'Selektioniert' : 'Abgelehnt'}
+                              </span>
+                            </div>
+                            {controllingResult.scoring && (
+                              <div className="flex items-center justify-between rounded-lg bg-background p-2.5 border">
+                                <span className="text-xs text-muted-foreground">Scoring</span>
+                                <span className="text-xs font-bold">
+                                  {controllingResult.scoring === 'perfekt' ? 'Perfekt' : controllingResult.scoring === 'sehr_gut' ? 'Sehr gut' : 'Gut'}
+                                </span>
+                              </div>
+                            )}
+                            {controllingResult.reason && (
+                              <div className="rounded-lg bg-background p-2.5 border">
+                                <span className="text-xs text-muted-foreground block mb-1">Begründung</span>
+                                <p className="text-xs">{controllingResult.reason}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
                   <div className="p-4">
                     <LeadActionPanel
                       leadId={selectedLead.id}
@@ -283,6 +345,7 @@ export default function LeadDetailSheet() {
                       onNavigateToTab={(tab) => setRightTab(tab as any)}
                     />
                   </div>
+                  )}
 
                   {/* Quick Video Call CTA */}
                   {(() => {
@@ -335,7 +398,7 @@ export default function LeadDetailSheet() {
                     </div>
                     {/* Edit/Save in header - hidden for review roles */}
                     <div className="ml-auto shrink-0 pl-2">
-                      {rightTab === 'info' && !isReviewRole && (
+                      {rightTab === 'info' && !isReviewRole && !isFrozenForEmployee && (
                         !editing ? (
                            <button onClick={startEdit} className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
                              <Edit3 className="h-3.5 w-3.5" /> Bearbeiten
@@ -401,8 +464,8 @@ export default function LeadDetailSheet() {
                             })}
                           </section>
                         )}
-                        {/* Assignment - hidden for review roles */}
-                        {!isReviewRole && (
+                        {/* Assignment - hidden for review roles and frozen leads */}
+                        {!isReviewRole && !isFrozenForEmployee && (
                           <section className="rounded-lg border bg-muted/30 p-3 space-y-2">
                             <h4 className="text-sm font-semibold flex items-center gap-1.5"><UserCog className="h-4 w-4" /> Zuweisung</h4>
                             <div className="grid grid-cols-2 gap-3">
@@ -548,8 +611,8 @@ export default function LeadDetailSheet() {
                            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
                              {[
                                 ['Anrede', selectedLead.salutation],
-                                ['E-Mail', selectedLead.email],
-                                ['Telefon', selectedLead.phone],
+                                ...(!isFrozenForEmployee ? [['E-Mail', selectedLead.email]] : []),
+                                ...(!isFrozenForEmployee ? [['Telefon', selectedLead.phone]] : []),
                                 ['Position', selectedLead.position],
                                 ['Leaddatum', new Date(selectedLead.createdAt).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
                                ['Adresse', selectedLead.address],
