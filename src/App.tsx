@@ -62,9 +62,9 @@ function FullScreenLoader() {
 
 // Routes allowed for each review role
 const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
-  controlling: ['/', '/leads'],
-  geschaeftsleitung: ['/', '/leads'],
-  hr: ['/', '/leads'],
+  controlling: ['/', '/leads', '/help'],
+  geschaeftsleitung: ['/', '/leads', '/help'],
+  hr: ['/', '/leads', '/help'],
 };
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
