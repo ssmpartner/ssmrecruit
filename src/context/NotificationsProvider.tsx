@@ -6,10 +6,22 @@ import {
   type NotificationPreferences,
 } from './notifications-context';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
+
+// Notification types allowed for Controlling role
+const CONTROLLING_ALLOWED_TYPES = new Set([
+  'lead_assigned',
+  'lead_status_change',
+  'process_step_changed',
+  'task_created',
+  'task_overdue',
+  'system',
+]);
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [preferences, setPreferences] = useState<NotificationPreferences>(defaultNotificationPreferences);
+  const { isControlling } = useAuth();
 
   // Load notifications from DB
   useEffect(() => {
@@ -30,7 +42,28 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     load();
   }, []);
 
-  const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
+  // For Controlling: track which leads belong to their scope
+  const [controllingLeadIds, setControllingLeadIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!isControlling) return;
+    supabase.from('leads').select('id').eq('status', 'ready_for_controlling')
+      .then(({ data }) => {
+        if (data) setControllingLeadIds(new Set(data.map(l => l.id)));
+      });
+  }, [isControlling]);
+
+  // Filter notifications for Controlling role
+  const filteredNotifications = useMemo(() => {
+    if (!isControlling) return notifications;
+    return notifications.filter(n => {
+      if (!CONTROLLING_ALLOWED_TYPES.has(n.type)) return false;
+      if (n.leadId && !controllingLeadIds.has(n.leadId)) return false;
+      return true;
+    });
+  }, [notifications, isControlling, controllingLeadIds]);
+
+  const unreadCount = useMemo(() => filteredNotifications.filter((n) => !n.read).length, [filteredNotifications]);
 
   const addNotification = useCallback(
     async (data: Omit<AppNotification, 'id' | 'read' | 'createdAt'>) => {
@@ -99,7 +132,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   return (
     <NotificationsContext.Provider
-      value={{ notifications, unreadCount, preferences, addNotification, markAsRead, markAllAsRead, clearAll, updatePreferences }}
+      value={{ notifications: filteredNotifications, unreadCount, preferences, addNotification, markAsRead, markAllAsRead, clearAll, updatePreferences }}
     >
       {children}
     </NotificationsContext.Provider>
