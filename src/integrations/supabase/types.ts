@@ -357,6 +357,33 @@ export type Database = {
         }
         Relationships: []
       }
+      career_plans: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          levels: Json
+          position: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          levels?: Json
+          position: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          levels?: Json
+          position?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       disc_results: {
         Row: {
           answers: Json
