@@ -23,3 +23,5 @@ project_id = "adettewqzanmkgnnjlop"
     verify_jwt = true
   [functions.tiktok-webhook]
     verify_jwt = false
+  [functions.ai-voice-gateway]
+    verify_jwt = false

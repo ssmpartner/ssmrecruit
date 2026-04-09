@@ -97,164 +97,154 @@ function resolveExecutionMode(rollout: RolloutMode, actionDef: ActionDef): Execu
 // ── DB helper (bypass strict types) ───────────────────────────────
 const db = { from: (t: string) => supabase.from(t as any) };
 
-// ── Core Gateway ──────────────────────────────────────────────────
+// ── Edge Function Gateway Client ──────────────────────────────────
+// All actions are routed through the server-side Edge Function
+// `ai-voice-gateway` which enforces rules, auth, and logging.
+// The frontend NEVER executes actions directly against the DB.
+
+const GATEWAY_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-voice-gateway`;
+
+async function gatewayFetch(path: string, options: RequestInit = {}) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) throw new Error('Nicht authentifiziert – bitte einloggen');
+
+  const res = await fetch(`${GATEWAY_URL}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      ...(options.headers || {}),
+    },
+  });
+
+  const body = await res.json();
+  if (!res.ok || !body.success) {
+    throw new Error(body.error?.message || `Gateway error ${res.status}`);
+  }
+  return body.data;
+}
+
+// ── Core Gateway (routes through Edge Function) ───────────────────
 export const actionGateway = {
   /**
-   * Process an action request through the gateway.
-   * Determines execution mode based on rollout and logs everything.
+   * Process an action request through the server-side gateway.
    */
   async processAction(request: ActionRequest): Promise<ActionResult> {
-    const actionDef = ACTION_DEFINITIONS[request.action_type];
-    const executionMode = resolveExecutionMode(request.rollout_mode, actionDef);
-    const timestamp = new Date().toISOString();
-    const resultId = crypto.randomUUID();
-
-    let success = true;
-    let resultMessage = '';
-
-    // Execute the action if mode allows
-    if (executionMode === 'auto_executed' || executionMode === 'approved') {
-      try {
-        resultMessage = await executeAction(request);
-      } catch (err: any) {
-        success = false;
-        resultMessage = err.message || 'Execution failed';
-      }
-    } else if (executionMode === 'suggested') {
-      resultMessage = `Aktion "${actionDef.label}" vorgeschlagen – wartet auf Bestätigung`;
-    } else if (executionMode === 'shadow') {
-      resultMessage = `Shadow-Modus: "${actionDef.label}" protokolliert, nicht ausgeführt`;
-    } else {
-      resultMessage = `Aktion "${actionDef.label}" blockiert (Rollout-Modus: ${request.rollout_mode})`;
-    }
-
-    // Log to ai_voice_action_logs
-    await db.from('ai_voice_action_logs').insert({
-      session_id: request.session_id,
-      ai_agent_id: request.ai_agent_id,
-      action_type: request.action_type,
-      target_type: request.lead_id ? 'lead' : 'system',
-      target_id: request.lead_id || request.candidate_id || '',
-      execution_mode: executionMode,
-      payload_json: request.payload,
-      result: success ? 'success' : 'failed',
-      result_json: { message: resultMessage },
-      reason: request.reason,
-      executed_by: 'ai_voice_agent',
-    } as any);
-
-    // Log to lead activity timeline
-    if (request.lead_id) {
-      await logToTimeline(request, executionMode, actionDef, resultMessage);
-    }
-
-    // Create notification for relevant actions
-    await createAIVoiceNotification(request, executionMode, actionDef, resultMessage);
-
-    // Create tasks for escalation-type actions
-    await createAIVoiceTask(request, executionMode, actionDef);
-
-    return { id: resultId, action_type: request.action_type, execution_mode: executionMode, success, result_message: resultMessage, timestamp };
+    const data = await gatewayFetch('/execute', {
+      method: 'POST',
+      body: JSON.stringify({
+        action_type: request.action_type,
+        source: request.source,
+        source_runtime: 'ssm_recruit_frontend',
+        session_id: request.session_id,
+        ai_agent_id: request.ai_agent_id,
+        lead_id: request.lead_id,
+        candidate_id: request.candidate_id,
+        execution_mode: request.rollout_mode,
+        reason: request.reason,
+        confidence: request.confidence,
+        payload: request.payload,
+        audit_metadata: { origin: 'frontend' },
+      }),
+    });
+    return {
+      id: data.id,
+      action_type: data.action_type,
+      execution_mode: data.execution_mode,
+      success: data.success,
+      result_message: data.message,
+      timestamp: data.timestamp,
+    };
   },
 
   /**
-   * Approve a previously suggested action.
+   * Approve a previously suggested action via server-side gateway.
    */
   async approveAction(actionLogId: string, userId: string): Promise<ActionResult> {
-    const { data: logEntry } = await db.from('ai_voice_action_logs').select('*').eq('id', actionLogId).single();
-    if (!logEntry) throw new Error('Action log not found');
-
-    const entry = logEntry as any;
-    if (entry.execution_mode !== 'suggested') {
-      throw new Error('Nur vorgeschlagene Aktionen können genehmigt werden');
-    }
-
-    // Re-execute the action
-    const request: ActionRequest = {
-      action_type: entry.action_type as ActionType,
-      source: 'ai_voice_agent',
-      session_id: entry.session_id,
-      ai_agent_id: entry.ai_agent_id || '',
-      lead_id: entry.target_type === 'lead' ? entry.target_id : undefined,
-      rollout_mode: 'autonomous', // force execution
-      reason: `Genehmigt von ${userId}`,
-      confidence: 1.0,
-      payload: entry.payload_json || {},
-    };
-
-    let resultMessage: string;
-    let success = true;
-    try {
-      resultMessage = await executeAction(request);
-    } catch (err: any) {
-      success = false;
-      resultMessage = err.message;
-    }
-
-    // Update the log entry
-    await db.from('ai_voice_action_logs').update({
-      execution_mode: 'approved',
-      executed_by: userId,
-      result: success ? 'success' : 'failed',
-      result_json: { message: resultMessage, approved_at: new Date().toISOString() },
-    } as any).eq('id', actionLogId);
-
+    const data = await gatewayFetch('/approve', {
+      method: 'POST',
+      body: JSON.stringify({ action_log_id: actionLogId, reason: `Approved by ${userId}` }),
+    });
     return {
-      id: actionLogId,
-      action_type: entry.action_type,
+      id: data.id,
+      action_type: data.action_type,
       execution_mode: 'approved',
-      success,
-      result_message: resultMessage,
+      success: data.success,
+      result_message: data.message,
       timestamp: new Date().toISOString(),
     };
   },
 
   /**
-   * Reject a suggested action.
+   * Reject a suggested action via server-side gateway.
    */
   async rejectAction(actionLogId: string, userId: string, reason: string): Promise<void> {
-    await db.from('ai_voice_action_logs').update({
-      execution_mode: 'blocked',
-      executed_by: userId,
-      result: 'blocked',
-      result_json: { message: `Abgelehnt: ${reason}`, rejected_at: new Date().toISOString() },
-    } as any).eq('id', actionLogId);
+    await gatewayFetch('/reject', {
+      method: 'POST',
+      body: JSON.stringify({ action_log_id: actionLogId, reason }),
+    });
   },
 
   /**
-   * Get pending (suggested) actions for a lead or globally.
+   * Get pending (suggested) actions.
    */
   async getPendingActions(leadId?: string) {
-    let q = db.from('ai_voice_action_logs').select('*')
-      .eq('execution_mode', 'suggested')
-      .eq('result', 'success')
-      .order('created_at', { ascending: false });
-    if (leadId) q = q.eq('target_id', leadId);
-    const { data } = await q;
-    return data ?? [];
+    const params = leadId ? `?lead_id=${leadId}` : '';
+    return await gatewayFetch(`/pending${params}`);
   },
 
   /**
    * Get action history for a session or lead.
    */
   async getActionHistory(filters: { sessionId?: string; leadId?: string; limit?: number }) {
-    let q = db.from('ai_voice_action_logs').select('*').order('created_at', { ascending: false });
-    if (filters.sessionId) q = q.eq('session_id', filters.sessionId);
-    if (filters.leadId) q = q.eq('target_id', filters.leadId);
-    if (filters.limit) q = q.limit(filters.limit);
-    const { data } = await q;
-    return data ?? [];
+    const params = new URLSearchParams();
+    if (filters.sessionId) params.set('session_id', filters.sessionId);
+    if (filters.leadId) params.set('lead_id', filters.leadId);
+    if (filters.limit) params.set('limit', String(filters.limit));
+    const qs = params.toString();
+    return await gatewayFetch(`/history${qs ? '?' + qs : ''}`);
   },
 
   /**
-   * Process a batch of suggested actions from a session.
+   * Process a batch of actions.
    */
   async processBatch(actions: ActionRequest[]): Promise<ActionResult[]> {
-    const results: ActionResult[] = [];
-    for (const action of actions) {
-      results.push(await actionGateway.processAction(action));
-    }
-    return results;
+    const data = await gatewayFetch('/batch', {
+      method: 'POST',
+      body: JSON.stringify({ actions: actions.map(a => ({
+        action_type: a.action_type,
+        source: a.source,
+        source_runtime: 'ssm_recruit_frontend',
+        session_id: a.session_id,
+        ai_agent_id: a.ai_agent_id,
+        lead_id: a.lead_id,
+        candidate_id: a.candidate_id,
+        execution_mode: a.rollout_mode,
+        reason: a.reason,
+        confidence: a.confidence,
+        payload: a.payload,
+      })) }),
+    });
+    return (data as any[]).map((d: any) => ({
+      id: d.id,
+      action_type: d.action_type,
+      execution_mode: d.execution_mode,
+      success: d.success,
+      result_message: d.message,
+      timestamp: d.timestamp || new Date().toISOString(),
+    }));
+  },
+
+  /**
+   * Check gateway health status.
+   */
+  async getHealth() {
+    const res = await fetch(`${GATEWAY_URL}/health`, {
+      headers: { 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+    });
+    return await res.json();
   },
 };
 
