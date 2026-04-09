@@ -120,7 +120,9 @@ const App = () => (
                   <NotificationsProvider>
                     <LeadsProvider>
                       <SidebarProvider>
-                        <AppLayout />
+                        <RoleRouteGuard>
+                          <AppLayout />
+                        </RoleRouteGuard>
                       </SidebarProvider>
                     </LeadsProvider>
                   </NotificationsProvider>
