@@ -275,10 +275,10 @@ function KnowledgeDetail({ item, agents, onUpdated, onDeleted }: { item: Knowled
           </div>
           <div><Label className="text-xs text-muted-foreground">Agent-Zuordnung</Label>
             {editing ? (
-              <Select value={form.agent_id} onValueChange={v => setForm(f => ({...f, agent_id: v}))}>
+              <Select value={form.agent_id || "__global__"} onValueChange={v => setForm(f => ({...f, agent_id: v === "__global__" ? "" : v}))}>
                 <SelectTrigger><SelectValue placeholder="Global" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Global (kein Agent)</SelectItem>
+                  <SelectItem value="__global__">Global (kein Agent)</SelectItem>
                   {agents.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -354,10 +354,10 @@ function CreateKnowledgeForm({ agents, onClose, onCreated }: { agents: { id: str
         </div>
       </div>
       <div className="space-y-1.5"><Label>Agent-Zuordnung (optional)</Label>
-        <Select value={form.agent_id} onValueChange={v => setForm(f => ({...f, agent_id: v}))}>
+        <Select value={form.agent_id || "__global__"} onValueChange={v => setForm(f => ({...f, agent_id: v === "__global__" ? "" : v}))}>
           <SelectTrigger><SelectValue placeholder="Global" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Global</SelectItem>
+            <SelectItem value="__global__">Global</SelectItem>
             {agents.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
           </SelectContent>
         </Select>
