@@ -68,10 +68,12 @@ export default function LeadDetailSheet() {
     (selectedLead.status === 'controlling_approved' || selectedLead.status === 'rejected' ||
      selectedLead.status === 'management_review' || selectedLead.status === 'hr_processing' || selectedLead.status === 'hired');
 
-  // Load controlling wizard result for frozen leads (scoring + reason)
+  // Load controlling wizard result for leads that went through controlling (scoring + reason)
+  const hasControllingStatus = selectedLead != null &&
+    ['controlling_approved', 'rejected', 'management_review', 'hr_processing', 'hired'].includes(selectedLead.status);
   const [controllingResult, setControllingResult] = useState<{ scoring?: string; reason?: string; action?: string } | null>(null);
   useEffect(() => {
-    if (!selectedLead || !isFrozenForEmployee) { setControllingResult(null); return; }
+    if (!selectedLead || !hasControllingStatus) { setControllingResult(null); return; }
     supabase.from('status_wizard_results').select('answers, feedback, wizard_type')
       .eq('lead_id', selectedLead.id).eq('wizard_type', 'controlling_approval')
       .order('created_at', { ascending: false }).limit(1)
@@ -81,7 +83,7 @@ export default function LeadDetailSheet() {
           setControllingResult({ scoring: a?.scoring, reason: data[0].feedback || a?.reject_reason, action: a?.controlling_action || a?.action });
         } else { setControllingResult(null); }
       });
-  }, [selectedLead?.id, isFrozenForEmployee]);
+  }, [selectedLead?.id, hasControllingStatus]);
 
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
