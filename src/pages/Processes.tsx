@@ -350,10 +350,22 @@ export default function Processes() {
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="w-fit">
           <TabsTrigger value="overview" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" /> Übersicht</TabsTrigger>
+          <TabsTrigger value="flowdiagram" className="gap-1.5"><GitBranch className="h-3.5 w-3.5" /> Flow-Diagramm</TabsTrigger>
           <TabsTrigger value="directory" className="gap-1.5"><BookOpen className="h-3.5 w-3.5" /> Verzeichnis & Richtlinien</TabsTrigger>
           <TabsTrigger value="escalation" className="gap-1.5"><AlertTriangle className="h-3.5 w-3.5" /> Eskalation</TabsTrigger>
           <TabsTrigger value="automations" className="gap-1.5"><Zap className="h-3.5 w-3.5" /> Automatisierungen</TabsTrigger>
         </TabsList>
+
+        {/* ══════════ TAB: Flow-Diagramm ══════════ */}
+        <TabsContent value="flowdiagram" className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold">Interaktives Flow-Diagramm</h2>
+            <p className="text-sm text-muted-foreground">Recruiting-Prozess als interaktives Diagramm – zoomen, verschieben und Nodes bewegen.</p>
+          </div>
+          <Suspense fallback={<div className="flex items-center justify-center h-[500px]"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+            <ProcessReactFlow leads={leads} />
+          </Suspense>
+        </TabsContent>
 
         {/* ══════════ TAB: Übersicht ══════════ */}
         <TabsContent value="overview" className="space-y-6">
