@@ -197,6 +197,15 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
         if (a.report_sections?.improvement_areas?.length) {
           insightsHtml += '<h4>Verbesserungsbereiche</h4><ul>' + a.report_sections.improvement_areas.map((s: string) => `<li>${s}</li>`).join('') + '</ul>';
         }
+        // Personality profile in PDF
+        if (a.personality_title) {
+          insightsHtml += `<h3>Persönlichkeitsprofil: ${a.personality_title}</h3>`;
+          if (a.personality_summary) insightsHtml += `<p>${a.personality_summary}</p>`;
+          if (a.personality_meaning) insightsHtml += `<h4>Was dieses Profil bedeutet</h4><p>${a.personality_meaning}</p>`;
+          if (a.match_interpretation) insightsHtml += `<h4>SSM Match-Interpretation</h4><p>${a.match_interpretation}</p>`;
+          if (a.personality_strengths_extended?.length) insightsHtml += '<h4>Erweiterte Stärken</h4><ul>' + a.personality_strengths_extended.map((s: string) => `<li>${s}</li>`).join('') + '</ul>';
+          if (a.personality_risks_extended?.length) insightsHtml += '<h4>Mögliche Risiken</h4><ul>' + a.personality_risks_extended.map((r: string) => `<li>${r}</li>`).join('') + '</ul>';
+        }
       }
 
       printWindow.document.write(`<!DOCTYPE html><html><head><title>Insights Report – ${leadName}</title>

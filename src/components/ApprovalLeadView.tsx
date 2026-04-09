@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardDialog';
+import PersonalityProfile from './PersonalityProfile';
 import {
   User, MapPin, Mail, Phone, Briefcase, Brain, FileText, BarChart3,
   ClipboardCheck, Shield, CheckCircle2, XCircle,
@@ -133,13 +134,27 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
     setGeneratingPdf(true);
     try {
       const { disc_scores, motivator_scores, scores, match_result, summary, report_sections } = assessment;
+      const a = assessment as any;
       const pw = window.open('', '_blank');
       if (!pw) { setGeneratingPdf(false); return; }
+      
+      // Personality PDF sections
+      const personalityHtml = a.personality_title ? `
+        <h2>Persönlichkeitsprofil: ${a.personality_title}</h2>
+        ${a.personality_type_combination ? `<p class="m">Typ: ${a.personality_type_combination} ${a.top_motivators?.length ? '• Top Motivatoren: ' + a.top_motivators.join(', ') : ''}</p>` : ''}
+        ${a.personality_summary ? `<p>${a.personality_summary}</p>` : ''}
+        ${a.personality_meaning ? `<h3>Was dieses Profil bedeutet</h3><p>${a.personality_meaning}</p>` : ''}
+        ${a.match_interpretation ? `<h3>SSM Match-Interpretation</h3><p>${a.match_interpretation}</p>` : ''}
+        ${a.personality_strengths_extended?.length ? `<h3>Erweiterte Stärken</h3><ul>${a.personality_strengths_extended.map((s:string) => `<li>${s}</li>`).join('')}</ul>` : ''}
+        ${a.personality_risks_extended?.length ? `<h3>Mögliche Risiken</h3><ul>${a.personality_risks_extended.map((r:string) => `<li>${r}</li>`).join('')}</ul>` : ''}
+      ` : '';
+
       pw.document.write(`<!DOCTYPE html><html><head><title>Assessment – ${selectedLead.name}</title>
-      <style>body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:40px 30px;color:#1a1a1a;font-size:13px;line-height:1.6}h1{font-size:22px;border-bottom:2px solid #2563eb;padding-bottom:8px}h2{font-size:16px;color:#2563eb;margin-top:28px;border-bottom:1px solid #e5e7eb;padding-bottom:4px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.c{border:1px solid #e5e7eb;border-radius:8px;padding:12px}.bw{height:10px;background:#f3f4f6;border-radius:5px;overflow:hidden;margin-top:4px}.b{height:100%;border-radius:5px}ul{padding-left:18px}li{margin-bottom:4px}.m{color:#6b7280;font-size:11px}@media print{body{padding:20px}}</style></head><body>
+      <style>body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:40px 30px;color:#1a1a1a;font-size:13px;line-height:1.6}h1{font-size:22px;border-bottom:2px solid #2563eb;padding-bottom:8px}h2{font-size:16px;color:#2563eb;margin-top:28px;border-bottom:1px solid #e5e7eb;padding-bottom:4px}h3{font-size:14px;color:#374151;margin-top:16px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.c{border:1px solid #e5e7eb;border-radius:8px;padding:12px}.bw{height:10px;background:#f3f4f6;border-radius:5px;overflow:hidden;margin-top:4px}.b{height:100%;border-radius:5px}ul{padding-left:18px}li{margin-bottom:4px}.m{color:#6b7280;font-size:11px}@media print{body{padding:20px}}</style></head><body>
       <h1>Assessment-Report: ${selectedLead.name}</h1>
       <p class="m">Position: ${selectedLead.position||'—'} • ${new Date(assessment.completed_at).toLocaleDateString('de-CH')}</p>
       ${summary.headline?`<h2>Zusammenfassung</h2><p><strong>${summary.headline}</strong></p><p>${summary.description||''}</p>`:''}
+      ${personalityHtml}
       <h2>Match Score: ${match_result.score}/100</h2>
       <div class="g2"><div class="c"><strong>Stärken</strong><ul>${(match_result.strengths||[]).map((s:string)=>`<li>${s}</li>`).join('')}</ul></div><div class="c"><strong>Risiken</strong><ul>${(match_result.risks||[]).map((r:string)=>`<li>${r}</li>`).join('')}</ul></div></div>
       <h2>Performance Scores</h2>
@@ -370,6 +385,9 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                   <div className="rounded-xl border bg-muted/30 p-4">
                     <p className="text-xs leading-relaxed text-muted-foreground">{assessment.summary.description}</p>
                   </div>
+
+                  {/* ── Personality Profile (ADD-ONLY) ── */}
+                  <PersonalityProfile data={{ ...(assessment as any), match_interpretation: (assessment as any).raw_ai_response?.match_interpretation }} />
 
                   {/* Row 1: Match + Recommendation + Scores */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

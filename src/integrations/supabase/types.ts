@@ -314,45 +314,72 @@ export type Database = {
           completed_at: string
           created_at: string
           disc_scores: Json
+          dominant_disc_type: string
           id: string
           lead_id: string
           match_result: Json
           motivator_scores: Json
+          personality_avatar: string
+          personality_meaning: string
+          personality_risks_extended: Json
+          personality_strengths_extended: Json
+          personality_summary: string
+          personality_title: string
+          personality_type_combination: string
           raw_ai_response: Json | null
           recommendation: string
           report_sections: Json
           scores: Json
           summary: Json
+          top_motivators: Json
           wizard_answers: Json
         }
         Insert: {
           completed_at?: string
           created_at?: string
           disc_scores?: Json
+          dominant_disc_type?: string
           id?: string
           lead_id: string
           match_result?: Json
           motivator_scores?: Json
+          personality_avatar?: string
+          personality_meaning?: string
+          personality_risks_extended?: Json
+          personality_strengths_extended?: Json
+          personality_summary?: string
+          personality_title?: string
+          personality_type_combination?: string
           raw_ai_response?: Json | null
           recommendation?: string
           report_sections?: Json
           scores?: Json
           summary?: Json
+          top_motivators?: Json
           wizard_answers?: Json
         }
         Update: {
           completed_at?: string
           created_at?: string
           disc_scores?: Json
+          dominant_disc_type?: string
           id?: string
           lead_id?: string
           match_result?: Json
           motivator_scores?: Json
+          personality_avatar?: string
+          personality_meaning?: string
+          personality_risks_extended?: Json
+          personality_strengths_extended?: Json
+          personality_summary?: string
+          personality_title?: string
+          personality_type_combination?: string
           raw_ai_response?: Json | null
           recommendation?: string
           report_sections?: Json
           scores?: Json
           summary?: Json
+          top_motivators?: Json
           wizard_answers?: Json
         }
         Relationships: []

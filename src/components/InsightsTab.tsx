@@ -4,6 +4,7 @@ import { discDimensionConfig, type DiscDimension } from '@/lib/mock-data';
 import { supabase } from '@/integrations/supabase/client';
 import { Brain, CheckCircle2, RotateCcw, Loader2, Target, TrendingUp, Users, BookOpen, DollarSign, Shield, ThumbsUp, ThumbsDown, AlertTriangle, Award, ChevronDown, ChevronUp } from 'lucide-react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
+import PersonalityProfile from './PersonalityProfile';
 
 interface InsightsTabProps {
   leadId: string;
@@ -174,6 +175,9 @@ export default function InsightsTab({ leadId, leadName }: InsightsTabProps) {
       <div className="rounded-xl border bg-muted/30 p-4">
         <p className="text-xs leading-relaxed text-muted-foreground">{summary.description}</p>
       </div>
+
+      {/* ── Personality Profile (ADD-ONLY) ── */}
+      <PersonalityProfile data={{ ...(assessment as any), match_interpretation: (assessment as any).raw_ai_response?.match_interpretation }} />
 
       {/* ── Match Score + Recommendation ── */}
       <div className="grid grid-cols-2 gap-3">
