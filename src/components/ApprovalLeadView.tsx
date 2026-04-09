@@ -10,8 +10,24 @@ import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardD
 import {
   User, MapPin, Mail, Phone, Briefcase, Brain, FileText, BarChart3,
   ClipboardCheck, Shield, CheckCircle2, XCircle, HelpCircle,
-  UserCheck, Calendar, Eye, Upload, Clock, ChevronLeft, ChevronRight
+  UserCheck, Calendar, Eye, Upload, Clock, ChevronLeft, ChevronRight,
+  Building2, GraduationCap, TrendingUp, Award
 } from 'lucide-react';
+
+interface CareerLevel {
+  name: string;
+  fixSalary: number;
+  expenses: number;
+  scorePoints: number;
+  requirements: string[];
+}
+
+interface CareerPlan {
+  id: string;
+  position: string;
+  levels: CareerLevel[];
+  is_active: boolean;
+}
 
 interface ApprovalLeadViewProps {
   onClose: () => void;
@@ -27,6 +43,9 @@ export default function ApprovalLeadView({ onClose }: ApprovalLeadViewProps) {
   const [discType, setDiscType] = useState<string>('—');
   const [docsCount, setDocsCount] = useState(0);
   const [controllingDecision, setControllingDecision] = useState<string>('—');
+  const [careerPlan, setCareerPlan] = useState<CareerPlan | null>(null);
+  const [discScores, setDiscScores] = useState<Record<string, number> | null>(null);
+  const [motivatorScores, setMotivatorScores] = useState<Record<string, number> | null>(null);
 
   const wizardType: ApprovalWizardType = isControlling ? 'controlling' : isGeschaeftsleitung ? 'management' : 'hr';
 
