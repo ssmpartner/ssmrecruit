@@ -177,7 +177,7 @@ export default function InsightsTab({ leadId, leadName }: InsightsTabProps) {
       </div>
 
       {/* ── Personality Profile (ADD-ONLY) ── */}
-      <PersonalityProfile data={assessment as any} />
+      <PersonalityProfile data={{ ...(assessment as any), match_interpretation: (assessment as any).raw_ai_response?.match_interpretation }} />
 
       {/* ── Match Score + Recommendation ── */}
       <div className="grid grid-cols-2 gap-3">

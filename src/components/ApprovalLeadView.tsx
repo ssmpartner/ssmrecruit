@@ -387,7 +387,7 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                   </div>
 
                   {/* ── Personality Profile (ADD-ONLY) ── */}
-                  <PersonalityProfile data={assessment as any} />
+                  <PersonalityProfile data={{ ...(assessment as any), match_interpretation: (assessment as any).raw_ai_response?.match_interpretation }} />
 
                   {/* Row 1: Match + Recommendation + Scores */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
