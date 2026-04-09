@@ -78,6 +78,7 @@ const DOC_SECTIONS: DocSection[] = [
     icon: Code2,
     adminOnly: true,
     subsections: [
+      { id: 'action-gateway', label: 'Action Gateway (Pflichtschicht)' },
       { id: 'endpoints', label: 'Interne Endpunkte' },
       { id: 'dto-examples', label: 'DTO- / Payload-Beispiele' },
       { id: 'event-flows', label: 'Event-Flows' },
