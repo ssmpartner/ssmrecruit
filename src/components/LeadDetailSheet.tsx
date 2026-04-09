@@ -62,6 +62,26 @@ export default function LeadDetailSheet() {
   const leadIsNew = selectedLead?.status === 'new';
   const isMarkedViewed = selectedLead?.isRead ?? false;
 
+  // Freeze logic: after Controlling decision, employees lose access to phone/email/docs and lead is read-only
+  const isFrozenForEmployee = !isSuperadmin && !isReviewRole && selectedLead != null &&
+    (selectedLead.status === 'controlling_approved' || selectedLead.status === 'rejected' ||
+     selectedLead.status === 'management_review' || selectedLead.status === 'hr_processing' || selectedLead.status === 'hired');
+
+  // Load controlling wizard result for frozen leads (scoring + reason)
+  const [controllingResult, setControllingResult] = useState<{ scoring?: string; reason?: string; action?: string } | null>(null);
+  useEffect(() => {
+    if (!selectedLead || !isFrozenForEmployee) { setControllingResult(null); return; }
+    supabase.from('status_wizard_results').select('answers, feedback, wizard_type')
+      .eq('lead_id', selectedLead.id).eq('wizard_type', 'controlling_approval')
+      .order('created_at', { ascending: false }).limit(1)
+      .then(({ data }) => {
+        if (data?.[0]) {
+          const a = data[0].answers as any;
+          setControllingResult({ scoring: a?.scoring, reason: data[0].feedback || a?.reject_reason, action: a?.controlling_action || a?.action });
+        } else { setControllingResult(null); }
+      });
+  }, [selectedLead?.id, isFrozenForEmployee]);
+
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
     [selectedLead, appointments]
