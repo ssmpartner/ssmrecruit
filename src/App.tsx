@@ -35,6 +35,22 @@ const ApplicationFormPage = lazy(() => import("./pages/ApplicationFormPage"));
 const BewerbungWizard = lazy(() => import("./pages/BewerbungWizard"));
 const AIVoiceAgent = lazy(() => import("./pages/AIVoiceAgent"));
 
+// AI Voice sub-pages
+const VoiceDashboardTab = lazy(() => import("./components/ai-voice/VoiceDashboardTab"));
+const AgentStudioTab = lazy(() => import("./components/ai-voice/AgentStudioTab"));
+const DeploymentsTab = lazy(() => import("./components/ai-voice/DeploymentsTab"));
+const TestCenterTab = lazy(() => import("./components/ai-voice/TestCenterTab"));
+const CampaignsTab = lazy(() => import("./components/ai-voice/CampaignsTab"));
+const SessionsTab = lazy(() => import("./components/ai-voice/SessionsTab"));
+const NumbersTab = lazy(() => import("./components/ai-voice/NumbersTab"));
+const KnowledgeTab = lazy(() => import("./components/ai-voice/KnowledgeTab"));
+const ActionRulesTab = lazy(() => import("./components/ai-voice/ActionRulesTab"));
+const EscalationsTab = lazy(() => import("./components/ai-voice/EscalationsTab"));
+const VoiceAnalyticsTab = lazy(() => import("./components/ai-voice/VoiceAnalyticsTab"));
+const CostControlTab = lazy(() => import("./components/ai-voice/CostControlTab"));
+const ComplianceTab = lazy(() => import("./components/ai-voice/ComplianceTab"));
+const ProviderSettingsTab = lazy(() => import("./components/ai-voice/ProviderSettingsTab"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -72,7 +88,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, role } = useAuth();
   if (loading) return <FullScreenLoader />;
   if (!user) return <Navigate to="/login" replace />;
-  // Wait until role is resolved before rendering anything
   if (role === null) return <FullScreenLoader />;
   return <>{children}</>;
 }
@@ -115,7 +130,7 @@ const App = () => (
               <Route path="/apply" element={<Suspense fallback={<FullScreenLoader />}><ApplicationFormPage /></Suspense>} />
               <Route path="/bewerbung" element={<Suspense fallback={<FullScreenLoader />}><BewerbungWizard /></Suspense>} />
 
-              {/* Protected routes – providers inside so DB queries only run when authenticated */}
+              {/* Protected routes */}
               <Route element={
                 <ProtectedRoute>
                   <NotificationsProvider>
@@ -142,7 +157,24 @@ const App = () => (
                 <Route path="/api-docs" element={<Suspense fallback={<PageLoader />}><ApiDocs /></Suspense>} />
                 <Route path="/documentation" element={<Suspense fallback={<PageLoader />}><Documentation /></Suspense>} />
                 <Route path="/help" element={<Suspense fallback={<PageLoader />}><HelpCenter /></Suspense>} />
-                <Route path="/ai-voice" element={<Suspense fallback={<PageLoader />}><AIVoiceAgent /></Suspense>} />
+
+                {/* AI Voice Agent with nested sub-routes */}
+                <Route path="/ai-voice" element={<Suspense fallback={<PageLoader />}><AIVoiceAgent /></Suspense>}>
+                  <Route path="dashboard" element={<Suspense fallback={<PageLoader />}><VoiceDashboardTab /></Suspense>} />
+                  <Route path="studio" element={<Suspense fallback={<PageLoader />}><AgentStudioTab /></Suspense>} />
+                  <Route path="deployments" element={<Suspense fallback={<PageLoader />}><DeploymentsTab /></Suspense>} />
+                  <Route path="test" element={<Suspense fallback={<PageLoader />}><TestCenterTab /></Suspense>} />
+                  <Route path="campaigns" element={<Suspense fallback={<PageLoader />}><CampaignsTab /></Suspense>} />
+                  <Route path="sessions" element={<Suspense fallback={<PageLoader />}><SessionsTab /></Suspense>} />
+                  <Route path="numbers" element={<Suspense fallback={<PageLoader />}><NumbersTab /></Suspense>} />
+                  <Route path="knowledge" element={<Suspense fallback={<PageLoader />}><KnowledgeTab /></Suspense>} />
+                  <Route path="actions" element={<Suspense fallback={<PageLoader />}><ActionRulesTab /></Suspense>} />
+                  <Route path="escalations" element={<Suspense fallback={<PageLoader />}><EscalationsTab /></Suspense>} />
+                  <Route path="analytics" element={<Suspense fallback={<PageLoader />}><VoiceAnalyticsTab /></Suspense>} />
+                  <Route path="costs" element={<Suspense fallback={<PageLoader />}><CostControlTab /></Suspense>} />
+                  <Route path="compliance" element={<Suspense fallback={<PageLoader />}><ComplianceTab /></Suspense>} />
+                  <Route path="providers" element={<Suspense fallback={<PageLoader />}><ProviderSettingsTab /></Suspense>} />
+                </Route>
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
