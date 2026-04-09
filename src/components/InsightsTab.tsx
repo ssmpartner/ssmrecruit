@@ -176,6 +176,9 @@ export default function InsightsTab({ leadId, leadName }: InsightsTabProps) {
         <p className="text-xs leading-relaxed text-muted-foreground">{summary.description}</p>
       </div>
 
+      {/* ── Personality Profile (ADD-ONLY) ── */}
+      <PersonalityProfile data={assessment as any} />
+
       {/* ── Match Score + Recommendation ── */}
       <div className="grid grid-cols-2 gap-3">
         <div className={`rounded-xl border p-4 ${matchLevel.bg}`}>

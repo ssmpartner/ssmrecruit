@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardDialog';
+import PersonalityProfile from './PersonalityProfile';
 import {
   User, MapPin, Mail, Phone, Briefcase, Brain, FileText, BarChart3,
   ClipboardCheck, Shield, CheckCircle2, XCircle,
