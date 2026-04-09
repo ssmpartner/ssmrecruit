@@ -90,11 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // 1. Restore session from storage first
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadUserData(session.user.id);
+        await loadUserData(session.user.id);
       }
       setLoading(false);
     });
