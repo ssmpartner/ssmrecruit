@@ -32,6 +32,7 @@ const DOC_SECTIONS: DocSection[] = [
       { id: 'goal', label: 'Ziel des Moduls' },
       { id: 'architecture', label: 'Technische Grundarchitektur' },
       { id: 'target-architecture', label: 'Zielarchitektur (Produktivbetrieb)' },
+      { id: 'openai-integration', label: 'OpenAI Realtime Integration' },
       { id: 'components', label: 'Komponentenübersicht' },
       { id: 'datamodel-overview', label: 'Datenmodell-Überblick' },
       { id: 'provider-abstraction', label: 'Provider-Abstraktion' },
@@ -185,6 +186,92 @@ function SetupContent() {
           Die vollständige Architektur-Konfiguration und der Kommunikationsfluss sind unter <strong>Infrastruktur → Architektur</strong> einsehbar und konfigurierbar.
         </InfoBox>
       </DocBlock>
+
+      <DocBlock id="openai-integration" title="OpenAI Realtime Integration" icon={Bot}>
+        <p>OpenAI wird als <strong>Voice AI Provider</strong> eingesetzt. Die Integration erfolgt ausschliesslich über das Railway Voice Backend – niemals direkt vom Frontend oder Core Backend.</p>
+
+        <h4 className="font-semibold text-sm mt-4">Zweck von OpenAI im Gesamtsystem</h4>
+        <ul className="list-disc list-inside space-y-1 mt-2">
+          <li>Bidirektionale Echtzeit-Sprachverarbeitung (Speech-to-Text + Text-to-Speech)</li>
+          <li>LLM-basierte Konversationsführung mit System-Prompt</li>
+          <li>Intent-Erkennung und Gesprächssteuerung</li>
+          <li>Tool/Function Calling für Aktionsvorschläge</li>
+          <li>Zusammenfassung und Sentiment-Analyse</li>
+        </ul>
+
+        <h4 className="font-semibold text-sm mt-4">Architekturprinzipien</h4>
+        <div className="space-y-2 mt-2">
+          {[
+            { title: 'Keine direkten Frontend-Aufrufe', desc: 'Das Frontend kommuniziert nie direkt mit OpenAI. Alle Anfragen laufen über Railway Voice Backend → Core Backend.' },
+            { title: 'Kontrollierte Kontextübergabe', desc: 'Der Session-Kontext (Agent-Profil, Knowledge, Compliance-Regeln) wird vom Core Backend assembliert und an Railway übergeben.' },
+            { title: 'Tool-Calls ≠ Ausführung', desc: 'Wenn OpenAI einen Tool-Call vorschlägt (z.B. suggest_status_change), wird dieser vom Railway Backend validiert und als Action an das Gateway weitergeleitet.' },
+            { title: 'Keine unkontrollierte Statusänderung', desc: 'OpenAI kann keine direkten Änderungen in SSM Recruit vornehmen. Alles läuft über das Action Gateway mit Rollout-Modus-Prüfung.' },
+            { title: 'Compliance im System-Prompt', desc: 'Pflichtoffenlegungen und verbotene Aussagen werden direkt in den System-Prompt eingebettet.' },
+          ].map(p => (
+            <div key={p.title} className="p-3 rounded-lg border">
+              <p className="font-medium text-sm text-foreground">{p.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <h4 className="font-semibold text-sm mt-4">Session-Kontext-Aufbau</h4>
+        <p className="mt-1">Vor jeder Voice-Session wird folgender Kontext vom Core Backend zusammengestellt:</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
+          {['Agent Profile', 'Greeting & Voice', 'Knowledge Summary', 'Action Permissions', 'Escalation Rules', 'Lead/Candidate Context', 'Deployment Mode', 'Compliance Flags'].map(c => (
+            <Badge key={c} variant="outline" className="text-[10px] justify-center py-1.5">{c}</Badge>
+          ))}
+        </div>
+
+        <h4 className="font-semibold text-sm mt-4">Definierte Tool-Calls</h4>
+        <p className="mt-1">Folgende OpenAI Function-Calling Tools sind vorbereitet:</p>
+        <div className="space-y-1 mt-2">
+          {[
+            { name: 'suggest_status_change', desc: 'Lead-Status vorschlagen' },
+            { name: 'suggest_appointment', desc: 'Terminvorschlag erstellen' },
+            { name: 'create_followup', desc: 'Follow-up-Aufgabe' },
+            { name: 'escalate_to_human', desc: 'An Mensch eskalieren' },
+            { name: 'create_note', desc: 'Beobachtung speichern' },
+            { name: 'mark_callback_requested', desc: 'Rückrufwunsch' },
+            { name: 'end_conversation', desc: 'Gespräch beenden mit Outcome' },
+          ].map(t => (
+            <div key={t.name} className="flex items-center gap-2">
+              <code className="text-[10px] font-mono text-primary">{t.name}</code>
+              <span className="text-[10px] text-muted-foreground">— {t.desc}</span>
+            </div>
+          ))}
+        </div>
+
+        <h4 className="font-semibold text-sm mt-4">Trennung zu Twilio und Railway</h4>
+        <div className="overflow-x-auto mt-2">
+          <table className="w-full text-xs border">
+            <thead>
+              <tr className="bg-muted">
+                <th className="p-2 text-left font-medium">Komponente</th>
+                <th className="p-2 text-left font-medium">Verantwortung</th>
+                <th className="p-2 text-left font-medium">Kommuniziert mit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { comp: 'OpenAI', resp: 'Sprachverarbeitung, KI-Konversation, Tool-Calls', comm: 'Railway Backend (WebSocket)' },
+                { comp: 'Twilio', resp: 'Telefonie, Nummern, Media Streams', comm: 'Railway Backend (Webhook + WebSocket)' },
+                { comp: 'Railway', resp: 'Orchestrierung, Bridge, Session-Management', comm: 'OpenAI, Twilio, Core Backend' },
+                { comp: 'Core Backend', resp: 'Daten, Regeln, Action Gateway, Audit', comm: 'Railway Backend, Frontend' },
+              ].map(r => (
+                <tr key={r.comp} className="border-t">
+                  <td className="p-2 font-medium">{r.comp}</td>
+                  <td className="p-2 text-muted-foreground">{r.resp}</td>
+                  <td className="p-2 text-muted-foreground">{r.comm}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <InfoBox type="warning">OpenAI darf niemals direkte ungeprüfte Statusänderungen in SSM Recruit auslösen. Jede Aktion muss das Action Gateway passieren und den Rollout-Modus respektieren.</InfoBox>
+      </DocBlock>
+
 
       <DocBlock id="components" title="Komponentenübersicht" icon={Layers}>
         <div className="space-y-2">
