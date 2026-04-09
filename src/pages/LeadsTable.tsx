@@ -62,7 +62,7 @@ export default function LeadsTable() {
     
     // Role-based status filtering for review roles
     if (isControlling) {
-      filtered = filtered.filter(l => l.status === 'ready_for_controlling' || l.status === 'controlling_approved');
+      filtered = filtered.filter(l => l.status === 'ready_for_controlling');
     } else if (isGeschaeftsleitung) {
       filtered = filtered.filter(l => l.status === 'management_review' || l.status === 'management_approved');
     } else if (isHR) {
@@ -309,7 +309,7 @@ export default function LeadsTable() {
                     </th>
                   )}
                   <th className="px-5 py-3 font-medium">Name</th>
-                  <th className="px-5 py-3 font-medium">Telefon</th>
+                  {!isControlling && <th className="px-5 py-3 font-medium">Telefon</th>}
                   <th className="px-5 py-3 font-medium">Ort</th>
                   <th className="px-5 py-3 font-medium">Kanton</th>
                   <th className="px-5 py-3 font-medium">Quelle</th>
@@ -368,7 +368,7 @@ export default function LeadsTable() {
                           )}
                         </div>
                       </td>
-                      <td className="px-5 py-3 text-muted-foreground text-xs">{lead.phone}</td>
+                      {!isControlling && <td className="px-5 py-3 text-muted-foreground text-xs">{lead.phone}</td>}
                       <td className="px-5 py-3">
                         <span className="inline-flex items-center gap-1 text-xs">
                           <MapPin className="h-3 w-3 text-muted-foreground" />
