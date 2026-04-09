@@ -372,6 +372,9 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                     <p className="text-xs leading-relaxed text-muted-foreground">{assessment.summary.description}</p>
                   </div>
 
+                  {/* ── Personality Profile (ADD-ONLY) ── */}
+                  <PersonalityProfile data={assessment as any} />
+
                   {/* Row 1: Match + Recommendation + Scores */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <div className={cn("rounded-xl border p-4", matchLevel?.bg)}>
