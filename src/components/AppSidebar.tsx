@@ -55,19 +55,22 @@ function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed }: { to: st
 export default function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut, profile, user, role } = useAuth();
+  const { signOut, profile, user, role, loading } = useAuth();
   const { collapsed, toggle } = useSidebarState();
 
-  const navItems = allNavItems.filter(item => {
-    if (item.roles && (!role || !item.roles.includes(role))) return false;
-    if (item.excludeRoles.length > 0 && role && item.excludeRoles.includes(role)) return false;
+  // Don't render nav items until role is fully resolved
+  const roleReady = !loading && role !== null;
+
+  const navItems = roleReady ? allNavItems.filter(item => {
+    if (item.roles && !item.roles.includes(role!)) return false;
+    if (item.excludeRoles.length > 0 && item.excludeRoles.includes(role!)) return false;
     return true;
-  });
-  const bottomItems = allBottomItems.filter(item => {
-    if (item.roles && (!role || !item.roles.includes(role))) return false;
-    if (item.excludeRoles.length > 0 && role && item.excludeRoles.includes(role)) return false;
+  }) : [];
+  const bottomItems = roleReady ? allBottomItems.filter(item => {
+    if (item.roles && !item.roles.includes(role!)) return false;
+    if (item.excludeRoles.length > 0 && item.excludeRoles.includes(role!)) return false;
     return true;
-  });
+  }) : [];
 
   const handleLogout = async () => {
     await signOut();
@@ -84,9 +87,18 @@ export default function AppSidebar() {
       </div>
 
       <nav className="flex-1 space-y-0.5 p-3 overflow-y-auto scrollbar-thin">
-        {navItems.map(({ to, icon, label }) => (
-          <SidebarNavItem key={to} to={to} icon={icon} label={label} isActive={location.pathname === to} collapsed={collapsed} />
-        ))}
+        {!roleReady ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${collapsed ? 'justify-center' : ''}`}>
+              <div className="h-[18px] w-[18px] rounded bg-sidebar-accent/40 animate-pulse shrink-0" />
+              {!collapsed && <div className="h-4 w-24 rounded bg-sidebar-accent/40 animate-pulse" />}
+            </div>
+          ))
+        ) : (
+          navItems.map(({ to, icon, label }) => (
+            <SidebarNavItem key={to} to={to} icon={icon} label={label} isActive={location.pathname === to} collapsed={collapsed} />
+          ))
+        )}
       </nav>
 
       <div className="border-t border-sidebar-border p-3 space-y-0.5">
