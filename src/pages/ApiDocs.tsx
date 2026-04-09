@@ -965,6 +965,25 @@ Neue Leads (Monat);24`,
     description: 'System-Events die bei Approval-Aktionen ausgelöst werden. Diese Events können über E-Mail-Automationsregeln und Eskalationsprozesse abonniert werden.',
     endpoints: [
       {
+        method: 'POST', path: 'Event: lead.completed.followup', summary: 'Lead vollständig abgeschlossen', auth: false,
+        description: 'Wird ausgelöst wenn ein Mitarbeiter in Schritt 4 (Follow-up) auf «Lead vollständig abschliessen» klickt. Voraussetzungen: Insights/DISC abgeschlossen + Pflichtdokumente vorhanden. Automatische Folgeaktion: Sub-Status → «Controlling Prüfung» (ready_for_controlling), Lead wird dem Controlling zugewiesen.',
+        body: [
+          { name: 'lead_id', type: 'string', required: true, description: 'Lead-ID' },
+          { name: 'completed_by', type: 'string', required: true, description: 'Name des Mitarbeiters' },
+          { name: 'checks_passed', type: 'object', required: true, description: 'Ergebnis der Vollständigkeitsprüfung (insights_completed, documents_completed)' },
+        ],
+        response: `{
+  "event": "lead.completed.followup",
+  "lead_id": "l1",
+  "new_status": "ready_for_controlling",
+  "sub_step": "controlling_pruefung",
+  "completed_by": "Berater Name",
+  "checks_passed": { "insights_completed": true, "documents_completed": true },
+  "timestamp": "2026-04-09T10:00:00.000Z",
+  "next_action": "Automatische Zuweisung an Controlling"
+}`,
+      },
+      {
         method: 'POST', path: 'Event: lead.approved.controlling', summary: 'Controlling-Freigabe Event', auth: false,
         description: 'Wird ausgelöst wenn ein Lead vom Controlling freigegeben wird. Trigger: Status wechselt von "ready_for_controlling" zu "controlling_approved". Automatische Folgeaktion: Status → "management_review", Benachrichtigung an Geschäftsleitung.',
         body: [
