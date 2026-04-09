@@ -60,10 +60,30 @@ function FullScreenLoader() {
   );
 }
 
+// Routes allowed for each review role
+const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
+  controlling: ['/', '/leads'],
+  geschaeftsleitung: ['/', '/leads'],
+  hr: ['/', '/leads'],
+};
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, role } = useAuth();
   if (loading) return <FullScreenLoader />;
   if (!user) return <Navigate to="/login" replace />;
+  // Wait until role is resolved before rendering anything
+  if (role === null) return <FullScreenLoader />;
+  return <>{children}</>;
+}
+
+function RoleRouteGuard({ children }: { children: React.ReactNode }) {
+  const { role } = useAuth();
+  const location = useLocation();
+
+  const allowed = role ? REVIEW_ROLE_ALLOWED[role] : null;
+  if (allowed && !allowed.includes(location.pathname)) {
+    return <Navigate to="/" replace />;
+  }
   return <>{children}</>;
 }
 
