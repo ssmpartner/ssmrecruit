@@ -9,6 +9,7 @@ import InsightsTab from './InsightsTab';
 import { useLeads } from '@/context/useLeads';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { generateAssessmentPdf, assessmentToPdfData, loadLetterhead } from '@/lib/assessment-pdf';
 
 interface Props {
   leadId: string;
@@ -136,19 +137,6 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
   const handleDownloadPdf = useCallback(async () => {
     setGeneratingPdf(true);
     try {
-      // Use browser print to generate a "PDF" of the insights content
-      const printWindow = window.open('', '_blank');
-      if (!printWindow) {
-        toast({ title: 'Pop-up blockiert', description: 'Bitte erlauben Sie Pop-ups für den PDF-Download.', variant: 'destructive' });
-        setGeneratingPdf(false);
-        return;
-      }
-
-      // Gather all data for the PDF
-      const completedReqs = insightsRequests.filter(r => r.status === 'completed');
-      const discResult = discResults.find(d => d.leadId === leadId);
-
-      // Fetch assessment results
       const { data: assessment } = await supabase
         .from('assessment_results')
         .select('*')
@@ -157,91 +145,20 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
         .limit(1)
         .single();
 
-      let insightsHtml = '';
-
-      // Insights responses
-      completedReqs.forEach(req => {
-        if (req.responses) {
-          insightsHtml += '<h3>Insights-Antworten</h3>';
-          Object.entries(req.responses).forEach(([key, value]) => {
-            insightsHtml += `<div class="qa"><strong>${insightsQuestionLabels[key] || key}:</strong> <span>${value}</span></div>`;
-          });
-        }
-      });
-
-      // DISC
-      if (discResult) {
-        insightsHtml += '<h3>DISC-Ergebnisse</h3>';
-        insightsHtml += `<p><strong>Dominanter Typ:</strong> ${discResult.dominantType?.toUpperCase()}</p>`;
-        if (discResult.scores) {
-          insightsHtml += '<div class="scores">';
-          Object.entries(discResult.scores as Record<string, number>).forEach(([dim, score]) => {
-            insightsHtml += `<div class="score-bar"><span>${dim.toUpperCase()}</span><div class="bar"><div class="fill" style="width:${score}%"></div></div><span>${score}%</span></div>`;
-          });
-          insightsHtml += '</div>';
-        }
-      }
-
-      // Assessment
-      if (assessment) {
-        const a = assessment as any;
-        if (a.summary?.headline) insightsHtml += `<h3>${a.summary.headline}</h3>`;
-        if (a.summary?.description) insightsHtml += `<p>${a.summary.description}</p>`;
-        if (a.match_result?.score != null) {
-          insightsHtml += `<div class="match"><strong>Match Score:</strong> ${a.match_result.score}/100 — ${a.match_result.level}</div>`;
-        }
-        if (a.recommendation) insightsHtml += `<div class="rec"><strong>Empfehlung:</strong> ${a.recommendation}</div>`;
-        if (a.report_sections?.strengths_profile?.length) {
-          insightsHtml += '<h4>Stärken</h4><ul>' + a.report_sections.strengths_profile.map((s: string) => `<li>${s}</li>`).join('') + '</ul>';
-        }
-        if (a.report_sections?.improvement_areas?.length) {
-          insightsHtml += '<h4>Verbesserungsbereiche</h4><ul>' + a.report_sections.improvement_areas.map((s: string) => `<li>${s}</li>`).join('') + '</ul>';
-        }
-        // Personality profile in PDF
-        if (a.personality_title) {
-          insightsHtml += `<h3>Persönlichkeitsprofil: ${a.personality_title}</h3>`;
-          if (a.personality_summary) insightsHtml += `<p>${a.personality_summary}</p>`;
-          if (a.personality_meaning) insightsHtml += `<h4>Was dieses Profil bedeutet</h4><p>${a.personality_meaning}</p>`;
-          if (a.match_interpretation) insightsHtml += `<h4>SSM Match-Interpretation</h4><p>${a.match_interpretation}</p>`;
-          if (a.personality_strengths_extended?.length) insightsHtml += '<h4>Erweiterte Stärken</h4><ul>' + a.personality_strengths_extended.map((s: string) => `<li>${s}</li>`).join('') + '</ul>';
-          if (a.personality_risks_extended?.length) insightsHtml += '<h4>Mögliche Risiken</h4><ul>' + a.personality_risks_extended.map((r: string) => `<li>${r}</li>`).join('') + '</ul>';
-        }
-      }
-
-      printWindow.document.write(`<!DOCTYPE html><html><head><title>Insights Report – ${leadName}</title>
-        <style>
-          body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; }
-          h1 { font-size: 22px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
-          h3 { font-size: 16px; margin-top: 24px; color: #2563eb; }
-          h4 { font-size: 14px; margin-top: 16px; }
-          .qa { margin: 8px 0; padding: 8px 12px; background: #f8f9fa; border-radius: 6px; font-size: 13px; }
-          .qa strong { display: block; font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 2px; }
-          .scores { margin: 12px 0; }
-          .score-bar { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 13px; }
-          .score-bar .bar { flex: 1; height: 12px; background: #e5e7eb; border-radius: 6px; overflow: hidden; }
-          .score-bar .fill { height: 100%; background: #2563eb; border-radius: 6px; }
-          .match, .rec { padding: 10px 14px; margin: 8px 0; background: #eff6ff; border-radius: 8px; font-size: 13px; }
-          ul { font-size: 13px; }
-          li { margin: 4px 0; }
-          .meta { font-size: 12px; color: #888; margin-top: 4px; }
-          @media print { body { margin: 20px; } }
-        </style>
-      </head><body>
-        <h1>Insights Report</h1>
-        <p><strong>${leadName}</strong></p>
-        <p class="meta">Erstellt am ${new Date().toLocaleDateString('de-CH', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
-        ${insightsHtml || '<p>Keine Insights-Daten vorhanden.</p>'}
-      </body></html>`);
-      printWindow.document.close();
-      setTimeout(() => {
-        printWindow.print();
+      if (!assessment) {
+        toast({ title: 'Keine Assessment-Daten vorhanden', variant: 'destructive' });
         setGeneratingPdf(false);
-      }, 500);
+        return;
+      }
+
+      const letterhead = await loadLetterhead();
+      const pdfData = assessmentToPdfData(assessment, leadName, '');
+      generateAssessmentPdf(pdfData, letterhead);
     } catch {
-      setGeneratingPdf(false);
       toast({ title: 'Fehler beim PDF-Export', variant: 'destructive' });
     }
-  }, [insightsRequests, discResults, leadId, leadName, toast]);
+    setGeneratingPdf(false);
+  }, [leadId, leadName, toast]);
 
   const hasDisc = discResults.some(d => d.leadId === leadId);
   const completedInsights = insightsRequests.filter(r => r.status === 'completed');

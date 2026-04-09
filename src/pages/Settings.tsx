@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin, X } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin, X, Download, Building2, Image } from 'lucide-react';
+import { generateAssessmentPdf, getSampleAssessmentData, loadLetterhead, assessmentToPdfData } from '@/lib/assessment-pdf';
 import EmailSettingsTab from '@/components/EmailSettingsTab';
 import NotificationRoleMatrix from '@/components/NotificationRoleMatrix';
 import { BRAND_ICONS } from '@/components/BrandIcons';
@@ -981,6 +982,129 @@ const motivatorDimensions = [
   { key: 'sozial', label: 'Sozial' },
 ];
 
+/* ── Letterhead Settings Component ── */
+function LetterheadSettings({ toast }: { toast: any }) {
+  const [lh, setLh] = useState({ companyName: 'SSM Partner AG', logoUrl: '', address: '', phone: '', email: '', website: '', primaryColor: '#2563eb' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase.from('app_settings').select('value').eq('key', 'report_letterhead').single()
+      .then(({ data }) => {
+        if (data?.value && typeof data.value === 'object') setLh(prev => ({ ...prev, ...(data.value as any) }));
+        setLoading(false);
+      });
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    await supabase.from('app_settings').upsert({ key: 'report_letterhead', value: lh as unknown as any, updated_at: new Date().toISOString() });
+    setSaving(false);
+    toast({ title: 'Briefvorlage gespeichert' });
+  };
+
+  if (loading) return <div className="rounded-xl border bg-card p-5"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground mx-auto" /></div>;
+
+  return (
+    <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-muted-foreground" /> Report-Briefvorlage
+        </h3>
+        <button onClick={save} disabled={saving}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50">
+          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Speichern
+        </button>
+      </div>
+      <p className="text-xs text-muted-foreground">Diese Informationen erscheinen als Kopfzeile auf allen Assessment-Reports (PDF).</p>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">Firmenname</label>
+          <input value={lh.companyName} onChange={e => setLh(p => ({ ...p, companyName: e.target.value }))}
+            className="w-full h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">Logo URL</label>
+          <div className="flex gap-2">
+            <input value={lh.logoUrl} onChange={e => setLh(p => ({ ...p, logoUrl: e.target.value }))} placeholder="https://..."
+              className="flex-1 h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            {lh.logoUrl && <img src={lh.logoUrl} alt="Logo" className="h-8 w-8 object-contain rounded border" />}
+          </div>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">Adresse</label>
+          <input value={lh.address} onChange={e => setLh(p => ({ ...p, address: e.target.value }))} placeholder="Musterstrasse 1, 8000 Zürich"
+            className="w-full h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">Telefon</label>
+          <input value={lh.phone} onChange={e => setLh(p => ({ ...p, phone: e.target.value }))} placeholder="+41 44 000 00 00"
+            className="w-full h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">E-Mail</label>
+          <input value={lh.email} onChange={e => setLh(p => ({ ...p, email: e.target.value }))} placeholder="info@firma.ch"
+            className="w-full h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">Website</label>
+          <input value={lh.website} onChange={e => setLh(p => ({ ...p, website: e.target.value }))} placeholder="www.firma.ch"
+            className="w-full h-8 rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <label className="text-xs font-medium text-muted-foreground">Primärfarbe (Akzent im Report)</label>
+        <div className="flex items-center gap-3">
+          <input type="color" value={lh.primaryColor} onChange={e => setLh(p => ({ ...p, primaryColor: e.target.value }))}
+            className="h-8 w-12 rounded border cursor-pointer" />
+          <span className="text-xs font-mono text-muted-foreground">{lh.primaryColor}</span>
+          <div className="h-6 flex-1 rounded" style={{ background: `linear-gradient(135deg, ${lh.primaryColor}, ${lh.primaryColor}88)` }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Sample Report Download Component ── */
+function SampleReportDownload({ toast }: { toast: any }) {
+  const [generating, setGenerating] = useState(false);
+
+  const handleDownload = async () => {
+    setGenerating(true);
+    try {
+      const letterhead = await loadLetterhead();
+      const sampleData = getSampleAssessmentData();
+      generateAssessmentPdf(sampleData, letterhead);
+      toast({ title: 'Beispiel-Report wird generiert', description: 'Ein neues Fenster öffnet sich zum Drucken/Speichern.' });
+    } catch {
+      toast({ title: 'Fehler beim Generieren', variant: 'destructive' });
+    }
+    setGenerating(false);
+  };
+
+  return (
+    <div className="rounded-xl border bg-card p-5 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Download className="h-4 w-4 text-muted-foreground" /> Beispiel Assessment-Report
+          </h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            Laden Sie einen vollständigen Muster-Report herunter, um die Briefvorlage und das Layout zu prüfen.
+          </p>
+        </div>
+        <button onClick={handleDownload} disabled={generating}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50">
+          {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          Beispiel herunterladen
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
   const [iq, setIq] = useState<InsightsQuestion[]>([]);
   const [dq, setDq] = useState<DiscQuestion[]>([]);
@@ -1138,6 +1262,12 @@ function InsightsTab({ insightsSettings, updateInsightsSettings, toast }: any) {
           checked={insightsSettings.allowRetake} onChange={(v: boolean) => { updateInsightsSettings({ allowRetake: v }); toast({ title: 'Gespeichert' }); }}
           icon={<RefreshCw className="h-4 w-4" />} />
       </div>
+
+      {/* ── Report Briefvorlage (Letterhead) ── */}
+      <LetterheadSettings toast={toast} />
+
+      {/* ── Beispiel Assessment Report ── */}
+      <SampleReportDownload toast={toast} />
 
       {/* Intro Text */}
       <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
