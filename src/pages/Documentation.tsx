@@ -2,9 +2,17 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.42.0';
+const APP_VERSION = '2.43.0';
 
 const versionHistory = [
+  { version: '2.43.0', date: '09.04.2026', changes: [
+    'Follow-up Sub-Step: Neuer Sub-Step «Controlling Prüfung» innerhalb von Schritt 4 (Follow-up & Entscheidung)',
+    'Vollständigkeitsprüfung: Button «Lead vollständig abschliessen» prüft automatisch: Insights/DISC abgeschlossen + Pflichtdokumente vorhanden',
+    'Automatische Zuweisung: Bei Klick auf «Lead vollständig abschliessen» wird der Lead automatisch dem Controlling zugewiesen (Status → ready_for_controlling)',
+    'Follow-up UI: Insights/DISC-Status wird jetzt als eigene Statusanzeige dargestellt (grün = abgeschlossen, gelb = ausstehend)',
+    'Fehlende Voraussetzungen: Klarer Hinweis welche Bedingungen noch nicht erfüllt sind (Insights/DISC, Dokumente)',
+    'Kein neuer Hauptprozess oder Pipeline – reine Erweiterung innerhalb des bestehenden Schritts 4',
+  ]},
   { version: '2.42.0', date: '09.04.2026', changes: [
     'Controlling-Rolle: Zugriff strikt auf Leads im Sub-Status «Ready for Controlling» beschränkt – kein Zugriff auf andere Prozess-Schritte oder bereits freigegebene Leads',
     'Controlling-Rolle: Telefonnummer und E-Mail-Adresse werden in der Lead-Tabelle und der Approval-Ansicht ausgeblendet',
