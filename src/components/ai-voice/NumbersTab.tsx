@@ -12,9 +12,9 @@ import { toast } from 'sonner';
 import { Plus, Phone, PhoneIncoming, PhoneOutgoing, Mic, Building2, Bot } from 'lucide-react';
 
 const MOCK_NUMBERS = [
-  { id: '1', label: 'SSM Hauptnummer Zürich', number: '+41 44 123 45 67', country: 'CH', region: 'Zürich', type: 'local', agency: 'SSM Zürich', agent: 'SSM Recruiting Bot', inbound: true, outbound: true, recording: true, status: 'active' },
-  { id: '2', label: 'SSM Bern Inbound', number: '+41 31 234 56 78', country: 'CH', region: 'Bern', type: 'local', agency: 'SSM Bern', agent: 'SSM Inbound Assistent', inbound: true, outbound: false, recording: false, status: 'active' },
-  { id: '3', label: 'SSM Testnummer', number: '+41 44 999 00 01', country: 'CH', region: 'Zürich', type: 'test', agency: '–', agent: '–', inbound: true, outbound: true, recording: true, status: 'inactive' },
+  { id: '1', label: 'SSM Hauptnummer Zürich', number: '+41 44 123 45 67', country: 'CH', region: 'Zürich', type: 'local', agency: 'SSM Zürich', agent: 'SSM Recruiting Bot', inbound: true, outbound: true, recording: true, status: 'active', provider: 'Twilio (vorbereitet)', providerStatus: 'prepared' as const },
+  { id: '2', label: 'SSM Bern Inbound', number: '+41 31 234 56 78', country: 'CH', region: 'Bern', type: 'local', agency: 'SSM Bern', agent: 'SSM Inbound Assistent', inbound: true, outbound: false, recording: false, status: 'active', provider: 'Twilio (vorbereitet)', providerStatus: 'prepared' as const },
+  { id: '3', label: 'SSM Testnummer', number: '+41 44 999 00 01', country: 'CH', region: 'Zürich', type: 'test', agency: '–', agent: '–', inbound: true, outbound: true, recording: true, status: 'inactive', provider: 'Mock', providerStatus: 'mock' as const },
 ];
 
 export default function NumbersTab() {

@@ -528,6 +528,105 @@ export default function SystemArchitectureTab() {
         </CardContent>
       </Card>
 
+      {/* Twilio Telephony Integration Detail */}
+      <Card className={!config.twilio_connection_placeholder ? 'border-dashed opacity-80' : ''}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Phone className="h-4 w-4 text-red-600" />
+            Twilio Telephony — Integrationsstatus
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!config.twilio_connection_placeholder && (
+            <div className="flex items-start gap-3 border border-amber-200 rounded-lg bg-amber-50/50 p-3">
+              <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs font-medium text-amber-800">Twilio nicht verbunden</p>
+                <p className="text-[10px] text-amber-700">Die Twilio-Integration ist vorbereitet, aber noch nicht aktiv. Konfiguriere den Platzhalter unter Globale Konfiguration, um die Architektur vorzubereiten.</p>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <Label className="text-xs text-muted-foreground">Konfigurationsfelder (vorbereitet)</Label>
+              <div className="space-y-2">
+                {[
+                  { label: 'Account SID', value: 'TWILIO_ACCOUNT_SID', status: 'placeholder' },
+                  { label: 'Auth Token', value: 'TWILIO_AUTH_TOKEN', status: 'placeholder' },
+                  { label: 'API Key', value: 'TWILIO_API_KEY', status: 'placeholder' },
+                  { label: 'API Secret', value: 'TWILIO_API_SECRET', status: 'placeholder' },
+                  { label: 'Phone Number', value: '+41 XX XXX XX XX', status: 'placeholder' },
+                  { label: 'TwiML App SID', value: 'TWILIO_TWIML_APP_SID', status: 'placeholder' },
+                ].map(item => (
+                  <div key={item.label} className="flex items-center gap-2 p-2 rounded border">
+                    <Shield className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-xs font-medium w-28 shrink-0">{item.label}</span>
+                    <span className="text-xs text-muted-foreground font-mono">{item.value}</span>
+                    <Badge variant="outline" className="text-[9px] ml-auto">Placeholder</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-xs text-muted-foreground">Webhook-Endpunkte (Ziel: Railway)</Label>
+              <div className="space-y-2">
+                {[
+                  { label: 'Voice Webhook', url: '/webhooks/twilio/voice', desc: 'Eingehende Anrufe & TwiML' },
+                  { label: 'Status Callback', url: '/webhooks/twilio/status', desc: 'Call-Status-Updates (ringing, answered, completed)' },
+                  { label: 'Recording Callback', url: '/webhooks/twilio/recording', desc: 'Aufnahme abgeschlossen' },
+                  { label: 'Media Stream', url: '/ws/media-stream', desc: 'Bidirektionaler Audio-Stream (WebSocket)' },
+                ].map(wh => (
+                  <div key={wh.label} className="p-2 rounded border">
+                    <div className="flex items-center gap-2">
+                      <Webhook className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <span className="text-xs font-medium">{wh.label}</span>
+                    </div>
+                    <code className="text-[10px] font-mono text-muted-foreground block mt-1">{wh.url}</code>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{wh.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Twilio-Fähigkeiten (geplant)</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {[
+                'Outbound Calls (REST API)',
+                'Inbound Call Routing',
+                'Media Streams (WebSocket)',
+                'Call Recording',
+                'DTMF Erkennung',
+                'Call Control (Hold, Transfer)',
+                'Nummernverwaltung',
+                'SIP Trunking (optional)',
+                'Caller ID Konfiguration',
+              ].map(cap => (
+                <div key={cap} className="flex items-center gap-2 p-2 rounded border bg-muted/30">
+                  <CheckCircle2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                  <span className="text-[10px]">{cap}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+            <Shield className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-medium">Twilio wird über Railway angebunden</p>
+              <p className="text-[10px] text-muted-foreground">
+                Twilio kommuniziert ausschliesslich mit dem Railway Voice Backend. Es gibt keine direkten Twilio-Calls vom SSM Recruit Frontend oder Core Backend. Alle Webhook-Endpunkte zeigen auf Railway.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Railway Deployment Info */}
       <Card>
         <CardHeader>
