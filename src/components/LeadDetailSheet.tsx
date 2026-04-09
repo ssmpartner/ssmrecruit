@@ -611,8 +611,8 @@ export default function LeadDetailSheet() {
                            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
                              {[
                                 ['Anrede', selectedLead.salutation],
-                                ['E-Mail', selectedLead.email],
-                                ['Telefon', selectedLead.phone],
+                                ...(!isFrozenForEmployee ? [['E-Mail', selectedLead.email]] : []),
+                                ...(!isFrozenForEmployee ? [['Telefon', selectedLead.phone]] : []),
                                 ['Position', selectedLead.position],
                                 ['Leaddatum', new Date(selectedLead.createdAt).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
                                ['Adresse', selectedLead.address],
