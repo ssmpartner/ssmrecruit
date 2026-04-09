@@ -7,6 +7,7 @@ import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardDialog';
 import PersonalityProfile from './PersonalityProfile';
+import { generateAssessmentPdf, assessmentToPdfData, loadLetterhead } from '@/lib/assessment-pdf';
 import {
   User, MapPin, Mail, Phone, Briefcase, Brain, FileText, BarChart3,
   ClipboardCheck, Shield, CheckCircle2, XCircle,
@@ -133,46 +134,9 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
     if (!assessment || !selectedLead) return;
     setGeneratingPdf(true);
     try {
-      const { disc_scores, motivator_scores, scores, match_result, summary, report_sections } = assessment;
-      const a = assessment as any;
-      const pw = window.open('', '_blank');
-      if (!pw) { setGeneratingPdf(false); return; }
-      
-      // Personality PDF sections
-      const personalityHtml = a.personality_title ? `
-        <h2>Persönlichkeitsprofil: ${a.personality_title}</h2>
-        ${a.personality_type_combination ? `<p class="m">Typ: ${a.personality_type_combination} ${a.top_motivators?.length ? '• Top Motivatoren: ' + a.top_motivators.join(', ') : ''}</p>` : ''}
-        ${a.personality_summary ? `<p>${a.personality_summary}</p>` : ''}
-        ${a.personality_meaning ? `<h3>Was dieses Profil bedeutet</h3><p>${a.personality_meaning}</p>` : ''}
-        ${a.match_interpretation ? `<h3>SSM Match-Interpretation</h3><p>${a.match_interpretation}</p>` : ''}
-        ${a.personality_strengths_extended?.length ? `<h3>Erweiterte Stärken</h3><ul>${a.personality_strengths_extended.map((s:string) => `<li>${s}</li>`).join('')}</ul>` : ''}
-        ${a.personality_risks_extended?.length ? `<h3>Mögliche Risiken</h3><ul>${a.personality_risks_extended.map((r:string) => `<li>${r}</li>`).join('')}</ul>` : ''}
-      ` : '';
-
-      pw.document.write(`<!DOCTYPE html><html><head><title>Assessment – ${selectedLead.name}</title>
-      <style>body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:40px 30px;color:#1a1a1a;font-size:13px;line-height:1.6}h1{font-size:22px;border-bottom:2px solid #2563eb;padding-bottom:8px}h2{font-size:16px;color:#2563eb;margin-top:28px;border-bottom:1px solid #e5e7eb;padding-bottom:4px}h3{font-size:14px;color:#374151;margin-top:16px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.c{border:1px solid #e5e7eb;border-radius:8px;padding:12px}.bw{height:10px;background:#f3f4f6;border-radius:5px;overflow:hidden;margin-top:4px}.b{height:100%;border-radius:5px}ul{padding-left:18px}li{margin-bottom:4px}.m{color:#6b7280;font-size:11px}@media print{body{padding:20px}}</style></head><body>
-      <h1>Assessment-Report: ${selectedLead.name}</h1>
-      <p class="m">Position: ${selectedLead.position||'—'} • ${new Date(assessment.completed_at).toLocaleDateString('de-CH')}</p>
-      ${summary.headline?`<h2>Zusammenfassung</h2><p><strong>${summary.headline}</strong></p><p>${summary.description||''}</p>`:''}
-      ${personalityHtml}
-      <h2>Match Score: ${match_result.score}/100</h2>
-      <div class="g2"><div class="c"><strong>Stärken</strong><ul>${(match_result.strengths||[]).map((s:string)=>`<li>${s}</li>`).join('')}</ul></div><div class="c"><strong>Risiken</strong><ul>${(match_result.risks||[]).map((r:string)=>`<li>${r}</li>`).join('')}</ul></div></div>
-      <h2>Performance Scores</h2>
-      ${scoreConfig.map(s=>{const v=(scores as any)[s.key]||0;return `<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between"><span>${s.label}</span><strong>${v}%</strong></div><div class="bw"><div class="b" style="width:${v}%;background:${s.color}"></div></div></div>`}).join('')}
-      <h2>DISC-Profil</h2>
-      <div class="g2">${['D','I','S','C'].map(k=>{const v=(disc_scores as any)[k]||0;return `<div class="c"><strong>${k} – ${discLabels[k]}</strong><div style="font-size:20px;font-weight:bold;color:${discColors[k]}">${v}%</div><div class="bw"><div class="b" style="width:${v}%;background:${discColors[k]}"></div></div></div>`}).join('')}</div>
-      ${report_sections.disc_analysis?`<p>${report_sections.disc_analysis}</p>`:''}
-      <h2>Motivatoren</h2>
-      ${Object.entries(motivator_scores).map(([k,v])=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between"><span style="text-transform:capitalize">${k}</span><strong>${v}%</strong></div><div class="bw"><div class="b" style="width:${v}%;background:${motivatorColors[k]||'#2563eb'}"></div></div></div>`).join('')}
-      ${report_sections.motivator_analysis?`<p>${report_sections.motivator_analysis}</p>`:''}
-      ${report_sections.integration?`<h2>Integration</h2><p>${report_sections.integration}</p>`:''}
-      ${report_sections.strengths_profile?.length?`<h2>Stärkenprofil</h2><ul>${report_sections.strengths_profile.map((s:string)=>`<li>${s}</li>`).join('')}</ul>`:''}
-      ${report_sections.improvement_areas?.length?`<h2>Verbesserungsbereiche</h2><ul>${report_sections.improvement_areas.map((s:string)=>`<li>${s}</li>`).join('')}</ul>`:''}
-      ${(report_sections.communication_do?.length||report_sections.communication_dont?.length)?`<h2>Kommunikation</h2><div class="g2"><div class="c"><strong>✅ DO</strong><ul>${(report_sections.communication_do||[]).map((s:string)=>`<li>${s}</li>`).join('')}</ul></div><div class="c"><strong>❌ DON'T</strong><ul>${(report_sections.communication_dont||[]).map((s:string)=>`<li>${s}</li>`).join('')}</ul></div></div>`:''}
-      ${report_sections.company_value?`<h2>Unternehmenswert</h2><p>${report_sections.company_value}</p>`:''}
-      <p class="m" style="margin-top:32px;text-align:center">SSM Recruit – ${new Date().toLocaleDateString('de-CH')}</p></body></html>`);
-      pw.document.close();
-      pw.print();
+      const letterhead = await loadLetterhead();
+      const pdfData = assessmentToPdfData(assessment, selectedLead.name, selectedLead.position || '');
+      generateAssessmentPdf(pdfData, letterhead);
     } catch(e) { console.error(e); }
     setGeneratingPdf(false);
   }
