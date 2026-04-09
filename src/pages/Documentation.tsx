@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
+import { useState, lazy, Suspense } from 'react';
+import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers, Bot, Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
 const APP_VERSION = '2.46.0';
 
@@ -600,7 +602,7 @@ export default function Documentation() {
 
       {/* Tabs */}
       <Tabs defaultValue="changelog" className="w-full">
-        <TabsList className="w-full grid grid-cols-4 mb-6">
+        <TabsList className="w-full grid grid-cols-5 mb-6">
           <TabsTrigger value="changelog" className="flex items-center gap-1.5 text-xs">
             <RefreshCw className="h-3.5 w-3.5" /> Changelog
           </TabsTrigger>
@@ -612,6 +614,9 @@ export default function Documentation() {
           </TabsTrigger>
           <TabsTrigger value="roles" className="flex items-center gap-1.5 text-xs">
             <Shield className="h-3.5 w-3.5" /> Rollen
+          </TabsTrigger>
+          <TabsTrigger value="ai-voice" className="flex items-center gap-1.5 text-xs">
+            <Bot className="h-3.5 w-3.5" /> AI Voice Agent
           </TabsTrigger>
         </TabsList>
 
@@ -629,6 +634,12 @@ export default function Documentation() {
 
         <TabsContent value="roles">
           <RolesTab />
+        </TabsContent>
+
+        <TabsContent value="ai-voice">
+          <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+            <AIVoiceDocsSection />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>
