@@ -5,6 +5,53 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// ── Deterministic personality avatar rules ──
+function resolvePersonality(disc: Record<string, number>, motivators: Record<string, number>) {
+  const discEntries = Object.entries(disc).sort(([,a],[,b]) => b - a);
+  const [top1Key, top1Val] = discEntries[0] || ['D', 0];
+  const [top2Key, top2Val] = discEntries[1] || ['I', 0];
+  const dominant_disc_type = top1Key;
+  const combination = `${top1Key}+${top2Key}`;
+
+  const motEntries = Object.entries(motivators).sort(([,a],[,b]) => b - a);
+  const top_motivators = motEntries.slice(0, 3).map(([k]) => k);
+
+  // DISC base titles
+  const discTitles: Record<string, string> = { D: 'Der Macher', I: 'Der Inspirator', S: 'Der Teamplayer', C: 'Der Analytiker' };
+  const comboTitles: Record<string, string> = {
+    'D+I': 'Der Challenger', 'I+D': 'Der Challenger',
+    'D+C': 'Der Strategische Umsetzer', 'C+D': 'Der Strategische Umsetzer',
+    'I+S': 'Der Beziehungsstarke', 'S+I': 'Der Beziehungsstarke',
+    'S+C': 'Der Verlässliche Spezialist', 'C+S': 'Der Verlässliche Spezialist',
+  };
+
+  // Motivator refinements
+  const motTitles: Record<string, string> = {
+    'oekonomisch+individualistisch': 'Performance Leader',
+    'individualistisch+oekonomisch': 'Performance Leader',
+    'sozial+aesthetisch': 'Empathischer Motivator',
+    'aesthetisch+sozial': 'Empathischer Motivator',
+    'theoretisch+traditionell': 'Strukturierter Experte',
+    'traditionell+theoretisch': 'Strukturierter Experte',
+    'oekonomisch+theoretisch': 'Analytischer Performer',
+    'theoretisch+oekonomisch': 'Analytischer Performer',
+    'individualistisch+sozial': 'Führungspersönlichkeit',
+    'sozial+individualistisch': 'Führungspersönlichkeit',
+  };
+
+  const motKey = `${top_motivators[0]}+${top_motivators[1]}`;
+  const motTitle = motTitles[motKey] || '';
+
+  // Use combo if top2 is close enough (>60% of top1)
+  const useCombo = top2Val > top1Val * 0.6;
+  const discTitle = useCombo ? (comboTitles[combination] || discTitles[top1Key]) : discTitles[top1Key];
+
+  const personality_avatar = useCombo ? combination.toLowerCase().replace('+', '_') : top1Key.toLowerCase();
+  const personality_title = motTitle ? `${discTitle} – ${motTitle}` : discTitle;
+
+  return { personality_title, personality_avatar, personality_type_combination: useCombo ? combination : top1Key, dominant_disc_type, top_motivators };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -23,7 +70,8 @@ Du analysierst Kandidaten basierend auf:
 - SSM Match-Kriterien des Unternehmens
 
 Erstelle eine umfassende Analyse mit professionellem, klarem Ton. Nicht zu technisch.
-Interpretiere Antworten intelligent, erkenne Widersprüche, hebe Stärken hervor, benenne Risiken ehrlich.`;
+Interpretiere Antworten intelligent, erkenne Widersprüche, hebe Stärken hervor, benenne Risiken ehrlich.
+Berücksichtige extreme Werte (>80 oder <30) besonders und erkenne Widersprüche (z.B. hoher D + hoher Sozial).`;
 
     const userPrompt = `Analysiere folgenden Kandidaten:
 
@@ -49,7 +97,7 @@ ${Object.entries(wizard_answers || {}).map(([k, v]) => `- ${k}: ${v}`).join('\n'
 **SSM Match-Kriterien:**
 ${ssm_criteria ? JSON.stringify(ssm_criteria, null, 2) : 'Keine spezifischen Kriterien definiert'}
 
-Erstelle die vollständige Analyse.`;
+Erstelle die vollständige Analyse UND ein detailliertes Persönlichkeitsprofil.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -68,7 +116,7 @@ Erstelle die vollständige Analyse.`;
             type: "function",
             function: {
               name: "generate_candidate_analysis",
-              description: "Generiert eine vollständige Kandidatenanalyse mit Scores, Matching und Empfehlung",
+              description: "Generiert eine vollständige Kandidatenanalyse mit Scores, Matching, Empfehlung UND Persönlichkeitsprofil",
               parameters: {
                 type: "object",
                 properties: {
@@ -127,8 +175,31 @@ Erstelle die vollständige Analyse.`;
                     },
                     required: ["disc_analysis", "motivator_analysis", "integration", "strengths_profile", "improvement_areas", "natural_vs_adapted", "communication_do", "communication_dont", "company_value"],
                   },
+                  // ── NEW: Personality profile fields ──
+                  personality_summary: {
+                    type: "string",
+                    description: "Wer ist diese Person? Wie arbeitet sie? Was treibt sie an? Max 5 Sätze, individuell und nicht generisch.",
+                  },
+                  personality_meaning: {
+                    type: "string",
+                    description: "Was bedeutet dieses Profil im Job? Wo performt diese Person stark? Welche Umgebung passt? 3-5 Sätze.",
+                  },
+                  personality_strengths_extended: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "5-7 erweiterte Stärken basierend auf DISC + Motivatoren Kombination. Nicht nur bestehende kopieren.",
+                  },
+                  personality_risks_extended: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "4-6 typische Risiken und Verhaltensmuster basierend auf dem Gesamtprofil.",
+                  },
+                  match_interpretation: {
+                    type: "string",
+                    description: "Warum passt diese Person zur SSM? Wo gibt es Abweichungen? Welche Rolle passt am besten? 3-5 Sätze.",
+                  },
                 },
-                required: ["summary", "scores", "match_result", "recommendation", "recommendation_reason", "report_sections"],
+                required: ["summary", "scores", "match_result", "recommendation", "recommendation_reason", "report_sections", "personality_summary", "personality_meaning", "personality_strengths_extended", "personality_risks_extended", "match_interpretation"],
                 additionalProperties: false,
               },
             },
@@ -161,6 +232,14 @@ Erstelle die vollständige Analyse.`;
     }
 
     const analysis = JSON.parse(toolCall.function.arguments);
+
+    // ── Enrich with deterministic personality avatar ──
+    const personality = resolvePersonality(disc_scores || {}, motivator_scores || {});
+    analysis.personality_title = personality.personality_title;
+    analysis.personality_avatar = personality.personality_avatar;
+    analysis.personality_type_combination = personality.personality_type_combination;
+    analysis.dominant_disc_type = personality.dominant_disc_type;
+    analysis.top_motivators = personality.top_motivators;
 
     return new Response(JSON.stringify(analysis), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
