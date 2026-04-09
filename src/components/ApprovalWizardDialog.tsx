@@ -207,11 +207,20 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
         addActivity(leadId, 'note', `${config.label} Feedback: ${feedback.trim()}`);
       }
 
-      // Notification
+      // Notification – role-specific messages for Controlling
+      const notifTitle = wizardType === 'controlling'
+        ? (action === 'approve' ? 'Controlling: Selektioniert' : 'Controlling: Abgelehnt')
+        : `${config.label} abgeschlossen`;
+      const notifDescription = wizardType === 'controlling'
+        ? (action === 'approve'
+          ? `Dein Kandidat "${leadName}" wurde vom Controlling selektioniert und an die Geschäftsleitung weitergeleitet.`
+          : `Dein Kandidat "${leadName}" wurde vom Controlling abgelehnt.${rejectReason ? ` Begründung: ${rejectReason}` : ''}`)
+        : `"${leadName}" – ${action === 'approve' ? 'Freigegeben' : 'Abgelehnt'} von ${currentUser}`;
+
       await supabase.from('notifications').insert({
-        type: 'status_change',
-        title: `${config.label} abgeschlossen`,
-        description: `"${leadName}" – ${action === 'approve' ? 'Selektioniert' : 'Abgelehnt'} von ${currentUser}`,
+        type: wizardType === 'controlling' ? 'lead_status_change' : 'status_change',
+        title: notifTitle,
+        description: notifDescription,
         lead_id: leadId,
       });
 
