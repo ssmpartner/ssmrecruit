@@ -78,6 +78,7 @@ const DOC_SECTIONS: DocSection[] = [
     icon: Code2,
     adminOnly: true,
     subsections: [
+      { id: 'action-gateway', label: 'Action Gateway (Pflichtschicht)' },
       { id: 'endpoints', label: 'Interne Endpunkte' },
       { id: 'dto-examples', label: 'DTO- / Payload-Beispiele' },
       { id: 'event-flows', label: 'Event-Flows' },
@@ -523,6 +524,97 @@ function RolesContent() {
 function ApiContent() {
   return (
     <div className="space-y-8">
+      <DocBlock id="action-gateway" title="Action Gateway (Pflichtschicht)" icon={Shield}>
+        <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 mb-4">
+          <p className="text-sm font-semibold text-amber-700">⚠️ Pflichtarchitektur</p>
+          <p className="text-xs text-amber-600 mt-1">
+            Das Action Gateway ist die einzige erlaubte Schnittstelle zwischen externen Systemen (Railway Voice Backend) 
+            und dem SSM Recruit Kernsystem. Direkte Provider-zu-Frontend-Logik ist architektonisch verboten.
+          </p>
+        </div>
+
+        <h4 className="font-semibold text-sm">Zweck</h4>
+        <p className="text-xs text-muted-foreground">
+          Das Action Gateway ist eine serverseitige Edge Function (<code>ai-voice-gateway</code>), die alle Aktionen 
+          des AI Voice Agents validiert, autorisiert und ausführt. Es unterstützt zwei Authentifizierungsarten:
+        </p>
+        <ul className="text-xs text-muted-foreground list-disc pl-5 mt-2 space-y-1">
+          <li><strong>User JWT</strong> – für Aktionen aus dem SSM Recruit Frontend (Bearer Token)</li>
+          <li><strong>Service Token</strong> – für Aktionen vom Railway Voice Backend (<code>x-service-token</code> Header)</li>
+        </ul>
+
+        <h4 className="font-semibold text-sm mt-4">Endpunkte</h4>
+        <div className="space-y-2 mt-2">
+          {[
+            { method: 'POST', path: '/ai-voice-gateway/execute', desc: 'Aktion ausführen (mit Rollout-Mode-Prüfung)' },
+            { method: 'POST', path: '/ai-voice-gateway/approve', desc: 'Vorgeschlagene Aktion genehmigen (nur User JWT)' },
+            { method: 'POST', path: '/ai-voice-gateway/reject', desc: 'Vorgeschlagene Aktion ablehnen (nur User JWT)' },
+            { method: 'POST', path: '/ai-voice-gateway/batch', desc: 'Bis zu 20 Aktionen in einem Request (max. Batch)' },
+            { method: 'GET', path: '/ai-voice-gateway/pending', desc: 'Offene vorgeschlagene Aktionen abrufen' },
+            { method: 'GET', path: '/ai-voice-gateway/history', desc: 'Action-Verlauf abrufen (Filter: session_id, lead_id)' },
+            { method: 'GET', path: '/ai-voice-gateway/health', desc: 'Gateway-Status prüfen (öffentlich)' },
+          ].map(e => (
+            <div key={e.path} className="flex items-start gap-3 p-2 rounded border">
+              <Badge variant={e.method === 'GET' ? 'secondary' : 'default'} className="text-[10px] w-14 justify-center shrink-0">{e.method}</Badge>
+              <div>
+                <code className="text-xs font-mono text-foreground">{e.path}</code>
+                <p className="text-xs text-muted-foreground">{e.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <h4 className="font-semibold text-sm mt-4">Unterstützte Aktionen (15)</h4>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-1 mt-2">
+          {['set_status', 'open_wizard', 'create_followup', 'create_task', 'create_note',
+            'assign_to_user', 'escalate_to_human', 'mark_wrong_number', 'mark_no_interest',
+            'mark_callback_requested', 'mark_qualified', 'mark_not_reached', 'schedule_callback',
+            'prepare_interview', 'send_confirmation_placeholder'].map(a => (
+            <code key={a} className="text-[10px] bg-muted px-2 py-1 rounded">{a}</code>
+          ))}
+        </div>
+
+        <h4 className="font-semibold text-sm mt-4">Rollout-Modi</h4>
+        <div className="space-y-1 mt-2">
+          {[
+            { mode: 'off', desc: 'Alle Aktionen blockiert' },
+            { mode: 'shadow', desc: 'Nur Protokollierung, keine Ausführung' },
+            { mode: 'recommendation', desc: 'Aktionen werden vorgeschlagen, User muss genehmigen' },
+            { mode: 'assisted', desc: 'Wie Recommendation, aber mit UI-Workflow zur Genehmigung' },
+            { mode: 'autonomous', desc: 'Sichere Aktionen automatisch, riskante als Vorschlag' },
+          ].map(m => (
+            <div key={m.mode} className="flex gap-2 text-xs">
+              <Badge variant="outline" className="text-[10px] w-28 justify-center shrink-0">{m.mode}</Badge>
+              <span className="text-muted-foreground">{m.desc}</span>
+            </div>
+          ))}
+        </div>
+
+        <h4 className="font-semibold text-sm mt-4">Sicherheitsregeln</h4>
+        <ul className="text-xs text-muted-foreground list-disc pl-5 space-y-1">
+          <li>High-Risk-Aktionen (<code>mark_qualified</code>, <code>mark_no_interest</code>, <code>assign_to_user</code>, <code>open_wizard</code>, <code>prepare_interview</code>) werden im Autonomous-Mode vom Service-Token blockiert</li>
+          <li>Jede Aktion wird vollständig in <code>ai_voice_action_logs</code> protokolliert</li>
+          <li>Lead-Timeline wird automatisch aktualisiert</li>
+          <li>Fehlerhafte Requests erhalten standardisierte Fehlercodes</li>
+        </ul>
+
+        <h4 className="font-semibold text-sm mt-4">Payload-Struktur (POST /execute)</h4>
+        <pre className="text-[10px] bg-muted p-3 rounded mt-2 overflow-x-auto">{`{
+  "action_type": "set_status",
+  "source": "ai_voice_agent",
+  "source_runtime": "railway_voice_backend",
+  "session_id": "uuid",
+  "ai_agent_id": "uuid",
+  "lead_id": "lead-id",
+  "candidate_id": "optional",
+  "execution_mode": "recommendation",
+  "reason": "Kandidat hat Interesse bestätigt",
+  "confidence": 0.92,
+  "payload": { "newStatus": "Qualifiziert" },
+  "audit_metadata": { "call_duration": 145 }
+}`}</pre>
+      </DocBlock>
+
       <DocBlock id="endpoints" title="Interne Endpunkte" icon={Code2}>
         <p>Alle Endpunkte erfordern einen gültigen <code>Authorization: Bearer &lt;token&gt;</code> Header.</p>
         <div className="space-y-2 mt-3">
