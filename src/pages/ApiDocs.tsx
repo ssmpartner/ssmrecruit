@@ -984,20 +984,43 @@ Neue Leads (Monat);24`,
 }`,
       },
       {
-        method: 'POST', path: 'Event: lead.approved.controlling', summary: 'Controlling-Freigabe Event', auth: false,
-        description: 'Wird ausgelöst wenn ein Lead vom Controlling freigegeben wird. Trigger: Status wechselt von "ready_for_controlling" zu "controlling_approved". Automatische Folgeaktion: Status → "management_review", Benachrichtigung an Geschäftsleitung.',
+        method: 'POST', path: 'Event: lead.controlling.selektioniert', summary: 'Controlling Selektionierung', auth: false,
+        description: 'Wird ausgelöst wenn das Controlling einen Lead selektioniert. Enthält Scoring (Perfekt/Sehr gut/Gut). Status wechselt zu "controlling_approved" → automatisch weiter an Geschäftsleitung (management_review). Mitarbeiter wird benachrichtigt.',
         body: [
           { name: 'lead_id', type: 'string', required: true, description: 'Lead-ID' },
-          { name: 'approved_by', type: 'string', required: true, description: 'Name des Freigebenden' },
-          { name: 'role', type: 'string', required: true, description: 'Immer "controlling"' },
+          { name: 'scoring', type: 'string', required: true, description: 'Bewertung: perfekt | sehr_gut | gut' },
+          { name: 'approved_by', type: 'string', required: true, description: 'Name des Controlling-Prüfers' },
+          { name: 'feedback', type: 'string', required: false, description: 'Optionales Feedback' },
         ],
         response: `{
-  "event": "lead.approved.controlling",
+  "event": "lead.controlling.selektioniert",
   "lead_id": "l1",
-  "new_status": "management_review",
-  "approved_by": "Max Müller",
-  "timestamp": "2026-03-26T14:00:00.000Z",
-  "next_action": "Benachrichtigung an Geschäftsleitung"
+  "scoring": "sehr_gut",
+  "new_status": "controlling_approved",
+  "approved_by": "Controller Name",
+  "timestamp": "2026-04-09T14:00:00.000Z",
+  "next_action": "Weiterleitung an Geschäftsleitung"
+}`,
+      },
+      {
+        method: 'POST', path: 'Event: lead.controlling.abgelehnt', summary: 'Controlling Ablehnung', auth: false,
+        description: 'Wird ausgelöst wenn das Controlling einen Lead ablehnt. Begründung ist Pflichtfeld. Status → "rejected", Lead-Lifecycle → "closed" (Read-Only für Mitarbeiter). Mitarbeiter wird benachrichtigt.',
+        body: [
+          { name: 'lead_id', type: 'string', required: true, description: 'Lead-ID' },
+          { name: 'scoring', type: 'string', required: true, description: 'Bewertung: perfekt | sehr_gut | gut' },
+          { name: 'reject_reason', type: 'string', required: true, description: 'Pflicht-Begründung der Ablehnung' },
+          { name: 'rejected_by', type: 'string', required: true, description: 'Name des Controlling-Prüfers' },
+        ],
+        response: `{
+  "event": "lead.controlling.abgelehnt",
+  "lead_id": "l1",
+  "scoring": "gut",
+  "new_status": "rejected",
+  "lead_lifecycle": "closed",
+  "reject_reason": "Unzureichende Qualifikation",
+  "rejected_by": "Controller Name",
+  "timestamp": "2026-04-09T14:00:00.000Z",
+  "next_action": "Lead gesperrt, Mitarbeiter benachrichtigt"
 }`,
       },
       {

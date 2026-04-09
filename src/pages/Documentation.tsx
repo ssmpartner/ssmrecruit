@@ -2,9 +2,18 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.43.0';
+const APP_VERSION = '2.44.0';
 
 const versionHistory = [
+  { version: '2.44.0', date: '09.04.2026', changes: [
+    'Controlling Wizard: Neuer Wizard im Sub-Step «Controlling Prüfung» mit zwei Aktionen: Selektionieren und Ablehnen',
+    'Scoring-System: Controlling kann Leads mit Perfekt / Sehr gut / Gut bewerten',
+    'Selektionieren: Lead wird mit Scoring an die Geschäftsleitung (controlling_approved → management_review) weitergeleitet',
+    'Ablehnen: Pflicht-Begründung erforderlich, Lead wird auf Status «Abgelehnt» gesetzt und für den Mitarbeiter gesperrt (Read-Only, lifecycle=closed)',
+    'Mitarbeiter-Benachrichtigung: Automatische Notification nach jeder Controlling-Entscheidung',
+    'Management Review: Zeigt Controlling-Scoring und -Entscheidung in der Read-Only Übersicht',
+    'API-Dokumentation: Neues Event lead.controlling.selektioniert mit Scoring-Details',
+  ]},
   { version: '2.43.0', date: '09.04.2026', changes: [
     'Follow-up Sub-Step: Neuer Sub-Step «Controlling Prüfung» innerhalb von Schritt 4 (Follow-up & Entscheidung)',
     'Vollständigkeitsprüfung: Button «Lead vollständig abschliessen» prüft automatisch: Insights/DISC abgeschlossen + Pflichtdokumente vorhanden',
