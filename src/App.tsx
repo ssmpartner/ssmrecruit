@@ -34,29 +34,13 @@ const ApplicationFormPage = lazy(() => import("./pages/ApplicationFormPage"));
 const BewerbungWizard = lazy(() => import("./pages/BewerbungWizard"));
 const AIVoiceAgent = lazy(() => import("./pages/AIVoiceAgent"));
 
-// AI Voice sub-pages
-const VoiceDashboardTab = lazy(() => import("./components/ai-voice/VoiceDashboardTab"));
-const LiveMonitoringTab = lazy(() => import("./components/ai-voice/LiveMonitoringTab"));
-const AlertsStatusTab = lazy(() => import("./components/ai-voice/AlertsStatusTab"));
-const AgentStudioTab = lazy(() => import("./components/ai-voice/AgentStudioTab"));
-const DeploymentsTab = lazy(() => import("./components/ai-voice/DeploymentsTab"));
-const CampaignsTab = lazy(() => import("./components/ai-voice/CampaignsTab"));
-const SessionsTab = lazy(() => import("./components/ai-voice/SessionsTab"));
-const EscalationsTab = lazy(() => import("./components/ai-voice/EscalationsTab"));
-const KnowledgeTab = lazy(() => import("./components/ai-voice/KnowledgeTab"));
-const ActionRulesTab = lazy(() => import("./components/ai-voice/ActionRulesTab"));
-const ComplianceTab = lazy(() => import("./components/ai-voice/ComplianceTab"));
-const ConversationGuidelinesTab = lazy(() => import("./components/ai-voice/ConversationGuidelinesTab"));
-const NumbersTab = lazy(() => import("./components/ai-voice/NumbersTab"));
-const ProviderSettingsTab = lazy(() => import("./components/ai-voice/ProviderSettingsTab"));
-const ApiWebhooksTab = lazy(() => import("./components/ai-voice/ApiWebhooksTab"));
-const CostControlTab = lazy(() => import("./components/ai-voice/CostControlTab"));
-const KillSwitchTab = lazy(() => import("./components/ai-voice/KillSwitchTab"));
-const VoiceAnalyticsTab = lazy(() => import("./components/ai-voice/VoiceAnalyticsTab"));
-const AuditLogTab = lazy(() => import("./components/ai-voice/AuditLogTab"));
-const SessionReviewsTab = lazy(() => import("./components/ai-voice/SessionReviewsTab"));
-const TestCenterTab = lazy(() => import("./components/ai-voice/TestCenterTab"));
-const VoiceDocsTab = lazy(() => import("./components/ai-voice/VoiceDocsTab"));
+// AI Voice – 6 container pages
+const AIVoiceOverview = lazy(() => import("./pages/ai-voice/AIVoiceOverview"));
+const AIVoiceBetrieb = lazy(() => import("./pages/ai-voice/AIVoiceBetrieb"));
+const AIVoiceWissen = lazy(() => import("./pages/ai-voice/AIVoiceWissen"));
+const AIVoiceInfrastruktur = lazy(() => import("./pages/ai-voice/AIVoiceInfrastruktur"));
+const AIVoiceQualitaet = lazy(() => import("./pages/ai-voice/AIVoiceQualitaet"));
+const AIVoiceDokumentation = lazy(() => import("./pages/ai-voice/AIVoiceDokumentation"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 1, refetchOnWindowFocus: false } },
@@ -149,36 +133,15 @@ const App = () => (
                 <Route path="/documentation" element={<P><Documentation /></P>} />
                 <Route path="/help" element={<P><HelpCenter /></P>} />
 
-                {/* AI Voice Agent – grouped sub-routes */}
+                {/* AI Voice Agent – 6 Hauptbereiche mit Tabs */}
                 <Route path="/ai-voice" element={<P><AIVoiceAgent /></P>}>
-                  {/* Übersicht */}
-                  <Route path="dashboard" element={<P><VoiceDashboardTab /></P>} />
-                  <Route path="live" element={<P><LiveMonitoringTab /></P>} />
-                  <Route path="alerts" element={<P><AlertsStatusTab /></P>} />
-                  {/* Betrieb */}
-                  <Route path="studio" element={<P><AgentStudioTab /></P>} />
-                  <Route path="deployments" element={<P><DeploymentsTab /></P>} />
-                  <Route path="campaigns" element={<P><CampaignsTab /></P>} />
-                  <Route path="sessions" element={<P><SessionsTab /></P>} />
-                  <Route path="escalations" element={<P><EscalationsTab /></P>} />
-                  {/* Wissen & Steuerung */}
-                  <Route path="knowledge" element={<P><KnowledgeTab /></P>} />
-                  <Route path="actions" element={<P><ActionRulesTab /></P>} />
-                  <Route path="compliance" element={<P><ComplianceTab /></P>} />
-                  <Route path="guidelines" element={<P><ConversationGuidelinesTab /></P>} />
-                  {/* Infrastruktur */}
-                  <Route path="numbers" element={<P><NumbersTab /></P>} />
-                  <Route path="providers" element={<P><ProviderSettingsTab /></P>} />
-                  <Route path="api-webhooks" element={<P><ApiWebhooksTab /></P>} />
-                  <Route path="costs" element={<P><CostControlTab /></P>} />
-                  <Route path="kill-switch" element={<P><KillSwitchTab /></P>} />
-                  {/* Qualität & Analyse */}
-                  <Route path="analytics" element={<P><VoiceAnalyticsTab /></P>} />
-                  <Route path="audit" element={<P><AuditLogTab /></P>} />
-                  <Route path="reviews" element={<P><SessionReviewsTab /></P>} />
-                  <Route path="test" element={<P><TestCenterTab /></P>} />
-                  {/* Dokumentation */}
-                  <Route path="docs" element={<P><VoiceDocsTab /></P>} />
+                  <Route index element={<Navigate to="/ai-voice/overview" replace />} />
+                  <Route path="overview" element={<P><AIVoiceOverview /></P>} />
+                  <Route path="betrieb" element={<P><AIVoiceBetrieb /></P>} />
+                  <Route path="wissen" element={<P><AIVoiceWissen /></P>} />
+                  <Route path="infrastruktur" element={<P><AIVoiceInfrastruktur /></P>} />
+                  <Route path="qualitaet" element={<P><AIVoiceQualitaet /></P>} />
+                  <Route path="docs" element={<P><AIVoiceDokumentation /></P>} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFound />} />
