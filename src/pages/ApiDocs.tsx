@@ -1023,7 +1023,7 @@ Neue Leads (Monat);24`,
     endpoints: [
       {
         method: 'GET', path: '/api/v1/roles/permissions', summary: 'Rollenberechtigungen abrufen', auth: true,
-        description: 'Gibt eine Übersicht der Berechtigungen pro Rolle im Lead-Modul zurück. Controlling: Nur Leads mit Status «ready_for_controlling» sichtbar – darf Insights, Matching, Dokumente ansehen + Controlling Wizard ausführen (Approve/Reject/Rückfrage). Geschäftsleitung: Nur «management_review» Leads – read-only Übersicht + Approve/Reject. HR: Nur «hr_processing» Leads – darf finalen Status «Eingestellt» setzen. Keine der Review-Rollen darf Leads erstellen, bearbeiten, archivieren, löschen oder Zuweisungen ändern.',
+        description: 'Gibt eine Übersicht der Berechtigungen pro Rolle im Lead-Modul zurück. Controlling: Nur Leads mit Sub-Status «ready_for_controlling» sichtbar – Telefon und E-Mail ausgeblendet – darf Insights, Matching, DISC-Ergebnisse, Dokumentenstatus ansehen + Controlling Wizard ausführen (Approve/Reject/Rückfrage). Sichtbar: Name, Lead-Datum, Position, Standort, Betreuer, Aktivitätenhistorie. Kein Zugriff auf Dashboard-Statistiken oder Gesamtanzahl Leads. Geschäftsleitung: Nur «management_review» Leads – read-only Übersicht + Approve/Reject. HR: Nur «hr_processing» Leads – darf finalen Status «Eingestellt» setzen. Keine der Review-Rollen darf Leads erstellen, bearbeiten, archivieren, löschen oder Zuweisungen ändern.',
         response: `{
   "roles": {
     "controlling": {
@@ -1031,7 +1031,11 @@ Neue Leads (Monat);24`,
       "can_view": true, "can_edit": false, "can_create": false,
       "can_archive": false, "can_delete": false,
       "allowed_actions": ["approve", "reject", "query"],
-      "visible_tabs": ["info", "insights", "documents", "activity", "status"]
+      "visible_tabs": ["info", "insights", "documents", "activity", "status"],
+      "hidden_fields": ["phone", "email"],
+      "visible_fields": ["name", "position", "plz", "city", "created_at", "employee", "insights", "disc", "documents", "activity_history"],
+      "dashboard_access": false,
+      "total_lead_count_visible": false
     },
     "geschaeftsleitung": {
       "visible_statuses": ["management_review"],
