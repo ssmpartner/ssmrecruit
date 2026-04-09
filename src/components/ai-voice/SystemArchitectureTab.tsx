@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import {
   Server, Globe, Monitor, Bot, Phone, Zap, Cloud, ArrowRight,
   CheckCircle2, XCircle, AlertTriangle, Settings2, Shield, Save,
-  Loader2, RefreshCw, ExternalLink, Layers, Activity
+  Loader2, RefreshCw, ExternalLink, Layers, Activity, Webhook
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 

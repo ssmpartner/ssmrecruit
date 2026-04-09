@@ -57,7 +57,7 @@ export default function NumbersTab() {
           <TableHeader>
             <TableRow>
               <TableHead>Label</TableHead><TableHead>Nummer</TableHead><TableHead>Region</TableHead><TableHead>Typ</TableHead>
-              <TableHead>Agentur</TableHead><TableHead>Agent</TableHead><TableHead>In</TableHead><TableHead>Out</TableHead><TableHead>Rec</TableHead><TableHead>Status</TableHead>
+              <TableHead>Provider</TableHead><TableHead>Agentur</TableHead><TableHead>Agent</TableHead><TableHead>In</TableHead><TableHead>Out</TableHead><TableHead>Rec</TableHead><TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -67,6 +67,11 @@ export default function NumbersTab() {
                 <TableCell className="font-mono text-sm">{n.number}</TableCell>
                 <TableCell className="text-sm">{n.region}, {n.country}</TableCell>
                 <TableCell><Badge variant="outline" className="text-[10px]">{n.type}</Badge></TableCell>
+                <TableCell>
+                  <Badge variant={n.providerStatus === 'prepared' ? 'secondary' : 'outline'} className="text-[10px]">
+                    {n.provider}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-sm">{n.agency}</TableCell>
                 <TableCell className="text-sm">{n.agent}</TableCell>
                 <TableCell>{n.inbound ? <PhoneIncoming className="h-3.5 w-3.5 text-green-600" /> : <span className="text-muted-foreground">–</span>}</TableCell>
