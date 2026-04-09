@@ -92,7 +92,7 @@ export default function ApprovalLeadView({ onClose }: ApprovalLeadViewProps) {
     if (!selectedLead?.position) { setCareerPlan(null); return; }
     supabase.from('career_plans').select('*').eq('is_active', true)
       .then(({ data }) => {
-        const match = (data as CareerPlan[] | null)?.find(p => 
+        const match = (data as unknown as CareerPlan[] | null)?.find(p => 
           selectedLead.position.toLowerCase().includes(p.position.toLowerCase()) || 
           p.position.toLowerCase().includes(selectedLead.position.toLowerCase())
         );
