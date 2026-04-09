@@ -32,6 +32,7 @@ const DOC_SECTIONS: DocSection[] = [
       { id: 'goal', label: 'Ziel des Moduls' },
       { id: 'architecture', label: 'Technische Grundarchitektur' },
       { id: 'target-architecture', label: 'Zielarchitektur (Produktivbetrieb)' },
+      { id: 'openai-integration', label: 'OpenAI Realtime Integration' },
       { id: 'components', label: 'Komponentenübersicht' },
       { id: 'datamodel-overview', label: 'Datenmodell-Überblick' },
       { id: 'provider-abstraction', label: 'Provider-Abstraktion' },
