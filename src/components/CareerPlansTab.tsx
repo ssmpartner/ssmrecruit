@@ -5,8 +5,9 @@ import { useToast } from '@/hooks/use-toast';
 
 interface CareerLevel {
   name: string;
-  salaryMin: number;
-  salaryMax: number;
+  fixSalary: number;
+  expenses: number;
+  scorePoints: number;
   requirements: string[];
 }
 
@@ -42,7 +43,7 @@ export default function CareerPlansTab() {
 
   useEffect(() => { loadPlans(); }, [loadPlans]);
 
-  const emptyLevel: CareerLevel = { name: '', salaryMin: 0, salaryMax: 0, requirements: [''] };
+  const emptyLevel: CareerLevel = { name: '', fixSalary: 0, expenses: 0, scorePoints: 0, requirements: [''] };
 
   const startAdd = () => {
     setIsAdding(true);
@@ -186,19 +187,26 @@ export default function CareerPlansTab() {
                   onChange={e => updateLevel(li, { name: e.target.value })}
                 />
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="text-[11px] text-muted-foreground">Gehalt Min (CHF)</label>
+                    <label className="text-[11px] text-muted-foreground">Fixlohn (CHF)</label>
                     <input
                       type="number" className="w-full rounded-md border bg-background px-3 py-1.5 text-sm"
-                      value={level.salaryMin || ''} onChange={e => updateLevel(li, { salaryMin: Number(e.target.value) })}
+                      value={level.fixSalary || ''} onChange={e => updateLevel(li, { fixSalary: Number(e.target.value) })}
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] text-muted-foreground">Gehalt Max (CHF)</label>
+                    <label className="text-[11px] text-muted-foreground">Spesen (CHF)</label>
                     <input
                       type="number" className="w-full rounded-md border bg-background px-3 py-1.5 text-sm"
-                      value={level.salaryMax || ''} onChange={e => updateLevel(li, { salaryMax: Number(e.target.value) })}
+                      value={level.expenses || ''} onChange={e => updateLevel(li, { expenses: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-muted-foreground">Score-Punkte Stufe</label>
+                    <input
+                      type="number" className="w-full rounded-md border bg-background px-3 py-1.5 text-sm"
+                      value={level.scorePoints || ''} onChange={e => updateLevel(li, { scorePoints: Number(e.target.value) })}
                     />
                   </div>
                 </div>
@@ -276,7 +284,7 @@ export default function CareerPlansTab() {
                         <div className="flex-1">
                           <p className="text-sm font-medium">{level.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {formatSalary(level.salaryMin)} – {formatSalary(level.salaryMax)}
+                            Fixlohn: {formatSalary(level.fixSalary)} · Spesen: {formatSalary(level.expenses)} · Score: {level.scorePoints || '–'}
                           </p>
                           {level.requirements.filter(Boolean).length > 0 && (
                             <ul className="mt-1 space-y-0.5">
