@@ -8,7 +8,7 @@ import {
   Settings, Server, Layers, Users, Code2, Database, Shield, History,
   Bot, Search, ChevronRight, BookOpen, Phone, Zap, Eye, AlertTriangle,
   ArrowRight, CheckCircle2, XCircle, Clock, Webhook, DollarSign, Lock,
-  FileText, Activity, Megaphone, FlaskConical, GitBranch
+  FileText, Activity, Megaphone, FlaskConical, GitBranch, FileSearch
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
