@@ -5,7 +5,7 @@ import { useSidebarState } from '@/context/SidebarContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const allNavItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
+  { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: null, excludeRoles: [] as string[] },
   { to: '/pipeline', icon: Kanban, label: 'Pipeline', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
   { to: '/leads', icon: Table, label: 'Leads', roles: null, excludeRoles: [] as string[] },
   { to: '/tasks', icon: CheckSquare, label: 'Aufgaben', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },

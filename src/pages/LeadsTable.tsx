@@ -147,7 +147,16 @@ export default function LeadsTable() {
 
   const selectCls = "h-9 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
 
-  const activeCount = leads.filter(l => l.lifecycle === 'active').length;
+  // Role-filtered counts
+  const roleFilteredActive = useMemo(() => {
+    let items = leads.filter(l => l.lifecycle === 'active');
+    if (isControlling) items = items.filter(l => l.status === 'ready_for_controlling');
+    else if (isGeschaeftsleitung) items = items.filter(l => l.status === 'management_review' || l.status === 'management_approved');
+    else if (isHR) items = items.filter(l => l.status === 'hr_processing');
+    return items.length;
+  }, [leads, isControlling, isGeschaeftsleitung, isHR]);
+
+  const activeCount = roleFilteredActive;
   const archivedCount = leads.filter(l => l.lifecycle === 'archived').length;
   const deletedCount = leads.filter(l => l.lifecycle === 'deleted').length;
 
@@ -244,26 +253,30 @@ export default function LeadsTable() {
               placeholder="Name, E-Mail, Ort oder PLZ..."
               className="h-9 w-56 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | '')} className={selectCls}>
-              <option value="">Alle Status</option>
-              {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-            </select>
-            <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className={selectCls}>
-              <option value="">Alle Quellen</option>
-              {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-            </select>
-            <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className={selectCls}>
-              <option value="">Alle Agenturen</option>
-              {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-            </select>
-            <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
-              <option value="">Alle Mitarbeiter</option>
-              {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-            </select>
-            <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>
-              <option value="">Alle Kantone</option>
-              {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
-            </select>
+            {!isReviewRole && (
+              <>
+                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | '')} className={selectCls}>
+                  <option value="">Alle Status</option>
+                  {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                </select>
+                <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className={selectCls}>
+                  <option value="">Alle Quellen</option>
+                  {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </select>
+                <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className={selectCls}>
+                  <option value="">Alle Agenturen</option>
+                  {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                </select>
+                <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
+                  <option value="">Alle Mitarbeiter</option>
+                  {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                </select>
+                <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>
+                  <option value="">Alle Kantone</option>
+                  {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
+                </select>
+              </>
+            )}
 
             <Popover>
               <PopoverTrigger asChild>
