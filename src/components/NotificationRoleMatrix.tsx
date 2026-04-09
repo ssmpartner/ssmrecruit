@@ -37,9 +37,20 @@ const NOTIFICATION_TYPES: { type: string; label: string; group: string }[] = [
   { type: 'document_uploaded', label: 'Dokument hochgeladen', group: 'Weitere' },
   { type: 'duplicate_detected', label: 'Duplikat erkannt', group: 'Weitere' },
   { type: 'automation_triggered', label: 'Automatisierung', group: 'Weitere' },
+  // AI Voice Agent
+  { type: 'ai_voice_escalation', label: 'AI-Eskalation', group: 'AI Voice Agent' },
+  { type: 'ai_voice_callback_requested', label: 'Rückrufwunsch', group: 'AI Voice Agent' },
+  { type: 'ai_voice_human_handover', label: 'Mensch-Übergabe', group: 'AI Voice Agent' },
+  { type: 'ai_voice_appointment_prepared', label: 'Termin vorbereitet', group: 'AI Voice Agent' },
+  { type: 'ai_voice_status_suggested', label: 'Status vorgeschlagen', group: 'AI Voice Agent' },
+  { type: 'ai_voice_status_changed', label: 'Status geändert', group: 'AI Voice Agent' },
+  { type: 'ai_voice_followup_created', label: 'Follow-up erstellt', group: 'AI Voice Agent' },
+  { type: 'ai_voice_problematic_session', label: 'Problematische Session', group: 'AI Voice Agent' },
+  { type: 'ai_voice_compliance_flag', label: 'Compliance-Flag', group: 'AI Voice Agent' },
+  { type: 'ai_voice_budget_warning', label: 'Budgetwarnung', group: 'AI Voice Agent' },
 ];
 
-const GROUPS = ['Leads', 'Termine', 'Aufgaben & Prozesse', 'Weitere'];
+const GROUPS = ['Leads', 'Termine', 'Aufgaben & Prozesse', 'AI Voice Agent', 'Weitere'];
 
 export default function NotificationRoleMatrix() {
   const { isSuperadmin } = useAuth();
