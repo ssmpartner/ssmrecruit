@@ -196,7 +196,7 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">{selectedLead.position || 'Keine Position'} • {selectedLead.plz} {selectedLead.city}</p>
           </div>
-          <div className={cn("shrink-0 rounded-lg border px-3 py-1.5 text-xs font-bold", roleBgColor, roleColor)}>
+          <div className={cn("shrink-0 rounded-lg border px-3 py-1.5 text-xs font-bold mr-10", roleBgColor, roleColor)}>
             <Shield className="h-3 w-3 inline mr-1" />{roleLabel}-Ansicht
           </div>
         </div>
