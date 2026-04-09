@@ -148,7 +148,81 @@ export default function Dashboard() {
 
   const roleTitle = isControlling ? 'Zu prüfen' : isGeschaeftsleitung ? 'Freigaben offen' : 'Onboarding';
 
-  // Review roles get a simplified dashboard
+  // Controlling gets a focused, minimal dashboard
+  if (isControlling) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Willkommen zurück, {displayName} 👋
+            </h1>
+            <p className="text-lg text-muted-foreground mt-1">
+              {roleLeads.length > 0
+                ? `Du hast ${roleLeads.length} Kandidaten zur Prüfung`
+                : 'Du hast aktuell keine Kandidaten zur Prüfung'}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 shadow-sm">
+              <Clock className="h-4 w-4" />
+              <span className="font-medium tabular-nums">{formatTime(now)}</span>
+            </div>
+          </div>
+        </div>
+
+        {roleLeads.length > 0 && (
+          <button
+            onClick={() => navigate('/leads')}
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
+          >
+            <Users className="h-4 w-4" />
+            Zur Prüfung ({roleLeads.length})
+          </button>
+        )}
+
+        <div className="rounded-xl border bg-card shadow-sm">
+          <div className="flex items-center justify-between p-6 pb-4">
+            <h3 className="text-base font-semibold">Kandidaten zur Prüfung</h3>
+          </div>
+          <div className="px-6 pb-6">
+            {roleLeads.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <UserCheck className="h-10 w-10 mb-3 opacity-30" />
+                <p className="text-sm font-medium">Keine Kandidaten zur Prüfung</p>
+                <p className="text-xs">Sobald ein Kandidat zugewiesen wird, erscheint er hier.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {roleLeads.slice(0, 10).map(lead => {
+                  const ag = agencies.find(a => a.id === lead.agencyId);
+                  return (
+                    <div
+                      key={lead.id}
+                      onClick={() => setSelectedLead(lead)}
+                      className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{lead.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{lead.position} · {ag?.name ?? '—'}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <LeadStatusBadge status={lead.status} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <LeadDetailSheet />
+      </div>
+    );
+  }
+
+  // Other review roles (GL, HR) get a simplified dashboard
   if (isReviewRole) {
     return (
       <div className="space-y-6">
