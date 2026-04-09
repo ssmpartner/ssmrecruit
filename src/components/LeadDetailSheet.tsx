@@ -294,6 +294,45 @@ export default function LeadDetailSheet() {
               <div className="flex-1 flex overflow-hidden">
                 {/* LEFT: Actions Panel */}
                 <div className="w-[360px] shrink-0 border-r overflow-y-auto">
+                  {isFrozenForEmployee ? (
+                    <div className="p-4 space-y-4">
+                      <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <EyeOff className="h-5 w-5 text-amber-700" />
+                          <h3 className="text-sm font-bold text-amber-800">Lead gesperrt (Read-Only)</h3>
+                        </div>
+                        <p className="text-xs text-amber-700 mb-3">
+                          Dieser Lead wurde vom Controlling geprüft. Telefon, E-Mail und Dokumente sind nicht mehr zugänglich.
+                        </p>
+                        {controllingResult && (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between rounded-lg bg-background p-2.5 border">
+                              <span className="text-xs text-muted-foreground">Status</span>
+                              <span className={cn("text-xs font-bold",
+                                controllingResult.action === 'selektionieren' ? 'text-emerald-700' : 'text-destructive'
+                              )}>
+                                {controllingResult.action === 'selektionieren' ? 'Selektioniert' : 'Abgelehnt'}
+                              </span>
+                            </div>
+                            {controllingResult.scoring && (
+                              <div className="flex items-center justify-between rounded-lg bg-background p-2.5 border">
+                                <span className="text-xs text-muted-foreground">Scoring</span>
+                                <span className="text-xs font-bold">
+                                  {controllingResult.scoring === 'perfekt' ? 'Perfekt' : controllingResult.scoring === 'sehr_gut' ? 'Sehr gut' : 'Gut'}
+                                </span>
+                              </div>
+                            )}
+                            {controllingResult.reason && (
+                              <div className="rounded-lg bg-background p-2.5 border">
+                                <span className="text-xs text-muted-foreground block mb-1">Begründung</span>
+                                <p className="text-xs">{controllingResult.reason}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
                   <div className="p-4">
                     <LeadActionPanel
                       leadId={selectedLead.id}
@@ -306,6 +345,7 @@ export default function LeadDetailSheet() {
                       onNavigateToTab={(tab) => setRightTab(tab as any)}
                     />
                   </div>
+                  )}
 
                   {/* Quick Video Call CTA */}
                   {(() => {
