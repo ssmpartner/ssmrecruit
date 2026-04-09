@@ -452,15 +452,79 @@ function OperationsContent() {
       </DocBlock>
 
       <DocBlock id="session-lifecycle" title="Session-Lebenszyklus" icon={Activity}>
-        <div className="flex flex-wrap items-center gap-2 mt-3">
-          {['initiated', 'ringing', 'connected', 'in_progress', 'completed / failed'].map((s, i) => (
+        <p className="mb-3">Jede Voice-Interaktion durchläuft einen kontrollierten Lebenszyklus mit definierten Zuständen und Ereignissen.</p>
+
+        <h4 className="font-semibold text-sm mt-4">Session Lifecycle States</h4>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+          {[
+            { state: 'queued', desc: 'In Warteschlange – bereit zur Verarbeitung' },
+            { state: 'initiating', desc: 'Kontext wird geladen, Agent + Deployment geprüft' },
+            { state: 'ringing', desc: 'Provider-Anruf läuft, Klingeln beim Kandidaten' },
+            { state: 'connected', desc: 'Verbindung hergestellt, Audio-Stream aktiv' },
+            { state: 'active', desc: 'Gespräch läuft, KI verarbeitet Turns' },
+            { state: 'paused', desc: 'Gespräch pausiert (z.B. Rückfrage)' },
+            { state: 'awaiting_action', desc: 'KI wartet auf Aktionsgenehmigung' },
+            { state: 'escalated', desc: 'An Mensch eskaliert' },
+            { state: 'completed', desc: 'Session erfolgreich abgeschlossen' },
+            { state: 'failed', desc: 'Technischer Fehler oder Abbruch' },
+            { state: 'cancelled', desc: 'Manuell oder durch System abgebrochen' },
+          ].map(s => (
+            <div key={s.state} className="p-2 rounded border text-xs">
+              <Badge variant="outline" className="text-[10px] mb-1">{s.state}</Badge>
+              <p className="text-muted-foreground">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <h4 className="font-semibold text-sm mt-4">Zustandswechsel (Transitionen)</h4>
+        <div className="flex flex-wrap items-center gap-2 mt-2">
+          {['queued', 'initiating', 'ringing', 'connected', 'active', 'completed'].map((s, i) => (
             <span key={s} className="flex items-center gap-1">
               <Badge variant="outline" className="text-xs">{s}</Badge>
-              {i < 4 && <ArrowRight className="h-3 w-3 text-muted-foreground" />}
+              {i < 5 && <ArrowRight className="h-3 w-3 text-muted-foreground" />}
             </span>
           ))}
         </div>
-        <p className="mt-3">Nach Beendigung wird automatisch: Transkript erstellt, Zusammenfassung generiert, Kosten berechnet, Aktionen vorgeschlagen/ausgeführt und Audit-Log geschrieben.</p>
+        <p className="text-xs text-muted-foreground mt-1">Fehlerpfade: Jeder Zustand kann zu <code>failed</code> oder <code>cancelled</code> wechseln. Von <code>active</code> sind zusätzlich <code>paused</code>, <code>awaiting_action</code> und <code>escalated</code> möglich.</p>
+
+        <h4 className="font-semibold text-sm mt-4">Session-Ereignisse</h4>
+        <div className="grid grid-cols-2 gap-1 mt-2 text-xs">
+          {[
+            'session_created', 'provider_call_requested', 'provider_call_connected',
+            'ai_joined', 'first_turn_created', 'action_suggested', 'action_approved',
+            'action_executed', 'action_blocked', 'escalation_created',
+            'summary_generated', 'session_completed', 'session_failed',
+          ].map(e => (
+            <span key={e} className="font-mono text-muted-foreground">{e}</span>
+          ))}
+        </div>
+
+        <h4 className="font-semibold text-sm mt-4">Orchestrator-Ablauf</h4>
+        <ol className="list-decimal list-inside space-y-1 mt-2 text-sm">
+          <li>Session erstellen und in Warteschlange einreihen</li>
+          <li>Agent laden und Deployment prüfen (Rollout-Modus, Aktivierung)</li>
+          <li>Knowledge-Einträge binden (aktiv + freigegeben)</li>
+          <li>Action Permissions aus Agent-Konfiguration laden</li>
+          <li>OpenAI Session-Kontext vorbereiten (System-Prompt, Tools, Compliance)</li>
+          <li>Provider-Anruf initiieren (Mock oder Twilio)</li>
+          <li>Turn-by-Turn-Verarbeitung mit Intent-Erkennung</li>
+          <li>Aktionen vorschlagen / ausführen gemäss Rollout-Modus</li>
+          <li>Session beenden: Zusammenfassung, Kosten, Audit-Log</li>
+        </ol>
+
+        <h4 className="font-semibold text-sm mt-4">Fehlerpfade</h4>
+        <ul className="list-disc list-inside space-y-1 mt-2 text-sm">
+          <li><strong>Agent nicht gefunden:</strong> Session → failed (sofort)</li>
+          <li><strong>Deployment inaktiv:</strong> Session → failed (vor Anruf)</li>
+          <li><strong>Provider-Timeout:</strong> Session → failed (nach ringing)</li>
+          <li><strong>Keine Antwort:</strong> Session → failed (nach ringing, Retry möglich)</li>
+          <li><strong>Compliance-Verstoss:</strong> Session → escalated (sofortige Übergabe)</li>
+          <li><strong>Max. Dauer überschritten:</strong> Session → completed (erzwungenes Ende)</li>
+        </ul>
+
+        <InfoBox type="info">
+          Im Mock-Modus werden alle Zustände simuliert. Im Livebetrieb steuert das Railway Voice Backend die Transitionen basierend auf echten Provider-Events.
+        </InfoBox>
       </DocBlock>
 
       <DocBlock id="cost-control" title="Kostenkontrolle" icon={DollarSign}>

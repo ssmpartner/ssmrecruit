@@ -8,10 +8,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { Bot, PhoneIncoming, PhoneOutgoing, User, Eye, Search, Filter, DollarSign, Clock, MessageSquare, Zap, AlertTriangle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Bot, PhoneIncoming, PhoneOutgoing, User, Eye, Search, Filter, DollarSign, Clock, Zap, AlertTriangle, Activity, Server } from 'lucide-react';
+import {
+  SESSION_STATE_META,
+  EVENT_LABELS,
+  buildMockEventsForSession,
+  type SessionState,
+  type SessionEvent,
+} from '@/lib/ai-voice-session-orchestrator';
 
 const MOCK_SESSIONS = [
-  { id: 's1', session_uid: 'MOCK-001', agent_name: 'SSM Recruiting Bot', lead_name: 'Max Mustermann', agency: 'SSM Zürich', direction: 'outbound', status: 'completed', duration: 28, sentiment: 'positive', outcome: 'appointment_scheduled', result_type: 'success', phone_from: '+41 44 123 45 67', phone_to: '+41 79 987 65 43', cost_total: 0.85, cost_ai: 0.45, cost_tel: 0.40, transcript_status: 'completed', escalation_status: 'none', created_at: '2026-04-09T09:15:00Z', is_test: true,
+  { id: 's1', session_uid: 'MOCK-001', agent_name: 'SSM Recruiting Bot', lead_name: 'Max Mustermann', agency: 'SSM Zürich', direction: 'outbound', status: 'completed', lifecycle_state: 'completed' as SessionState, duration: 28, sentiment: 'positive', outcome: 'appointment_scheduled', result_type: 'success', phone_from: '+41 44 123 45 67', phone_to: '+41 79 987 65 43', cost_total: 0.85, cost_ai: 0.45, cost_tel: 0.40, transcript_status: 'completed', escalation_status: 'none', created_at: '2026-04-09T09:15:00Z', is_test: true, environment: 'sandbox',
     turns: [
       { index: 0, speaker: 'system', text: 'Anruf wird verbunden...', intent: 'system_event', confidence: 1, latency: 0 },
       { index: 1, speaker: 'assistant', text: 'Guten Tag, hier spricht der SSM Recruiting-Assistent. Ich rufe Sie an bezüglich Ihrer Bewerbung als Finanzberater.', intent: 'greeting', confidence: 0.97, latency: 120 },
@@ -23,11 +31,13 @@ const MOCK_SESSIONS = [
     actions: [{ type: 'create_appointment', target: 'Lead', mode: 'suggested', result: 'pending_approval' }],
     summary: 'Terminvereinbarung erfolgreich. Kandidat interessiert, Termin Dienstag 14:00.',
   },
-  { id: 's2', session_uid: 'MOCK-002', agent_name: 'SSM Inbound Assistent', lead_name: 'Thomas Meier', agency: 'SSM Bern', direction: 'inbound', status: 'completed', duration: 32, sentiment: 'positive', outcome: 'lead_created', result_type: 'success', phone_from: '+41 79 123 45 67', phone_to: '+41 44 123 45 67', cost_total: 0.92, cost_ai: 0.52, cost_tel: 0.40, transcript_status: 'completed', escalation_status: 'none', created_at: '2026-04-09T08:45:00Z', is_test: true, turns: [], actions: [], summary: 'Neuer Interessent qualifiziert und als Lead angelegt.' },
-  { id: 's3', session_uid: 'MOCK-003', agent_name: 'SSM Recruiting Bot', lead_name: 'Anna Keller', agency: 'SSM Zürich', direction: 'outbound', status: 'no_answer', duration: 0, sentiment: 'neutral', outcome: 'no_answer', result_type: 'retry', phone_from: '+41 44 123 45 67', phone_to: '+41 78 555 12 34', cost_total: 0.05, cost_ai: 0, cost_tel: 0.05, transcript_status: 'none', escalation_status: 'none', created_at: '2026-04-08T16:30:00Z', is_test: true, turns: [], actions: [], summary: 'Keine Antwort. Retry geplant.' },
-  { id: 's4', session_uid: 'MOCK-004', agent_name: 'SSM Recruiting Bot', lead_name: 'Peter Schmid', agency: 'SSM Zürich', direction: 'outbound', status: 'completed', duration: 45, sentiment: 'negative', outcome: 'not_interested', result_type: 'closed', phone_from: '+41 44 123 45 67', phone_to: '+41 76 333 44 55', cost_total: 1.20, cost_ai: 0.70, cost_tel: 0.50, transcript_status: 'completed', escalation_status: 'none', created_at: '2026-04-08T14:00:00Z', is_test: true, turns: [], actions: [], summary: 'Kandidat nicht interessiert. Position passt nicht.' },
-  { id: 's5', session_uid: 'MOCK-005', agent_name: 'SSM Recruiting Bot', lead_name: 'Lisa Weber', agency: 'SSM Bern', direction: 'outbound', status: 'completed', duration: 35, sentiment: 'positive', outcome: 'callback_requested', result_type: 'follow_up', phone_from: '+41 44 123 45 67', phone_to: '+41 79 222 33 44', cost_total: 0.95, cost_ai: 0.55, cost_tel: 0.40, transcript_status: 'completed', escalation_status: 'escalated', created_at: '2026-04-08T11:20:00Z', is_test: true, turns: [], actions: [], summary: 'Rückruf gewünscht. Eskalation an Berater.' },
+  { id: 's2', session_uid: 'MOCK-002', agent_name: 'SSM Inbound Assistent', lead_name: 'Thomas Meier', agency: 'SSM Bern', direction: 'inbound', status: 'completed', lifecycle_state: 'completed' as SessionState, duration: 32, sentiment: 'positive', outcome: 'lead_created', result_type: 'success', phone_from: '+41 79 123 45 67', phone_to: '+41 44 123 45 67', cost_total: 0.92, cost_ai: 0.52, cost_tel: 0.40, transcript_status: 'completed', escalation_status: 'none', created_at: '2026-04-09T08:45:00Z', is_test: true, environment: 'sandbox', turns: [], actions: [], summary: 'Neuer Interessent qualifiziert und als Lead angelegt.' },
+  { id: 's3', session_uid: 'MOCK-003', agent_name: 'SSM Recruiting Bot', lead_name: 'Anna Keller', agency: 'SSM Zürich', direction: 'outbound', status: 'no_answer', lifecycle_state: 'failed' as SessionState, duration: 0, sentiment: 'neutral', outcome: 'no_answer', result_type: 'retry', phone_from: '+41 44 123 45 67', phone_to: '+41 78 555 12 34', cost_total: 0.05, cost_ai: 0, cost_tel: 0.05, transcript_status: 'none', escalation_status: 'none', created_at: '2026-04-08T16:30:00Z', is_test: true, environment: 'sandbox', turns: [], actions: [], summary: 'Keine Antwort. Retry geplant.' },
+  { id: 's4', session_uid: 'MOCK-004', agent_name: 'SSM Recruiting Bot', lead_name: 'Peter Schmid', agency: 'SSM Zürich', direction: 'outbound', status: 'completed', lifecycle_state: 'completed' as SessionState, duration: 45, sentiment: 'negative', outcome: 'not_interested', result_type: 'closed', phone_from: '+41 44 123 45 67', phone_to: '+41 76 333 44 55', cost_total: 1.20, cost_ai: 0.70, cost_tel: 0.50, transcript_status: 'completed', escalation_status: 'none', created_at: '2026-04-08T14:00:00Z', is_test: true, environment: 'sandbox', turns: [], actions: [], summary: 'Kandidat nicht interessiert. Position passt nicht.' },
+  { id: 's5', session_uid: 'MOCK-005', agent_name: 'SSM Recruiting Bot', lead_name: 'Lisa Weber', agency: 'SSM Bern', direction: 'outbound', status: 'completed', lifecycle_state: 'escalated' as SessionState, duration: 35, sentiment: 'positive', outcome: 'callback_requested', result_type: 'follow_up', phone_from: '+41 44 123 45 67', phone_to: '+41 79 222 33 44', cost_total: 0.95, cost_ai: 0.55, cost_tel: 0.40, transcript_status: 'completed', escalation_status: 'escalated', created_at: '2026-04-08T11:20:00Z', is_test: true, environment: 'sandbox', turns: [], actions: [], summary: 'Rückruf gewünscht. Eskalation an Berater.' },
 ];
+
+type MockSession = typeof MOCK_SESSIONS[0];
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
@@ -46,8 +56,14 @@ function SentimentBadge({ sentiment }: { sentiment: string }) {
   return <Badge variant="outline" className="text-[10px]">Neutral</Badge>;
 }
 
+function LifecycleStateBadge({ state }: { state: SessionState }) {
+  const meta = SESSION_STATE_META[state];
+  if (!meta) return null;
+  return <Badge className={`text-[10px] ${meta.color} hover:${meta.color}`}>{meta.icon} {meta.label}</Badge>;
+}
+
 export default function SessionsTab() {
-  const [selected, setSelected] = useState<typeof MOCK_SESSIONS[0] | null>(null);
+  const [selected, setSelected] = useState<MockSession | null>(null);
   const [dirFilter, setDirFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
@@ -62,7 +78,6 @@ export default function SessionsTab() {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Call Sessions</h3>
-      {/* Filters */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -82,7 +97,7 @@ export default function SessionsTab() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Lead</TableHead><TableHead>Agent</TableHead><TableHead>Agentur</TableHead><TableHead>Richtung</TableHead><TableHead>Status</TableHead><TableHead>Dauer</TableHead><TableHead>Stimmung</TableHead><TableHead>Kosten</TableHead><TableHead>Datum</TableHead><TableHead></TableHead>
+              <TableHead>Lead</TableHead><TableHead>Agent</TableHead><TableHead>Agentur</TableHead><TableHead>Richtung</TableHead><TableHead>Status</TableHead><TableHead>Lifecycle</TableHead><TableHead>Dauer</TableHead><TableHead>Stimmung</TableHead><TableHead>Kosten</TableHead><TableHead>Datum</TableHead><TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -93,6 +108,7 @@ export default function SessionsTab() {
                 <TableCell className="text-sm">{s.agency}</TableCell>
                 <TableCell>{s.direction === 'outbound' ? <PhoneOutgoing className="h-4 w-4" /> : <PhoneIncoming className="h-4 w-4" />}</TableCell>
                 <TableCell><StatusBadge status={s.status} /></TableCell>
+                <TableCell><LifecycleStateBadge state={s.lifecycle_state} /></TableCell>
                 <TableCell className="text-sm">{s.duration}s</TableCell>
                 <TableCell><SentimentBadge sentiment={s.sentiment} /></TableCell>
                 <TableCell className="text-sm">{s.cost_total.toFixed(2)} CHF</TableCell>
@@ -100,12 +116,11 @@ export default function SessionsTab() {
                 <TableCell><Button variant="ghost" size="sm"><Eye className="h-4 w-4" /></Button></TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Keine Sessions gefunden</TableCell></TableRow>}
+            {filtered.length === 0 && <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">Keine Sessions gefunden</TableCell></TableRow>}
           </TableBody>
         </Table>
       </Card>
 
-      {/* Session Detail Sheet */}
       <Sheet open={!!selected} onOpenChange={() => setSelected(null)}>
         <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
           {selected && <SessionDetail session={selected} />}
@@ -115,7 +130,22 @@ export default function SessionsTab() {
   );
 }
 
-function SessionDetail({ session: s }: { session: typeof MOCK_SESSIONS[0] }) {
+// ── Session Detail with Tabs ──────────────────────────────────────
+
+function SessionDetail({ session: s }: { session: MockSession }) {
+  const events = buildMockEventsForSession({
+    status: s.status,
+    direction: s.direction,
+    duration: s.duration,
+    outcome: s.outcome,
+    sentiment: s.sentiment,
+    escalation_status: s.escalation_status,
+    created_at: s.created_at,
+    is_test: s.is_test,
+    turns: s.turns,
+    actions: s.actions,
+  });
+
   return (
     <div className="space-y-5">
       <SheetHeader>
@@ -127,36 +157,69 @@ function SessionDetail({ session: s }: { session: typeof MOCK_SESSIONS[0] }) {
 
       <div className="flex gap-2 flex-wrap">
         <StatusBadge status={s.status} />
+        <LifecycleStateBadge state={s.lifecycle_state} />
         <SentimentBadge sentiment={s.sentiment} />
         <Badge variant="outline" className="text-[10px]">{s.outcome.replace(/_/g, ' ')}</Badge>
         {s.is_test && <Badge variant="secondary" className="text-[10px]">Test</Badge>}
         {s.escalation_status !== 'none' && <Badge variant="destructive" className="text-[10px]"><AlertTriangle className="h-3 w-3 mr-0.5" />Eskaliert</Badge>}
       </div>
 
-      {/* Metadata Grid */}
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <div><Label className="text-xs text-muted-foreground">Lead</Label><p className="font-medium">{s.lead_name}</p></div>
-        <div><Label className="text-xs text-muted-foreground">Agent</Label><p className="font-medium">{s.agent_name}</p></div>
-        <div><Label className="text-xs text-muted-foreground">Agentur</Label><p>{s.agency}</p></div>
-        <div><Label className="text-xs text-muted-foreground">Richtung</Label><p>{s.direction}</p></div>
-        <div><Label className="text-xs text-muted-foreground">Von</Label><p className="font-mono text-xs">{s.phone_from}</p></div>
-        <div><Label className="text-xs text-muted-foreground">An</Label><p className="font-mono text-xs">{s.phone_to}</p></div>
-        <div className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-muted-foreground" /><span>{s.duration}s Dauer</span></div>
-        <div className="flex items-center gap-1.5"><DollarSign className="h-3.5 w-3.5 text-muted-foreground" /><span>{s.cost_total.toFixed(2)} CHF (AI: {s.cost_ai}, Tel: {s.cost_tel})</span></div>
-      </div>
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="w-full grid grid-cols-4">
+          <TabsTrigger value="overview">Übersicht</TabsTrigger>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="conversation">Gespräch</TabsTrigger>
+          <TabsTrigger value="technical">Technik</TabsTrigger>
+        </TabsList>
 
-      <Separator />
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-4 mt-4">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div><Label className="text-xs text-muted-foreground">Lead</Label><p className="font-medium">{s.lead_name}</p></div>
+            <div><Label className="text-xs text-muted-foreground">Agent</Label><p className="font-medium">{s.agent_name}</p></div>
+            <div><Label className="text-xs text-muted-foreground">Agentur</Label><p>{s.agency}</p></div>
+            <div><Label className="text-xs text-muted-foreground">Richtung</Label><p>{s.direction}</p></div>
+            <div><Label className="text-xs text-muted-foreground">Von</Label><p className="font-mono text-xs">{s.phone_from}</p></div>
+            <div><Label className="text-xs text-muted-foreground">An</Label><p className="font-mono text-xs">{s.phone_to}</p></div>
+            <div className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-muted-foreground" /><span>{s.duration}s Dauer</span></div>
+            <div className="flex items-center gap-1.5"><DollarSign className="h-3.5 w-3.5 text-muted-foreground" /><span>{s.cost_total.toFixed(2)} CHF (AI: {s.cost_ai}, Tel: {s.cost_tel})</span></div>
+          </div>
+          <Separator />
+          <div><Label className="text-xs text-muted-foreground">Zusammenfassung</Label><p className="text-sm mt-1">{s.summary}</p></div>
 
-      {/* Summary */}
-      <div><Label className="text-xs text-muted-foreground">Zusammenfassung</Label><p className="text-sm mt-1">{s.summary}</p></div>
-
-      {/* Turn-by-Turn */}
-      {s.turns.length > 0 && (
-        <>
+          {/* Lifecycle State Flow */}
           <Separator />
           <div>
-            <Label className="text-xs text-muted-foreground mb-2 block">Gesprächsverlauf ({s.turns.length} Turns)</Label>
-            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+            <Label className="text-xs text-muted-foreground mb-2 block">Session Lifecycle</Label>
+            <SessionStateFlow currentState={s.lifecycle_state} />
+          </div>
+
+          {s.actions.length > 0 && (
+            <>
+              <Separator />
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">Ausgeführte Aktionen</Label>
+                {s.actions.map((a, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2 rounded bg-muted/40">
+                    <Zap className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-sm">{a.type} → {a.target}</span>
+                    <Badge variant="outline" className="text-[10px] ml-auto">{a.mode}: {a.result}</Badge>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </TabsContent>
+
+        {/* Event Timeline Tab */}
+        <TabsContent value="timeline" className="mt-4">
+          <EventTimeline events={events} />
+        </TabsContent>
+
+        {/* Conversation Tab */}
+        <TabsContent value="conversation" className="mt-4">
+          {s.turns.length > 0 ? (
+            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
               {s.turns.map(t => (
                 <div key={t.index} className={`flex ${t.speaker === 'assistant' ? 'justify-start' : t.speaker === 'system' ? 'justify-center' : 'justify-end'}`}>
                   {t.speaker === 'system' ? (
@@ -174,26 +237,150 @@ function SessionDetail({ session: s }: { session: typeof MOCK_SESSIONS[0] }) {
                 </div>
               ))}
             </div>
-          </div>
-        </>
-      )}
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">Kein Gesprächsverlauf verfügbar für diese Session.</p>
+          )}
+        </TabsContent>
 
-      {/* Actions */}
-      {s.actions.length > 0 && (
-        <>
+        {/* Technical Tab */}
+        <TabsContent value="technical" className="mt-4 space-y-4">
+          <div>
+            <Label className="text-xs text-muted-foreground mb-2 block">Technische Metadaten</Label>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <MetaRow label="Session UID" value={s.session_uid} />
+              <MetaRow label="Lifecycle State" value={s.lifecycle_state} />
+              <MetaRow label="Environment" value={s.environment} />
+              <MetaRow label="Transcript Status" value={s.transcript_status} />
+              <MetaRow label="Result Type" value={s.result_type} />
+              <MetaRow label="Escalation Status" value={s.escalation_status} />
+              <MetaRow label="Test Session" value={s.is_test ? 'Ja' : 'Nein'} />
+              <MetaRow label="Provider" value={s.is_test ? 'Mock' : 'Twilio (geplant)'} />
+            </div>
+          </div>
           <Separator />
           <div>
-            <Label className="text-xs text-muted-foreground mb-2 block">Ausgeführte Aktionen</Label>
-            {s.actions.map((a, i) => (
-              <div key={i} className="flex items-center gap-2 p-2 rounded bg-muted/40">
-                <Zap className="h-3.5 w-3.5 text-primary" />
-                <span className="text-sm">{a.type} → {a.target}</span>
-                <Badge variant="outline" className="text-[10px] ml-auto">{a.mode}: {a.result}</Badge>
+            <Label className="text-xs text-muted-foreground mb-2 block">Kostenaufschlüsselung</Label>
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="p-2 rounded bg-muted/40 text-center">
+                <p className="font-medium">{s.cost_ai.toFixed(2)} CHF</p>
+                <p className="text-muted-foreground">AI Inference</p>
               </div>
-            ))}
+              <div className="p-2 rounded bg-muted/40 text-center">
+                <p className="font-medium">{s.cost_tel.toFixed(2)} CHF</p>
+                <p className="text-muted-foreground">Telephony</p>
+              </div>
+              <div className="p-2 rounded bg-muted/40 text-center">
+                <p className="font-medium">{s.cost_total.toFixed(2)} CHF</p>
+                <p className="text-muted-foreground">Total</p>
+              </div>
+            </div>
           </div>
-        </>
+          <Separator />
+          <div>
+            <Label className="text-xs text-muted-foreground mb-2 block">Mock vs. Livebetrieb</Label>
+            <div className="p-3 rounded border border-dashed border-muted-foreground/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Server className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">{s.is_test ? 'Mock-Modus' : 'Livebetrieb'}</span>
+              </div>
+              {s.is_test ? (
+                <p className="text-xs text-muted-foreground">Diese Session wurde mit dem Mock-Provider simuliert. Im Livebetrieb wird das Railway Voice Backend über Twilio eine echte Telefonverbindung aufbauen und OpenAI für die Gesprächsführung nutzen.</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">Produktiv-Session über das Railway Voice Backend mit echtem Telefonieanbieter.</p>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+// ── Session State Flow Visualization ──────────────────────────────
+
+function SessionStateFlow({ currentState }: { currentState: SessionState }) {
+  const stateOrder: SessionState[] = ['queued', 'initiating', 'ringing', 'connected', 'active', 'completed'];
+  const errorStates: SessionState[] = ['failed', 'cancelled'];
+  const branchStates: SessionState[] = ['paused', 'awaiting_action', 'escalated'];
+
+  const currentIdx = stateOrder.indexOf(currentState);
+  const isError = errorStates.includes(currentState);
+  const isBranch = branchStates.includes(currentState);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-1 flex-wrap">
+        {stateOrder.map((state, i) => {
+          const meta = SESSION_STATE_META[state];
+          const isPast = currentIdx >= 0 ? i <= currentIdx : false;
+          const isCurrent = state === currentState;
+          return (
+            <span key={state} className="flex items-center gap-1">
+              <Badge
+                variant={isCurrent ? 'default' : 'outline'}
+                className={`text-[10px] ${isCurrent ? meta.color : isPast ? 'opacity-60' : 'opacity-30'}`}
+              >
+                {meta.icon} {meta.label}
+              </Badge>
+              {i < stateOrder.length - 1 && <span className={`text-xs ${isPast ? 'text-foreground' : 'text-muted-foreground/30'}`}>→</span>}
+            </span>
+          );
+        })}
+      </div>
+      {(isError || isBranch) && (
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-muted-foreground mr-1">↳</span>
+          <LifecycleStateBadge state={currentState} />
+        </div>
       )}
+    </div>
+  );
+}
+
+// ── Event Timeline ────────────────────────────────────────────────
+
+function EventTimeline({ events }: { events: SessionEvent[] }) {
+  return (
+    <div className="space-y-0">
+      <Label className="text-xs text-muted-foreground mb-3 block flex items-center gap-1.5">
+        <Activity className="h-3.5 w-3.5" />
+        Event Timeline ({events.length} Ereignisse)
+      </Label>
+      <div className="relative ml-3 border-l-2 border-muted pl-6 space-y-4">
+        {events.map((event, i) => {
+          const meta = EVENT_LABELS[event.type];
+          return (
+            <div key={event.id} className="relative">
+              <div className="absolute -left-[31px] top-0.5 w-4 h-4 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[8px]">
+                {meta?.icon || '•'}
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{meta?.label || event.type}</span>
+                  {event.fromState && event.toState && (
+                    <span className="text-[10px] text-muted-foreground">
+                      {SESSION_STATE_META[event.fromState]?.label} → {SESSION_STATE_META[event.toState]?.label}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">{event.detail}</p>
+                <p className="text-[10px] text-muted-foreground/60">{new Date(event.timestamp).toLocaleString('de-CH')}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Helper ────────────────────────────────────────────────────────
+
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="p-2 rounded bg-muted/30">
+      <p className="text-muted-foreground">{label}</p>
+      <p className="font-mono font-medium">{value}</p>
     </div>
   );
 }
