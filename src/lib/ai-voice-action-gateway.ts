@@ -419,3 +419,160 @@ async function logToTimeline(req: ActionRequest, mode: ExecutionMode, def: Actio
     user: 'AI Voice Agent',
   } as any);
 }
+
+// ── Notification Mapping ──────────────────────────────────────────
+// Maps action types + execution modes to notification types
+const ACTION_NOTIFICATION_MAP: Record<string, { type: NotificationType; titleFn: (req: ActionRequest, result: string) => string; descFn: (req: ActionRequest, result: string) => string }> = {
+  escalate_to_human: {
+    type: 'ai_voice_escalation',
+    titleFn: () => '⚠️ Neue AI-Eskalation',
+    descFn: (req) => `AI Voice Agent hat eine Eskalation erstellt: ${req.reason}`,
+  },
+  mark_callback_requested: {
+    type: 'ai_voice_callback_requested',
+    titleFn: () => '📞 Rückrufwunsch erkannt',
+    descFn: (req) => `Ein Kandidat möchte zurückgerufen werden (Session: ${req.session_id.slice(0, 8)})`,
+  },
+  schedule_callback: {
+    type: 'ai_voice_appointment_prepared',
+    titleFn: () => '📅 Termin vorbereitet',
+    descFn: (req) => `AI Voice Agent hat einen Termin vorbereitet`,
+  },
+  create_followup: {
+    type: 'ai_voice_followup_created',
+    titleFn: () => '📋 Follow-up erstellt',
+    descFn: (req) => `AI Voice Agent hat ein Follow-up erstellt: ${req.reason}`,
+  },
+  prepare_interview: {
+    type: 'ai_voice_appointment_prepared',
+    titleFn: () => '🎯 Interview vorbereitet',
+    descFn: () => 'AI Voice Agent hat eine Interview-Vorbereitung gestartet',
+  },
+};
+
+// Additional notification types triggered by specific conditions
+const STATUS_NOTIFICATION_MAP: Record<ExecutionMode, NotificationType | null> = {
+  auto_executed: 'ai_voice_status_changed',
+  approved: 'ai_voice_status_changed',
+  suggested: 'ai_voice_status_suggested',
+  shadow: null,
+  blocked: null,
+};
+
+/**
+ * Creates a notification in the DB for an AI Voice action.
+ * Only creates for relevant action types and non-shadow modes.
+ */
+async function createAIVoiceNotification(req: ActionRequest, mode: ExecutionMode, def: ActionDef, result: string) {
+  // Don't notify for shadow or blocked
+  if (mode === 'shadow' || mode === 'blocked') return;
+
+  // Check direct mapping first
+  const mapped = ACTION_NOTIFICATION_MAP[req.action_type];
+  if (mapped) {
+    await db.from('notifications').insert({
+      type: mapped.type,
+      title: mapped.titleFn(req, result),
+      description: mapped.descFn(req, result),
+      lead_id: req.lead_id || null,
+    } as any);
+    return;
+  }
+
+  // For status changes, use the status notification map
+  if (req.action_type === 'set_status' || req.action_type === 'mark_qualified' || req.action_type === 'mark_no_interest' || req.action_type === 'mark_wrong_number' || req.action_type === 'mark_not_reached') {
+    const notifType = STATUS_NOTIFICATION_MAP[mode];
+    if (!notifType) return;
+    const title = mode === 'suggested'
+      ? `💡 Status-Vorschlag vom AI Voice Agent`
+      : `🤖 Status automatisch geändert`;
+    await db.from('notifications').insert({
+      type: notifType,
+      title,
+      description: `${def.label}: ${result}`,
+      lead_id: req.lead_id || null,
+    } as any);
+  }
+}
+
+/**
+ * Creates a task for escalation-type actions.
+ * Links back to the session and lead.
+ */
+async function createAIVoiceTask(req: ActionRequest, mode: ExecutionMode, def: ActionDef) {
+  if (mode === 'shadow' || mode === 'blocked') return;
+
+  // Only create tasks for escalations, callback requests, and human handovers
+  const taskActions = new Set<ActionType>(['escalate_to_human', 'mark_callback_requested', 'schedule_callback', 'prepare_interview']);
+  if (!taskActions.has(req.action_type)) return;
+
+  const taskTitleMap: Record<string, string> = {
+    escalate_to_human: `⚠️ AI-Eskalation bearbeiten`,
+    mark_callback_requested: `📞 Rückruf durchführen`,
+    schedule_callback: `📅 Geplanten Rückruf bestätigen`,
+    prepare_interview: `🎯 Interview vorbereiten`,
+  };
+
+  const taskTitle = taskTitleMap[req.action_type] || `AI Voice: ${def.label}`;
+  const taskDesc = `Erstellt durch AI Voice Agent.\nSession: ${req.session_id.slice(0, 8)}\nGrund: ${req.reason}`;
+
+  // Insert as activity with task-like type so it appears in task views
+  if (req.lead_id) {
+    await db.from('activities').insert({
+      id: crypto.randomUUID(),
+      lead_id: req.lead_id,
+      type: 'task',
+      description: `📋 ${taskTitle} – ${taskDesc}`,
+      user: 'AI Voice Agent',
+    } as any);
+  }
+}
+
+/**
+ * Notify about problematic sessions (compliance flags, high error rate, etc.)
+ */
+export async function notifyProblematicSession(sessionId: string, reason: string, leadId?: string) {
+  await db.from('notifications').insert({
+    type: 'ai_voice_problematic_session',
+    title: '🚨 Problematische Session erkannt',
+    description: `Session ${sessionId.slice(0, 8)}: ${reason}`,
+    lead_id: leadId || null,
+  } as any);
+}
+
+/**
+ * Notify about compliance violations.
+ */
+export async function notifyComplianceFlag(ruleName: string, sessionId: string, detail: string, leadId?: string) {
+  await db.from('notifications').insert({
+    type: 'ai_voice_compliance_flag',
+    title: `🛡️ Compliance-Verletzung: ${ruleName}`,
+    description: `Session ${sessionId.slice(0, 8)}: ${detail}`,
+    lead_id: leadId || null,
+  } as any);
+}
+
+/**
+ * Notify admins about budget warnings.
+ */
+export async function notifyBudgetWarning(scope: string, current: number, limit: number) {
+  const pct = ((current / limit) * 100).toFixed(0);
+  await db.from('notifications').insert({
+    type: 'ai_voice_budget_warning',
+    title: `💰 Budgetwarnung: ${scope}`,
+    description: `${pct}% des Budgets erreicht (${current.toFixed(2)} / ${limit.toFixed(2)} CHF)`,
+    lead_id: null,
+  } as any);
+}
+
+/**
+ * Notify when a candidate requests to speak to a human.
+ */
+export async function notifyHumanHandover(sessionId: string, agentName: string, leadId?: string) {
+  await db.from('notifications').insert({
+    type: 'ai_voice_human_handover',
+    title: '👤 Kandidat möchte Mensch sprechen',
+    description: `Während Session ${sessionId.slice(0, 8)} mit ${agentName} wurde eine Übergabe an einen Mitarbeiter angefordert.`,
+    lead_id: leadId || null,
+  } as any);
+}
