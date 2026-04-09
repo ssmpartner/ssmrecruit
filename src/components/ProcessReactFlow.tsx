@@ -462,6 +462,7 @@ export default function ProcessReactFlow({ leads }: ProcessReactFlowProps) {
     : 'space-y-3';
 
   return (
+    <>
     <div className={containerClass}>
       {/* Toolbar */}
       <div className={`flex flex-wrap items-center gap-2 ${fullscreen ? 'px-4 py-3 border-b bg-card shadow-sm' : 'px-1'}`}>
@@ -607,6 +608,7 @@ export default function ProcessReactFlow({ leads }: ProcessReactFlowProps) {
 
       {/* Close overlay for dropdown */}
       {showDraftMenu && <div className="fixed inset-0 z-40" onClick={() => setShowDraftMenu(false)} />}
+    </div>
 
       {/* ── Save Draft Dialog ── */}
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
@@ -698,6 +700,6 @@ export default function ProcessReactFlow({ leads }: ProcessReactFlowProps) {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
