@@ -95,7 +95,7 @@ function resolveExecutionMode(rollout: RolloutMode, actionDef: ActionDef): Execu
 }
 
 // ── DB helper (bypass strict types) ───────────────────────────────
-const db = { from: (t: string) => supabase.from(t as any) };
+const dbHelper = { from: (t: string) => supabase.from(t as any) };
 
 // ── Edge Function Gateway Client ──────────────────────────────────
 // All actions are routed through the server-side Edge Function
@@ -251,8 +251,6 @@ export const actionGateway = {
 // ── Notification Helpers (client-side convenience) ─────────────────
 // These are kept for direct notification creation from client code
 // when not going through the gateway (e.g., compliance monitoring).
-
-const db = { from: (t: string) => supabase.from(t as any) };
 
 /**
  * Notify about problematic sessions (compliance flags, high error rate, etc.)
