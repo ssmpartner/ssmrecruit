@@ -464,8 +464,8 @@ export default function LeadDetailSheet() {
                             })}
                           </section>
                         )}
-                        {/* Assignment - hidden for review roles */}
-                        {!isReviewRole && (
+                        {/* Assignment - hidden for review roles and frozen leads */}
+                        {!isReviewRole && !isFrozenForEmployee && (
                           <section className="rounded-lg border bg-muted/30 p-3 space-y-2">
                             <h4 className="text-sm font-semibold flex items-center gap-1.5"><UserCog className="h-4 w-4" /> Zuweisung</h4>
                             <div className="grid grid-cols-2 gap-3">
