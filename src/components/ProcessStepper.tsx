@@ -25,6 +25,11 @@ const statusToMainStep: Record<string, LeadStatus> = {
   insights: 'appointment',
   interview_2: 'appointment',
   follow_up: 'follow_up',
+  ready_for_controlling: 'follow_up',
+  controlling_approved: 'follow_up',
+  management_review: 'follow_up',
+  management_approved: 'follow_up',
+  hr_processing: 'follow_up',
   hired: 'hired',
   rejected: 'new',
 };

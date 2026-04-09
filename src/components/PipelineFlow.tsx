@@ -56,7 +56,11 @@ const DEFAULT_RULES: EscalationRules = {
   new: [{ id: 'esc-new-1', name: 'Erstkontakt überfällig', enabled: true, thresholdDays: 1, testOnly: false, actions: [{ type: 'notify', notificationMessage: 'Lead seit über 24h ohne Kontakt – bitte sofort bearbeiten!' }] }],
   contacted: [{ id: 'esc-cont-1', name: 'Termin-Vereinbarung überfällig', enabled: true, thresholdDays: 5, testOnly: false, actions: [{ type: 'notify', notificationMessage: 'Lead wartet seit 5 Tagen auf Termin.' }] }],
   appointment: [{ id: 'esc-apt-1', name: 'Qualifizierung dauert zu lange', enabled: true, thresholdDays: 7, testOnly: false, actions: [{ type: 'notify', notificationMessage: 'Lead seit 7 Tagen in Qualifizierung – bitte nachfassen.' }] }],
-  follow_up: [{ id: 'esc-fu-1', name: 'Follow-up überfällig', enabled: true, thresholdDays: 3, testOnly: false, actions: [{ type: 'notify', notificationMessage: 'Follow-up seit 3 Tagen ausstehend!' }] }],
+  follow_up: [
+    { id: 'esc-fu-1', name: 'Follow-up überfällig', enabled: true, thresholdDays: 3, testOnly: false, actions: [{ type: 'notify', notificationMessage: 'Follow-up seit 3 Tagen ausstehend!' }] },
+    { id: 'esc-ctrl-1', name: 'Controlling Prüfung überfällig', enabled: true, thresholdDays: 2, testOnly: false, actions: [{ type: 'notify', notificationMessage: 'Controlling-Prüfung seit 2 Tagen ausstehend – bitte Entscheidung treffen.' }] },
+    { id: 'esc-ctrl-2', name: 'Controlling Eskalation an Admin', enabled: true, thresholdDays: 5, testOnly: false, actions: [{ type: 'notify', notificationMessage: 'Controlling-Prüfung seit 5 Tagen ohne Entscheidung – Eskalation an Superadmin!' }] },
+  ],
 };
 
 // ── Process step info for the visual overview ──
@@ -122,20 +126,25 @@ const PROCESS_STEP_INFO: Record<string, ProcessStepInfo> = {
   },
   follow_up: {
     title: 'Schritt 4: Follow-up & Entscheidung',
-    description: 'DISC-Ergebnisse besprechen, Dokumente prüfen, finale Entscheidung.',
+    description: 'DISC-Ergebnisse besprechen, Dokumente prüfen, finale Entscheidung. Inkl. Sub-Steps für Controlling-Prüfung.',
     features: [
       'DISC-Profil als Gesprächsgrundlage (D/I/S/C Visualisierung)',
       'KI-Kandidatenanalyse & Match-Bewertung',
       'Dokumente prüfen & validieren',
       'Follow-up-Termin vereinbaren',
-      'Interne Freigabe → Einstellen oder Ablehnen',
-      'Status-Wizard schreibt exakten granularen Status',
+      'Sub-Step: Controlling Prüfung (automatisch nach Vollständigkeit)',
+      'Sub-Step: Selektioniert (Controlling) → Weiterleitung an Geschäftsleitung',
+      'Sub-Step: Abgelehnt → Lead gesperrt (Read-Only für Mitarbeiter)',
+      'Scoring-System: Perfekt / Sehr gut / Gut',
+      'Freeze-Mechanik: Nach Entscheid kein Zugriff auf Kontaktdaten',
+      'Eskalation: Erinnerung nach 2 Tagen, Eskalation an Admin nach 5 Tagen',
     ],
-    escalationStatuses: ['Nicht passend', 'Kein Bedarf', 'Nicht interessiert'],
+    escalationStatuses: ['Controlling Prüfung', 'Selektioniert (Controlling)', 'Abgelehnt', 'Nicht passend', 'Kein Bedarf'],
     actions: [
       { icon: Brain, label: 'DISC-Profil nutzen', description: 'Ergebnisse als Leitfaden' },
       { icon: FileText, label: 'Dokumente prüfen', description: 'CV, Zeugnisse validieren' },
-      { icon: Check, label: 'Entscheidung treffen', description: 'Einstellen oder Ablehnen' },
+      { icon: Check, label: 'Vollständigkeit prüfen', description: 'Lead an Controlling übergeben' },
+      { icon: Shield, label: 'Controlling Wizard', description: 'Selektionieren oder Ablehnen mit Scoring' },
     ],
   },
   hired: {
