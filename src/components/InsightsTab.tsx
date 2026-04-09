@@ -4,6 +4,7 @@ import { discDimensionConfig, type DiscDimension } from '@/lib/mock-data';
 import { supabase } from '@/integrations/supabase/client';
 import { Brain, CheckCircle2, RotateCcw, Loader2, Target, TrendingUp, Users, BookOpen, DollarSign, Shield, ThumbsUp, ThumbsDown, AlertTriangle, Award, ChevronDown, ChevronUp } from 'lucide-react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
+import PersonalityProfile from './PersonalityProfile';
 
 interface InsightsTabProps {
   leadId: string;
