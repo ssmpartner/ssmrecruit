@@ -211,17 +211,19 @@ export default function LeadDetailSheet() {
   const inputErr = (field: string) => fieldErrors[field] ? inputCls + ' border-destructive ring-1 ring-destructive/30' : inputCls;
 
   const allRightTabs = [
-    { key: 'info' as const, label: 'Info', icon: User, hideForReview: false },
-    { key: 'insights' as const, label: 'Insights', icon: Brain, hideForReview: false },
-    { key: 'documents' as const, label: 'Dokumente', icon: Upload, hideForReview: false },
-    { key: 'flow' as const, label: 'Flow', icon: Workflow, hideForReview: true },
-    { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length, hideForReview: true },
-    { key: 'activity' as const, label: 'Aktivität', icon: Activity, hideForReview: false },
-    { key: 'status' as const, label: 'Status', icon: FileText, hideForReview: false },
+    { key: 'info' as const, label: 'Info', icon: User, hideForReview: false, hideWhenFrozen: false },
+    { key: 'insights' as const, label: 'Insights', icon: Brain, hideForReview: false, hideWhenFrozen: false },
+    { key: 'documents' as const, label: 'Dokumente', icon: Upload, hideForReview: false, hideWhenFrozen: true },
+    { key: 'flow' as const, label: 'Flow', icon: Workflow, hideForReview: true, hideWhenFrozen: false },
+    { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length, hideForReview: true, hideWhenFrozen: false },
+    { key: 'activity' as const, label: 'Aktivität', icon: Activity, hideForReview: false, hideWhenFrozen: false },
+    { key: 'status' as const, label: 'Status', icon: FileText, hideForReview: false, hideWhenFrozen: false },
   ];
   const rightTabs = isReviewRole
     ? allRightTabs.filter(t => !t.hideForReview)
-    : allRightTabs;
+    : isFrozenForEmployee
+      ? allRightTabs.filter(t => !t.hideWhenFrozen)
+      : allRightTabs;
 
   return (
     <>
