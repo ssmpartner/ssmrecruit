@@ -2,9 +2,17 @@ import { useState } from 'react';
 import { Zap, RefreshCw, CheckCircle2, LayoutGrid, ChevronDown, Code2, Shield, BookOpen, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const APP_VERSION = '2.44.0';
+const APP_VERSION = '2.45.0';
 
 const versionHistory = [
+  { version: '2.45.0', date: '09.04.2026', changes: [
+    'Freeze-Funktion: Nach Controlling-Entscheid (Selektioniert oder Abgelehnt) wird der Lead für Mitarbeiter gesperrt (Read-Only)',
+    'Datenschutz: Telefonnummer, E-Mail und Dokumente sind nach Controlling-Entscheid für Mitarbeiter nicht mehr sichtbar',
+    'Sichtbar bleiben: Status, Scoring und Begründung des Controlling-Entscheids',
+    'Freeze-Banner: Mitarbeiter sehen im Aktionspanel den Controlling-Entscheid mit Scoring und Begründung',
+    'Superadmin: Keine Einschränkungen – voller Zugriff auf alle Daten und Aktionen',
+    'API-Dokumentation: Freeze-Mechanik und Berechtigungslogik dokumentiert',
+  ]},
   { version: '2.44.0', date: '09.04.2026', changes: [
     'Controlling Wizard: Neuer Wizard im Sub-Step «Controlling Prüfung» mit zwei Aktionen: Selektionieren und Ablehnen',
     'Scoring-System: Controlling kann Leads mit Perfekt / Sehr gut / Gut bewerten',
