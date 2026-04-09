@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -60,10 +60,30 @@ function FullScreenLoader() {
   );
 }
 
+// Routes allowed for each review role
+const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
+  controlling: ['/', '/leads'],
+  geschaeftsleitung: ['/', '/leads'],
+  hr: ['/', '/leads'],
+};
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, role } = useAuth();
   if (loading) return <FullScreenLoader />;
   if (!user) return <Navigate to="/login" replace />;
+  // Wait until role is resolved before rendering anything
+  if (role === null) return <FullScreenLoader />;
+  return <>{children}</>;
+}
+
+function RoleRouteGuard({ children }: { children: React.ReactNode }) {
+  const { role } = useAuth();
+  const location = useLocation();
+
+  const allowed = role ? REVIEW_ROLE_ALLOWED[role] : null;
+  if (allowed && !allowed.includes(location.pathname)) {
+    return <Navigate to="/" replace />;
+  }
   return <>{children}</>;
 }
 
@@ -100,7 +120,9 @@ const App = () => (
                   <NotificationsProvider>
                     <LeadsProvider>
                       <SidebarProvider>
-                        <AppLayout />
+                        <RoleRouteGuard>
+                          <AppLayout />
+                        </RoleRouteGuard>
                       </SidebarProvider>
                     </LeadsProvider>
                   </NotificationsProvider>
