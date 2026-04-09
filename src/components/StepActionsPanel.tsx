@@ -217,6 +217,11 @@ export default function StepActionsPanel({
 
   // Step 4: Follow-up
   if (leadStatus === 'follow_up') {
+    const allComplete = discCompleted && documentsCompleted;
+    const missingItems: string[] = [];
+    if (!discCompleted) missingItems.push('Insights/DISC');
+    if (!documentsCompleted) missingItems.push('Pflichtdokumente');
+
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-2 mb-1">
@@ -230,15 +235,21 @@ export default function StepActionsPanel({
         </p>
 
         <div className="space-y-2">
-          <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
-            <Brain className="h-5 w-5 text-primary shrink-0" />
+          {/* Insights/DISC Status */}
+          <div className={`flex items-center gap-3 rounded-lg border p-3 ${discCompleted ? 'border-primary/30 bg-primary/5' : 'border-amber-200 bg-amber-50'}`}>
+            <Brain className={`h-5 w-5 shrink-0 ${discCompleted ? 'text-primary' : 'text-amber-600'}`} />
             <div className="flex-1">
-              <p className="text-sm font-medium text-primary">DISC-Ergebnisse besprechen</p>
-              <p className="text-[11px] text-primary/70">Ergebnisse als Gesprächsgrundlage</p>
+              <p className={`text-sm font-medium ${discCompleted ? 'text-primary' : 'text-amber-800'}`}>Insights & DISC</p>
+              <p className={`text-[11px] ${discCompleted ? 'text-primary/70' : 'text-amber-600'}`}>
+                {discCompleted ? 'Abgeschlossen' : 'Ausstehend'}
+              </p>
             </div>
-            <CheckCircle2 className="h-5 w-5 text-primary" />
+            {discCompleted ? <CheckCircle2 className="h-5 w-5 text-primary" /> : (
+              <button onClick={onOpenInsights} className="text-xs font-medium text-amber-700 underline hover:no-underline">Anfordern</button>
+            )}
           </div>
 
+          {/* Documents Status */}
           <div className={`flex items-center gap-3 rounded-lg border p-3 ${documentsCompleted ? 'border-primary/30 bg-primary/5' : 'border-amber-200 bg-amber-50'}`}>
             <FileText className={`h-5 w-5 shrink-0 ${documentsCompleted ? 'text-primary' : 'text-amber-600'}`} />
             <div className="flex-1">
@@ -261,19 +272,23 @@ export default function StepActionsPanel({
             </div>
           </button>
 
+          {/* Sub-Step: Controlling Prüfung */}
           <div className="border-t pt-3 mt-2">
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Finale Entscheidung</p>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Sub-Step: Controlling Prüfung</p>
+            <p className="text-[11px] text-muted-foreground mb-3">
+              Wenn alle Voraussetzungen erfüllt sind, wird der Lead automatisch dem Controlling zugewiesen.
+            </p>
             <div className="flex gap-2">
               <button
                 onClick={() => {
                   updateLead(leadId, { status: 'ready_for_controlling' });
-                  addActivity(leadId, 'status_change', 'Lead an Controlling übergeben');
-                  toast({ title: '📋 An Controlling übergeben', description: `${leadName} wird jetzt vom Controlling geprüft.` });
+                  addActivity(leadId, 'status_change', 'Lead vollständig abgeschlossen → Controlling Prüfung');
+                  toast({ title: '✅ Lead vollständig abgeschlossen', description: `${leadName} wurde an das Controlling übergeben.` });
                 }}
-                disabled={!documentsCompleted}
+                disabled={!allComplete}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
               >
-                <ClipboardCheck className="h-4 w-4" /> An Controlling übergeben
+                <ClipboardCheck className="h-4 w-4" /> Lead vollständig abschliessen
               </button>
               <button
                 onClick={() => {
@@ -286,9 +301,9 @@ export default function StepActionsPanel({
                 Ablehnen
               </button>
             </div>
-            {!documentsCompleted && (
+            {!allComplete && (
               <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" /> Alle Dokumente müssen vorliegen.
+                <AlertCircle className="h-3 w-3" /> Fehlend: {missingItems.join(', ')}
               </p>
             )}
           </div>
