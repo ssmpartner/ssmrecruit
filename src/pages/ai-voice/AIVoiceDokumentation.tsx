@@ -273,6 +273,7 @@ function SetupContent() {
       </DocBlock>
 
 
+      <DocBlock id="components" title="Komponentenübersicht" icon={Layers}>
         <div className="space-y-2">
           {[
             { name: 'Übersicht', desc: 'Dashboard, Live Monitoring, Warnungen & Status' },
