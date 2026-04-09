@@ -59,6 +59,7 @@ const DOC_SECTIONS: DocSection[] = [
       { id: 'session-lifecycle', label: 'Session-Lebenszyklus' },
       { id: 'cost-control', label: 'Kostenkontrolle' },
       { id: 'monitoring', label: 'Monitoring' },
+      { id: 'test-vs-prod', label: 'Testbetrieb vs. Produktivbetrieb' },
     ],
   },
   {
