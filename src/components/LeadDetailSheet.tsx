@@ -398,7 +398,7 @@ export default function LeadDetailSheet() {
                     </div>
                     {/* Edit/Save in header - hidden for review roles */}
                     <div className="ml-auto shrink-0 pl-2">
-                      {rightTab === 'info' && !isReviewRole && (
+                      {rightTab === 'info' && !isReviewRole && !isFrozenForEmployee && (
                         !editing ? (
                            <button onClick={startEdit} className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
                              <Edit3 className="h-3.5 w-3.5" /> Bearbeiten
