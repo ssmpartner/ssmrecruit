@@ -215,11 +215,6 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                 <TabsTrigger value="documents" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
                   <FileText className="h-3.5 w-3.5 mr-1.5" />Dokumente ({docsCount})
                 </TabsTrigger>
-                {careerPlan && (
-                  <TabsTrigger value="career" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
-                    <GraduationCap className="h-3.5 w-3.5 mr-1.5" />Karriereplan
-                  </TabsTrigger>
-                )}
                 {approvalActivities.length > 0 && (
                   <TabsTrigger value="history" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
                     <Clock className="h-3.5 w-3.5 mr-1.5" />Verlauf
@@ -294,6 +289,30 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                           <span className="text-sm font-medium text-emerald-700">Freigegeben</span>
                         </div>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Karriereplan inline */}
+                {careerPlan && (
+                  <div className="rounded-xl border bg-card p-4">
+                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><GraduationCap className="h-4 w-4 text-amber-600" /> SSM Karriereplan – {careerPlan.position}</h3>
+                    <div className="space-y-2">
+                      {careerPlan.levels.map((level, i) => (
+                        <div key={i} className="rounded-lg border p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-bold flex items-center gap-1.5"><Award className="h-3.5 w-3.5 text-amber-600" />{level.name}</span>
+                            <span className="text-xs font-medium rounded-full bg-amber-100 text-amber-800 px-2 py-0.5">{level.scorePoints} Score-Punkte</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="rounded bg-muted/40 p-2"><span className="text-muted-foreground">Fixlohn:</span> <span className="font-medium">CHF {level.fixSalary.toLocaleString('de-CH')}</span></div>
+                            <div className="rounded bg-muted/40 p-2"><span className="text-muted-foreground">Spesen:</span> <span className="font-medium">CHF {level.expenses.toLocaleString('de-CH')}</span></div>
+                          </div>
+                          {level.requirements.length > 0 && (
+                            <div className="mt-2 text-xs text-muted-foreground"><span className="font-medium">Anforderungen:</span> {level.requirements.join(' • ')}</div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -606,33 +625,6 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
               </div>
             </TabsContent>
 
-            {/* ─── TAB: Karriereplan ─── */}
-            {careerPlan && (
-              <TabsContent value="career" className="flex-1 overflow-y-auto p-5 mt-0">
-                <div className="max-w-3xl mx-auto">
-                  <div className="rounded-xl border bg-card p-4">
-                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><GraduationCap className="h-4 w-4 text-amber-600" /> SSM Karriereplan – {careerPlan.position}</h3>
-                    <div className="space-y-2">
-                      {careerPlan.levels.map((level, i) => (
-                        <div key={i} className="rounded-lg border p-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-bold flex items-center gap-1.5"><Award className="h-3.5 w-3.5 text-amber-600" />{level.name}</span>
-                            <span className="text-xs font-medium rounded-full bg-amber-100 text-amber-800 px-2 py-0.5">{level.scorePoints} Score-Punkte</span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div className="rounded bg-muted/40 p-2"><span className="text-muted-foreground">Fixlohn:</span> <span className="font-medium">CHF {level.fixSalary.toLocaleString('de-CH')}</span></div>
-                            <div className="rounded bg-muted/40 p-2"><span className="text-muted-foreground">Spesen:</span> <span className="font-medium">CHF {level.expenses.toLocaleString('de-CH')}</span></div>
-                          </div>
-                          {level.requirements.length > 0 && (
-                            <div className="mt-2 text-xs text-muted-foreground"><span className="font-medium">Anforderungen:</span> {level.requirements.join(' • ')}</div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-            )}
 
             {/* ─── TAB: Verlauf ─── */}
             {approvalActivities.length > 0 && (
