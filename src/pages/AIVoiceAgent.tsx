@@ -1,20 +1,9 @@
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import { useAIVoicePermissions } from '@/hooks/useAIVoicePermissions';
 import { Badge } from '@/components/ui/badge';
-import { Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
 
 export default function AIVoiceAgent() {
   const perms = useAIVoicePermissions();
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  // Redirect to dashboard if at the root /ai-voice path
-  useEffect(() => {
-    if (location.pathname === '/ai-voice') {
-      navigate('/ai-voice/dashboard', { replace: true });
-    }
-  }, [location.pathname, navigate]);
 
   if (!perms.canAccessModule) {
     return <Navigate to="/" replace />;
