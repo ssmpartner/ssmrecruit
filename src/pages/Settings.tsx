@@ -5,6 +5,7 @@ import NotificationRoleMatrix from '@/components/NotificationRoleMatrix';
 import { BRAND_ICONS } from '@/components/BrandIcons';
 import ProfileSettings from '@/components/ProfileSettings';
 import WizardsTab from '@/components/WizardsTab';
+import CareerPlansTab from '@/components/CareerPlansTab';
 import { useToast } from '@/hooks/use-toast';
 import { useLeads } from '@/context/useLeads';
 import { useNotifications } from '@/context/useNotifications';
@@ -56,7 +57,7 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'profile' | 'notifications' | 'users' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'email' | 'integrations' | 'api';
+type SettingsTab = 'profile' | 'notifications' | 'users' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'career' | 'email' | 'integrations' | 'api';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
   { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name, E-Mail & Passwort' },
@@ -66,7 +67,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[
   { id: 'appointments', label: 'Termine & Video', icon: CalendarDays, desc: 'Terminplanung & Video-Calls' },
   { id: 'insights', label: 'Insights / DISC', icon: Brain, desc: 'Persönlichkeitstest-Einstellungen' },
   { id: 'wizards', label: 'Wizards', icon: Wand2, desc: 'Wizard-Abläufe verwalten' },
-  { id: 'email', label: 'E-Mail Automationen', icon: Mail, desc: 'Templates & Regeln verwalten' },
+  { id: 'career', label: 'SSM Karriereplan', icon: Target, desc: 'Karrierepfade & Stufen verwalten' },
   { id: 'email', label: 'E-Mail Automationen', icon: Mail, desc: 'Templates & Regeln verwalten' },
   { id: 'integrations', label: 'Integrationen', icon: Plug, desc: 'Lead-Quellen & Webhooks' },
   { id: 'api', label: 'API-Schlüssel', icon: Key, desc: 'API-Keys generieren & verwalten' },
@@ -225,6 +226,7 @@ export default function Settings() {
           {activeTab === 'appointments' && <AppointmentsTab appointmentSettings={appointmentSettings} updateAppointmentSettings={updateAppointmentSettings} toast={toast} />}
           {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}
           {activeTab === 'wizards' && <WizardsTab />}
+          {activeTab === 'career' && <CareerPlansTab />}
           {activeTab === 'email' && <EmailSettingsTab />}
           {activeTab === 'integrations' && (
             <IntegrationsTab
