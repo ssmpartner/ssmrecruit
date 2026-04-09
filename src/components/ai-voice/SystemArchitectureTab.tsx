@@ -408,6 +408,126 @@ export default function SystemArchitectureTab() {
         </Card>
       </div>
 
+      {/* OpenAI Integration Detail */}
+      <Card className={!config.openai_connection_placeholder ? 'border-dashed opacity-80' : ''}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Bot className="h-4 w-4 text-orange-600" />
+            OpenAI Realtime Voice AI — Integrationsstatus
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!config.openai_connection_placeholder && (
+            <div className="flex items-start gap-3 border border-amber-200 rounded-lg bg-amber-50/50 p-3">
+              <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs font-medium text-amber-800">OpenAI nicht konfiguriert</p>
+                <p className="text-[10px] text-amber-700">Die OpenAI-Verbindung ist noch nicht eingerichtet. Setze den Platzhalter unter Konfiguration, um die Architektur vorzubereiten.</p>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Left: Runtime concept */}
+            <div className="space-y-3">
+              <Label className="text-xs text-muted-foreground">Runtime-Konzept</Label>
+              <div className="space-y-2">
+                {[
+                  { label: 'Modell', value: 'gpt-4o-realtime-preview', icon: Bot },
+                  { label: 'Verbindungstyp', value: 'WebSocket (bidirektional)', icon: Zap },
+                  { label: 'Turn Detection', value: 'Server VAD', icon: Activity },
+                  { label: 'Transkription', value: 'Whisper-1 (integriert)', icon: Activity },
+                  { label: 'Tool Calling', value: '7 SSM-Recruit-Tools definiert', icon: Settings2 },
+                ].map(item => (
+                  <div key={item.label} className="flex items-center gap-2 p-2 rounded border">
+                    <item.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-xs font-medium w-28 shrink-0">{item.label}</span>
+                    <span className="text-xs text-muted-foreground">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Security & constraints */}
+            <div className="space-y-3">
+              <Label className="text-xs text-muted-foreground">Sicherheitsprinzipien</Label>
+              <div className="space-y-2">
+                {[
+                  { icon: Shield, text: 'OpenAI hat KEINEN direkten Zugriff auf SSM Recruit Daten' },
+                  { icon: Shield, text: 'Alle Aktionen laufen über das Action Gateway' },
+                  { icon: Shield, text: 'Kontext wird kontrolliert vom Core Backend übergeben' },
+                  { icon: Shield, text: 'Tool-Calls werden vom Railway Backend validiert' },
+                  { icon: Shield, text: 'Keine unkontrollierten Statusänderungen möglich' },
+                  { icon: Shield, text: 'Compliance-Regeln werden im System-Prompt erzwungen' },
+                ].map((rule, i) => (
+                  <div key={i} className="flex items-start gap-2 p-2 rounded border">
+                    <rule.icon className="h-3.5 w-3.5 text-green-600 shrink-0 mt-0.5" />
+                    <span className="text-xs text-muted-foreground">{rule.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Session Context Structure */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Session-Kontext (wird an OpenAI übergeben)</Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {[
+                { label: 'Agent Profile', desc: 'Name, Tonalität, Objective, Identity' },
+                { label: 'Greeting', desc: 'Begrüssung, Sprache, Voice' },
+                { label: 'Knowledge', desc: 'Freigegebene Wissenseinträge' },
+                { label: 'Action Permissions', desc: 'Erlaubte Tools & Modus' },
+                { label: 'Escalation Rules', desc: 'Wann eskaliert wird' },
+                { label: 'Lead Context', desc: 'Name, Status, Quelle' },
+                { label: 'Deployment Mode', desc: 'Shadow/Assisted/Autonomous' },
+                { label: 'Compliance Flags', desc: 'Offenlegung, Verbote' },
+              ].map(ctx => (
+                <div key={ctx.label} className="p-2 rounded border bg-muted/30">
+                  <p className="text-[10px] font-medium">{ctx.label}</p>
+                  <p className="text-[10px] text-muted-foreground">{ctx.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Tool Definitions */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Definierte OpenAI Tool-Calls (Function Calling)</Label>
+            <div className="space-y-1.5">
+              {[
+                { name: 'suggest_status_change', desc: 'Lead-Status basierend auf Gesprächsergebnis vorschlagen' },
+                { name: 'suggest_appointment', desc: 'Termin mit Kandidat vorschlagen' },
+                { name: 'create_followup', desc: 'Follow-up-Aufgabe erstellen' },
+                { name: 'escalate_to_human', desc: 'Gespräch an Menschen eskalieren' },
+                { name: 'create_note', desc: 'Wichtige Beobachtung speichern' },
+                { name: 'mark_callback_requested', desc: 'Rückrufwunsch erfassen' },
+                { name: 'end_conversation', desc: 'Gespräch geordnet beenden mit Outcome' },
+              ].map(tool => (
+                <div key={tool.name} className="flex items-center gap-3 p-2 rounded border">
+                  <code className="text-[10px] font-mono text-primary bg-primary/5 px-2 py-0.5 rounded min-w-[180px]">{tool.name}</code>
+                  <span className="text-[10px] text-muted-foreground">{tool.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+            <Shield className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-medium">Wichtig: Tool-Calls ≠ direkte Ausführung</p>
+              <p className="text-[10px] text-muted-foreground">
+                Wenn OpenAI einen Tool-Call auslöst, wird dieser vom Railway Voice Backend empfangen und als Action-Vorschlag über das Action Gateway an SSM Recruit weitergeleitet. Die Ausführung hängt vom Rollout-Modus ab.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Railway Deployment Info */}
       <Card>
         <CardHeader>
