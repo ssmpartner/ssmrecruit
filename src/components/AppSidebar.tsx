@@ -23,7 +23,6 @@ const aiVoiceSubItems = [
   { to: '/ai-voice/wissen', icon: BookOpen, label: 'Wissen & Regeln' },
   { to: '/ai-voice/infrastruktur', icon: Cog, label: 'Infrastruktur' },
   { to: '/ai-voice/qualitaet', icon: TrendingUp, label: 'Qualität & Analyse' },
-  { to: '/ai-voice/docs', icon: FileSearch, label: 'Dokumentation' },
 ];
 
 const allBottomItems = [

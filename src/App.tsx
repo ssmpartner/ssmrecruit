@@ -40,7 +40,6 @@ const AIVoiceBetrieb = lazy(() => import("./pages/ai-voice/AIVoiceBetrieb"));
 const AIVoiceWissen = lazy(() => import("./pages/ai-voice/AIVoiceWissen"));
 const AIVoiceInfrastruktur = lazy(() => import("./pages/ai-voice/AIVoiceInfrastruktur"));
 const AIVoiceQualitaet = lazy(() => import("./pages/ai-voice/AIVoiceQualitaet"));
-const AIVoiceDokumentation = lazy(() => import("./pages/ai-voice/AIVoiceDokumentation"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 1, refetchOnWindowFocus: false } },
@@ -141,7 +140,6 @@ const App = () => (
                   <Route path="wissen" element={<P><AIVoiceWissen /></P>} />
                   <Route path="infrastruktur" element={<P><AIVoiceInfrastruktur /></P>} />
                   <Route path="qualitaet" element={<P><AIVoiceQualitaet /></P>} />
-                  <Route path="docs" element={<P><AIVoiceDokumentation /></P>} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFound />} />
