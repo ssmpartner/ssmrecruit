@@ -9,6 +9,7 @@ import InsightsTab from './InsightsTab';
 import { useLeads } from '@/context/useLeads';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { generateAssessmentPdf, assessmentToPdfData, loadLetterhead } from '@/lib/assessment-pdf';
 
 interface Props {
   leadId: string;
