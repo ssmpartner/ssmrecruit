@@ -1065,19 +1065,32 @@ Neue Leads (Monat);24`,
     endpoints: [
       {
         method: 'GET', path: '/api/v1/roles/permissions', summary: 'Rollenberechtigungen abrufen', auth: true,
-        description: 'Gibt eine Übersicht der Berechtigungen pro Rolle im Lead-Modul zurück. Controlling: Nur Leads mit Sub-Status «ready_for_controlling» sichtbar – Telefon und E-Mail ausgeblendet – darf Insights, Matching, DISC-Ergebnisse, Dokumentenstatus ansehen + Controlling Wizard ausführen (Approve/Reject/Rückfrage). Sichtbar: Name, Lead-Datum, Position, Standort, Betreuer, Aktivitätenhistorie. Kein Zugriff auf Dashboard-Statistiken oder Gesamtanzahl Leads. Geschäftsleitung: Nur «management_review» Leads – read-only Übersicht + Approve/Reject. HR: Nur «hr_processing» Leads – darf finalen Status «Eingestellt» setzen. Keine der Review-Rollen darf Leads erstellen, bearbeiten, archivieren, löschen oder Zuweisungen ändern.',
+        description: 'Gibt eine Übersicht der Berechtigungen pro Rolle im Lead-Modul zurück. Controlling: Nur Leads mit Sub-Status «ready_for_controlling» sichtbar – Telefon und E-Mail ausgeblendet – Controlling Wizard mit Selektionieren/Ablehnen + Scoring. Freeze-Mechanik: Nach Controlling-Entscheid (Selektioniert oder Abgelehnt) wird der Lead für Mitarbeiter gesperrt (Read-Only) – Telefon, E-Mail und Dokumente nicht mehr zugänglich – Status, Scoring und Begründung bleiben sichtbar. Superadmin: Keine Einschränkungen.',
         response: `{
   "roles": {
     "controlling": {
       "visible_statuses": ["ready_for_controlling"],
       "can_view": true, "can_edit": false, "can_create": false,
       "can_archive": false, "can_delete": false,
-      "allowed_actions": ["approve", "reject", "query"],
+      "allowed_actions": ["selektionieren", "ablehnen", "query"],
+      "scoring_options": ["perfekt", "sehr_gut", "gut"],
+      "reject_requires_reason": true,
       "visible_tabs": ["info", "insights", "documents", "activity", "status"],
       "hidden_fields": ["phone", "email"],
       "visible_fields": ["name", "position", "plz", "city", "created_at", "employee", "insights", "disc", "documents", "activity_history"],
       "dashboard_access": false,
       "total_lead_count_visible": false
+    },
+    "employee_freeze": {
+      "trigger": "controlling_approved OR rejected",
+      "affected_role": "employee (non-superadmin, non-review)",
+      "read_only": true,
+      "hidden_fields": ["phone", "email"],
+      "hidden_tabs": ["documents"],
+      "visible_fields": ["status", "scoring", "reason", "position", "name", "address"],
+      "edit_disabled": true,
+      "assignment_disabled": true,
+      "superadmin_override": true
     },
     "geschaeftsleitung": {
       "visible_statuses": ["management_review"],
