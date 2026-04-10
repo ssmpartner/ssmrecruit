@@ -177,6 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isControlling: role === 'controlling',
       isGeschaeftsleitung: role === 'geschaeftsleitung',
       isHR: role === 'hr',
+      isAgencyManager: role === 'agency_manager',
       isReviewRole: role === 'controlling' || role === 'geschaeftsleitung' || role === 'hr',
       signUp, signIn, signOut,
       updateProfile, updateEmail, updatePassword, resetPassword,
