@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Filter, CalendarIcon, X, Activity, BarChart3, Megaphone, Briefcase, Workflow, Map as MapIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLeads } from '@/context/useLeads';
+import { useAuth } from '@/context/AuthContext';
 import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -17,6 +18,7 @@ import ExportActions from '@/components/analytics/ExportActions';
 
 export default function Analytics() {
   const { leads, agencies, employees, leadSources, activities } = useLeads();
+  const { isAgencyManager, user } = useAuth();
   const [cantonFilter, setCantonFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
@@ -25,6 +27,11 @@ export default function Analytics() {
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Agency manager: restrict filter options to own agency & employees
+  const myEmployee = useMemo(() => employees.find(e => e.email === user?.email), [employees, user]);
+  const visibleAgencies = useMemo(() => isAgencyManager && myEmployee ? agencies.filter(a => a.id === myEmployee.agencyId) : agencies, [isAgencyManager, myEmployee, agencies]);
+  const visibleEmployees = useMemo(() => isAgencyManager && myEmployee ? employees.filter(e => e.agencyId === myEmployee.agencyId) : employees, [isAgencyManager, myEmployee, employees]);
 
   const filtered = useMemo(() => {
     return leads.filter(l => {
