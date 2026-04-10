@@ -111,7 +111,7 @@ export function useAIVoicePermissions() {
   const { role } = useAuth();
   const allowedTabs = TAB_ACCESS[role ?? ''] ?? [];
   const actions = getActions(role);
-  const canAccessModule = allowedTabs.length > 0;
+  const canAccessModule = role === 'superadmin';
   const canAccessTab = (tab: AIVoiceTab) => allowedTabs.includes(tab);
   const visibleTabs = allowedTabs;
 
