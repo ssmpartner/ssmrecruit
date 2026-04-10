@@ -78,6 +78,9 @@ export default function Settings() {
   const { toast } = useToast();
   const { appointmentSettings, updateAppointmentSettings, insightsSettings, updateInsightsSettings } = useLeads();
   const { preferences: notifPrefs, updatePreferences: updateNotifPrefs } = useNotifications();
+  const { isSuperadmin, role } = useAuth();
+  // Non-superadmin roles only see profile + notifications
+  const visibleTabs = isSuperadmin ? tabs : tabs.filter(t => t.id === 'profile' || t.id === 'notifications');
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -182,7 +185,6 @@ export default function Settings() {
     }
   };
 
-  const { isSuperadmin, role } = useAuth();
   const isAdmin = role === 'admin';
 
   return (
@@ -195,7 +197,7 @@ export default function Settings() {
       <div className="flex gap-6">
         {/* Sidebar Navigation */}
         <nav className="w-56 shrink-0 space-y-1">
-          {tabs.map((tab) => {
+          {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
