@@ -185,7 +185,6 @@ export default function Settings() {
     }
   };
 
-  const { isSuperadmin, role } = useAuth();
   const isAdmin = role === 'admin';
 
   return (
