@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, type ReactNode } from 'react';
+import { useCallback, useState, useEffect, useMemo, type ReactNode } from 'react';
 import {
   type Lead,
   type Employee,
@@ -121,7 +121,7 @@ function dbToDiscResult(row: any): DiscResult {
 
 export function LeadsProvider({ children }: { children: ReactNode }) {
   const { addNotification } = useNotifications();
-  const { profile } = useAuth();
+  const { profile, user, role, isSuperadmin } = useAuth();
   const currentUserName = profile?.display_name || 'System';
   const [leads, setLeads] = useState<Lead[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -686,10 +686,31 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     );
   }, [addActivity, appointmentSettings.notificationMethod, appointments, leads]);
 
+  // Role-based lead filtering: Teamleiter/Backoffice only see own or agency leads
+  const filteredLeads = useMemo(() => {
+    // Superadmin and Admin see all leads
+    if (isSuperadmin || role === 'admin') return leads;
+    // Review roles (controlling, geschaeftsleitung, hr) see assigned leads only
+    if (role === 'controlling' || role === 'geschaeftsleitung' || role === 'hr') {
+      return leads.filter(l => l.assignedApproverUserId === user?.id);
+    }
+    // Teamleiter and Backoffice: see leads assigned to their employee or their agency
+    if (role === 'teamleiter' || role === 'backoffice') {
+      const myEmployee = employees.find(e => e.email === user?.email);
+      if (!myEmployee) return [];
+      return leads.filter(l =>
+        l.employeeId === myEmployee.id || l.agencyId === myEmployee.agencyId
+      );
+    }
+    // Analyst: read-only but can see all
+    if (role === 'analyst') return leads;
+    return leads;
+  }, [leads, employees, role, isSuperadmin, user]);
+
   return (
     <LeadsContext.Provider
       value={{
-        leads,
+        leads: filteredLeads,
         employees,
         agencies,
         activities,
