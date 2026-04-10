@@ -28,6 +28,7 @@ interface AuthContextType {
   isControlling: boolean;
   isGeschaeftsleitung: boolean;
   isHR: boolean;
+  isAgencyManager: boolean;
   isReviewRole: boolean;
 }
 
