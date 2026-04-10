@@ -34,8 +34,13 @@ const PAGE_SIZES: { value: PageSize; label: string }[] = [
 
 export default function LeadsTable() {
   const { leads, employees, agencies, leadSources, activities, setSelectedLead, updateLead } = useLeads();
-  const { isSuperadmin, role, isControlling, isGeschaeftsleitung, isHR, isReviewRole } = useAuth();
+  const { isSuperadmin, role, isControlling, isGeschaeftsleitung, isHR, isReviewRole, isAgencyManager, user } = useAuth();
   const canManageLeads = !isReviewRole;
+
+  // Agency manager: restrict filter options to own agency & employees
+  const myEmployee = useMemo(() => employees.find(e => e.email === user?.email), [employees, user]);
+  const visibleAgencies = useMemo(() => isAgencyManager && myEmployee ? agencies.filter(a => a.id === myEmployee.agencyId) : agencies, [isAgencyManager, myEmployee, agencies]);
+  const visibleEmployees = useMemo(() => isAgencyManager && myEmployee ? employees.filter(e => e.agencyId === myEmployee.agencyId) : employees, [isAgencyManager, myEmployee, employees]);
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
@@ -264,12 +269,12 @@ export default function LeadsTable() {
                   {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                 </select>
                 <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className={selectCls}>
-                  <option value="">Alle Agenturen</option>
-                  {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  <option value="">{isAgencyManager ? 'Meine Agentur' : 'Alle Agenturen'}</option>
+                  {visibleAgencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
                 <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
-                  <option value="">Alle Mitarbeiter</option>
-                  {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                  <option value="">{isAgencyManager ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
+                  {visibleEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                 </select>
                 <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>
                   <option value="">Alle Kantone</option>
