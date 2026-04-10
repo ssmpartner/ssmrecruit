@@ -78,7 +78,7 @@ export default function Settings() {
   const { toast } = useToast();
   const { appointmentSettings, updateAppointmentSettings, insightsSettings, updateInsightsSettings } = useLeads();
   const { preferences: notifPrefs, updatePreferences: updateNotifPrefs } = useNotifications();
-  const { isSuperadmin } = useAuth();
+  const { isSuperadmin, role } = useAuth();
   // Non-superadmin roles only see profile + notifications
   const visibleTabs = isSuperadmin ? tabs : tabs.filter(t => t.id === 'profile' || t.id === 'notifications');
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
