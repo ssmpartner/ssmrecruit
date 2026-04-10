@@ -2092,6 +2092,101 @@ export type Database = {
           },
         ]
       }
+      goal_progress: {
+        Row: {
+          created_at: string
+          goal_id: string
+          id: string
+          note: string
+          recorded_at: string
+          recorded_by: string | null
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          goal_id: string
+          id?: string
+          note?: string
+          recorded_at?: string
+          recorded_by?: string | null
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          goal_id?: string
+          id?: string
+          note?: string
+          recorded_at?: string
+          recorded_by?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_progress_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          agency_id: string | null
+          category: string
+          created_at: string
+          created_by: string | null
+          current_value: number
+          deadline: string | null
+          description: string
+          employee_id: string
+          id: string
+          quarter: string
+          source: string
+          status: string
+          target_value: number
+          title: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          agency_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          current_value?: number
+          deadline?: string | null
+          description?: string
+          employee_id: string
+          id?: string
+          quarter?: string
+          source?: string
+          status?: string
+          target_value?: number
+          title: string
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          current_value?: number
+          deadline?: string | null
+          description?: string
+          employee_id?: string
+          id?: string
+          quarter?: string
+          source?: string
+          status?: string
+          target_value?: number
+          title?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       insights_requests: {
         Row: {
           completed_at: string | null
