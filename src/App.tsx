@@ -60,6 +60,9 @@ const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
   hr: ['/', '/leads', '/help'],
 };
 
+// Routes restricted to superadmin only
+const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice'];
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, role } = useAuth();
   if (loading) return <FullScreenLoader />;
