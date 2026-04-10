@@ -62,13 +62,16 @@ export default function Analytics() {
 
   const selectCls = "h-8 rounded-lg border bg-background px-2.5 text-xs outline-none focus:ring-2 focus:ring-ring transition-colors";
 
-  const tabItems = [
+  const allTabItems = [
     { value: 'overview', label: 'Übersicht', icon: BarChart3 },
     { value: 'marketing', label: 'Marketing', icon: Megaphone },
     { value: 'management', label: 'Geschäftsleitung', icon: Briefcase },
     { value: 'flow', label: 'Flow-Analyse', icon: Workflow },
     { value: 'map', label: 'Karte', icon: MapIcon },
   ];
+
+  const AGENCY_MANAGER_HIDDEN_TABS = ['marketing', 'management', 'flow', 'map'];
+  const tabItems = isAgencyManager ? allTabItems.filter(t => !AGENCY_MANAGER_HIDDEN_TABS.includes(t.value)) : allTabItems;
 
   return (
     <div className="space-y-5 print:space-y-4">
@@ -110,12 +113,12 @@ export default function Analytics() {
             {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
           <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className={selectCls}>
-            <option value="">Alle Agenturen</option>
-            {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            <option value="">{isAgencyManager ? 'Meine Agentur' : 'Alle Agenturen'}</option>
+            {visibleAgencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
-            <option value="">Alle Mitarbeiter</option>
-            {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+            <option value="">{isAgencyManager ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
+            {visibleEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
           </select>
 
           <Popover>
