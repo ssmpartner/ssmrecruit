@@ -72,8 +72,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function RoleRouteGuard({ children }: { children: React.ReactNode }) {
-  const { role } = useAuth();
+  const { role, isSuperadmin } = useAuth();
   const location = useLocation();
+  // Superadmin-only routes
+  if (SUPERADMIN_ONLY_PREFIXES.some(p => location.pathname.startsWith(p)) && !isSuperadmin) {
+    return <Navigate to="/" replace />;
+  }
+  // Review role restrictions
   const allowed = role ? REVIEW_ROLE_ALLOWED[role] : null;
   if (allowed && !allowed.includes(location.pathname)) {
     return <Navigate to="/" replace />;
