@@ -694,6 +694,12 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (role === 'controlling' || role === 'geschaeftsleitung' || role === 'hr') {
       return leads.filter(l => l.assignedApproverUserId === user?.id);
     }
+    // Agency Manager: sees all leads of their agency
+    if (role === 'agency_manager') {
+      const myEmployee = employees.find(e => e.email === user?.email);
+      if (!myEmployee) return [];
+      return leads.filter(l => l.agencyId === myEmployee.agencyId);
+    }
     // Teamleiter and Backoffice: see leads assigned to their employee or their agency
     if (role === 'teamleiter' || role === 'backoffice') {
       const myEmployee = employees.find(e => e.email === user?.email);
