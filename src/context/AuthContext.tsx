@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
-type AppRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter' | 'controlling' | 'geschaeftsleitung' | 'hr';
+type AppRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter' | 'controlling' | 'geschaeftsleitung' | 'hr' | 'agency_manager';
 
 interface Profile {
   id: string;
@@ -28,6 +28,7 @@ interface AuthContextType {
   isControlling: boolean;
   isGeschaeftsleitung: boolean;
   isHR: boolean;
+  isAgencyManager: boolean;
   isReviewRole: boolean;
 }
 
@@ -176,6 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isControlling: role === 'controlling',
       isGeschaeftsleitung: role === 'geschaeftsleitung',
       isHR: role === 'hr',
+      isAgencyManager: role === 'agency_manager',
       isReviewRole: role === 'controlling' || role === 'geschaeftsleitung' || role === 'hr',
       signUp, signIn, signOut,
       updateProfile, updateEmail, updatePassword, resetPassword,

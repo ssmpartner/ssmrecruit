@@ -15,12 +15,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { type NotificationMethod } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter' | 'controlling' | 'geschaeftsleitung' | 'hr';
+type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter' | 'controlling' | 'geschaeftsleitung' | 'hr' | 'agency_manager';
 
 const roleConfig: Record<SystemRole, { label: string; color: string; description: string }> = {
   superadmin: { label: 'Superadmin', color: 'bg-destructive text-destructive-foreground', description: 'Vollzugriff – kann alles verwalten inkl. Benutzer & Einstellungen' },
   admin: { label: 'Admin', color: 'bg-primary text-primary-foreground', description: 'Kann Leads, Mitarbeiter & Agenturen verwalten und Controlling/GL/HR-Rollen zuweisen' },
   teamleiter: { label: 'Teamleiter', color: 'bg-emerald-600 text-white', description: 'Eigene Leads bearbeiten, Pipeline, Aufgaben, Kalender & Statistik' },
+  agency_manager: { label: 'Agenturleiter', color: 'bg-teal-600 text-white', description: 'Sieht alle Leads seiner Agentur und kann innerhalb der Agentur zuweisen' },
   backoffice: { label: 'Backoffice', color: 'bg-warning text-warning-foreground', description: 'Kann Leads bearbeiten, zuweisen und Status ändern' },
   analyst: { label: 'Analyst', color: 'bg-info text-info-foreground', description: 'Nur Lesezugriff auf Dashboard & Analytics' },
   controlling: { label: 'Controlling', color: 'bg-cyan-600 text-white', description: 'Prüft Leads nach Vorselektion – kontrolliert Matching, Insights & Dokumente, kann freigeben oder zurückweisen' },
