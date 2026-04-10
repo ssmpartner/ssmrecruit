@@ -197,7 +197,7 @@ export default function Settings() {
       <div className="flex gap-6">
         {/* Sidebar Navigation */}
         <nav className="w-56 shrink-0 space-y-1">
-          {tabs.map((tab) => {
+          {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
