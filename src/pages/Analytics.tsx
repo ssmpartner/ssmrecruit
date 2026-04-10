@@ -168,18 +168,22 @@ export default function Analytics() {
           <TabsContent value="overview" className="m-0">
             <OverviewTab filtered={filtered} leadSources={leadSources} />
           </TabsContent>
-          <TabsContent value="marketing" className="m-0">
-            <MarketingTab filtered={filtered} leadSources={leadSources} />
-          </TabsContent>
-          <TabsContent value="management" className="m-0">
-            <ManagementTab filtered={filtered} agencies={agencies} employees={employees} activities={activities} />
-          </TabsContent>
-          <TabsContent value="flow" className="m-0">
-            <FlowAnalysisTab filtered={filtered} activities={activities} />
-          </TabsContent>
-          <TabsContent value="map" className="m-0">
-            <MapTab filtered={filtered} agencies={agencies} />
-          </TabsContent>
+          {!isAgencyManager && (
+            <>
+              <TabsContent value="marketing" className="m-0">
+                <MarketingTab filtered={filtered} leadSources={leadSources} />
+              </TabsContent>
+              <TabsContent value="management" className="m-0">
+                <ManagementTab filtered={filtered} agencies={agencies} employees={employees} activities={activities} />
+              </TabsContent>
+              <TabsContent value="flow" className="m-0">
+                <FlowAnalysisTab filtered={filtered} activities={activities} />
+              </TabsContent>
+              <TabsContent value="map" className="m-0">
+                <MapTab filtered={filtered} agencies={agencies} />
+              </TabsContent>
+            </>
+          )}
         </div>
       </Tabs>
     </div>
