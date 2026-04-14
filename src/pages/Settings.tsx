@@ -406,7 +406,30 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
     }
   };
 
-  if (!canManageUsers) {
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    let pw = '';
+    for (let i = 0; i < 12; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+    return pw;
+  };
+
+  const handleResetPassword = async (userId: string, userName: string) => {
+    const newPw = generatePassword();
+    const confirmed = window.confirm(`Neues Passwort für "${userName}" generieren?\n\nDas neue Passwort wird nach Bestätigung angezeigt.`);
+    if (!confirmed) return;
+
+    const { data, error } = await supabase.functions.invoke('manage-users', {
+      body: { action: 'reset_password', user_id: userId, new_password: newPw },
+    });
+    if (error || data?.error) {
+      toast({ title: 'Fehler', description: data?.error || 'Passwort konnte nicht geändert werden', variant: 'destructive' });
+    } else {
+      toast({ title: 'Passwort zurückgesetzt', description: `Neues Passwort: ${newPw}`, duration: 30000 });
+      try { await navigator.clipboard.writeText(newPw); } catch {}
+    }
+  };
+
+
     return (
       <div className="rounded-xl border bg-card p-8 text-center">
         <Shield className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
