@@ -430,6 +430,7 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
   };
 
 
+  if (!canManageUsers) {
     return (
       <div className="rounded-xl border bg-card p-8 text-center">
         <Shield className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
