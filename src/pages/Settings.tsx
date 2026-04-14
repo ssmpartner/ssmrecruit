@@ -336,6 +336,9 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
   const defaultRole = isSuperadmin ? 'backoffice' : 'controlling';
   const [form, setForm] = useState({ name: '', email: '', password: '', role: defaultRole as SystemRole });
   const [generatedPassword, setGeneratedPassword] = useState<{ pw: string; userName: string } | null>(null);
+  const [editEmailDialog, setEditEmailDialog] = useState<{ userId: string; userName: string; currentEmail: string } | null>(null);
+  const [newEmail, setNewEmail] = useState('');
+  const [savingEmail, setSavingEmail] = useState(false);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -429,6 +432,25 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
     }
   };
 
+  const handleUpdateEmail = async () => {
+    if (!editEmailDialog || !newEmail.trim() || !newEmail.includes('@')) {
+      toast({ title: 'Fehler', description: 'Bitte geben Sie eine gültige E-Mail-Adresse ein', variant: 'destructive' });
+      return;
+    }
+    setSavingEmail(true);
+    const { data, error } = await supabase.functions.invoke('manage-users', {
+      body: { action: 'update_email', user_id: editEmailDialog.userId, new_email: newEmail.trim() },
+    });
+    setSavingEmail(false);
+    if (error || data?.error) {
+      toast({ title: 'Fehler', description: data?.error || 'E-Mail konnte nicht geändert werden', variant: 'destructive' });
+    } else {
+      toast({ title: 'E-Mail geändert', description: `E-Mail wurde zu ${newEmail.trim()} geändert.` });
+      setEditEmailDialog(null);
+      setNewEmail('');
+      loadUsers();
+    }
+  };
 
   if (!canManageUsers) {
     return (
@@ -556,6 +578,12 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
                     <td className="px-5 py-3 text-muted-foreground text-xs">{new Date(u.created_at).toLocaleDateString('de-DE')}</td>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-1">
+                        {!isSelf && isSuperadmin && (
+                          <button onClick={() => { setEditEmailDialog({ userId: u.id, userName: u.display_name || u.email, currentEmail: u.email }); setNewEmail(u.email); }}
+                            className="rounded-lg p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" title="E-Mail ändern">
+                            <Mail className="h-4 w-4" />
+                          </button>
+                        )}
                         {!isSelf && (
                           <button onClick={() => handleResetPassword(u.id, u.display_name || u.email)}
                             className="rounded-lg p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" title="Neues Passwort generieren">
@@ -600,6 +628,40 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
             }}
           >
             <Copy className="h-4 w-4" /> Passwort kopieren
+          </button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Change Modal */}
+      <Dialog open={!!editEmailDialog} onOpenChange={(open) => { if (!open) { setEditEmailDialog(null); setNewEmail(''); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>E-Mail-Adresse ändern</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            E-Mail für <span className="font-semibold text-foreground">{editEmailDialog?.userName}</span> ändern.
+          </p>
+          <div>
+            <label className="text-sm font-medium">Aktuelle E-Mail</label>
+            <p className="text-sm text-muted-foreground mt-1">{editEmailDialog?.currentEmail}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Neue E-Mail</label>
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="neue@email.ch"
+              className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <button
+            onClick={handleUpdateEmail}
+            disabled={savingEmail || !newEmail.trim() || !newEmail.includes('@') || newEmail === editEmailDialog?.currentEmail}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {savingEmail && <Loader2 className="h-4 w-4 animate-spin" />}
+            E-Mail aktualisieren
           </button>
         </DialogContent>
       </Dialog>
