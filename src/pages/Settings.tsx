@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin, X, Download, Building2, Image } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin, X, Download, Building2, Image, KeyRound } from 'lucide-react';
 import { generateAssessmentPdf, getSampleAssessmentData, loadLetterhead, assessmentToPdfData } from '@/lib/assessment-pdf';
 import EmailSettingsTab from '@/components/EmailSettingsTab';
 import NotificationRoleMatrix from '@/components/NotificationRoleMatrix';
@@ -406,6 +406,30 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
     }
   };
 
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    let pw = '';
+    for (let i = 0; i < 12; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+    return pw;
+  };
+
+  const handleResetPassword = async (userId: string, userName: string) => {
+    const newPw = generatePassword();
+    const confirmed = window.confirm(`Neues Passwort für "${userName}" generieren?\n\nDas neue Passwort wird nach Bestätigung angezeigt.`);
+    if (!confirmed) return;
+
+    const { data, error } = await supabase.functions.invoke('manage-users', {
+      body: { action: 'reset_password', user_id: userId, new_password: newPw },
+    });
+    if (error || data?.error) {
+      toast({ title: 'Fehler', description: data?.error || 'Passwort konnte nicht geändert werden', variant: 'destructive' });
+    } else {
+      toast({ title: 'Passwort zurückgesetzt', description: `Neues Passwort: ${newPw}`, duration: 30000 });
+      try { await navigator.clipboard.writeText(newPw); } catch {}
+    }
+  };
+
+
   if (!canManageUsers) {
     return (
       <div className="rounded-xl border bg-card p-8 text-center">
@@ -531,12 +555,20 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
                     </td>
                     <td className="px-5 py-3 text-muted-foreground text-xs">{new Date(u.created_at).toLocaleDateString('de-DE')}</td>
                     <td className="px-5 py-3">
-                      {!isSelf && (
-                        <button onClick={() => handleDelete(u.id)}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Benutzer entfernen">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
+                      <div className="flex items-center gap-1">
+                        {!isSelf && (
+                          <button onClick={() => handleResetPassword(u.id, u.display_name || u.email)}
+                            className="rounded-lg p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" title="Neues Passwort generieren">
+                            <KeyRound className="h-4 w-4" />
+                          </button>
+                        )}
+                        {!isSelf && (
+                          <button onClick={() => handleDelete(u.id)}
+                            className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Benutzer entfernen">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
