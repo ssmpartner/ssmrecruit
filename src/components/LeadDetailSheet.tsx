@@ -54,7 +54,7 @@ export default function LeadDetailSheet() {
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
   const [showPlzDropdown, setShowPlzDropdown] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [form, setForm] = useState({ name: '', salutation: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '' });
+  const [form, setForm] = useState({ name: '', salutation: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '', altEmail: '', altPhone: '' });
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
@@ -123,6 +123,7 @@ export default function LeadDetailSheet() {
       position: selectedLead.position, address: selectedLead.address, plz: selectedLead.plz,
       city: selectedLead.city, canton: selectedLead.canton, cantonCode: selectedLead.cantonCode,
       notes: selectedLead.notes, source: selectedLead.source, createdAt: selectedLead.createdAt,
+      altEmail: selectedLead.altEmail || '', altPhone: selectedLead.altPhone || '',
     });
     setEditing(true);
   };
