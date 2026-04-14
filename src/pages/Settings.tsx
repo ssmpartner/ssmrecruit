@@ -335,6 +335,7 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
   const availableRoles = isSuperadmin ? Object.keys(roleConfig) as SystemRole[] : adminAllowedRoles;
   const defaultRole = isSuperadmin ? 'backoffice' : 'controlling';
   const [form, setForm] = useState({ name: '', email: '', password: '', role: defaultRole as SystemRole });
+  const [generatedPassword, setGeneratedPassword] = useState<{ pw: string; userName: string } | null>(null);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -424,8 +425,7 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
     if (error || data?.error) {
       toast({ title: 'Fehler', description: data?.error || 'Passwort konnte nicht geändert werden', variant: 'destructive' });
     } else {
-      toast({ title: 'Passwort zurückgesetzt', description: `Neues Passwort: ${newPw}`, duration: 30000 });
-      try { await navigator.clipboard.writeText(newPw); } catch {}
+      setGeneratedPassword({ pw: newPw, userName });
     }
   };
 
@@ -577,6 +577,32 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
           </table>
         )}
       </div>
+
+      {/* Password Reset Modal */}
+      <Dialog open={!!generatedPassword} onOpenChange={(open) => { if (!open) setGeneratedPassword(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Neues Passwort generiert</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Das neue Passwort für <span className="font-semibold text-foreground">{generatedPassword?.userName}</span> wurde erfolgreich gesetzt.
+          </p>
+          <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3 font-mono text-base tracking-wider select-all">
+            {generatedPassword?.pw}
+          </div>
+          <button
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            onClick={async () => {
+              if (generatedPassword?.pw) {
+                try { await navigator.clipboard.writeText(generatedPassword.pw); } catch {}
+                toast({ title: 'Kopiert!', description: 'Passwort wurde in die Zwischenablage kopiert.' });
+              }
+            }}
+          >
+            <Copy className="h-4 w-4" /> Passwort kopieren
+          </button>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
