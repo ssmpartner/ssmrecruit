@@ -531,12 +531,20 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
                     </td>
                     <td className="px-5 py-3 text-muted-foreground text-xs">{new Date(u.created_at).toLocaleDateString('de-DE')}</td>
                     <td className="px-5 py-3">
-                      {!isSelf && (
-                        <button onClick={() => handleDelete(u.id)}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Benutzer entfernen">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
+                      <div className="flex items-center gap-1">
+                        {!isSelf && (
+                          <button onClick={() => handleResetPassword(u.id, u.display_name || u.email)}
+                            className="rounded-lg p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" title="Neues Passwort generieren">
+                            <KeyRound className="h-4 w-4" />
+                          </button>
+                        )}
+                        {!isSelf && (
+                          <button onClick={() => handleDelete(u.id)}
+                            className="rounded-lg p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Benutzer entfernen">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

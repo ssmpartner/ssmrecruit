@@ -131,6 +131,22 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "reset_password") {
+      const { user_id, new_password } = payload;
+      if (!new_password || new_password.length < 8) {
+        throw new Error("Passwort muss mindestens 8 Zeichen lang sein");
+      }
+
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
+        password: new_password,
+      });
+      if (error) throw error;
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (action === "list") {
       // Get all users with their roles and profiles
       const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers();
