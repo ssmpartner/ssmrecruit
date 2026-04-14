@@ -325,10 +325,12 @@ export default function Dashboard() {
                 <CalendarDays className="mr-2 h-4 w-4" />
                 Neuer Termin
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/agencies')} className="cursor-pointer">
-                <Building2 className="mr-2 h-4 w-4" />
-                Neue Agentur
-              </DropdownMenuItem>
+              {isSuperadmin && (
+                <DropdownMenuItem onClick={() => navigate('/agencies')} className="cursor-pointer">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  Neue Agentur
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
