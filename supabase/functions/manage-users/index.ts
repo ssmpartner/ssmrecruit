@@ -102,6 +102,30 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "update_email") {
+      const { user_id, new_email } = payload;
+      if (!new_email || !new_email.includes("@")) {
+        throw new Error("Ungültige E-Mail-Adresse");
+      }
+
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
+        email: new_email,
+        email_confirm: true,
+      });
+      if (error) throw error;
+
+      // Update profile display if needed
+      await supabaseAdmin
+        .from("profiles")
+        .update({ display_name: new_email })
+        .eq("id", user_id)
+        .is("display_name", null);
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (action === "delete") {
       const { user_id } = payload;
 

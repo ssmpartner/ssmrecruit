@@ -336,6 +336,9 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
   const defaultRole = isSuperadmin ? 'backoffice' : 'controlling';
   const [form, setForm] = useState({ name: '', email: '', password: '', role: defaultRole as SystemRole });
   const [generatedPassword, setGeneratedPassword] = useState<{ pw: string; userName: string } | null>(null);
+  const [editEmailDialog, setEditEmailDialog] = useState<{ userId: string; userName: string; currentEmail: string } | null>(null);
+  const [newEmail, setNewEmail] = useState('');
+  const [savingEmail, setSavingEmail] = useState(false);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
