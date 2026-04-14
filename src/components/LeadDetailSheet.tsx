@@ -530,7 +530,7 @@ export default function LeadDetailSheet() {
 
                         {editing && !isReviewRole ? (
                           <div className="space-y-2.5">
-                            <div className="grid grid-cols-3 gap-2.5">
+                          <div className="grid grid-cols-3 gap-2.5">
                               <div>
                                 <label className="text-sm text-muted-foreground">Anrede</label>
                                 <select value={form.salutation} onChange={e => setForm(prev => ({ ...prev, salutation: e.target.value }))} className={inputCls}>
@@ -541,7 +541,11 @@ export default function LeadDetailSheet() {
                               </div>
                               <div>
                                 <label className={`text-sm ${fieldErrors.name ? 'text-destructive' : 'text-muted-foreground'}`}>Name *</label>
-                                <input value={form.name} onChange={e => { setForm(prev => ({ ...prev, name: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.name; return n; }); }} className={inputErr('name')} />
+                                {isSuperadmin ? (
+                                  <input value={form.name} onChange={e => { setForm(prev => ({ ...prev, name: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.name; return n; }); }} className={inputErr('name')} />
+                                ) : (
+                                  <input value={form.name} readOnly className="h-10 w-full rounded-md border bg-muted px-3 text-sm cursor-not-allowed" />
+                                )}
                                 {fieldErrors.name && <p className="text-sm text-destructive mt-0.5">{fieldErrors.name}</p>}
                               </div>
                               <div>
@@ -551,16 +555,38 @@ export default function LeadDetailSheet() {
                             </div>
                             <div className="grid grid-cols-2 gap-2.5">
                               <div>
-                                 <label className={`text-sm ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail</label>
-                                 <input value={form.email} onChange={e => { setForm(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.email; return n; }); }} className={inputErr('email')} />
+                                 <label className={`text-sm ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail {!isSuperadmin && <span className="text-xs text-muted-foreground">(gesperrt)</span>}</label>
+                                 {isSuperadmin ? (
+                                   <input value={form.email} onChange={e => { setForm(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.email; return n; }); }} className={inputErr('email')} />
+                                 ) : (
+                                   <input value={form.email} readOnly className="h-10 w-full rounded-md border bg-muted px-3 text-sm cursor-not-allowed" />
+                                 )}
                                  {fieldErrors.email && <p className="text-sm text-destructive mt-0.5">{fieldErrors.email}</p>}
                                </div>
                                <div>
-                                 <label className={`text-sm ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon</label>
-                                 <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
+                                 <label className={`text-sm ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon {!isSuperadmin && <span className="text-xs text-muted-foreground">(gesperrt)</span>}</label>
+                                 {isSuperadmin ? (
+                                   <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
+                                 ) : (
+                                   <input value={form.phone} readOnly className="h-10 w-full rounded-md border bg-muted px-3 text-sm cursor-not-allowed" placeholder="+41 44 123 45 67" />
+                                 )}
                                  {fieldErrors.phone && <p className="text-sm text-destructive mt-0.5">{fieldErrors.phone}</p>}
                               </div>
                             </div>
+                            {/* Alternative contact fields for non-superadmins */}
+                            {!isSuperadmin && (
+                              <div className="grid grid-cols-2 gap-2.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 p-2.5">
+                                <div>
+                                  <label className="text-sm text-primary font-medium">Alt. E-Mail (neu)</label>
+                                  <input value={form.altEmail} onChange={e => setForm(prev => ({ ...prev, altEmail: e.target.value }))} placeholder="Korrekte E-Mail eingeben..." className={inputCls} />
+                                </div>
+                                <div>
+                                  <label className="text-sm text-primary font-medium">Alt. Telefon (neu)</label>
+                                  <input value={form.altPhone} onChange={e => setForm(prev => ({ ...prev, altPhone: e.target.value }))} placeholder="Korrekte Nr. eingeben..." className={inputCls} />
+                                </div>
+                                <p className="col-span-2 text-xs text-muted-foreground">Falls die Originaldaten falsch sind, hier die korrekten Kontaktdaten eintragen.</p>
+                              </div>
+                            )}
                             <div>
                               <label className="text-sm text-muted-foreground">Strasse & Nr.</label>
                               <AddressAutocomplete
