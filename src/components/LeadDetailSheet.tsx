@@ -169,9 +169,18 @@ export default function LeadDetailSheet() {
     if (form.notes !== selectedLead.notes) changes.push(`Notizen aktualisiert`);
     if (isSuperadmin && form.source !== selectedLead.source) changes.push(`Quelle → "${leadSources.find(s => s.id === form.source)?.label || form.source}"`);
     if (isSuperadmin && form.createdAt !== selectedLead.createdAt) changes.push(`Leaddatum geändert`);
+    if (form.altEmail && form.altEmail !== (selectedLead.altEmail || '')) changes.push(`Alt. E-Mail hinzugefügt: "${form.altEmail}"`);
+    if (form.altPhone && form.altPhone !== (selectedLead.altPhone || '')) changes.push(`Alt. Telefon hinzugefügt: "${form.altPhone}"`);
 
     const updates: Partial<Record<string, any>> = { ...form };
-    if (!isSuperadmin) { delete updates.source; delete updates.createdAt; }
+    if (!isSuperadmin) {
+      delete updates.source;
+      delete updates.createdAt;
+      // Non-superadmins cannot change original email/phone/name
+      delete updates.email;
+      delete updates.phone;
+      delete updates.name;
+    }
     updateLead(selectedLead.id, updates);
     if (changes.length > 0) addActivity(selectedLead.id, 'edit', changes.join(', '));
     setEditing(false);
