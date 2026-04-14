@@ -631,6 +631,40 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
           </button>
         </DialogContent>
       </Dialog>
+
+      {/* Email Change Modal */}
+      <Dialog open={!!editEmailDialog} onOpenChange={(open) => { if (!open) { setEditEmailDialog(null); setNewEmail(''); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>E-Mail-Adresse ändern</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            E-Mail für <span className="font-semibold text-foreground">{editEmailDialog?.userName}</span> ändern.
+          </p>
+          <div>
+            <label className="text-sm font-medium">Aktuelle E-Mail</label>
+            <p className="text-sm text-muted-foreground mt-1">{editEmailDialog?.currentEmail}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Neue E-Mail</label>
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="neue@email.ch"
+              className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <button
+            onClick={handleUpdateEmail}
+            disabled={savingEmail || !newEmail.trim() || !newEmail.includes('@') || newEmail === editEmailDialog?.currentEmail}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {savingEmail && <Loader2 className="h-4 w-4 animate-spin" />}
+            E-Mail aktualisieren
+          </button>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
