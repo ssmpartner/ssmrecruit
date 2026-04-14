@@ -147,10 +147,17 @@ export default function LeadDetailSheet() {
   const saveEdit = () => {
     if (!selectedLead) return;
     const errors: Record<string, string> = {};
-    const phoneClean = form.phone.replace(/\s/g, '');
-    if (phoneClean && !phoneClean.startsWith('+41') && !phoneClean.startsWith('041') && !phoneClean.startsWith('0')) errors.phone = 'Ungültige Schweizer Nummer';
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Ungültige E-Mail-Adresse';
-    if (!form.name.trim()) errors.name = 'Name ist erforderlich';
+    if (isSuperadmin) {
+      const phoneClean = form.phone.replace(/\s/g, '');
+      if (phoneClean && !phoneClean.startsWith('+41') && !phoneClean.startsWith('041') && !phoneClean.startsWith('0')) errors.phone = 'Ungültige Schweizer Nummer';
+      if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Ungültige E-Mail-Adresse';
+      if (!form.name.trim()) errors.name = 'Name ist erforderlich';
+    }
+    if (form.altEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.altEmail)) errors.altEmail = 'Ungültige alternative E-Mail';
+    if (form.altPhone) {
+      const altPhoneClean = form.altPhone.replace(/\s/g, '');
+      if (altPhoneClean && !altPhoneClean.startsWith('+41') && !altPhoneClean.startsWith('041') && !altPhoneClean.startsWith('0')) errors.altPhone = 'Ungültige Schweizer Nummer';
+    }
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       toast({ title: '⚠️ Validierungsfehler', description: Object.values(errors).join(', '), variant: 'destructive' });
