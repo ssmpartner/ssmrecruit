@@ -432,6 +432,25 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
     }
   };
 
+  const handleUpdateEmail = async () => {
+    if (!editEmailDialog || !newEmail.trim() || !newEmail.includes('@')) {
+      toast({ title: 'Fehler', description: 'Bitte geben Sie eine gültige E-Mail-Adresse ein', variant: 'destructive' });
+      return;
+    }
+    setSavingEmail(true);
+    const { data, error } = await supabase.functions.invoke('manage-users', {
+      body: { action: 'update_email', user_id: editEmailDialog.userId, new_email: newEmail.trim() },
+    });
+    setSavingEmail(false);
+    if (error || data?.error) {
+      toast({ title: 'Fehler', description: data?.error || 'E-Mail konnte nicht geändert werden', variant: 'destructive' });
+    } else {
+      toast({ title: 'E-Mail geändert', description: `E-Mail wurde zu ${newEmail.trim()} geändert.` });
+      setEditEmailDialog(null);
+      setNewEmail('');
+      loadUsers();
+    }
+  };
 
   if (!canManageUsers) {
     return (
