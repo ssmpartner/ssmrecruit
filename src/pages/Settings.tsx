@@ -578,6 +578,12 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
                     <td className="px-5 py-3 text-muted-foreground text-xs">{new Date(u.created_at).toLocaleDateString('de-DE')}</td>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-1">
+                        {!isSelf && isSuperadmin && (
+                          <button onClick={() => { setEditEmailDialog({ userId: u.id, userName: u.display_name || u.email, currentEmail: u.email }); setNewEmail(u.email); }}
+                            className="rounded-lg p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" title="E-Mail ändern">
+                            <Mail className="h-4 w-4" />
+                          </button>
+                        )}
                         {!isSelf && (
                           <button onClick={() => handleResetPassword(u.id, u.display_name || u.email)}
                             className="rounded-lg p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" title="Neues Passwort generieren">
