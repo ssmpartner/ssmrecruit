@@ -64,6 +64,8 @@ export interface Lead {
   isRead?: boolean;
   assignedApproverUserId?: string | null;
   assignedApproverRole?: string;
+  altEmail?: string;
+  altPhone?: string;
 }
 
 export interface Appointment {

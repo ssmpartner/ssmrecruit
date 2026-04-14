@@ -1,0 +1,2 @@
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS alt_email text NOT NULL DEFAULT '';
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS alt_phone text NOT NULL DEFAULT '';

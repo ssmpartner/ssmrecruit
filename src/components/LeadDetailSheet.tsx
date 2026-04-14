@@ -54,7 +54,7 @@ export default function LeadDetailSheet() {
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
   const [showPlzDropdown, setShowPlzDropdown] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [form, setForm] = useState({ name: '', salutation: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '' });
+  const [form, setForm] = useState({ name: '', salutation: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '', altEmail: '', altPhone: '' });
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
@@ -123,6 +123,7 @@ export default function LeadDetailSheet() {
       position: selectedLead.position, address: selectedLead.address, plz: selectedLead.plz,
       city: selectedLead.city, canton: selectedLead.canton, cantonCode: selectedLead.cantonCode,
       notes: selectedLead.notes, source: selectedLead.source, createdAt: selectedLead.createdAt,
+      altEmail: selectedLead.altEmail || '', altPhone: selectedLead.altPhone || '',
     });
     setEditing(true);
   };
@@ -146,10 +147,17 @@ export default function LeadDetailSheet() {
   const saveEdit = () => {
     if (!selectedLead) return;
     const errors: Record<string, string> = {};
-    const phoneClean = form.phone.replace(/\s/g, '');
-    if (phoneClean && !phoneClean.startsWith('+41') && !phoneClean.startsWith('041') && !phoneClean.startsWith('0')) errors.phone = 'Ungültige Schweizer Nummer';
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Ungültige E-Mail-Adresse';
-    if (!form.name.trim()) errors.name = 'Name ist erforderlich';
+    if (isSuperadmin) {
+      const phoneClean = form.phone.replace(/\s/g, '');
+      if (phoneClean && !phoneClean.startsWith('+41') && !phoneClean.startsWith('041') && !phoneClean.startsWith('0')) errors.phone = 'Ungültige Schweizer Nummer';
+      if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Ungültige E-Mail-Adresse';
+      if (!form.name.trim()) errors.name = 'Name ist erforderlich';
+    }
+    if (form.altEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.altEmail)) errors.altEmail = 'Ungültige alternative E-Mail';
+    if (form.altPhone) {
+      const altPhoneClean = form.altPhone.replace(/\s/g, '');
+      if (altPhoneClean && !altPhoneClean.startsWith('+41') && !altPhoneClean.startsWith('041') && !altPhoneClean.startsWith('0')) errors.altPhone = 'Ungültige Schweizer Nummer';
+    }
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       toast({ title: '⚠️ Validierungsfehler', description: Object.values(errors).join(', '), variant: 'destructive' });
@@ -168,9 +176,18 @@ export default function LeadDetailSheet() {
     if (form.notes !== selectedLead.notes) changes.push(`Notizen aktualisiert`);
     if (isSuperadmin && form.source !== selectedLead.source) changes.push(`Quelle → "${leadSources.find(s => s.id === form.source)?.label || form.source}"`);
     if (isSuperadmin && form.createdAt !== selectedLead.createdAt) changes.push(`Leaddatum geändert`);
+    if (form.altEmail && form.altEmail !== (selectedLead.altEmail || '')) changes.push(`Alt. E-Mail hinzugefügt: "${form.altEmail}"`);
+    if (form.altPhone && form.altPhone !== (selectedLead.altPhone || '')) changes.push(`Alt. Telefon hinzugefügt: "${form.altPhone}"`);
 
     const updates: Partial<Record<string, any>> = { ...form };
-    if (!isSuperadmin) { delete updates.source; delete updates.createdAt; }
+    if (!isSuperadmin) {
+      delete updates.source;
+      delete updates.createdAt;
+      // Non-superadmins cannot change original email/phone/name
+      delete updates.email;
+      delete updates.phone;
+      delete updates.name;
+    }
     updateLead(selectedLead.id, updates);
     if (changes.length > 0) addActivity(selectedLead.id, 'edit', changes.join(', '));
     setEditing(false);
@@ -520,7 +537,7 @@ export default function LeadDetailSheet() {
 
                         {editing && !isReviewRole ? (
                           <div className="space-y-2.5">
-                            <div className="grid grid-cols-3 gap-2.5">
+                          <div className="grid grid-cols-3 gap-2.5">
                               <div>
                                 <label className="text-sm text-muted-foreground">Anrede</label>
                                 <select value={form.salutation} onChange={e => setForm(prev => ({ ...prev, salutation: e.target.value }))} className={inputCls}>
@@ -531,7 +548,11 @@ export default function LeadDetailSheet() {
                               </div>
                               <div>
                                 <label className={`text-sm ${fieldErrors.name ? 'text-destructive' : 'text-muted-foreground'}`}>Name *</label>
-                                <input value={form.name} onChange={e => { setForm(prev => ({ ...prev, name: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.name; return n; }); }} className={inputErr('name')} />
+                                {isSuperadmin ? (
+                                  <input value={form.name} onChange={e => { setForm(prev => ({ ...prev, name: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.name; return n; }); }} className={inputErr('name')} />
+                                ) : (
+                                  <input value={form.name} readOnly className="h-10 w-full rounded-md border bg-muted px-3 text-sm cursor-not-allowed" />
+                                )}
                                 {fieldErrors.name && <p className="text-sm text-destructive mt-0.5">{fieldErrors.name}</p>}
                               </div>
                               <div>
@@ -541,16 +562,38 @@ export default function LeadDetailSheet() {
                             </div>
                             <div className="grid grid-cols-2 gap-2.5">
                               <div>
-                                 <label className={`text-sm ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail</label>
-                                 <input value={form.email} onChange={e => { setForm(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.email; return n; }); }} className={inputErr('email')} />
+                                 <label className={`text-sm ${fieldErrors.email ? 'text-destructive' : 'text-muted-foreground'}`}>E-Mail {!isSuperadmin && <span className="text-xs text-muted-foreground">(gesperrt)</span>}</label>
+                                 {isSuperadmin ? (
+                                   <input value={form.email} onChange={e => { setForm(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.email; return n; }); }} className={inputErr('email')} />
+                                 ) : (
+                                   <input value={form.email} readOnly className="h-10 w-full rounded-md border bg-muted px-3 text-sm cursor-not-allowed" />
+                                 )}
                                  {fieldErrors.email && <p className="text-sm text-destructive mt-0.5">{fieldErrors.email}</p>}
                                </div>
                                <div>
-                                 <label className={`text-sm ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon</label>
-                                 <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
+                                 <label className={`text-sm ${fieldErrors.phone ? 'text-destructive' : 'text-muted-foreground'}`}>Telefon {!isSuperadmin && <span className="text-xs text-muted-foreground">(gesperrt)</span>}</label>
+                                 {isSuperadmin ? (
+                                   <input value={form.phone} onChange={e => { setForm(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.phone; return n; }); }} placeholder="+41 44 123 45 67" className={inputErr('phone')} />
+                                 ) : (
+                                   <input value={form.phone} readOnly className="h-10 w-full rounded-md border bg-muted px-3 text-sm cursor-not-allowed" placeholder="+41 44 123 45 67" />
+                                 )}
                                  {fieldErrors.phone && <p className="text-sm text-destructive mt-0.5">{fieldErrors.phone}</p>}
                               </div>
                             </div>
+                            {/* Alternative contact fields for non-superadmins */}
+                            {!isSuperadmin && (
+                              <div className="grid grid-cols-2 gap-2.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 p-2.5">
+                                <div>
+                                  <label className="text-sm text-primary font-medium">Alt. E-Mail (neu)</label>
+                                  <input value={form.altEmail} onChange={e => setForm(prev => ({ ...prev, altEmail: e.target.value }))} placeholder="Korrekte E-Mail eingeben..." className={inputCls} />
+                                </div>
+                                <div>
+                                  <label className="text-sm text-primary font-medium">Alt. Telefon (neu)</label>
+                                  <input value={form.altPhone} onChange={e => setForm(prev => ({ ...prev, altPhone: e.target.value }))} placeholder="Korrekte Nr. eingeben..." className={inputCls} />
+                                </div>
+                                <p className="col-span-2 text-xs text-muted-foreground">Falls die Originaldaten falsch sind, hier die korrekten Kontaktdaten eintragen.</p>
+                              </div>
+                            )}
                             <div>
                               <label className="text-sm text-muted-foreground">Strasse & Nr.</label>
                               <AddressAutocomplete
@@ -645,7 +688,9 @@ export default function LeadDetailSheet() {
                              {[
                                 ['Anrede', selectedLead.salutation],
                                 ...(!isFrozenForEmployee ? [['E-Mail', selectedLead.email]] : []),
+                                ...(selectedLead.altEmail ? [['Alt. E-Mail', selectedLead.altEmail]] : []),
                                 ...(!isFrozenForEmployee ? [['Telefon', selectedLead.phone]] : []),
+                                ...(selectedLead.altPhone ? [['Alt. Telefon', selectedLead.altPhone]] : []),
                                 ['Position', selectedLead.position],
                                 ['Leaddatum', new Date(selectedLead.createdAt).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
                                ['Adresse', selectedLead.address],

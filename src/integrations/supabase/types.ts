@@ -2296,6 +2296,8 @@ export type Database = {
         Row: {
           address: string
           agency_id: string
+          alt_email: string
+          alt_phone: string
           approval_history: Json
           approval_stage: string
           approval_status: string
@@ -2327,6 +2329,8 @@ export type Database = {
         Insert: {
           address?: string
           agency_id: string
+          alt_email?: string
+          alt_phone?: string
           approval_history?: Json
           approval_stage?: string
           approval_status?: string
@@ -2358,6 +2362,8 @@ export type Database = {
         Update: {
           address?: string
           agency_id?: string
+          alt_email?: string
+          alt_phone?: string
           approval_history?: Json
           approval_stage?: string
           approval_status?: string
