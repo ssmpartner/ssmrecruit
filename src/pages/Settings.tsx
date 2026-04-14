@@ -335,6 +335,7 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
   const availableRoles = isSuperadmin ? Object.keys(roleConfig) as SystemRole[] : adminAllowedRoles;
   const defaultRole = isSuperadmin ? 'backoffice' : 'controlling';
   const [form, setForm] = useState({ name: '', email: '', password: '', role: defaultRole as SystemRole });
+  const [generatedPassword, setGeneratedPassword] = useState<{ pw: string; userName: string } | null>(null);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -424,8 +425,7 @@ function UsersTab({ isSuperadmin, isAdmin }: { isSuperadmin: boolean; isAdmin?: 
     if (error || data?.error) {
       toast({ title: 'Fehler', description: data?.error || 'Passwort konnte nicht geändert werden', variant: 'destructive' });
     } else {
-      toast({ title: 'Passwort zurückgesetzt', description: `Neues Passwort: ${newPw}`, duration: 30000 });
-      try { await navigator.clipboard.writeText(newPw); } catch {}
+      setGeneratedPassword({ pw: newPw, userName });
     }
   };
 
