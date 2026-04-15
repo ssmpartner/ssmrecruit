@@ -284,8 +284,8 @@ const helpCategories: Category[] = [
       {
         id: 'r-1',
         title: 'Rollenübersicht',
-        content: 'Das System kennt 8 Rollen: Superadmin (volle Rechte), Admin (Verwaltung ohne Systemkonfiguration), Backoffice (Datenverwaltung), Teamleiter (eingeschränkt auf eigene Leads), Analyst (nur Leserechte), Controlling (Prüfrolle für Freigabe-Phase), Geschäftsleitung (Management-Freigabe) und HR (Onboarding & Einstellung). Die Rolle bestimmt, welche Menüpunkte, Leads und Funktionen sichtbar sind.',
-        tags: ['rollen', 'rechte', 'superadmin', 'admin', 'teamleiter', 'controlling', 'hr'],
+        content: 'Das System kennt 9 Rollen: Superadmin (volle Rechte), Admin (Verwaltung ohne Systemkonfiguration), Agenturleiter (Agentur-Verwaltung), Backoffice (Datenverwaltung), Teamleiter (eingeschränkt auf eigene Leads), Analyst (nur Leserechte), Controlling (Prüfrolle für Freigabe-Phase), Geschäftsleitung (Management-Freigabe) und HR (Onboarding & Einstellung). Die Rolle bestimmt, welche Menüpunkte, Leads und Funktionen sichtbar sind. Rollen werden zentral über das SSM Portal zugewiesen.',
+        tags: ['rollen', 'rechte', 'superadmin', 'admin', 'teamleiter', 'controlling', 'hr', 'sso'],
       },
       {
         id: 'r-2',
