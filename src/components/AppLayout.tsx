@@ -54,10 +54,7 @@ export default function AppLayout() {
                   <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
                     {initials}
                   </div>
-                  <div className="text-sm text-left">
-                    <p className="font-medium leading-none">{profile?.display_name || 'Benutzer'}</p>
-                    <p className="text-xs text-muted-foreground">{user?.email}</p>
-                  </div>
+                  <span className="text-sm font-medium">{profile?.display_name || 'Benutzer'}</span>
                   <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
