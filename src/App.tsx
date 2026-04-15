@@ -96,6 +96,7 @@ function RoleRouteGuard({ children }: { children: React.ReactNode }) {
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  if (IS_PREVIEW) return <Navigate to="/" replace />;
   if (loading) return <FullScreenLoader />;
   if (user) return <Navigate to="/" replace />;
   return <>{children}</>;
