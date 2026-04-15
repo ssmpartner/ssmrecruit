@@ -59,12 +59,11 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'profile' | 'notifications' | 'users' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'career' | 'email' | 'integrations' | 'api';
+type SettingsTab = 'profile' | 'notifications' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'career' | 'email' | 'integrations' | 'api';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
-  { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name, E-Mail & Passwort' },
+  { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name & Profildaten' },
   { id: 'notifications', label: 'Benachrichtigungen', icon: Bell, desc: 'In-App Alerts konfigurieren' },
-  { id: 'users', label: 'Benutzer', icon: Users, desc: 'Rollen & Zugriffsrechte' },
   { id: 'sources', label: 'Lead-Quellen', icon: Tag, desc: 'Quellen verwalten & anpassen' },
   { id: 'appointments', label: 'Termine & Video', icon: CalendarDays, desc: 'Terminplanung & Video-Calls' },
   { id: 'insights', label: 'Insights / DISC', icon: Brain, desc: 'Persönlichkeitstest-Einstellungen' },
@@ -225,7 +224,7 @@ export default function Settings() {
         <div className="flex-1 max-w-2xl space-y-6">
           {activeTab === 'profile' && <ProfileSettings />}
           {activeTab === 'notifications' && <NotificationRoleMatrix />}
-          {activeTab === 'users' && <UsersTab isSuperadmin={isSuperadmin} isAdmin={isAdmin} />}
+          
           {activeTab === 'sources' && <LeadSourcesTab isSuperadmin={isSuperadmin} />}
           {activeTab === 'appointments' && <AppointmentsTab appointmentSettings={appointmentSettings} updateAppointmentSettings={updateAppointmentSettings} toast={toast} />}
           {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}

@@ -29,9 +29,6 @@ export default function Employees() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [convertDialog, setConvertDialog] = useState<Employee | null>(null);
-  const [convertForm, setConvertForm] = useState({ password: '', role: 'backoffice' as string });
-  const [converting, setConverting] = useState(false);
 
   const openAdd = () => {
     setEditId(null);
@@ -65,32 +62,6 @@ export default function Employees() {
     toast.success('Mitarbeiter gelöscht');
   };
 
-  const handleConvert = async () => {
-    if (!convertDialog || !convertForm.password || convertForm.password.length < 8) {
-      toast.error('Passwort muss mindestens 8 Zeichen lang sein');
-      return;
-    }
-    setConverting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('manage-users', {
-        body: {
-          action: 'create',
-          email: convertDialog.email,
-          password: convertForm.password,
-          display_name: convertDialog.name,
-          role: convertForm.role,
-        },
-      });
-      if (error || data?.error) throw new Error(data?.error || error?.message);
-      toast.success(`${convertDialog.name} wurde als Benutzer mit Rolle "${convertForm.role}" erstellt`);
-      setConvertDialog(null);
-      setConvertForm({ password: '', role: 'backoffice' });
-    } catch (err: any) {
-      toast.error(err.message || 'Fehler beim Erstellen des Benutzers');
-    } finally {
-      setConverting(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -153,14 +124,6 @@ export default function Employees() {
                     {empLeads.filter(l => l.status === 'hired').length} eingestellt
                   </p>
                 </div>
-                {isSuperadmin && (
-                  <button
-                    onClick={() => { setConvertDialog(emp); setConvertForm({ password: '', role: 'backoffice' }); }}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed py-2 text-xs font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-                  >
-                    <UserPlus className="h-3.5 w-3.5" /> In Benutzer umwandeln
-                  </button>
-                )}
               </div>
             );
           })}
@@ -246,60 +209,6 @@ export default function Employees() {
         </DialogContent>
       </Dialog>
 
-      {/* Convert to User Dialog */}
-      <Dialog open={!!convertDialog} onOpenChange={() => setConvertDialog(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Mitarbeiter in Benutzer umwandeln</DialogTitle>
-          </DialogHeader>
-          {convertDialog && (
-            <div className="space-y-4 pt-2">
-              <div className="rounded-lg bg-muted/50 p-3">
-                <p className="text-sm font-medium">{convertDialog.name}</p>
-                <p className="text-xs text-muted-foreground">{convertDialog.email}</p>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Ein neues Login-Konto wird für diesen Mitarbeiter erstellt. Der Mitarbeiter kann sich dann mit seiner E-Mail und dem Passwort anmelden.
-              </p>
-              <div>
-                <label className="text-sm font-medium">Passwort</label>
-                <input
-                  type="password"
-                  value={convertForm.password}
-                  onChange={e => setConvertForm(p => ({ ...p, password: e.target.value }))}
-                  placeholder="Mindestens 8 Zeichen"
-                  className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">System-Rolle</label>
-                <select
-                  value={convertForm.role}
-                  onChange={e => setConvertForm(p => ({ ...p, role: e.target.value }))}
-                  className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-                >
-                  <option value="teamleiter">Teamleiter</option>
-                  <option value="backoffice">Backoffice</option>
-                  <option value="analyst">Analyst</option>
-                  <option value="controlling">Controlling</option>
-                  <option value="geschaeftsleitung">Geschäftsleitung</option>
-                  <option value="hr">HR</option>
-                  <option value="admin">Admin</option>
-                  <option value="superadmin">Superadmin</option>
-                </select>
-              </div>
-              <button
-                onClick={handleConvert}
-                disabled={converting || convertForm.password.length < 8}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
-              >
-                {converting ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                {converting ? 'Wird erstellt...' : 'Benutzerkonto erstellen'}
-              </button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
