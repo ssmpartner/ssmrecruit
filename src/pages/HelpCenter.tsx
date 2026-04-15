@@ -44,8 +44,8 @@ const helpCategories: Category[] = [
       {
         id: 'gs-3',
         title: 'Anmeldung & Abmeldung',
-        content: 'Melden Sie sich mit Ihrer E-Mail-Adresse und Ihrem Passwort an. Aktivieren Sie «Angemeldet bleiben», damit Sie nicht nach Inaktivität automatisch abgemeldet werden. Zum Abmelden klicken Sie auf das Logout-Symbol unten in der Seitenleiste. Bei vergessenem Passwort nutzen Sie den «Passwort vergessen»-Link auf der Login-Seite.',
-        tags: ['login', 'logout', 'passwort', 'anmeldung'],
+        content: 'Die Anmeldung erfolgt zentral über das SSM Partner Portal. Klicken Sie auf der Login-Seite auf «Zum SSM Portal», um sich anzumelden. Nach erfolgreicher Anmeldung werden Sie automatisch weitergeleitet. Beim ersten Login wird Ihr Benutzerkonto automatisch im System angelegt und mit dem Mitarbeiter-Datensatz verknüpft. Zum Abmelden klicken Sie auf das Logout-Symbol unten in der Seitenleiste. Passwort-Änderungen und Kontoverwaltung erfolgen über das SSM Portal.',
+        tags: ['login', 'logout', 'sso', 'portal', 'anmeldung'],
       },
     ],
   },
