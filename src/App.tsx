@@ -26,8 +26,6 @@ const Documentation = lazy(() => import("./pages/Documentation"));
 const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));
-const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const InsightsFormPage = lazy(() => import("./pages/InsightsFormPage"));
 const DocumentUploadPage = lazy(() => import("./pages/DocumentUploadPage"));
 const ApplicationFormPage = lazy(() => import("./pages/ApplicationFormPage"));
@@ -64,10 +62,15 @@ const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
 // Routes restricted to superadmin only
 const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice'];
 
+const SSM_PORTAL_URL = 'https://ssmpartner.lovable.app/portal';
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, role } = useAuth();
   if (loading) return <FullScreenLoader />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) {
+    window.location.href = SSM_PORTAL_URL;
+    return <FullScreenLoader />;
+  }
   if (role === null) return <FullScreenLoader />;
   return <>{children}</>;
 }
@@ -108,8 +111,6 @@ const App = () => (
           <Suspense fallback={<FullScreenLoader />}>
             <Routes>
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-              <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/insights-form" element={<Suspense fallback={<FullScreenLoader />}><InsightsFormPage /></Suspense>} />
               <Route path="/document-upload" element={<Suspense fallback={<FullScreenLoader />}><DocumentUploadPage /></Suspense>} />
               <Route path="/apply" element={<Suspense fallback={<FullScreenLoader />}><ApplicationFormPage /></Suspense>} />
