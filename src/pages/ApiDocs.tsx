@@ -877,43 +877,28 @@ Neue Leads (Monat);24`,
     ],
   },
   {
-    title: 'Benutzer & Rollen',
-    description: 'Benutzer erstellen, Rollen zuweisen und verwalten. Superadmins haben Vollzugriff, Admins können Controlling/GL/HR-Rollen zuweisen.',
+    title: 'Authentifizierung & SSO',
+    description: 'Benutzer werden zentral über das SSM Partner Portal verwaltet. Beim Login via SSO wird der Benutzer automatisch im System provisioniert und mit dem Mitarbeiter-Datensatz verknüpft.',
     endpoints: [
       {
-        method: 'GET', path: '/api/v1/users', summary: 'Alle Benutzer abrufen', auth: true,
-        description: 'Gibt eine Liste aller System-Benutzer mit Rollen und Profildaten zurück. Nur für Superadmins und Admins.',
+        method: 'POST', path: '/api/v1/sso/validate', summary: 'SSO-Token validieren', auth: false,
+        description: 'Validiert ein SSO-Token vom zentralen SSM Portal und gibt die Benutzerdaten zurück. Wird intern beim Login-Prozess aufgerufen.',
+        body: [
+          { name: 'email', type: 'string', required: true, description: 'E-Mail-Adresse des Benutzers' },
+          { name: 'token', type: 'string', required: true, description: 'SSO-Validierungstoken' },
+        ],
+        response: `{ "valid": true, "user": { "email": "max@ssmpartner.ch", "display_name": "Max Müller", "role": "admin" } }`,
+      },
+      {
+        method: 'GET', path: '/api/v1/users/me', summary: 'Eigenes Profil abrufen', auth: true,
+        description: 'Gibt das Profil und die Rolle des angemeldeten Benutzers zurück.',
         response: `{
-  "users": [
-    {
-      "id": "uuid",
-      "email": "max@firma.ch",
-      "display_name": "Max Müller",
-      "role": "controlling",
-      "created_at": "2026-03-01T00:00:00.000Z"
-    }
-  ]
+  "id": "uuid",
+  "email": "max@ssmpartner.ch",
+  "display_name": "Max Müller",
+  "role": "superadmin",
+  "employee_id": "e123"
 }`,
-      },
-      {
-        method: 'POST', path: '/api/v1/users', summary: 'Benutzer erstellen', auth: true,
-        description: 'Erstellt einen neuen System-Benutzer mit Rolle. Admins dürfen nur Controlling, Geschäftsleitung und HR zuweisen.',
-        body: [
-          { name: 'email', type: 'string', required: true, description: 'E-Mail-Adresse' },
-          { name: 'password', type: 'string', required: true, description: 'Passwort (min. 8 Zeichen)' },
-          { name: 'display_name', type: 'string', required: true, description: 'Anzeigename' },
-          { name: 'role', type: 'string', required: true, description: 'Rolle: superadmin, admin, teamleiter, backoffice, analyst, controlling, geschaeftsleitung, hr' },
-        ],
-        response: `{ "success": true, "user_id": "uuid" }`,
-      },
-      {
-        method: 'PATCH', path: '/api/v1/users/:id/role', summary: 'Rolle ändern', auth: true,
-        description: 'Ändert die Rolle eines Benutzers. Admins dürfen nur Controlling, Geschäftsleitung und HR zuweisen.',
-        params: [{ name: 'id', type: 'string', required: true, description: 'Benutzer-ID' }],
-        body: [
-          { name: 'role', type: 'string', required: true, description: 'Neue Rolle' },
-        ],
-        response: `{ "success": true }`,
       },
     ],
   },
