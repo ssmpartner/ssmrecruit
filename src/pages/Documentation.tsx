@@ -4,9 +4,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.46.0';
+const APP_VERSION = '2.47.0';
 
 const versionHistory = [
+  { version: '2.47.0', date: '15.04.2026', changes: [
+    'Zentrale Benutzerverwaltung: Login und Benutzerverwaltung erfolgen jetzt über das zentrale SSM Partner Portal (SSO)',
+    'Login-Seite: Weiterleitung zum SSM Portal statt eigenem Login-Formular',
+    'Mitarbeiter-Seite: Nur noch Übersicht und Agentur-Zuweisung – keine lokale Erstellung/Bearbeitung/Löschung mehr',
+    'Mitarbeiter-Verknüpfung: Automatische Verknüpfung von Mitarbeitern mit Benutzerkonten beim ersten SSO-Login (über user_id)',
+    'Einstellungen: Bereiche «E-Mail ändern» und «Passwort ändern» entfernt (zentral verwaltet)',
+    'Einstellungen: Tab «Benutzer» entfernt – Benutzerverwaltung erfolgt über SSM Portal',
+    'Geschützte Routen: Nicht-eingeloggte Benutzer werden zur Login-Seite mit SSM Portal Link weitergeleitet',
+  ]},
   { version: '2.46.0', date: '09.04.2026', changes: [
     'Controlling-Integration vollständig synchronisiert: Sub-Steps «Controlling Prüfung», «Selektioniert (Controlling)» und «Abgelehnt» konsistent in Prozess-Stepper, Pipeline-Flow, Flow-Diagramm und Lead-Detail',
     'ProcessStepper: Alle Controlling/GL/HR-Status (ready_for_controlling, controlling_approved, management_review, management_approved, hr_processing) korrekt auf Schritt 4 gemappt',
