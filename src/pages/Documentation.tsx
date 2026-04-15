@@ -4,9 +4,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.46.0';
+const APP_VERSION = '2.47.0';
 
 const versionHistory = [
+  { version: '2.47.0', date: '15.04.2026', changes: [
+    'Zentrale Benutzerverwaltung: Login und Benutzerverwaltung erfolgen jetzt über das zentrale SSM Partner Portal (SSO)',
+    'Login-Seite: Weiterleitung zum SSM Portal statt eigenem Login-Formular',
+    'Mitarbeiter-Seite: Nur noch Übersicht und Agentur-Zuweisung – keine lokale Erstellung/Bearbeitung/Löschung mehr',
+    'Mitarbeiter-Verknüpfung: Automatische Verknüpfung von Mitarbeitern mit Benutzerkonten beim ersten SSO-Login (über user_id)',
+    'Einstellungen: Bereiche «E-Mail ändern» und «Passwort ändern» entfernt (zentral verwaltet)',
+    'Einstellungen: Tab «Benutzer» entfernt – Benutzerverwaltung erfolgt über SSM Portal',
+    'Geschützte Routen: Nicht-eingeloggte Benutzer werden zur Login-Seite mit SSM Portal Link weitergeleitet',
+  ]},
   { version: '2.46.0', date: '09.04.2026', changes: [
     'Controlling-Integration vollständig synchronisiert: Sub-Steps «Controlling Prüfung», «Selektioniert (Controlling)» und «Abgelehnt» konsistent in Prozess-Stepper, Pipeline-Flow, Flow-Diagramm und Lead-Detail',
     'ProcessStepper: Alle Controlling/GL/HR-Status (ready_for_controlling, controlling_approved, management_review, management_approved, hr_processing) korrekt auf Schritt 4 gemappt',
@@ -402,15 +411,15 @@ const appFeatures = [
   { category: 'Backend & Datenbank', icon: '🗄️', features: [
     { name: 'Lovable Cloud', desc: 'Vollständig persistente Datenbank für alle Module (Leads, Termine, Aufgaben, etc.).' },
     { name: 'Row Level Security', desc: 'Verschärfte Sicherheitsrichtlinien – nur authentifizierte Benutzer haben Datenbankzugriff.' },
-    { name: 'Edge Functions', desc: 'Serverless Backend-Funktionen für KI-Aufgabengenerierung und Benutzerverwaltung.' },
+    { name: 'Edge Functions', desc: 'Serverless Backend-Funktionen für KI-Aufgabengenerierung, SSO-Authentifizierung und Benutzer-Provisionierung.' },
     { name: 'Echtzeit-Sync', desc: 'Automatische Datensynchronisation zwischen Frontend und Datenbank.' },
     { name: 'Code-Splitting', desc: 'Lazy Loading aller Seiten für optimierte Ladezeiten und kleinere Bundle-Grössen.' },
   ]},
   { category: 'Administration', icon: '⚙️', features: [
-    { name: 'Benutzerverwaltung', desc: 'Superadmins können Benutzer erstellen, Rollen zuweisen und Konten löschen.' },
-    { name: 'Rollensystem', desc: '8 Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Teamleiter, Backoffice, Analyst, Controlling (Prüfrolle), Geschäftsleitung (Freigaberolle), HR (Onboarding-Rolle).' },
+    { name: 'Zentrale Benutzerverwaltung (SSO)', desc: 'Benutzer werden zentral über das SSM Partner Portal verwaltet. Beim ersten Login wird der Benutzer automatisch im System angelegt und mit dem Mitarbeiter-Datensatz verknüpft.' },
+    { name: 'Rollensystem', desc: '9 Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Agenturleiter, Teamleiter, Backoffice, Analyst, Controlling (Prüfrolle), Geschäftsleitung (Freigaberolle), HR (Onboarding-Rolle).' },
     { name: 'Einstellungen', desc: 'Zentrale Konfiguration für Benachrichtigungen, Termine, Integrationen und API.' },
-    { name: 'Profilverwaltung', desc: 'Benutzer können Name, E-Mail und Passwort in den Profileinstellungen ändern.' },
+    { name: 'Profilverwaltung', desc: 'Benutzer können Name und Avatar in den Profileinstellungen ändern. E-Mail und Passwort werden zentral über das SSM Portal verwaltet.' },
   ]},
 ];
 
@@ -429,8 +438,8 @@ const techStack = [
 ];
 
 const roles = [
-  { role: 'Superadmin', color: 'bg-destructive/10 text-destructive', permissions: ['Vollzugriff auf alle Module', 'Benutzerverwaltung (erstellen, löschen)', 'Rollen zuweisen (inkl. Controlling, GL, HR)', 'Integrationen konfigurieren', 'CSV-Export', 'Leads dauerhaft löschen', 'Mehrfachauswahl & Bulk-Zuweisung', 'App-Einstellungen ändern'] },
-  { role: 'Admin', color: 'bg-primary/10 text-primary', permissions: ['Lead-Management (CRUD)', 'Mitarbeiter & Agenturen verwalten', 'Termine & Kalender', 'Analytics einsehen', 'Aufgaben verwalten', 'Controlling/GL/HR-Rollen zuweisen'] },
+  { role: 'Superadmin', color: 'bg-destructive/10 text-destructive', permissions: ['Vollzugriff auf alle Module', 'Rollen zuweisen (über SSM Portal)', 'Integrationen konfigurieren', 'CSV-Export', 'Leads dauerhaft löschen', 'Mehrfachauswahl & Bulk-Zuweisung', 'App-Einstellungen ändern', 'Mitarbeiter Agentur-Zuweisung'] },
+  { role: 'Admin', color: 'bg-primary/10 text-primary', permissions: ['Lead-Management (CRUD)', 'Mitarbeiter & Agenturen verwalten', 'Termine & Kalender', 'Analytics einsehen', 'Aufgaben verwalten'] },
   { role: 'Teamleiter', color: 'bg-emerald-600/10 text-emerald-600', permissions: ['Eigene Leads einsehen & bearbeiten', 'Pipeline-Ansicht', 'Aufgaben verwalten', 'Kalender & Termine', 'Statistik einsehen', 'Eigenes Profil bearbeiten'] },
   { role: 'Backoffice', color: 'bg-accent/50 text-accent-foreground', permissions: ['Leads einsehen & bearbeiten', 'Termine erstellen', 'Aufgaben bearbeiten', 'CSV-Import'] },
   { role: 'Analyst', color: 'bg-muted text-muted-foreground', permissions: ['Dashboard & Analytics (nur lesen)', 'Lead-Daten einsehen', 'Berichte exportieren'] },

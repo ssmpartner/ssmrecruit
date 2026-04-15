@@ -44,8 +44,8 @@ const helpCategories: Category[] = [
       {
         id: 'gs-3',
         title: 'Anmeldung & Abmeldung',
-        content: 'Melden Sie sich mit Ihrer E-Mail-Adresse und Ihrem Passwort an. Aktivieren Sie «Angemeldet bleiben», damit Sie nicht nach Inaktivität automatisch abgemeldet werden. Zum Abmelden klicken Sie auf das Logout-Symbol unten in der Seitenleiste. Bei vergessenem Passwort nutzen Sie den «Passwort vergessen»-Link auf der Login-Seite.',
-        tags: ['login', 'logout', 'passwort', 'anmeldung'],
+        content: 'Die Anmeldung erfolgt zentral über das SSM Partner Portal. Klicken Sie auf der Login-Seite auf «Zum SSM Portal», um sich anzumelden. Nach erfolgreicher Anmeldung werden Sie automatisch weitergeleitet. Beim ersten Login wird Ihr Benutzerkonto automatisch im System angelegt und mit dem Mitarbeiter-Datensatz verknüpft. Zum Abmelden klicken Sie auf das Logout-Symbol unten in der Seitenleiste. Passwort-Änderungen und Kontoverwaltung erfolgen über das SSM Portal.',
+        tags: ['login', 'logout', 'sso', 'portal', 'anmeldung'],
       },
     ],
   },
@@ -284,8 +284,8 @@ const helpCategories: Category[] = [
       {
         id: 'r-1',
         title: 'Rollenübersicht',
-        content: 'Das System kennt 8 Rollen: Superadmin (volle Rechte), Admin (Verwaltung ohne Systemkonfiguration), Backoffice (Datenverwaltung), Teamleiter (eingeschränkt auf eigene Leads), Analyst (nur Leserechte), Controlling (Prüfrolle für Freigabe-Phase), Geschäftsleitung (Management-Freigabe) und HR (Onboarding & Einstellung). Die Rolle bestimmt, welche Menüpunkte, Leads und Funktionen sichtbar sind.',
-        tags: ['rollen', 'rechte', 'superadmin', 'admin', 'teamleiter', 'controlling', 'hr'],
+        content: 'Das System kennt 9 Rollen: Superadmin (volle Rechte), Admin (Verwaltung ohne Systemkonfiguration), Agenturleiter (Agentur-Verwaltung), Backoffice (Datenverwaltung), Teamleiter (eingeschränkt auf eigene Leads), Analyst (nur Leserechte), Controlling (Prüfrolle für Freigabe-Phase), Geschäftsleitung (Management-Freigabe) und HR (Onboarding & Einstellung). Die Rolle bestimmt, welche Menüpunkte, Leads und Funktionen sichtbar sind. Rollen werden zentral über das SSM Portal zugewiesen.',
+        tags: ['rollen', 'rechte', 'superadmin', 'admin', 'teamleiter', 'controlling', 'hr', 'sso'],
       },
       {
         id: 'r-2',
