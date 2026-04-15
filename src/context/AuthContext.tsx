@@ -129,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      // 1. Verify via SSO proxy edge function (secret stays server-side)
+      // 1. Verify via SSO proxy (also provisions/updates local user)
       const ssoRes = await supabase.functions.invoke('sso-proxy', {
         body: { email, password },
       });
@@ -139,25 +139,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: new Error(ssoData?.error || ssoRes.error?.message || 'SSO-Fehler') };
       }
 
-      // 2. Sign in locally with the same credentials
+      // 2. Sign in locally (user is now guaranteed to exist and be confirmed)
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        // If local user doesn't exist yet, auto-create via local signup
-        if (error.message === "Invalid login credentials") {
-          const { error: signUpError } = await supabase.auth.signUp({
-            email,
-            password,
-            options: { data: { display_name: ssoData.user?.display_name || email } },
-          });
-          if (signUpError) return { error: signUpError };
-
-          // Try sign in again after creation
-          const { error: retryError } = await supabase.auth.signInWithPassword({ email, password });
-          if (retryError) return { error: retryError };
-        } else {
-          return { error };
-        }
-      }
+      if (error) return { error };
 
       return { error: null };
     } catch (err: any) {

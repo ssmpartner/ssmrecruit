@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -21,6 +23,7 @@ Deno.serve(async (req) => {
 
     const ssoSecret = Deno.env.get('SSO_API_SECRET') || '';
 
+    // 1. Verify via central SSO
     const ssoRes = await fetch(SSO_API_URL, {
       method: 'POST',
       headers: {
@@ -37,9 +40,44 @@ Deno.serve(async (req) => {
 
     const ssoData = await ssoRes.json();
 
-    return new Response(JSON.stringify(ssoData), {
-      status: ssoRes.ok ? 200 : 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    if (!ssoRes.ok || ssoData.error) {
+      return new Response(JSON.stringify({ error: ssoData.error || 'SSO-Verifizierung fehlgeschlagen' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 2. Ensure user exists locally (using service role for admin access)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    // Check if user exists by email
+    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find(u => u.email === email);
+
+    if (!existingUser) {
+      // Create user with confirmed email so they can sign in immediately
+      const { error: createError } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { display_name: ssoData.user?.display_name || email },
+      });
+
+      if (createError) {
+        return new Response(JSON.stringify({ error: 'Lokaler Benutzer konnte nicht erstellt werden: ' + createError.message }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    } else {
+      // Update password to match SSO credentials
+      await supabase.auth.admin.updateUserById(existingUser.id, { password });
+    }
+
+    return new Response(JSON.stringify({ success: true, user: ssoData.user }), {
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: 'SSO-Proxy Fehler' }), {
