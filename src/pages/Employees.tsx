@@ -39,7 +39,7 @@ export default function Employees() {
                   </div>
                   <span title={isLinked ? 'Mit Benutzerkonto verknüpft' : 'Noch nicht verknüpft'}>
                     {isLinked
-                      ? <LinkIcon className="h-4 w-4 text-green-600" />
+                      ? <LinkIcon className="h-4 w-4 text-primary" />
                       : <Unlink className="h-4 w-4 text-muted-foreground" />
                     }
                   </span>
