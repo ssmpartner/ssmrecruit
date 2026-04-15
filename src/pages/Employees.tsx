@@ -1,8 +1,23 @@
-import { Mail, Building2, Users, LinkIcon, Unlink } from 'lucide-react';
+import { useState } from 'react';
+import { Mail, Building2, Users, LinkIcon, Unlink, ChevronDown } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export default function Employees() {
-  const { employees, agencies, leads } = useLeads();
+  const { employees, agencies, leads, updateEmployee } = useLeads();
+  const [changingId, setChangingId] = useState<string | null>(null);
+
+  const handleAgencyChange = async (empId: string, newAgencyId: string) => {
+    setChangingId(empId);
+    try {
+      updateEmployee(empId, { agencyId: newAgencyId });
+      toast.success('Agentur zugewiesen');
+    } catch {
+      toast.error('Fehler beim Zuweisen');
+    }
+    setChangingId(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -37,7 +52,7 @@ export default function Employees() {
                       </p>
                     </div>
                   </div>
-                  <span title={isLinked ? 'Mit Benutzerkonto verknüpft' : 'Noch nicht verknüpft'}>
+                  <span title={isLinked ? 'Mit Benutzerkonto verknüpft' : 'Noch nicht verknüpft – Login via SSM Portal erforderlich'}>
                     {isLinked
                       ? <LinkIcon className="h-4 w-4 text-primary" />
                       : <Unlink className="h-4 w-4 text-muted-foreground" />
@@ -45,10 +60,22 @@ export default function Employees() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <Building2 className="h-3 w-3" /> {agency?.name || '–'}
-                  </span>
+                {/* Agency assignment */}
+                <div className="mb-3">
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Agentur</label>
+                  <div className="relative">
+                    <select
+                      value={emp.agencyId}
+                      onChange={e => handleAgencyChange(emp.id, e.target.value)}
+                      disabled={changingId === emp.id}
+                      className="h-9 w-full appearance-none rounded-lg border bg-background pl-3 pr-8 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                    >
+                      {agencies.map(a => (
+                        <option key={a.id} value={a.id}>{a.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  </div>
                 </div>
 
                 <div className="rounded-lg bg-secondary p-3">
