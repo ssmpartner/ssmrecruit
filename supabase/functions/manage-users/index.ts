@@ -12,16 +12,21 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Nicht autorisiert");
+    if (!authHeader?.startsWith("Bearer ")) throw new Error("Nicht autorisiert");
 
-    // Verify the requesting user is a superadmin
+    // Verify the requesting user via getClaims
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } }
     );
-    const { data: { user: caller } } = await supabaseClient.auth.getUser();
-    if (!caller) throw new Error("Nicht autorisiert");
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      console.error("Auth claims error:", claimsError?.message);
+      throw new Error("Nicht autorisiert");
+    }
+    const callerId = claimsData.claims.sub;
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
