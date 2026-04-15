@@ -239,16 +239,24 @@ const apiSections: ApiSection[] = [
     endpoints: [
       {
         method: 'GET', path: '/api/v1/employees', summary: 'Alle Mitarbeiter abrufen', auth: true,
-        description: 'Liste aller Mitarbeiter mit Rollen und Agentur-Zuordnung.',
+        description: 'Liste aller Mitarbeiter mit Agentur-Zuordnung und Benutzer-Verknüpfungsstatus. Mitarbeiter werden zentral über das SSM Portal verwaltet und beim ersten SSO-Login automatisch verknüpft.',
         params: [
           { name: 'agencyId', type: 'string', required: false, description: 'Filter nach Agentur' },
-          { name: 'role', type: 'string', required: false, description: 'Filter: admin, agency_manager, employee' },
         ],
         response: `{
   "data": [
-    { "id": "e1", "name": "Sarah Chen", "email": "sarah@company.ch", "role": "admin", "agencyId": "a1" }
+    { "id": "e1", "name": "Max Müller", "email": "max@ssmpartner.ch", "agencyId": "a1", "user_id": "uuid | null" }
   ]
 }`,
+      },
+      {
+        method: 'PATCH', path: '/api/v1/employees/:id/agency', summary: 'Agentur-Zuweisung ändern', auth: true,
+        description: 'Ändert die Agentur-Zuordnung eines Mitarbeiters. Mitarbeiter selbst werden über das SSM Portal verwaltet.',
+        params: [{ name: 'id', type: 'string', required: true, description: 'Mitarbeiter-ID' }],
+        body: [
+          { name: 'agencyId', type: 'string', required: true, description: 'Neue Agentur-ID' },
+        ],
+        response: `{ "success": true }`,
       },
     ],
   },
