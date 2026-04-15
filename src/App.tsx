@@ -66,10 +66,10 @@ const SSM_PORTAL_URL = 'https://ssmpartner.lovable.app/portal';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, role } = useAuth();
+  const location = useLocation();
   if (loading) return <FullScreenLoader />;
   if (!user) {
-    window.location.href = SSM_PORTAL_URL;
-    return <FullScreenLoader />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
   if (role === null) return <FullScreenLoader />;
   return <>{children}</>;
