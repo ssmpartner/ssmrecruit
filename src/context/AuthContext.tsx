@@ -128,8 +128,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error };
+    const SSO_API_URL = "https://nopqgykpyaieyizvhuma.supabase.co/functions/v1/sso-auth";
+    const SSO_PROJECT_KEY = "ssm-recruit";
+
+    try {
+      // 1. Verify via central SSM Partner SSO API
+      const ssoRes = await fetch(SSO_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-sso-api-key": import.meta.env.VITE_SSO_API_SECRET || "",
+        },
+        body: JSON.stringify({
+          action: "verify",
+          email,
+          password,
+          project_key: SSO_PROJECT_KEY,
+        }),
+      });
+
+      const ssoData = await ssoRes.json();
+      if (ssoData.error) {
+        return { error: new Error(ssoData.error) };
+      }
+
+      // 2. Sign in locally with the same credentials
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        // If local user doesn't exist yet, auto-create via local signup
+        if (error.message === "Invalid login credentials") {
+          const { error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { display_name: ssoData.user.display_name } },
+          });
+          if (signUpError) return { error: signUpError };
+
+          // Try sign in again after creation
+          const { error: retryError } = await supabase.auth.signInWithPassword({ email, password });
+          if (retryError) return { error: retryError };
+        } else {
+          return { error };
+        }
+      }
+
+      return { error: null };
+    } catch (err: any) {
+      return { error: new Error(err.message || "SSO-Authentifizierung fehlgeschlagen") };
+    }
   };
 
   const signOut = async () => {
