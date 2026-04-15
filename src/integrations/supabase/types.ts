@@ -1915,6 +1915,7 @@ export type Database = {
           name: string
           role: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           agency_id: string
@@ -1925,6 +1926,7 @@ export type Database = {
           name: string
           role?: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           agency_id?: string
@@ -1935,6 +1937,7 @@ export type Database = {
           name?: string
           role?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
