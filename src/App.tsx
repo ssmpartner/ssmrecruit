@@ -64,9 +64,13 @@ const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice'];
 
 const SSM_PORTAL_URL = 'https://ssmpartner.lovable.app/portal';
 
+// In Lovable preview, skip auth gate so we can develop without logging in
+const IS_PREVIEW = window.location.hostname.includes('lovableproject.com') || window.location.hostname.includes('lovable.app/id-preview');
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, role } = useAuth();
   const location = useLocation();
+  if (IS_PREVIEW) return <>{children}</>;
   if (loading) return <FullScreenLoader />;
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
