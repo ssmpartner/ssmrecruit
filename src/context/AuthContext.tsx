@@ -128,28 +128,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const SSO_API_URL = "https://nopqgykpyaieyizvhuma.supabase.co/functions/v1/sso-auth";
-    const SSO_PROJECT_KEY = "ssm-recruit";
-
     try {
-      // 1. Verify via central SSM Partner SSO API
-      const ssoRes = await fetch(SSO_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-sso-api-key": import.meta.env.VITE_SSO_API_SECRET || "",
-        },
-        body: JSON.stringify({
-          action: "verify",
-          email,
-          password,
-          project_key: SSO_PROJECT_KEY,
-        }),
+      // 1. Verify via SSO proxy edge function (secret stays server-side)
+      const ssoRes = await supabase.functions.invoke('sso-proxy', {
+        body: { email, password },
       });
 
-      const ssoData = await ssoRes.json();
-      if (ssoData.error) {
-        return { error: new Error(ssoData.error) };
+      const ssoData = ssoRes.data;
+      if (ssoRes.error || ssoData?.error) {
+        return { error: new Error(ssoData?.error || ssoRes.error?.message || 'SSO-Fehler') };
       }
 
       // 2. Sign in locally with the same credentials
@@ -160,7 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const { error: signUpError } = await supabase.auth.signUp({
             email,
             password,
-            options: { data: { display_name: ssoData.user.display_name } },
+            options: { data: { display_name: ssoData.user?.display_name || email } },
           });
           if (signUpError) return { error: signUpError };
 
