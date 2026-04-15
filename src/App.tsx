@@ -64,13 +64,9 @@ const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice'];
 
 const SSM_PORTAL_URL = 'https://ssmpartner.lovable.app/portal';
 
-// In Lovable preview, skip auth gate so we can develop without logging in
-const IS_PREVIEW = window.location.hostname.includes('lovableproject.com') || window.location.hostname.includes('lovable.app/id-preview');
-
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, role } = useAuth();
   const location = useLocation();
-  if (IS_PREVIEW) return <>{children}</>;
   if (loading) return <FullScreenLoader />;
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -82,11 +78,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function RoleRouteGuard({ children }: { children: React.ReactNode }) {
   const { role, isSuperadmin } = useAuth();
   const location = useLocation();
-  // Superadmin-only routes
   if (SUPERADMIN_ONLY_PREFIXES.some(p => location.pathname.startsWith(p)) && !isSuperadmin) {
     return <Navigate to="/" replace />;
   }
-  // Review role restrictions
   const allowed = role ? REVIEW_ROLE_ALLOWED[role] : null;
   if (allowed && !allowed.includes(location.pathname)) {
     return <Navigate to="/" replace />;
@@ -96,7 +90,6 @@ function RoleRouteGuard({ children }: { children: React.ReactNode }) {
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (IS_PREVIEW) return <Navigate to="/" replace />;
   if (loading) return <FullScreenLoader />;
   if (user) return <Navigate to="/" replace />;
   return <>{children}</>;
