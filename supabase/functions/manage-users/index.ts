@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
       const { user_id } = payload;
 
       // Prevent deleting self
-      if (user_id === caller.id) throw new Error("Sie können sich nicht selbst löschen");
+      if (user_id === callerId) throw new Error("Sie können sich nicht selbst löschen");
 
       // Prevent removing the last superadmin
       const { data: superadmins } = await supabaseAdmin
