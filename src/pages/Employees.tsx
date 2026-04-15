@@ -29,9 +29,6 @@ export default function Employees() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [convertDialog, setConvertDialog] = useState<Employee | null>(null);
-  const [convertForm, setConvertForm] = useState({ password: '', role: 'backoffice' as string });
-  const [converting, setConverting] = useState(false);
 
   const openAdd = () => {
     setEditId(null);
@@ -65,32 +62,6 @@ export default function Employees() {
     toast.success('Mitarbeiter gelöscht');
   };
 
-  const handleConvert = async () => {
-    if (!convertDialog || !convertForm.password || convertForm.password.length < 8) {
-      toast.error('Passwort muss mindestens 8 Zeichen lang sein');
-      return;
-    }
-    setConverting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('manage-users', {
-        body: {
-          action: 'create',
-          email: convertDialog.email,
-          password: convertForm.password,
-          display_name: convertDialog.name,
-          role: convertForm.role,
-        },
-      });
-      if (error || data?.error) throw new Error(data?.error || error?.message);
-      toast.success(`${convertDialog.name} wurde als Benutzer mit Rolle "${convertForm.role}" erstellt`);
-      setConvertDialog(null);
-      setConvertForm({ password: '', role: 'backoffice' });
-    } catch (err: any) {
-      toast.error(err.message || 'Fehler beim Erstellen des Benutzers');
-    } finally {
-      setConverting(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -153,14 +124,6 @@ export default function Employees() {
                     {empLeads.filter(l => l.status === 'hired').length} eingestellt
                   </p>
                 </div>
-                {isSuperadmin && (
-                  <button
-                    onClick={() => { setConvertDialog(emp); setConvertForm({ password: '', role: 'backoffice' }); }}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed py-2 text-xs font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-                  >
-                    <UserPlus className="h-3.5 w-3.5" /> In Benutzer umwandeln
-                  </button>
-                )}
               </div>
             );
           })}
