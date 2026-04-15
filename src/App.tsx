@@ -32,6 +32,7 @@ const InsightsFormPage = lazy(() => import("./pages/InsightsFormPage"));
 const DocumentUploadPage = lazy(() => import("./pages/DocumentUploadPage"));
 const ApplicationFormPage = lazy(() => import("./pages/ApplicationFormPage"));
 const BewerbungWizard = lazy(() => import("./pages/BewerbungWizard"));
+const SsoCallback = lazy(() => import("./pages/SsoCallback"));
 const AIVoiceAgent = lazy(() => import("./pages/AIVoiceAgent"));
 
 // AI Voice – 6 container pages
@@ -113,6 +114,7 @@ const App = () => (
               <Route path="/document-upload" element={<Suspense fallback={<FullScreenLoader />}><DocumentUploadPage /></Suspense>} />
               <Route path="/apply" element={<Suspense fallback={<FullScreenLoader />}><ApplicationFormPage /></Suspense>} />
               <Route path="/bewerbung" element={<Suspense fallback={<FullScreenLoader />}><BewerbungWizard /></Suspense>} />
+              <Route path="/sso-callback" element={<Suspense fallback={<FullScreenLoader />}><SsoCallback /></Suspense>} />
 
               <Route element={
                 <ProtectedRoute>
