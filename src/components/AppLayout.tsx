@@ -1,13 +1,21 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
-import { Search } from 'lucide-react';
+import { Search, ChevronDown, ExternalLink, Settings, LogOut } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
 import { useAuth } from '@/context/AuthContext';
 import { useSidebarState } from '@/context/SidebarContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function AppLayout() {
-  const { profile, user } = useAuth();
+  const { profile, user, signOut } = useAuth();
   const { collapsed } = useSidebarState();
+  const navigate = useNavigate();
 
   const initials = (profile?.display_name || user?.email || 'U')
     .split(' ')
@@ -15,6 +23,15 @@ export default function AppLayout() {
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  const handlePortalSwitch = () => {
+    window.open('https://ssmpartner.ch', '_blank');
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -31,15 +48,36 @@ export default function AppLayout() {
           </div>
           <div className="flex items-center gap-4">
             <NotificationCenter />
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
-                {initials}
-              </div>
-              <div className="text-sm">
-                <p className="font-medium leading-none">{profile?.display_name || 'Benutzer'}</p>
-                <p className="text-xs text-muted-foreground">{user?.email}</p>
-              </div>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-muted/60 transition-colors outline-none">
+                  <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
+                    {initials}
+                  </div>
+                  <div className="text-sm text-left">
+                    <p className="font-medium leading-none">{profile?.display_name || 'Benutzer'}</p>
+                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Einstellungen
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handlePortalSwitch} className="cursor-pointer">
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Zum SSM Portal
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Abmelden
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
         <main className="p-8">
