@@ -33,6 +33,18 @@ const DOC_FIELDS = {
   attachments: ['attachments', 'beilagen', 'weitere_beilagen', 'additional_documents', 'sonstige'],
 };
 
+const ALLOWED_MIME_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+]);
+const ALLOWED_EXTS = new Set(['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png']);
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_FILES = 20;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
