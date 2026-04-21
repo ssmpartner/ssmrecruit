@@ -19,7 +19,17 @@ export default function Login() {
     const { error } = await signIn(email, password);
     setLoading(false);
     if (error) {
-      toast.error(error.message || 'Anmeldung fehlgeschlagen');
+      const raw = (error.message || '').toLowerCase();
+      const isInvalidCreds =
+        raw.includes('ungültige zugangsdaten') ||
+        raw.includes('invalid') ||
+        raw.includes('credentials') ||
+        raw.includes('passwort') ||
+        raw.includes('password');
+      const friendly = isInvalidCreds
+        ? 'E-Mail oder Passwort ist nicht korrekt. Bitte überprüfe deine Eingaben.'
+        : 'Anmeldung fehlgeschlagen. Bitte versuche es erneut.';
+      toast.error(friendly);
     }
   };
 
