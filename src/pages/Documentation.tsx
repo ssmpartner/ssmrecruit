@@ -4,9 +4,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.47.0';
+const APP_VERSION = '2.48.0';
 
 const versionHistory = [
+  { version: '2.48.0', date: '21.04.2026', changes: [
+    'Pull-Sync «Aus SSM Portal synchronisieren»: Neuer Button auf der Mitarbeiter-Seite (nur Superadmins) für manuellen Vollabgleich aller dem Projekt zugewiesenen Benutzer aus dem zentralen SSM Partner Portal',
+    'Edge Function `sync-employees-from-sso`: Ruft die zentrale Action `list_project_users` (geschützt via `x-sso-api-key`) auf und legt fehlende Auth-Benutzer, Profile, Rollen und Mitarbeiter automatisch an',
+    'Automatische Agentur-Zuweisung: agency_id wird direkt aus dem SSM Portal übernommen (Fallback: Hauptsitz, falls leer oder unbekannt)',
+    'Automatische Rollen-Übernahme: Rolle aus `user_roles` des Portals wird gespiegelt (unbekannte Rollen → backoffice)',
+    'Profilfoto-Sync: Avatar (avatar_url) und Anzeigename werden bei jedem Sync aus dem Portal aktualisiert und in der Sidebar/Topbar angezeigt',
+    'Sicherheits-Scan: Behobene Findings (öffentliche Formular-Endpunkte, RLS-Policies); neue Edge Function `complete-public-form` für tokenbasierte öffentliche Submits',
+  ]},
   { version: '2.47.0', date: '15.04.2026', changes: [
     'Zentrale Benutzerverwaltung: Login und Benutzerverwaltung erfolgen jetzt über das zentrale SSM Partner Portal (SSO)',
     'Login-Seite: Weiterleitung zum SSM Portal statt eigenem Login-Formular',
@@ -417,6 +425,7 @@ const appFeatures = [
   ]},
   { category: 'Administration', icon: '⚙️', features: [
     { name: 'Zentrale Benutzerverwaltung (SSO)', desc: 'Benutzer werden zentral über das SSM Partner Portal verwaltet. Beim ersten Login wird der Benutzer automatisch im System angelegt und mit dem Mitarbeiter-Datensatz verknüpft.' },
+    { name: 'Pull-Sync aus SSM Portal', desc: 'Superadmins können auf der Mitarbeiter-Seite per Button alle dem Projekt zugewiesenen Benutzer (inkl. Rolle, Agentur und Profilfoto) aus dem SSM Portal abrufen und lokal anlegen oder aktualisieren – ohne dass der Benutzer sich vorher einloggen muss.' },
     { name: 'Rollensystem', desc: '9 Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Agenturleiter, Teamleiter, Backoffice, Analyst, Controlling (Prüfrolle), Geschäftsleitung (Freigaberolle), HR (Onboarding-Rolle).' },
     { name: 'Einstellungen', desc: 'Zentrale Konfiguration für Benachrichtigungen, Termine, Integrationen und API.' },
     { name: 'Profilverwaltung', desc: 'Benutzer können Name und Avatar in den Profileinstellungen ändern. E-Mail und Passwort werden zentral über das SSM Portal verwaltet.' },

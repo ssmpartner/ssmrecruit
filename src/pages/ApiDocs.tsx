@@ -900,6 +900,18 @@ Neue Leads (Monat);24`,
   "employee_id": "e123"
 }`,
       },
+      {
+        method: 'POST', path: '/functions/v1/sync-employees-from-sso', summary: 'Mitarbeiter aus SSM Portal synchronisieren', auth: true,
+        description: 'Pull-Sync: Ruft alle dem Projekt `ssm-recruit` zugewiesenen Benutzer vom zentralen SSM Partner Portal ab (Action `list_project_users`) und legt fehlende Auth-Benutzer, Profile, Rollen und Mitarbeiter-Datensätze an oder aktualisiert sie. Übernimmt automatisch Rolle, Agentur (Fallback: Hauptsitz) sowie Profilfoto und Anzeigenamen. Nur für Superadmins.',
+        response: `{
+  "success": true,
+  "total": 24,
+  "created": 3,
+  "updated": 21,
+  "failed": 0,
+  "errors": []
+}`,
+      },
     ],
   },
   {
