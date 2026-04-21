@@ -190,13 +190,22 @@ serve(async (req) => {
       if (processedKeys.has(key)) continue;
       if (typeof value === 'object' && value !== null && value.data && value.filename) {
         try {
+          const ext = ((value.filename as string).split('.').pop() || '').toLowerCase();
+          const ct = (value.contentType as string) || 'application/octet-stream';
+          if (!ALLOWED_EXTS.has(ext) || !ALLOWED_MIME_TYPES.has(ct)) {
+            console.warn(`Rejected base64 file (mime/ext): ${value.filename}`);
+            continue;
+          }
           const binaryData = Uint8Array.from(atob(value.data), c => c.charCodeAt(0));
-          const ext = (value.filename as string).split('.').pop() || 'bin';
+          if (binaryData.byteLength > MAX_FILE_BYTES) {
+            console.warn(`Rejected base64 file (size): ${value.filename}`);
+            continue;
+          }
           const storagePath = `${applicationId}/${crypto.randomUUID()}.${ext}`;
 
           await supabase.storage
             .from('application-documents')
-            .upload(storagePath, binaryData, { contentType: value.contentType || 'application/octet-stream' });
+            .upload(storagePath, binaryData, { contentType: ct });
 
           const fieldLower = key.toLowerCase();
           if (DOC_FIELDS.cv.some(f => fieldLower.includes(f))) {
