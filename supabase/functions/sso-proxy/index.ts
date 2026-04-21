@@ -57,13 +57,19 @@ Deno.serve(async (req) => {
     const { data: existingUsers } = await supabase.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(u => u.email === email);
 
+    const ssoUser = ssoData.user || {};
+    const displayName = ssoUser.display_name || ssoUser.name || email;
+    const avatarUrl = ssoUser.avatar_url || ssoUser.avatar || ssoUser.photo_url || ssoUser.profile_photo || '';
+
+    let localUserId: string | null = null;
+
     if (!existingUser) {
       // Create user with confirmed email so they can sign in immediately
-      const { error: createError } = await supabase.auth.admin.createUser({
+      const { data: created, error: createError } = await supabase.auth.admin.createUser({
         email,
         password,
         email_confirm: true,
-        user_metadata: { display_name: ssoData.user?.display_name || email },
+        user_metadata: { display_name: displayName, avatar_url: avatarUrl },
       });
 
       if (createError) {
@@ -71,9 +77,24 @@ Deno.serve(async (req) => {
           status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+      localUserId = created.user?.id || null;
     } else {
-      // Update password to match SSO credentials
-      await supabase.auth.admin.updateUserById(existingUser.id, { password });
+      // Update password + metadata to match SSO
+      await supabase.auth.admin.updateUserById(existingUser.id, {
+        password,
+        user_metadata: { ...(existingUser.user_metadata || {}), display_name: displayName, avatar_url: avatarUrl },
+      });
+      localUserId = existingUser.id;
+    }
+
+    // Sync profile row (display_name + avatar_url)
+    if (localUserId) {
+      await supabase.from('profiles').upsert({
+        id: localUserId,
+        display_name: displayName,
+        avatar_url: avatarUrl || null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'id' });
     }
 
     return new Response(JSON.stringify({ success: true, user: ssoData.user }), {
