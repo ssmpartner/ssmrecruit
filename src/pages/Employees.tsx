@@ -1,15 +1,28 @@
 import { useState } from 'react';
-import { Mail, Users, LinkIcon, Unlink, ChevronDown, RefreshCw } from 'lucide-react';
+import { Mail, Users, LinkIcon, Unlink, ChevronDown, RefreshCw, CheckCircle2, AlertCircle, Plus, Pencil, X } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+type SyncItem = { email: string; user_id: string; employee_id: string; role: string; agency_id: string };
+type SyncError = { email: string; message: string };
+type SyncResult = {
+  total: number;
+  created: number;
+  updated: number;
+  failed: number;
+  created_items: SyncItem[];
+  updated_items: SyncItem[];
+  errors: SyncError[];
+};
 
 export default function Employees() {
   const { employees, agencies, leads, updateEmployee, refreshData } = useLeads() as any;
   const { isSuperadmin } = useAuth();
   const [changingId, setChangingId] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
 
   const handleAgencyChange = async (empId: string, newAgencyId: string) => {
     setChangingId(empId);
@@ -24,20 +37,23 @@ export default function Employees() {
 
   const handleSync = async () => {
     setSyncing(true);
+    setSyncResult(null);
     try {
       const { data, error } = await supabase.functions.invoke('sync-employees-from-sso');
       if (error || data?.error) {
         toast.error(data?.error || error?.message || 'Synchronisation fehlgeschlagen');
       } else {
-        toast.success(`Sync erfolgreich: ${data.created} neu, ${data.updated} aktualisiert${data.failed ? `, ${data.failed} Fehler` : ''}`);
+        setSyncResult(data as SyncResult);
+        toast.success(`Sync: ${data.created} neu, ${data.updated} aktualisiert${data.failed ? `, ${data.failed} Fehler` : ''}`);
         if (typeof refreshData === 'function') await refreshData();
-        else window.location.reload();
       }
     } catch (e: any) {
       toast.error(e?.message || 'Synchronisation fehlgeschlagen');
     }
     setSyncing(false);
   };
+
+  const agencyName = (id: string) => agencies.find((a: any) => a.id === id)?.name || id;
 
   return (
     <div className="space-y-6">
