@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { Mail, Building2, Users, LinkIcon, Unlink, ChevronDown } from 'lucide-react';
+import { Mail, Users, LinkIcon, Unlink, ChevronDown, RefreshCw } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
+import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export default function Employees() {
-  const { employees, agencies, leads, updateEmployee } = useLeads();
+  const { employees, agencies, leads, updateEmployee, refreshData } = useLeads() as any;
+  const { isSuperadmin } = useAuth();
   const [changingId, setChangingId] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   const handleAgencyChange = async (empId: string, newAgencyId: string) => {
     setChangingId(empId);
@@ -19,11 +22,40 @@ export default function Employees() {
     setChangingId(null);
   };
 
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-employees-from-sso');
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || 'Synchronisation fehlgeschlagen');
+      } else {
+        toast.success(`Sync erfolgreich: ${data.created} neu, ${data.updated} aktualisiert${data.failed ? `, ${data.failed} Fehler` : ''}`);
+        if (typeof refreshData === 'function') await refreshData();
+        else window.location.reload();
+      }
+    } catch (e: any) {
+      toast.error(e?.message || 'Synchronisation fehlgeschlagen');
+    }
+    setSyncing(false);
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Mitarbeiter</h1>
-        <p className="text-muted-foreground">Übersicht aller Teammitglieder — Verwaltung erfolgt zentral über das SSM Portal</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Mitarbeiter</h1>
+          <p className="text-muted-foreground">Übersicht aller Teammitglieder — Verwaltung erfolgt zentral über das SSM Portal</p>
+        </div>
+        {isSuperadmin && (
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+          >
+            <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'Synchronisiere…' : 'Aus SSM Portal synchronisieren'}
+          </button>
+        )}
       </div>
 
       {employees.length === 0 ? (
