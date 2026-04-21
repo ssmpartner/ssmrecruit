@@ -16,6 +16,7 @@ interface AuthContextType {
   profile: Profile | null;
   role: AppRole | null;
   loading: boolean;
+  displayName: string;
   signUp: (email: string, password: string, displayName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -198,6 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, session, profile, role, loading,
+      displayName: profile?.display_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Benutzer',
       isSuperadmin: role === 'superadmin',
       isTeamleiter: role === 'teamleiter',
       isControlling: role === 'controlling',
