@@ -45,7 +45,8 @@ export default function Employees() {
       } else {
         setSyncResult(data as SyncResult);
         toast.success(`Sync: ${data.created} neu, ${data.updated} aktualisiert${data.failed ? `, ${data.failed} Fehler` : ''}`);
-        if (typeof refreshData === 'function') await refreshData();
+        // Sync-Ergebnis kurz anzeigen, dann Daten frisch aus DB laden
+        setTimeout(() => window.location.reload(), 1500);
       }
     } catch (e: any) {
       toast.error(e?.message || 'Synchronisation fehlgeschlagen');
