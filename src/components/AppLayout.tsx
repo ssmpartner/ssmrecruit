@@ -13,11 +13,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export default function AppLayout() {
-  const { profile, user, signOut, displayName } = useAuth();
+  const { profile, user, signOut } = useAuth();
   const { collapsed } = useSidebarState();
   const navigate = useNavigate();
 
-  const initials = (displayName || 'U')
+  const initials = (profile?.display_name || user?.email || 'U')
     .split(' ')
     .map(w => w[0])
     .join('')
@@ -63,7 +63,7 @@ export default function AppLayout() {
                       {initials}
                     </div>
                   )}
-                  <span className="text-sm font-medium">{displayName}</span>
+                  <span className="text-sm font-medium">{profile?.display_name || 'Benutzer'}</span>
                   <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
