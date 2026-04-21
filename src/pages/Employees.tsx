@@ -74,6 +74,109 @@ export default function Employees() {
         )}
       </div>
 
+      {syncResult && (
+        <div className="rounded-xl border bg-card shadow-sm">
+          <div className="flex items-center justify-between border-b p-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold">Sync-Ergebnis</h2>
+              <span className="text-sm text-muted-foreground">· {syncResult.total} Benutzer geprüft</span>
+            </div>
+            <button onClick={() => setSyncResult(null)} className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Schließen">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="grid gap-3 p-4 sm:grid-cols-3">
+            <div className="rounded-lg border bg-secondary/40 p-3">
+              <div className="flex items-center gap-2 text-sm font-medium"><Plus className="h-4 w-4 text-primary" /> Neu angelegt</div>
+              <div className="mt-1 text-2xl font-bold">{syncResult.created}</div>
+            </div>
+            <div className="rounded-lg border bg-secondary/40 p-3">
+              <div className="flex items-center gap-2 text-sm font-medium"><Pencil className="h-4 w-4 text-primary" /> Aktualisiert</div>
+              <div className="mt-1 text-2xl font-bold">{syncResult.updated}</div>
+            </div>
+            <div className="rounded-lg border bg-secondary/40 p-3">
+              <div className="flex items-center gap-2 text-sm font-medium"><AlertCircle className="h-4 w-4 text-destructive" /> Fehler</div>
+              <div className="mt-1 text-2xl font-bold">{syncResult.failed}</div>
+            </div>
+          </div>
+
+          {(syncResult.created_items?.length > 0 || syncResult.updated_items?.length > 0) && (
+            <div className="border-t p-4 space-y-4">
+              {syncResult.created_items?.length > 0 && (
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold flex items-center gap-1"><Plus className="h-3.5 w-3.5" /> Neu angelegt ({syncResult.created_items.length})</h3>
+                  <div className="overflow-x-auto rounded-lg border">
+                    <table className="w-full text-xs">
+                      <thead className="bg-muted/50"><tr>
+                        <th className="px-3 py-2 text-left font-medium">Email</th>
+                        <th className="px-3 py-2 text-left font-medium">Rolle</th>
+                        <th className="px-3 py-2 text-left font-medium">Agentur</th>
+                        <th className="px-3 py-2 text-left font-medium">Employee-ID</th>
+                        <th className="px-3 py-2 text-left font-medium">User-ID</th>
+                      </tr></thead>
+                      <tbody>
+                        {syncResult.created_items.map(it => (
+                          <tr key={it.user_id} className="border-t">
+                            <td className="px-3 py-2">{it.email}</td>
+                            <td className="px-3 py-2">{it.role}</td>
+                            <td className="px-3 py-2">{agencyName(it.agency_id)}</td>
+                            <td className="px-3 py-2 font-mono text-[10px]">{it.employee_id}</td>
+                            <td className="px-3 py-2 font-mono text-[10px]">{it.user_id}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {syncResult.updated_items?.length > 0 && (
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold flex items-center gap-1"><Pencil className="h-3.5 w-3.5" /> Aktualisiert ({syncResult.updated_items.length})</h3>
+                  <div className="overflow-x-auto rounded-lg border">
+                    <table className="w-full text-xs">
+                      <thead className="bg-muted/50"><tr>
+                        <th className="px-3 py-2 text-left font-medium">Email</th>
+                        <th className="px-3 py-2 text-left font-medium">Rolle</th>
+                        <th className="px-3 py-2 text-left font-medium">Agentur</th>
+                        <th className="px-3 py-2 text-left font-medium">Employee-ID</th>
+                        <th className="px-3 py-2 text-left font-medium">User-ID</th>
+                      </tr></thead>
+                      <tbody>
+                        {syncResult.updated_items.map(it => (
+                          <tr key={it.user_id} className="border-t">
+                            <td className="px-3 py-2">{it.email}</td>
+                            <td className="px-3 py-2">{it.role}</td>
+                            <td className="px-3 py-2">{agencyName(it.agency_id)}</td>
+                            <td className="px-3 py-2 font-mono text-[10px]">{it.employee_id}</td>
+                            <td className="px-3 py-2 font-mono text-[10px]">{it.user_id}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {syncResult.errors?.length > 0 && (
+            <div className="border-t p-4">
+              <h3 className="mb-2 text-sm font-semibold flex items-center gap-1 text-destructive">
+                <AlertCircle className="h-3.5 w-3.5" /> Fehler ({syncResult.errors.length})
+              </h3>
+              <ul className="space-y-1 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs">
+                {syncResult.errors.map((err, i) => (
+                  <li key={i}><span className="font-medium">{err.email}:</span> {err.message}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
       {employees.length === 0 ? (
         <div className="rounded-xl border bg-card p-12 text-center">
           <p className="text-muted-foreground">Noch keine Mitarbeiter vorhanden. Mitarbeiter werden automatisch beim ersten Login über das SSM Portal angelegt.</p>
