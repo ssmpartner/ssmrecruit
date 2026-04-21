@@ -1,0 +1,2 @@
+ALTER TABLE public.employees DROP CONSTRAINT IF EXISTS employees_role_check;
+ALTER TABLE public.employees ADD CONSTRAINT employees_role_check CHECK (role = ANY (ARRAY['superadmin','admin','agency_manager','teamleiter','backoffice','analyst','controlling','geschaeftsleitung','hr','employee']));
