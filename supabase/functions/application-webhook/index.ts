@@ -71,6 +71,19 @@ serve(async (req) => {
       const formData = await req.formData();
       for (const [key, value] of formData.entries()) {
         if (value instanceof File) {
+          if (fileUploads.length >= MAX_FILES) {
+            console.warn('Too many files in upload, ignoring extra');
+            continue;
+          }
+          const ext = (value.name.split('.').pop() || '').toLowerCase();
+          if (!ALLOWED_MIME_TYPES.has(value.type) || !ALLOWED_EXTS.has(ext)) {
+            console.warn(`Rejected file (mime/ext): ${value.name} type=${value.type}`);
+            continue;
+          }
+          if (value.size > MAX_FILE_BYTES) {
+            console.warn(`Rejected file (size>${MAX_FILE_BYTES}): ${value.name}`);
+            continue;
+          }
           const arrayBuffer = await value.arrayBuffer();
           fileUploads.push({
             fieldName: key.toLowerCase(),
