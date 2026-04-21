@@ -130,8 +130,10 @@ export default function DocumentUploadPage() {
     }
 
     if (allOk) {
-      // Update request status
-      await supabase.from('document_requests').update({ status: 'completed' }).eq('id', requestId);
+      // Update request status via secure edge function (token-validated)
+      await supabase.functions.invoke('complete-public-form', {
+        body: { kind: 'document_request', token: token! },
+      });
 
       // Notify recruiter
       await supabase.from('notifications').insert({

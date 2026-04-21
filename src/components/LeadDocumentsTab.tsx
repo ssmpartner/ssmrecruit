@@ -99,14 +99,18 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   }
 
   async function downloadFile(filePath: string, fileName: string) {
-    const { data } = supabase.storage.from('lead-documents').getPublicUrl(filePath);
-    if (data?.publicUrl) {
-      const a = document.createElement('a');
-      a.href = data.publicUrl;
-      a.download = fileName;
-      a.target = '_blank';
-      a.click();
+    const { data, error } = await supabase.storage
+      .from('lead-documents')
+      .createSignedUrl(filePath, 3600);
+    if (error || !data?.signedUrl) {
+      toast({ title: 'Download fehlgeschlagen', description: error?.message || 'Datei nicht verfügbar', variant: 'destructive' });
+      return;
     }
+    const a = document.createElement('a');
+    a.href = data.signedUrl;
+    a.download = fileName;
+    a.target = '_blank';
+    a.click();
   }
 
   function getRequestStatus(req: DocumentRequest): 'expired' | 'used' | 'pending' {

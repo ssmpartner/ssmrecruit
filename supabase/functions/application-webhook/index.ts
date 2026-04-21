@@ -33,6 +33,18 @@ const DOC_FIELDS = {
   attachments: ['attachments', 'beilagen', 'weitere_beilagen', 'additional_documents', 'sonstige'],
 };
 
+const ALLOWED_MIME_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+]);
+const ALLOWED_EXTS = new Set(['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png']);
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_FILES = 20;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -59,6 +71,19 @@ serve(async (req) => {
       const formData = await req.formData();
       for (const [key, value] of formData.entries()) {
         if (value instanceof File) {
+          if (fileUploads.length >= MAX_FILES) {
+            console.warn('Too many files in upload, ignoring extra');
+            continue;
+          }
+          const ext = (value.name.split('.').pop() || '').toLowerCase();
+          if (!ALLOWED_MIME_TYPES.has(value.type) || !ALLOWED_EXTS.has(ext)) {
+            console.warn(`Rejected file (mime/ext): ${value.name} type=${value.type}`);
+            continue;
+          }
+          if (value.size > MAX_FILE_BYTES) {
+            console.warn(`Rejected file (size>${MAX_FILE_BYTES}): ${value.name}`);
+            continue;
+          }
           const arrayBuffer = await value.arrayBuffer();
           fileUploads.push({
             fieldName: key.toLowerCase(),
@@ -165,13 +190,22 @@ serve(async (req) => {
       if (processedKeys.has(key)) continue;
       if (typeof value === 'object' && value !== null && value.data && value.filename) {
         try {
+          const ext = ((value.filename as string).split('.').pop() || '').toLowerCase();
+          const ct = (value.contentType as string) || 'application/octet-stream';
+          if (!ALLOWED_EXTS.has(ext) || !ALLOWED_MIME_TYPES.has(ct)) {
+            console.warn(`Rejected base64 file (mime/ext): ${value.filename}`);
+            continue;
+          }
           const binaryData = Uint8Array.from(atob(value.data), c => c.charCodeAt(0));
-          const ext = (value.filename as string).split('.').pop() || 'bin';
+          if (binaryData.byteLength > MAX_FILE_BYTES) {
+            console.warn(`Rejected base64 file (size): ${value.filename}`);
+            continue;
+          }
           const storagePath = `${applicationId}/${crypto.randomUUID()}.${ext}`;
 
           await supabase.storage
             .from('application-documents')
-            .upload(storagePath, binaryData, { contentType: value.contentType || 'application/octet-stream' });
+            .upload(storagePath, binaryData, { contentType: ct });
 
           const fieldLower = key.toLowerCase();
           if (DOC_FIELDS.cv.some(f => fieldLower.includes(f))) {

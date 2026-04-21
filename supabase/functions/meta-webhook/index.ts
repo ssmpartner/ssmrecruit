@@ -102,7 +102,45 @@ serve(async (req) => {
       return new Response('Verification failed', { status: 403, headers: corsHeaders });
     }
 
-    const body = await req.json();
+    // Read raw body for signature verification
+    const rawBody = await req.text();
+
+    // Verify HMAC-SHA256 signature when META_APP_SECRET is configured
+    const appSecret = Deno.env.get('META_APP_SECRET');
+    if (appSecret) {
+      const signatureHeader = req.headers.get('x-hub-signature-256') || '';
+      const provided = signatureHeader.startsWith('sha256=') ? signatureHeader.slice(7) : '';
+      if (!provided) {
+        console.warn('Meta webhook: missing X-Hub-Signature-256');
+        return new Response(JSON.stringify({ error: 'Missing signature' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const enc = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        'raw', enc.encode(appSecret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+      );
+      const sigBuf = await crypto.subtle.sign('HMAC', key, enc.encode(rawBody));
+      const expected = Array.from(new Uint8Array(sigBuf))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+      // Constant-time comparison
+      if (expected.length !== provided.length) {
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      let diff = 0;
+      for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ provided.charCodeAt(i);
+      if (diff !== 0) {
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    } else {
+      console.warn('Meta webhook: META_APP_SECRET not configured — signature verification disabled');
+    }
+
+    const body = JSON.parse(rawBody);
     console.log('Meta webhook payload:', JSON.stringify(body));
     const defaults = await getDefaultAssignment(supabase);
     const inserted = [];
