@@ -704,13 +704,11 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       if (!myEmployee) return [];
       return leads.filter(l => l.agencyId === myEmployee.agencyId);
     }
-    // Teamleiter and Backoffice: see leads assigned to their employee or their agency
+    // Teamleiter and Backoffice: see ONLY leads personally assigned to them
     if (role === 'teamleiter' || role === 'backoffice') {
       const myEmployee = employees.find(e => e.email === user?.email);
       if (!myEmployee) return [];
-      return leads.filter(l =>
-        l.employeeId === myEmployee.id || l.agencyId === myEmployee.agencyId
-      );
+      return leads.filter(l => l.employeeId === myEmployee.id);
     }
     // Analyst: read-only but can see all
     if (role === 'analyst') return leads;
