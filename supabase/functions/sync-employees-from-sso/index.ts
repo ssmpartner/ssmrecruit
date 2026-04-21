@@ -92,7 +92,9 @@ Deno.serve(async (req) => {
     let created = 0;
     let updated = 0;
     let failed = 0;
-    const errors: string[] = [];
+    const errors: { email: string; message: string }[] = [];
+    const createdItems: { email: string; user_id: string; employee_id: string; role: string; agency_id: string }[] = [];
+    const updatedItems: { email: string; user_id: string; employee_id: string; role: string; agency_id: string }[] = [];
 
     // List existing auth users once
     const { data: existingUsers } = await admin.auth.admin.listUsers();
@@ -102,8 +104,9 @@ Deno.serve(async (req) => {
     });
 
     for (const su of ssoUsers) {
+      const emailRaw = su.email || '';
       try {
-        if (!su.email) { failed++; continue; }
+        if (!su.email) { failed++; errors.push({ email: '(leer)', message: 'Email fehlt' }); continue; }
         const email = su.email.toLowerCase();
         const displayName = su.display_name || email;
         const avatarUrl = su.avatar_url || null;
@@ -113,11 +116,10 @@ Deno.serve(async (req) => {
         if (!agencyId || !validAgencyIds.has(agencyId)) {
           agencyId = fallbackAgencyId;
         }
-        if (!agencyId) { failed++; errors.push(`${email}: keine Agentur verfügbar`); continue; }
+        if (!agencyId) { failed++; errors.push({ email, message: 'keine Agentur verfügbar' }); continue; }
 
         let authUser = usersByEmail.get(email);
         let userId: string;
-        let isNew = false;
 
         if (!authUser) {
           const tempPassword = crypto.randomUUID() + '-Ax1!';
@@ -128,11 +130,10 @@ Deno.serve(async (req) => {
             user_metadata: { display_name: displayName, avatar_url: avatarUrl },
           });
           if (createErr || !createdRes.user) {
-            failed++; errors.push(`${email}: ${createErr?.message || 'Auth-Create fehlgeschlagen'}`);
+            failed++; errors.push({ email, message: createErr?.message || 'Auth-Create fehlgeschlagen' });
             continue;
           }
           userId = createdRes.user.id;
-          isNew = true;
         } else {
           userId = authUser.id;
           await admin.auth.admin.updateUserById(userId, {
@@ -140,7 +141,6 @@ Deno.serve(async (req) => {
           });
         }
 
-        // Profile upsert
         await admin.from('profiles').upsert({
           id: userId,
           display_name: displayName,
@@ -148,7 +148,6 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         }, { onConflict: 'id' });
 
-        // Role upsert (map unknown roles to backoffice)
         const validRoles = ['superadmin','admin','backoffice','analyst','teamleiter','controlling','geschaeftsleitung','hr','agency_manager'];
         const finalRole = validRoles.includes(role) ? role : 'backoffice';
         await admin.from('user_roles').upsert(
@@ -156,7 +155,6 @@ Deno.serve(async (req) => {
           { onConflict: 'user_id,role' }
         );
 
-        // Employee upsert by email
         const { data: existingEmp } = await admin
           .from('employees')
           .select('id')
@@ -164,7 +162,7 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (existingEmp) {
-          await admin.from('employees').update({
+          const { error: upErr } = await admin.from('employees').update({
             name: displayName,
             email,
             avatar: avatarUrl,
@@ -173,10 +171,12 @@ Deno.serve(async (req) => {
             role: finalRole,
             updated_at: new Date().toISOString(),
           }).eq('id', existingEmp.id);
+          if (upErr) { failed++; errors.push({ email, message: `Update fehlgeschlagen: ${upErr.message}` }); continue; }
           updated++;
+          updatedItems.push({ email, user_id: userId, employee_id: existingEmp.id, role: finalRole, agency_id: agencyId });
         } else {
           const empId = `emp-${crypto.randomUUID().slice(0, 8)}`;
-          await admin.from('employees').insert({
+          const { error: insErr } = await admin.from('employees').insert({
             id: empId,
             name: displayName,
             email,
@@ -185,13 +185,13 @@ Deno.serve(async (req) => {
             agency_id: agencyId,
             role: finalRole,
           });
+          if (insErr) { failed++; errors.push({ email, message: `Insert fehlgeschlagen: ${insErr.message}` }); continue; }
           created++;
+          createdItems.push({ email, user_id: userId, employee_id: empId, role: finalRole, agency_id: agencyId });
         }
-
-        if (isNew && !created) created++;
       } catch (e: any) {
         failed++;
-        errors.push(`${su.email}: ${e?.message || 'Unbekannter Fehler'}`);
+        errors.push({ email: emailRaw, message: e?.message || 'Unbekannter Fehler' });
       }
     }
 
@@ -201,7 +201,9 @@ Deno.serve(async (req) => {
       created,
       updated,
       failed,
-      errors: errors.slice(0, 10),
+      created_items: createdItems,
+      updated_items: updatedItems,
+      errors,
     }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
