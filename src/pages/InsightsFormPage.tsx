@@ -542,10 +542,10 @@ export default function InsightsFormPage() {
     const discResult = computeDiscScores(discAnswers, discQuestions);
     const motivatorScores = computeMotivatorScores(motivatorAnswers, motivatorQuestions);
 
-    // Save insights responses
-    await supabase.from('insights_requests')
-      .update({ status: 'completed', completed_at: new Date().toISOString(), responses: insightsAnswers })
-      .eq('id', requestId);
+    // Save insights responses via secure edge function (token-validated)
+    await supabase.functions.invoke('complete-public-form', {
+      body: { kind: 'insights_request', token, responses: insightsAnswers },
+    });
 
     // Save DISC results
     await supabase.from('disc_results').insert({
