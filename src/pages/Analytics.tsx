@@ -118,11 +118,11 @@ export default function Analytics() {
             {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
           <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className={selectCls}>
-            <option value="">{isAgencyManager ? 'Meine Agentur' : 'Alle Agenturen'}</option>
+            <option value="">{isRestricted ? 'Meine Agentur' : 'Alle Agenturen'}</option>
             {visibleAgencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
-            <option value="">{isAgencyManager ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
+            <option value="">{isTeamleiter ? 'Nur ich' : isAgencyManager ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
             {visibleEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
           </select>
 
