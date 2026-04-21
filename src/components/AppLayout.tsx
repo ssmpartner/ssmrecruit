@@ -13,11 +13,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export default function AppLayout() {
-  const { profile, user, signOut } = useAuth();
+  const { profile, user, signOut, displayName } = useAuth();
   const { collapsed } = useSidebarState();
   const navigate = useNavigate();
 
-  const initials = (profile?.display_name || user?.email || 'U')
+  const initials = (displayName || 'U')
     .split(' ')
     .map(w => w[0])
     .join('')
