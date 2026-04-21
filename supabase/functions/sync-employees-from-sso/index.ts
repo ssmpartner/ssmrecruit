@@ -64,13 +64,18 @@ Deno.serve(async (req) => {
       body: JSON.stringify({ action: 'list_project_users', project_key: SSO_PROJECT_KEY }),
     });
     const ssoData = await ssoRes.json();
+    console.log('[sync] SSO response status:', ssoRes.status, 'body:', JSON.stringify(ssoData).slice(0, 500));
     if (!ssoRes.ok || ssoData.error) {
-      return new Response(JSON.stringify({ error: ssoData.error || 'SSO-Abruf fehlgeschlagen' }), {
+      return new Response(JSON.stringify({ error: ssoData.error || 'SSO-Abruf fehlgeschlagen', sso_status: ssoRes.status, sso_body: ssoData }), {
         status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const ssoUsers: SsoUser[] = ssoData.users || [];
+    // Accept multiple shapes: {users:[...]}, {data:{users:[...]}}, or array
+    const ssoUsers: SsoUser[] = Array.isArray(ssoData)
+      ? ssoData
+      : (ssoData.users || ssoData.data?.users || ssoData.project_users || []);
+    console.log('[sync] users count:', ssoUsers.length);
 
     // Fallback agency: Hauptsitz
     const { data: hauptsitz } = await admin
