@@ -425,6 +425,7 @@ const appFeatures = [
   ]},
   { category: 'Administration', icon: '⚙️', features: [
     { name: 'Zentrale Benutzerverwaltung (SSO)', desc: 'Benutzer werden zentral über das SSM Partner Portal verwaltet. Beim ersten Login wird der Benutzer automatisch im System angelegt und mit dem Mitarbeiter-Datensatz verknüpft.' },
+    { name: 'Pull-Sync aus SSM Portal', desc: 'Superadmins können auf der Mitarbeiter-Seite per Button alle dem Projekt zugewiesenen Benutzer (inkl. Rolle, Agentur und Profilfoto) aus dem SSM Portal abrufen und lokal anlegen oder aktualisieren – ohne dass der Benutzer sich vorher einloggen muss.' },
     { name: 'Rollensystem', desc: '9 Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Agenturleiter, Teamleiter, Backoffice, Analyst, Controlling (Prüfrolle), Geschäftsleitung (Freigaberolle), HR (Onboarding-Rolle).' },
     { name: 'Einstellungen', desc: 'Zentrale Konfiguration für Benachrichtigungen, Termine, Integrationen und API.' },
     { name: 'Profilverwaltung', desc: 'Benutzer können Name und Avatar in den Profileinstellungen ändern. E-Mail und Passwort werden zentral über das SSM Portal verwaltet.' },
