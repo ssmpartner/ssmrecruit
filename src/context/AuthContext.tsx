@@ -129,14 +129,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      // 1. Verify via SSO proxy (also provisions/updates local user)
-      const ssoRes = await supabase.functions.invoke('sso-proxy', {
-        body: { email, password },
+      // 1. Verify via SSO proxy directly via fetch (avoid functions.invoke throwing on non-2xx)
+      const ssoUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sso-proxy`;
+      const ssoRes = await fetch(ssoUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      const ssoData = ssoRes.data;
-      if (ssoRes.error || ssoData?.error) {
-        return { error: new Error(ssoData?.error || ssoRes.error?.message || 'SSO-Fehler') };
+      let ssoData: any = null;
+      try { ssoData = await ssoRes.json(); } catch { /* ignore */ }
+
+      if (!ssoRes.ok || ssoData?.error) {
+        return { error: new Error(ssoData?.error || 'Ungültige Zugangsdaten') };
       }
 
       // 2. Sign in locally (user is now guaranteed to exist and be confirmed)
@@ -145,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return { error: null };
     } catch (err: any) {
-      return { error: new Error(err.message || "SSO-Authentifizierung fehlgeschlagen") };
+      return { error: new Error(err?.message || "SSO-Authentifizierung fehlgeschlagen") };
     }
   };
 
