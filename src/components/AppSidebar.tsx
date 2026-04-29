@@ -28,9 +28,9 @@ const aiVoiceSubItems = [
 
 const allBottomItems = [
   { to: '/settings', icon: Settings, label: 'Einstellungen', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
-  { to: '/processes', icon: Workflow, label: 'Prozesse', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[], excludeRoles: [] as string[] },
+  { to: '/processes', icon: Workflow, label: 'Prozesse', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
   { to: '/api-docs', icon: Code2, label: 'API-Dokumentation', roles: ['superadmin', 'admin'] as string[], excludeRoles: [] as string[] },
-  { to: '/documentation', icon: FileText, label: 'Dokumentation', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[], excludeRoles: [] as string[] },
+  { to: '/documentation', icon: FileText, label: 'Dokumentation', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
   { to: '/help', icon: HelpCircle, label: 'Hilfe-Center', roles: null, excludeRoles: [] as string[] },
 ];
 
