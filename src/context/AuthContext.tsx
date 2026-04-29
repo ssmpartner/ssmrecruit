@@ -29,6 +29,8 @@ interface AuthContextType {
   isGeschaeftsleitung: boolean;
   isHR: boolean;
   isAgencyManager: boolean;
+  isBackoffice: boolean;
+  isAgencyScoped: boolean;
   isReviewRole: boolean;
 }
 
@@ -195,6 +197,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isGeschaeftsleitung: role === 'geschaeftsleitung',
       isHR: role === 'hr',
       isAgencyManager: role === 'agency_manager',
+      isBackoffice: role === 'backoffice',
+      isAgencyScoped: role === 'agency_manager' || role === 'backoffice',
       isReviewRole: role === 'controlling' || role === 'geschaeftsleitung' || role === 'hr',
       signUp, signIn, signOut,
       updateProfile, updateEmail, updatePassword, resetPassword,

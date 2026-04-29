@@ -34,18 +34,18 @@ const PAGE_SIZES: { value: PageSize; label: string }[] = [
 
 export default function LeadsTable() {
   const { leads, employees, agencies, leadSources, activities, setSelectedLead, updateLead } = useLeads();
-  const { isSuperadmin, role, isControlling, isGeschaeftsleitung, isHR, isReviewRole, isAgencyManager, isTeamleiter, user } = useAuth();
+  const { isSuperadmin, role, isControlling, isGeschaeftsleitung, isHR, isReviewRole, isAgencyManager, isAgencyScoped, isTeamleiter, user } = useAuth();
   const canManageLeads = !isReviewRole;
 
-  // Restrict filter options: agency manager → own agency; teamleiter → own agency + only self
+  // Restrict filter options: agency-scoped roles (agency_manager, backoffice) → own agency; teamleiter → own agency + only self
   const myEmployee = useMemo(() => employees.find(e => e.email === user?.email), [employees, user]);
-  const isRestricted = isAgencyManager || isTeamleiter;
+  const isRestricted = isAgencyScoped || isTeamleiter;
   const visibleAgencies = useMemo(() => isRestricted && myEmployee ? agencies.filter(a => a.id === myEmployee.agencyId) : agencies, [isRestricted, myEmployee, agencies]);
   const visibleEmployees = useMemo(() => {
     if (isTeamleiter && myEmployee) return employees.filter(e => e.id === myEmployee.id);
-    if (isAgencyManager && myEmployee) return employees.filter(e => e.agencyId === myEmployee.agencyId);
+    if (isAgencyScoped && myEmployee) return employees.filter(e => e.agencyId === myEmployee.agencyId);
     return employees;
-  }, [isAgencyManager, isTeamleiter, myEmployee, employees]);
+  }, [isAgencyScoped, isTeamleiter, myEmployee, employees]);
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
@@ -280,7 +280,7 @@ export default function LeadsTable() {
                   </select>
                 )}
                 <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
-                  <option value="">{isTeamleiter ? 'Nur ich' : isAgencyManager ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
+                  <option value="">{isTeamleiter ? 'Nur ich' : isAgencyScoped ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
                   {visibleEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                 </select>
                 <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>

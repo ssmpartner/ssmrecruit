@@ -59,6 +59,9 @@ const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
   hr: ['/', '/leads', '/help'],
 };
 
+// Routes blocked for backoffice role (agency-scoped users)
+const BACKOFFICE_BLOCKED_PREFIXES = ['/agencies', '/employees', '/processes', '/documentation', '/api-docs'];
+
 // Routes restricted to superadmin only
 const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice'];
 
@@ -79,6 +82,9 @@ function RoleRouteGuard({ children }: { children: React.ReactNode }) {
   const { role, isSuperadmin } = useAuth();
   const location = useLocation();
   if (SUPERADMIN_ONLY_PREFIXES.some(p => location.pathname.startsWith(p)) && !isSuperadmin) {
+    return <Navigate to="/" replace />;
+  }
+  if (role === 'backoffice' && BACKOFFICE_BLOCKED_PREFIXES.some(p => location.pathname.startsWith(p))) {
     return <Navigate to="/" replace />;
   }
   const allowed = role ? REVIEW_ROLE_ALLOWED[role] : null;

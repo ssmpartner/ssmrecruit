@@ -12,8 +12,8 @@ const allNavItems = [
   { to: '/leads', icon: Table, label: 'Leads', roles: null, excludeRoles: [] as string[] },
   { to: '/tasks', icon: CheckSquare, label: 'Aufgaben', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
   { to: '/calendar', icon: CalendarDays, label: 'Kalender', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
-  { to: '/agencies', icon: Building2, label: 'Agenturen', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[], excludeRoles: [] as string[] },
-  { to: '/employees', icon: UserCog, label: 'Mitarbeiter', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[], excludeRoles: [] as string[] },
+  { to: '/agencies', icon: Building2, label: 'Agenturen', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
+  { to: '/employees', icon: UserCog, label: 'Mitarbeiter', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
   { to: '/analytics', icon: BarChart3, label: 'Statistik', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
 ];
 
@@ -28,9 +28,9 @@ const aiVoiceSubItems = [
 
 const allBottomItems = [
   { to: '/settings', icon: Settings, label: 'Einstellungen', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
-  { to: '/processes', icon: Workflow, label: 'Prozesse', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[], excludeRoles: [] as string[] },
+  { to: '/processes', icon: Workflow, label: 'Prozesse', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
   { to: '/api-docs', icon: Code2, label: 'API-Dokumentation', roles: ['superadmin', 'admin'] as string[], excludeRoles: [] as string[] },
-  { to: '/documentation', icon: FileText, label: 'Dokumentation', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[], excludeRoles: [] as string[] },
+  { to: '/documentation', icon: FileText, label: 'Dokumentation', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
   { to: '/help', icon: HelpCircle, label: 'Hilfe-Center', roles: null, excludeRoles: [] as string[] },
 ];
 

@@ -18,7 +18,7 @@ import ExportActions from '@/components/analytics/ExportActions';
 
 export default function Analytics() {
   const { leads, agencies, employees, leadSources, activities } = useLeads();
-  const { isAgencyManager, isTeamleiter, user } = useAuth();
+  const { isAgencyManager, isAgencyScoped, isTeamleiter, user } = useAuth();
   const [cantonFilter, setCantonFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
@@ -28,15 +28,15 @@ export default function Analytics() {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Restrict filter options: agency manager → own agency; teamleiter → own agency + only self
+  // Restrict filter options: agency-scoped roles → own agency; teamleiter → own agency + only self
   const myEmployee = useMemo(() => employees.find(e => e.email === user?.email), [employees, user]);
-  const isRestricted = isAgencyManager || isTeamleiter;
+  const isRestricted = isAgencyScoped || isTeamleiter;
   const visibleAgencies = useMemo(() => isRestricted && myEmployee ? agencies.filter(a => a.id === myEmployee.agencyId) : agencies, [isRestricted, myEmployee, agencies]);
   const visibleEmployees = useMemo(() => {
     if (isTeamleiter && myEmployee) return employees.filter(e => e.id === myEmployee.id);
-    if (isAgencyManager && myEmployee) return employees.filter(e => e.agencyId === myEmployee.agencyId);
+    if (isAgencyScoped && myEmployee) return employees.filter(e => e.agencyId === myEmployee.agencyId);
     return employees;
-  }, [isAgencyManager, isTeamleiter, myEmployee, employees]);
+  }, [isAgencyScoped, isTeamleiter, myEmployee, employees]);
 
   const filtered = useMemo(() => {
     return leads.filter(l => {
@@ -76,7 +76,7 @@ export default function Analytics() {
   ];
 
   const AGENCY_MANAGER_HIDDEN_TABS = ['marketing', 'management', 'flow', 'map'];
-  const tabItems = isAgencyManager ? allTabItems.filter(t => !AGENCY_MANAGER_HIDDEN_TABS.includes(t.value)) : allTabItems;
+  const tabItems = isAgencyScoped ? allTabItems.filter(t => !AGENCY_MANAGER_HIDDEN_TABS.includes(t.value)) : allTabItems;
 
   return (
     <div className="space-y-5 print:space-y-4">
@@ -122,7 +122,7 @@ export default function Analytics() {
             {visibleAgencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
-            <option value="">{isTeamleiter ? 'Nur ich' : isAgencyManager ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
+            <option value="">{isTeamleiter ? 'Nur ich' : isAgencyScoped ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
             {visibleEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
           </select>
 
@@ -173,7 +173,7 @@ export default function Analytics() {
           <TabsContent value="overview" className="m-0">
             <OverviewTab filtered={filtered} leadSources={leadSources} />
           </TabsContent>
-          {!isAgencyManager && (
+          {!isAgencyScoped && (
             <>
               <TabsContent value="marketing" className="m-0">
                 <MarketingTab filtered={filtered} leadSources={leadSources} />
