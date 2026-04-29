@@ -84,6 +84,9 @@ function RoleRouteGuard({ children }: { children: React.ReactNode }) {
   if (SUPERADMIN_ONLY_PREFIXES.some(p => location.pathname.startsWith(p)) && !isSuperadmin) {
     return <Navigate to="/" replace />;
   }
+  if (role === 'backoffice' && BACKOFFICE_BLOCKED_PREFIXES.some(p => location.pathname.startsWith(p))) {
+    return <Navigate to="/" replace />;
+  }
   const allowed = role ? REVIEW_ROLE_ALLOWED[role] : null;
   if (allowed && !allowed.includes(location.pathname)) {
     return <Navigate to="/" replace />;
