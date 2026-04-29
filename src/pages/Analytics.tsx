@@ -173,7 +173,7 @@ export default function Analytics() {
           <TabsContent value="overview" className="m-0">
             <OverviewTab filtered={filtered} leadSources={leadSources} />
           </TabsContent>
-          {!isAgencyManager && (
+          {!isAgencyScoped && (
             <>
               <TabsContent value="marketing" className="m-0">
                 <MarketingTab filtered={filtered} leadSources={leadSources} />
