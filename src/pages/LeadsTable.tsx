@@ -38,7 +38,10 @@ export default function LeadsTable() {
   const canManageLeads = !isReviewRole;
 
   // Restrict filter options: agency-scoped roles (agency_manager, backoffice) → own agency; teamleiter → own agency + only self
-  const myEmployee = useMemo(() => employees.find(e => e.email === user?.email), [employees, user]);
+  const myEmployee = useMemo(() => {
+    const userEmail = (user?.email || '').toLowerCase();
+    return employees.find(e => (e.email || '').toLowerCase() === userEmail);
+  }, [employees, user]);
   const isRestricted = isAgencyScoped || isTeamleiter;
   const visibleAgencies = useMemo(() => isRestricted && myEmployee ? agencies.filter(a => a.id === myEmployee.agencyId) : agencies, [isRestricted, myEmployee, agencies]);
   const visibleEmployees = useMemo(() => {
