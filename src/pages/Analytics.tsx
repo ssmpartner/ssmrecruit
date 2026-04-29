@@ -122,7 +122,7 @@ export default function Analytics() {
             {visibleAgencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
-            <option value="">{isTeamleiter ? 'Nur ich' : isAgencyManager ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
+            <option value="">{isTeamleiter ? 'Nur ich' : isAgencyScoped ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
             {visibleEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
           </select>
 
