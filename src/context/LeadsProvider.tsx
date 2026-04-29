@@ -698,15 +698,15 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (role === 'controlling' || role === 'geschaeftsleitung' || role === 'hr') {
       return leads.filter(l => l.assignedApproverUserId === user?.id);
     }
+    const userEmail = (user?.email || '').toLowerCase();
+    const myEmployee = employees.find(e => (e.email || '').toLowerCase() === userEmail);
     // Agency Manager & Backoffice: see all leads of their agency
     if (role === 'agency_manager' || role === 'backoffice') {
-      const myEmployee = employees.find(e => e.email === user?.email);
       if (!myEmployee) return [];
       return leads.filter(l => l.agencyId === myEmployee.agencyId);
     }
     // Teamleiter: see ONLY leads personally assigned to them
     if (role === 'teamleiter') {
-      const myEmployee = employees.find(e => e.email === user?.email);
       if (!myEmployee) return [];
       return leads.filter(l => l.employeeId === myEmployee.id);
     }
