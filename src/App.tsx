@@ -59,6 +59,9 @@ const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
   hr: ['/', '/leads', '/help'],
 };
 
+// Routes blocked for backoffice role (agency-scoped users)
+const BACKOFFICE_BLOCKED_PREFIXES = ['/agencies', '/employees', '/processes', '/documentation', '/api-docs'];
+
 // Routes restricted to superadmin only
 const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice'];
 
