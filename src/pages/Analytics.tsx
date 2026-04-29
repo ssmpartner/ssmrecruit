@@ -76,7 +76,7 @@ export default function Analytics() {
   ];
 
   const AGENCY_MANAGER_HIDDEN_TABS = ['marketing', 'management', 'flow', 'map'];
-  const tabItems = isAgencyManager ? allTabItems.filter(t => !AGENCY_MANAGER_HIDDEN_TABS.includes(t.value)) : allTabItems;
+  const tabItems = isAgencyScoped ? allTabItems.filter(t => !AGENCY_MANAGER_HIDDEN_TABS.includes(t.value)) : allTabItems;
 
   return (
     <div className="space-y-5 print:space-y-4">
