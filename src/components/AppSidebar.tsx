@@ -12,8 +12,8 @@ const allNavItems = [
   { to: '/leads', icon: Table, label: 'Leads', roles: null, excludeRoles: [] as string[] },
   { to: '/tasks', icon: CheckSquare, label: 'Aufgaben', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
   { to: '/calendar', icon: CalendarDays, label: 'Kalender', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
-  { to: '/agencies', icon: Building2, label: 'Agenturen', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[], excludeRoles: [] as string[] },
-  { to: '/employees', icon: UserCog, label: 'Mitarbeiter', roles: ['superadmin', 'admin', 'backoffice', 'analyst'] as string[], excludeRoles: [] as string[] },
+  { to: '/agencies', icon: Building2, label: 'Agenturen', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
+  { to: '/employees', icon: UserCog, label: 'Mitarbeiter', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
   { to: '/analytics', icon: BarChart3, label: 'Statistik', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
 ];
 
