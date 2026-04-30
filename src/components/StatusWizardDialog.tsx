@@ -25,8 +25,11 @@ const WIZARD_CONFIG: Record<WizardType, { label: string; icon: typeof Phone; col
   internal: { label: 'Interne Stelle', icon: Building2, color: 'text-blue-700', description: 'Für interne Position markieren und zuweisen.' },
 };
 
-// Statuses that trigger lead withdrawal
-const WITHDRAWAL_TYPES: WizardType[] = ['not_interested', 'not_reached', 'no_need', 'not_suitable', 'internal'];
+// Statuses that ALWAYS trigger lead withdrawal on submit.
+// 'not_reached' is handled separately: only withdraws after 3 attempts (every 48h reminder in between).
+const WITHDRAWAL_TYPES: WizardType[] = ['not_interested', 'no_need', 'not_suitable', 'internal'];
+const MAX_NOT_REACHED_ATTEMPTS = 3;
+const REMINDER_HOURS = 48;
 
 // Superadmin email for reassignment
 const SUPERADMIN_EMAIL = 'talent@ssmpartner.ch';
@@ -133,10 +136,43 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           newStatus = 'not_interested';
           break;
 
-        case 'not_reached':
-          answers.attempts = attemptCount;
+        case 'not_reached': {
+          const currentNotReached = (lead as any)?.notReachedCount ?? (lead as any)?.not_reached_count ?? 0;
+          const newAttempt = currentNotReached + 1;
+          answers.attempt = newAttempt;
+          answers.max_attempts = MAX_NOT_REACHED_ATTEMPTS;
           newStatus = 'not_reached';
+
+          const nowIso = new Date().toISOString();
+          await supabase.from('leads').update({
+            not_reached_count: newAttempt,
+            not_reached_last_at: nowIso,
+          }).eq('id', leadId);
+
+          if (newAttempt >= MAX_NOT_REACHED_ATTEMPTS) {
+            // 3rd attempt → withdraw + archive
+            shouldWithdraw = true;
+            answers.escalated = true;
+            addActivity(leadId, 'status_change', `Limit "Nicht erreicht" erreicht (${newAttempt}/${MAX_NOT_REACHED_ATTEMPTS}) – Lead wird archiviert`);
+          } else {
+            // Schedule a 48h reminder task for the current owner
+            const dueDate = new Date(Date.now() + REMINDER_HOURS * 60 * 60 * 1000);
+            await supabase.from('tasks').insert({
+              title: `Erneuter Kontaktversuch: ${leadName}`,
+              description: `Versuch ${newAttempt}/${MAX_NOT_REACHED_ATTEMPTS} – Lead bitte erneut kontaktieren (Erinnerung nach ${REMINDER_HOURS}h).`,
+              lead_id: leadId,
+              assigned_to: originalEmployeeId,
+              agency_id: lead?.agencyId || null,
+              priority: 'medium',
+              status: 'open',
+              source: 'system',
+              due_date: dueDate.toISOString().slice(0, 10),
+              lead_status: 'not_reached',
+            });
+            addActivity(leadId, 'note', `"Nicht erreicht" Versuch ${newAttempt}/${MAX_NOT_REACHED_ATTEMPTS} – Erinnerung in ${REMINDER_HOURS}h geplant`);
+          }
           break;
+        }
 
         case 'no_need':
           answers.reason = noNeedReason;
@@ -376,21 +412,36 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           </div>
         );
 
-      case 'not_reached':
+      case 'not_reached': {
+        const currentNotReached = (lead as any)?.notReachedCount ?? (lead as any)?.not_reached_count ?? 0;
+        const upcomingAttempt = currentNotReached + 1;
+        const isFinal = upcomingAttempt >= MAX_NOT_REACHED_ATTEMPTS;
         return (
           <div className="space-y-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">Anzahl Versuche</label>
-              <input type="number" min={1} max={10} value={attemptCount} onChange={e => setAttemptCount(Number(e.target.value))} className={cn(inputCls, 'mt-1')} />
-            </div>
-            <div className="rounded-lg border border-orange-200 bg-orange-50 p-2.5">
-              <p className="text-xs text-orange-800 flex items-center gap-1.5">
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                Status wird auf «Nicht interessiert» gesetzt. Lead wird entzogen.
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-sm font-medium">Versuch {upcomingAttempt} von {MAX_NOT_REACHED_ATTEMPTS}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Bisher dokumentierte Versuche: <strong>{currentNotReached}</strong>
               </p>
             </div>
+            {!isFinal ? (
+              <div className="rounded-lg border border-orange-200 bg-orange-50 p-2.5">
+                <p className="text-xs text-orange-800 flex items-center gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  Lead bleibt bei Ihnen. Sie werden in {REMINDER_HOURS}h erneut erinnert.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-2.5">
+                <p className="text-xs text-red-800 flex items-center gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  Letzter Versuch erreicht – Lead wird archiviert und entzogen.
+                </p>
+              </div>
+            )}
           </div>
         );
+      }
 
       case 'no_need':
         return (
