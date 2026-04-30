@@ -412,21 +412,36 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           </div>
         );
 
-      case 'not_reached':
+      case 'not_reached': {
+        const currentNotReached = (lead as any)?.notReachedCount ?? (lead as any)?.not_reached_count ?? 0;
+        const upcomingAttempt = currentNotReached + 1;
+        const isFinal = upcomingAttempt >= MAX_NOT_REACHED_ATTEMPTS;
         return (
           <div className="space-y-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">Anzahl Versuche</label>
-              <input type="number" min={1} max={10} value={attemptCount} onChange={e => setAttemptCount(Number(e.target.value))} className={cn(inputCls, 'mt-1')} />
-            </div>
-            <div className="rounded-lg border border-orange-200 bg-orange-50 p-2.5">
-              <p className="text-xs text-orange-800 flex items-center gap-1.5">
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                Status wird auf «Nicht interessiert» gesetzt. Lead wird entzogen.
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-sm font-medium">Versuch {upcomingAttempt} von {MAX_NOT_REACHED_ATTEMPTS}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Bisher dokumentierte Versuche: <strong>{currentNotReached}</strong>
               </p>
             </div>
+            {!isFinal ? (
+              <div className="rounded-lg border border-orange-200 bg-orange-50 p-2.5">
+                <p className="text-xs text-orange-800 flex items-center gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  Lead bleibt bei Ihnen. Sie werden in {REMINDER_HOURS}h erneut erinnert.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-2.5">
+                <p className="text-xs text-red-800 flex items-center gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  Letzter Versuch erreicht – Lead wird archiviert und entzogen.
+                </p>
+              </div>
+            )}
           </div>
         );
+      }
 
       case 'no_need':
         return (
