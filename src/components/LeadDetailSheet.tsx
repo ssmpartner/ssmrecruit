@@ -727,10 +727,15 @@ export default function LeadDetailSheet() {
                         {showAptForm && (
                           <div className="rounded-lg border bg-muted/30 p-3 space-y-2.5">
                             <div className="grid grid-cols-2 gap-2.5">
-                              <div>
-                                 <label className="text-sm text-muted-foreground">Titel *</label>
-                                 <input value={aptForm.title} onChange={e => setAptForm(prev => ({ ...prev, title: e.target.value }))} placeholder="z.B. Erstgespräch" className={inputCls} />
-                               </div>
+                               <div>
+                                  <label className="text-sm text-muted-foreground">Titel *</label>
+                                  <select value={aptForm.title} onChange={e => setAptForm(prev => ({ ...prev, title: e.target.value }))} className={inputCls}>
+                                    <option value="">Bitte wählen…</option>
+                                    <option value="BG 1 (Erstgespräch)">BG 1 (Erstgespräch)</option>
+                                    <option value="BG 2 (Fortsetzung)">BG 2 (Fortsetzung)</option>
+                                    <option value="Vertragsunterzeichnung">Vertragsunterzeichnung</option>
+                                  </select>
+                                </div>
                                <div>
                                  <label className="text-sm text-muted-foreground">Art</label>
                                 <select value={aptForm.type} onChange={e => setAptForm(prev => ({ ...prev, type: e.target.value as any }))} className={inputCls}>
