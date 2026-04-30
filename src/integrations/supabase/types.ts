@@ -2095,6 +2095,89 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          category: string
+          created_at: string
+          created_by_email: string
+          created_by_name: string
+          created_by_user_id: string
+          description: string
+          id: string
+          priority: string
+          resolved_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by_email?: string
+          created_by_name?: string
+          created_by_user_id: string
+          description?: string
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by_email?: string
+          created_by_name?: string
+          created_by_user_id?: string
+          description?: string
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      feedback_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          created_by_name: string
+          created_by_user_id: string
+          feedback_id: string
+          id: string
+          is_official: boolean
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          created_by_name?: string
+          created_by_user_id: string
+          feedback_id: string
+          id?: string
+          is_official?: boolean
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          created_by_name?: string
+          created_by_user_id?: string
+          feedback_id?: string
+          id?: string
+          is_official?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_comments_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goal_progress: {
         Row: {
           created_at: string
