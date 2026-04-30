@@ -553,7 +553,20 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           </div>
         );
 
-      case 'not_suitable':
+      case 'not_suitable': {
+        const toggle = (arr: string[], setter: (v: string[]) => void, val: string) => {
+          setter(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val]);
+        };
+        const langs = [
+          { v: 'de', l: 'Deutsch' },
+          { v: 'fr', l: 'Französisch' },
+          { v: 'it', l: 'Italienisch' },
+          { v: 'en', l: 'Englisch' },
+        ];
+        const registers = [
+          { v: 'betreibung', l: 'Betreibungsregister-Eintrag' },
+          { v: 'strafregister', l: 'Strafregister-Eintrag' },
+        ];
         return (
           <div className="space-y-3">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -561,20 +574,62 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
                 className="h-4 w-4 rounded border-input" />
               <span className="text-sm">Matching nicht erfüllt</span>
             </label>
+
+            <div className="rounded-md border bg-muted/30 p-2.5 space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">Sprache nicht passend (optional, Mehrfachauswahl)</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {langs.map(({ v, l }) => (
+                  <label key={v} className="flex items-center gap-2 cursor-pointer text-sm">
+                    <input type="checkbox" checked={unsuitableLanguages.includes(v)}
+                      onChange={() => toggle(unsuitableLanguages, setUnsuitableLanguages, v)}
+                      className="h-4 w-4 rounded border-input" />
+                    {l}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-md border bg-muted/30 p-2.5 space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">Register-Einträge (optional)</p>
+              {registers.map(({ v, l }) => (
+                <label key={v} className="flex items-center gap-2 cursor-pointer text-sm">
+                  <input type="checkbox" checked={unsuitableRegisters.includes(v)}
+                    onChange={() => toggle(unsuitableRegisters, setUnsuitableRegisters, v)}
+                    className="h-4 w-4 rounded border-input" />
+                  {l}
+                </label>
+              ))}
+            </div>
+
+            <div className="rounded-md border bg-muted/30 p-2.5 space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" checked={unsuitableAgeTooYoung}
+                  onChange={e => setUnsuitableAgeTooYoung(e.target.checked)}
+                  className="h-4 w-4 rounded border-input" />
+                Zu jung
+              </label>
+              {unsuitableAgeTooYoung && (
+                <input type="text" value={unsuitableAge} onChange={e => setUnsuitableAge(e.target.value)}
+                  placeholder="Alter (z.B. 17)" className={inputCls} />
+              )}
+            </div>
+
             <div>
               <label className="text-xs font-medium text-muted-foreground">Begründung (optional)</label>
               <textarea value={matchingReason} onChange={e => setMatchingReason(e.target.value)}
-                rows={2} placeholder="Warum passt der Lead nicht..."
+                rows={2} placeholder="Weitere Anmerkungen..."
                 className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
             </div>
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
               <p className="text-xs text-slate-800 flex items-center gap-1.5">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                Lead wird entzogen und dem Superadmin zugewiesen.
+                Lead wird entzogen, archiviert und dem Superadmin zugewiesen. Alle Gründe sind in der Aktivität sichtbar – bei „Zu jung" oder Sprache kann der Superadmin später reaktivieren bzw. neu zuweisen.
               </p>
             </div>
           </div>
         );
+      }
+
 
       case 'internal':
         return (
