@@ -2319,6 +2319,8 @@ export type Database = {
           is_read: boolean
           lead_lifecycle: string
           name: string
+          not_reached_count: number
+          not_reached_last_at: string | null
           notes: string
           original_employee_id: string
           phone: string
@@ -2352,6 +2354,8 @@ export type Database = {
           is_read?: boolean
           lead_lifecycle?: string
           name: string
+          not_reached_count?: number
+          not_reached_last_at?: string | null
           notes?: string
           original_employee_id?: string
           phone?: string
@@ -2385,6 +2389,8 @@ export type Database = {
           is_read?: boolean
           lead_lifecycle?: string
           name?: string
+          not_reached_count?: number
+          not_reached_last_at?: string | null
           notes?: string
           original_employee_id?: string
           phone?: string
