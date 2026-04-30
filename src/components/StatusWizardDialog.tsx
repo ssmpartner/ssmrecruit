@@ -25,8 +25,11 @@ const WIZARD_CONFIG: Record<WizardType, { label: string; icon: typeof Phone; col
   internal: { label: 'Interne Stelle', icon: Building2, color: 'text-blue-700', description: 'Für interne Position markieren und zuweisen.' },
 };
 
-// Statuses that trigger lead withdrawal
-const WITHDRAWAL_TYPES: WizardType[] = ['not_interested', 'not_reached', 'no_need', 'not_suitable', 'internal'];
+// Statuses that ALWAYS trigger lead withdrawal on submit.
+// 'not_reached' is handled separately: only withdraws after 3 attempts (every 48h reminder in between).
+const WITHDRAWAL_TYPES: WizardType[] = ['not_interested', 'no_need', 'not_suitable', 'internal'];
+const MAX_NOT_REACHED_ATTEMPTS = 3;
+const REMINDER_HOURS = 48;
 
 // Superadmin email for reassignment
 const SUPERADMIN_EMAIL = 'talent@ssmpartner.ch';
