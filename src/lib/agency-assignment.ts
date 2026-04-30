@@ -97,7 +97,10 @@ function pickEmployee(
   fallbackEmployeeId: string,
   employeeLeadCounts?: Record<string, number>,
 ): { agencyId: string; employeeId: string } {
-  const agencyEmployees = employees.filter(e => e.agencyId === agencyId);
+  // Backoffice-Mitarbeiter erhalten KEINE automatischen Lead-Zuweisungen
+  const agencyEmployees = employees.filter(
+    e => e.agencyId === agencyId && (e as any).role !== 'backoffice'
+  );
   if (agencyEmployees.length === 0) {
     return { agencyId, employeeId: fallbackEmployeeId };
   }
