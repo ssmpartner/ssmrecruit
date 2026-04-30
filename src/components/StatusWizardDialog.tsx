@@ -223,6 +223,13 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
         case 'not_suitable':
           answers.matching_failed = matchingFailed;
           answers.reason = matchingReason;
+          if (unsuitableLanguages.length > 0) answers.languages = unsuitableLanguages;
+          if (unsuitableRegisters.length > 0) answers.registers = unsuitableRegisters;
+          if (unsuitableAgeTooYoung) {
+            answers.age_too_young = true;
+            if (unsuitableAge.trim()) answers.age = unsuitableAge.trim();
+            answers.reactivatable = true;
+          }
           newStatus = 'not_suitable';
           break;
 
