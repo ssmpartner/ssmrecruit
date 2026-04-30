@@ -136,10 +136,43 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           newStatus = 'not_interested';
           break;
 
-        case 'not_reached':
-          answers.attempts = attemptCount;
+        case 'not_reached': {
+          const currentNotReached = (lead as any)?.notReachedCount ?? (lead as any)?.not_reached_count ?? 0;
+          const newAttempt = currentNotReached + 1;
+          answers.attempt = newAttempt;
+          answers.max_attempts = MAX_NOT_REACHED_ATTEMPTS;
           newStatus = 'not_reached';
+
+          const nowIso = new Date().toISOString();
+          await supabase.from('leads').update({
+            not_reached_count: newAttempt,
+            not_reached_last_at: nowIso,
+          }).eq('id', leadId);
+
+          if (newAttempt >= MAX_NOT_REACHED_ATTEMPTS) {
+            // 3rd attempt → withdraw + archive
+            shouldWithdraw = true;
+            answers.escalated = true;
+            addActivity(leadId, 'status_change', `Limit "Nicht erreicht" erreicht (${newAttempt}/${MAX_NOT_REACHED_ATTEMPTS}) – Lead wird archiviert`);
+          } else {
+            // Schedule a 48h reminder task for the current owner
+            const dueDate = new Date(Date.now() + REMINDER_HOURS * 60 * 60 * 1000);
+            await supabase.from('tasks').insert({
+              title: `Erneuter Kontaktversuch: ${leadName}`,
+              description: `Versuch ${newAttempt}/${MAX_NOT_REACHED_ATTEMPTS} – Lead bitte erneut kontaktieren (Erinnerung nach ${REMINDER_HOURS}h).`,
+              lead_id: leadId,
+              assigned_to: originalEmployeeId,
+              agency_id: lead?.agencyId || null,
+              priority: 'medium',
+              status: 'open',
+              source: 'system',
+              due_date: dueDate.toISOString().slice(0, 10),
+              lead_status: 'not_reached',
+            });
+            addActivity(leadId, 'note', `"Nicht erreicht" Versuch ${newAttempt}/${MAX_NOT_REACHED_ATTEMPTS} – Erinnerung in ${REMINDER_HOURS}h geplant`);
+          }
           break;
+        }
 
         case 'no_need':
           answers.reason = noNeedReason;
