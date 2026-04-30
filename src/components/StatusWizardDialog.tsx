@@ -100,13 +100,43 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
       const originalEmployeeId = lead?.employeeId || '';
 
       switch (wizardType) {
-        case 'contacted':
-          answers.date = contactDate ? format(contactDate, 'yyyy-MM-dd') : '';
-          answers.time = contactTime;
+        case 'contacted': {
+          const now = new Date();
+          answers.date = format(now, 'yyyy-MM-dd');
+          answers.time = format(now, 'HH:mm');
           answers.channel = contactChannel;
           answers.result = contactResult;
-          newStatus = 'contacted';
+
+          if (contactResult === 'appointment') {
+            // Pflichtfelder validieren
+            if (!aptTitle || !aptDate) {
+              toast({ title: '⚠️ Pflichtfelder', description: 'Bitte Termintyp und Datum auswählen.', variant: 'destructive' });
+              setSubmitting(false);
+              return;
+            }
+            // Termin anlegen
+            await addAppointment({
+              leadId,
+              title: aptTitle,
+              date: format(aptDate, 'yyyy-MM-dd'),
+              time: aptTime,
+              duration: 30,
+              type: aptType,
+              notes: '',
+              createdBy: currentUser,
+            });
+            answers.appointment_title = aptTitle;
+            answers.appointment_date = format(aptDate, 'yyyy-MM-dd');
+            answers.appointment_time = aptTime;
+            answers.appointment_type = aptType;
+            // Status wird automatisch durch addAppointment auf 'appointment' gesetzt (autoStatusChange).
+            // Falls autoStatusChange aus ist, hier explizit setzen:
+            newStatus = 'appointment';
+          } else {
+            newStatus = 'contacted';
+          }
           break;
+        }
 
         case 'callback': {
           if (!callbackDate) {
