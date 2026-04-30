@@ -43,7 +43,7 @@ interface Props {
 }
 
 export default function StatusWizardDialog({ open, onOpenChange, wizardType, leadId, leadName }: Props) {
-  const { updateLead, addActivity, employees, leads } = useLeads();
+  const { updateLead, addActivity, employees, leads, addAppointment } = useLeads();
   const { profile, isSuperadmin } = useAuth();
   const { toast } = useToast();
   const currentUser = profile?.display_name || 'System';
@@ -52,11 +52,15 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
   const [feedback, setFeedback] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Contacted wizard
-  const [contactDate, setContactDate] = useState<Date | undefined>(new Date());
-  const [contactTime, setContactTime] = useState('09:00');
+  // Contacted wizard (Datum/Uhrzeit werden automatisch beim Submit gesetzt)
   const [contactChannel, setContactChannel] = useState('phone');
   const [contactResult, setContactResult] = useState('appointment');
+
+  // Termin-Felder (nur wenn Ergebnis = "appointment")
+  const [aptTitle, setAptTitle] = useState<'BG 1 (Erstgespräch)' | 'BG 2 (Fortsetzung)' | 'Vertragsunterzeichnung' | ''>('');
+  const [aptDate, setAptDate] = useState<Date | undefined>(undefined);
+  const [aptTime, setAptTime] = useState('09:00');
+  const [aptType, setAptType] = useState<'phone' | 'video' | 'onsite'>('video');
 
   // Callback wizard
   const [callbackDate, setCallbackDate] = useState<Date | undefined>(undefined);
