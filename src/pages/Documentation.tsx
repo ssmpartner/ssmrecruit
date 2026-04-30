@@ -7,6 +7,16 @@ const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsS
 const APP_VERSION = '2.48.0';
 
 const versionHistory = [
+  { version: '2.49.0', date: '30.04.2026', changes: [
+    'Status-Wizard «Kontaktiert»: Datum & Uhrzeit werden jetzt automatisch vom System erfasst (keine manuelle Eingabe mehr)',
+    'Status-Wizard «Kontaktiert» → Ergebnis «Termin vereinbart»: Pflicht-Termin-Block mit Termintyp-Dropdown (BG 1 Erstgespräch, BG 2 Fortsetzung, Vertragsunterzeichnung), Datum, Uhrzeit und Art (Telefon/Video/Vor Ort). Termin wird automatisch im Termine-Tab und Kalender angelegt, Status springt auf «Termin»',
+    'Status-Wizard «Kontaktiert» → Ergebnis «Erreicht ohne Termin»: Lead-Status wird automatisch auf «Rückruf» gesetzt. Option «Kontakt abgeschlossen» wurde entfernt',
+    'Status-Wizard «Nicht erreicht»: 3-Versuche-Logik mit 48h-Erinnerung als Aufgabe für den zugewiesenen Mitarbeiter. Nach dem 3. erfolglosen Versuch wird der Lead automatisch archiviert und dem Superadmin zugewiesen',
+    'Status-Wizard «Nicht passend»: Erweitert um zusätzliche Auswahlfelder – Sprache (DE/FR/IT/EN, Mehrfachauswahl), Register-Einträge (Betreibungsregister, Strafregister) und «Zu jung» mit Altersangabe. Alle Gründe werden in der Aktivität gespeichert, sodass der Superadmin später reaktivieren oder neu zuweisen kann',
+    'Termin-Erstellung im Lead-Detail: Frei wählbarer Titel ersetzt durch Dropdown mit den drei Standard-Termintypen (BG 1, BG 2, Vertragsunterzeichnung)',
+    'Lead-Zuweisung: Mitarbeiter mit Rolle «Backoffice» sind komplett von der automatischen Lead-Zuteilung ausgeschlossen (Webhooks, Forms und CSV-Import)',
+    'Faire Round-Robin-Verteilung: Innerhalb einer Agentur erhält der Mitarbeiter mit den wenigsten Leads im aktuellen Monat den nächsten Lead',
+  ]},
   { version: '2.48.0', date: '21.04.2026', changes: [
     'Pull-Sync «Aus SSM Portal synchronisieren»: Neuer Button auf der Mitarbeiter-Seite (nur Superadmins) für manuellen Vollabgleich aller dem Projekt zugewiesenen Benutzer aus dem zentralen SSM Partner Portal',
     'Edge Function `sync-employees-from-sso`: Ruft die zentrale Action `list_project_users` (geschützt via `x-sso-api-key`) auf und legt fehlende Auth-Benutzer, Profile, Rollen und Mitarbeiter automatisch an',
