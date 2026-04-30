@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, LogOut, PanelLeftClose, PanelLeft, HelpCircle, Bot, ChevronDown, ChevronRight, Activity, Cog, TrendingUp, BookOpen, FileSearch } from 'lucide-react';
+import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, LogOut, PanelLeftClose, PanelLeft, HelpCircle, Bot, ChevronDown, ChevronRight, Activity, Cog, TrendingUp, BookOpen, FileSearch, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSidebarState } from '@/context/SidebarContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -31,6 +31,7 @@ const allBottomItems = [
   { to: '/processes', icon: Workflow, label: 'Prozesse', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
   { to: '/api-docs', icon: Code2, label: 'API-Dokumentation', roles: ['superadmin', 'admin'] as string[], excludeRoles: [] as string[] },
   { to: '/documentation', icon: FileText, label: 'Dokumentation', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
+  { to: '/feedback', icon: MessageSquare, label: 'Feedback', roles: null, excludeRoles: [] as string[] },
   { to: '/help', icon: HelpCircle, label: 'Hilfe-Center', roles: null, excludeRoles: [] as string[] },
 ];
 

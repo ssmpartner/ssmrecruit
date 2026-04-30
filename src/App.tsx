@@ -24,6 +24,7 @@ const Tasks = lazy(() => import("./pages/Tasks"));
 const ApiDocs = lazy(() => import("./pages/ApiDocs"));
 const Documentation = lazy(() => import("./pages/Documentation"));
 const HelpCenter = lazy(() => import("./pages/HelpCenter"));
+const Feedback = lazy(() => import("./pages/Feedback"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));
 const InsightsFormPage = lazy(() => import("./pages/InsightsFormPage"));
@@ -147,6 +148,7 @@ const App = () => (
                 <Route path="/api-docs" element={<P><ApiDocs /></P>} />
                 <Route path="/documentation" element={<P><Documentation /></P>} />
                 <Route path="/help" element={<P><HelpCenter /></P>} />
+                <Route path="/feedback" element={<P><Feedback /></P>} />
 
                 {/* AI Voice Agent – 6 Hauptbereiche mit Tabs */}
                 <Route path="/ai-voice" element={<P><AIVoiceAgent /></P>}>
