@@ -351,6 +351,10 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
     setNoNeedReason('no_position');
     setMatchingFailed(true);
     setMatchingReason('');
+    setUnsuitableLanguages([]);
+    setUnsuitableRegisters([]);
+    setUnsuitableAgeTooYoung(false);
+    setUnsuitableAge('');
     setInternalConfirmed(false);
   };
 
