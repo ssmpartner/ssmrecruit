@@ -366,8 +366,7 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
               <label className="text-xs font-medium text-muted-foreground">Ergebnis</label>
               <select value={contactResult} onChange={e => setContactResult(e.target.value)} className={cn(inputCls, 'mt-1')}>
                 <option value="appointment">Termin vereinbart</option>
-                <option value="reached_no_appointment">Erreicht ohne Termin</option>
-                <option value="completed">Kontakt abgeschlossen</option>
+                <option value="reached_no_appointment">Erreicht ohne Termin (→ Rückruf)</option>
               </select>
             </div>
 
