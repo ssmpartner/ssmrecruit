@@ -55,9 +55,9 @@ function FullScreenLoader() {
 }
 
 const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
-  controlling: ['/', '/leads', '/help'],
-  geschaeftsleitung: ['/', '/leads', '/help'],
-  hr: ['/', '/leads', '/help'],
+  controlling: ['/', '/leads', '/help', '/feedback'],
+  geschaeftsleitung: ['/', '/leads', '/help', '/feedback'],
+  hr: ['/', '/leads', '/help', '/feedback'],
 };
 
 // Routes blocked for backoffice role (agency-scoped users)
