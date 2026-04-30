@@ -271,6 +271,8 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             reminder: 'Erinnerung', attempt: 'Versuch', reason: 'Grund',
             attempts: 'Versuche', matching_failed: 'Matching fehlgeschlagen',
             confirmed: 'Bestätigt', escalated: 'Eskaliert',
+            languages: 'Sprache(n) nicht passend', registers: 'Register-Einträge',
+            age_too_young: 'Zu jung', age: 'Alter', reactivatable: 'Später reaktivierbar',
           };
           return `${labels[k] || k}: ${v}`;
         })
