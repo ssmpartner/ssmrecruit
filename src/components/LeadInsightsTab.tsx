@@ -170,9 +170,10 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
   }, [leadId, leadName, toast]);
 
   const hasDisc = discResults.some(d => d.leadId === leadId);
+  const hasAssessment = assessments.length > 0;
   const completedInsights = insightsRequests.filter(r => r.status === 'completed');
   const pendingInsights = insightsRequests.filter(r => r.status !== 'completed');
-  const hasAnyResults = hasDisc || completedInsights.length > 0;
+  const hasAnyResults = hasDisc || hasAssessment || completedInsights.length > 0;
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
 
