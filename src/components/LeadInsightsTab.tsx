@@ -284,8 +284,8 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
         </div>
       )}
 
-      {/* ── DISC Results ── */}
-      {hasDisc && (
+      {/* ── DISC Results / Assessment ── */}
+      {(hasDisc || hasAssessment) && (
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <Brain className="h-4 w-4 text-primary" />
