@@ -34,6 +34,11 @@ interface AppointmentSuggestion {
   responded_at: string | null;
 }
 
+interface AssessmentSummary {
+  id: string;
+  completed_at: string;
+}
+
 const insightsQuestionLabels: Record<string, string> = {
   motivation: 'Motivation',
   experience: 'Erfahrung',
@@ -49,6 +54,7 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
   const [loading, setLoading] = useState(true);
   const [insightsRequests, setInsightsRequests] = useState<InsightsRequest[]>([]);
   const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
+  const [assessments, setAssessments] = useState<AssessmentSummary[]>([]);
   const [expandedInsights, setExpandedInsights] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState('');
   const [sendingLink, setSendingLink] = useState(false);
@@ -61,17 +67,20 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
     const ch = supabase.channel(`insights-tab-${leadId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'insights_requests', filter: `lead_id=eq.${leadId}` }, () => loadData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointment_suggestions', filter: `lead_id=eq.${leadId}` }, () => loadData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'assessment_results', filter: `lead_id=eq.${leadId}` }, () => loadData())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [leadId]);
 
   async function loadData() {
-    const [insRes, sugRes] = await Promise.all([
+    const [insRes, sugRes, assRes] = await Promise.all([
       supabase.from('insights_requests').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }),
       supabase.from('appointment_suggestions').select('*').eq('lead_id', leadId).order('suggested_date', { ascending: true }),
+      supabase.from('assessment_results').select('id, completed_at').eq('lead_id', leadId).order('completed_at', { ascending: false }),
     ]);
     if (insRes.data) setInsightsRequests(insRes.data as any[]);
     if (sugRes.data) setAppointmentSuggestions(sugRes.data as any[]);
+    if (assRes.data) setAssessments(assRes.data as any[]);
     setLoading(false);
   }
 
@@ -161,9 +170,10 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
   }, [leadId, leadName, toast]);
 
   const hasDisc = discResults.some(d => d.leadId === leadId);
+  const hasAssessment = assessments.length > 0;
   const completedInsights = insightsRequests.filter(r => r.status === 'completed');
   const pendingInsights = insightsRequests.filter(r => r.status !== 'completed');
-  const hasAnyResults = hasDisc || completedInsights.length > 0;
+  const hasAnyResults = hasDisc || hasAssessment || completedInsights.length > 0;
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
 
@@ -274,8 +284,8 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
         </div>
       )}
 
-      {/* ── DISC Results ── */}
-      {hasDisc && (
+      {/* ── DISC Results / Assessment ── */}
+      {(hasDisc || hasAssessment) && (
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <Brain className="h-4 w-4 text-primary" />
@@ -362,7 +372,7 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
       )}
 
       {/* ── Empty State ── */}
-      {!hasDisc && completedInsights.length === 0 && pendingInsights.length === 0 && appointmentSuggestions.length === 0 && (
+      {!hasDisc && !hasAssessment && completedInsights.length === 0 && pendingInsights.length === 0 && appointmentSuggestions.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <Brain className="h-10 w-10 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground">Noch keine Insights vorhanden</p>
