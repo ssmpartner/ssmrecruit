@@ -34,6 +34,11 @@ interface AppointmentSuggestion {
   responded_at: string | null;
 }
 
+interface AssessmentSummary {
+  id: string;
+  completed_at: string;
+}
+
 const insightsQuestionLabels: Record<string, string> = {
   motivation: 'Motivation',
   experience: 'Erfahrung',
