@@ -54,6 +54,7 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
   const [loading, setLoading] = useState(true);
   const [insightsRequests, setInsightsRequests] = useState<InsightsRequest[]>([]);
   const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
+  const [assessments, setAssessments] = useState<AssessmentSummary[]>([]);
   const [expandedInsights, setExpandedInsights] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState('');
   const [sendingLink, setSendingLink] = useState(false);
@@ -66,17 +67,20 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
     const ch = supabase.channel(`insights-tab-${leadId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'insights_requests', filter: `lead_id=eq.${leadId}` }, () => loadData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointment_suggestions', filter: `lead_id=eq.${leadId}` }, () => loadData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'assessment_results', filter: `lead_id=eq.${leadId}` }, () => loadData())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [leadId]);
 
   async function loadData() {
-    const [insRes, sugRes] = await Promise.all([
+    const [insRes, sugRes, assRes] = await Promise.all([
       supabase.from('insights_requests').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }),
       supabase.from('appointment_suggestions').select('*').eq('lead_id', leadId).order('suggested_date', { ascending: true }),
+      supabase.from('assessment_results').select('id, completed_at').eq('lead_id', leadId).order('completed_at', { ascending: false }),
     ]);
     if (insRes.data) setInsightsRequests(insRes.data as any[]);
     if (sugRes.data) setAppointmentSuggestions(sugRes.data as any[]);
+    if (assRes.data) setAssessments(assRes.data as any[]);
     setLoading(false);
   }
 
