@@ -372,7 +372,7 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
       )}
 
       {/* ── Empty State ── */}
-      {!hasDisc && completedInsights.length === 0 && pendingInsights.length === 0 && appointmentSuggestions.length === 0 && (
+      {!hasDisc && !hasAssessment && completedInsights.length === 0 && pendingInsights.length === 0 && appointmentSuggestions.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <Brain className="h-10 w-10 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground">Noch keine Insights vorhanden</p>
