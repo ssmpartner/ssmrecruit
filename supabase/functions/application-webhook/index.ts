@@ -275,7 +275,7 @@ serve(async (req) => {
 
     if (error) {
       console.error('Error inserting application:', error);
-      throw new Error(`Bewerbung konnte nicht gespeichert werden: ${error.message}`);
+      throw new Error('APPLICATION_INSERT_FAILED');
     }
 
     // 6. Create lead from application
