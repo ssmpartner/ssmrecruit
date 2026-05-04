@@ -60,7 +60,7 @@ function SuggestionDropdown({ items, onSelect, visible }: { items: { label: stri
 
 export default function AddLeadDialog({ open: controlledOpen, onOpenChange: controlledOnOpenChange }: { open?: boolean; onOpenChange?: (open: boolean) => void } = {}) {
   const { addLead, agencies, employees, addAppointment, leads, leadSources } = useLeads();
-  const { profile, isSuperadmin } = useAuth();
+  const { profile, isSuperadmin, user } = useAuth();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen ?? internalOpen;
   const setOpen = controlledOnOpenChange ?? setInternalOpen;
@@ -68,6 +68,26 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
   const [form, setForm] = useState<FormState>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [createdLeadId, setCreatedLeadId] = useState<string | null>(null);
+
+  // Resolve current user's employee record (used to auto-assign for non-superadmins
+  // so manually created leads always land in their own scope and stay findable).
+  const myEmployee = useMemo(() => {
+    const userEmail = (user?.email || '').toLowerCase();
+    if (!userEmail) return undefined;
+    return employees.find(e => (e.email || '').toLowerCase() === userEmail);
+  }, [employees, user]);
+
+  // Auto-fill agency + employee for non-superadmins whenever the dialog opens
+  // or the employee record becomes available.
+  useEffect(() => {
+    if (!open) return;
+    if (isSuperadmin) return;
+    if (!myEmployee) return;
+    setForm(prev => {
+      if (prev.agencyId === myEmployee.agencyId && prev.employeeId === myEmployee.id) return prev;
+      return { ...prev, agencyId: myEmployee.agencyId, employeeId: myEmployee.id };
+    });
+  }, [open, isSuperadmin, myEmployee]);
 
   // Suggestion states
   const [plzFocused, setPlzFocused] = useState(false);
@@ -336,19 +356,35 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Agentur *</label>
-                  <select value={form.agencyId} onChange={e => set('agencyId', e.target.value)} className={inputCls('agencyId')}>
+                  <select
+                    value={form.agencyId}
+                    onChange={e => set('agencyId', e.target.value)}
+                    className={inputCls('agencyId') + (!isSuperadmin ? ' opacity-70 cursor-not-allowed' : '')}
+                    disabled={!isSuperadmin}
+                  >
                     <option value="">Wählen…</option>
                     {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </select>
                   {errors.agencyId && <p className="text-xs text-destructive mt-0.5">{errors.agencyId}</p>}
+                  {!isSuperadmin && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Automatisch deine Agentur</p>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Mitarbeiter *</label>
-                  <select value={form.employeeId} onChange={e => set('employeeId', e.target.value)} className={inputCls('employeeId')}>
+                  <select
+                    value={form.employeeId}
+                    onChange={e => set('employeeId', e.target.value)}
+                    className={inputCls('employeeId') + (!isSuperadmin ? ' opacity-70 cursor-not-allowed' : '')}
+                    disabled={!isSuperadmin}
+                  >
                     <option value="">Wählen…</option>
                     {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                   </select>
                   {errors.employeeId && <p className="text-xs text-destructive mt-0.5">{errors.employeeId}</p>}
+                  {!isSuperadmin && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Automatisch dir zugewiesen</p>
+                  )}
                 </div>
               </div>
               <div>
