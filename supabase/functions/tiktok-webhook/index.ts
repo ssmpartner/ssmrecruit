@@ -252,7 +252,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('TikTok webhook error:', error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
+    return new Response(JSON.stringify({ error: 'Interner Fehler. Bitte versuchen Sie es erneut.' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
