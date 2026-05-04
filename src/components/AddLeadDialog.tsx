@@ -60,7 +60,7 @@ function SuggestionDropdown({ items, onSelect, visible }: { items: { label: stri
 
 export default function AddLeadDialog({ open: controlledOpen, onOpenChange: controlledOnOpenChange }: { open?: boolean; onOpenChange?: (open: boolean) => void } = {}) {
   const { addLead, agencies, employees, addAppointment, leads, leadSources } = useLeads();
-  const { profile, isSuperadmin } = useAuth();
+  const { profile, isSuperadmin, user } = useAuth();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen ?? internalOpen;
   const setOpen = controlledOnOpenChange ?? setInternalOpen;
@@ -68,6 +68,26 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
   const [form, setForm] = useState<FormState>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [createdLeadId, setCreatedLeadId] = useState<string | null>(null);
+
+  // Resolve current user's employee record (used to auto-assign for non-superadmins
+  // so manually created leads always land in their own scope and stay findable).
+  const myEmployee = useMemo(() => {
+    const userEmail = (user?.email || '').toLowerCase();
+    if (!userEmail) return undefined;
+    return employees.find(e => (e.email || '').toLowerCase() === userEmail);
+  }, [employees, user]);
+
+  // Auto-fill agency + employee for non-superadmins whenever the dialog opens
+  // or the employee record becomes available.
+  useEffect(() => {
+    if (!open) return;
+    if (isSuperadmin) return;
+    if (!myEmployee) return;
+    setForm(prev => {
+      if (prev.agencyId === myEmployee.agencyId && prev.employeeId === myEmployee.id) return prev;
+      return { ...prev, agencyId: myEmployee.agencyId, employeeId: myEmployee.id };
+    });
+  }, [open, isSuperadmin, myEmployee]);
 
   // Suggestion states
   const [plzFocused, setPlzFocused] = useState(false);
