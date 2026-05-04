@@ -210,7 +210,7 @@ serve(async (req) => {
 
     if (error) {
       console.error('Error inserting form lead:', error);
-      throw new Error(`Lead konnte nicht gespeichert werden: ${error.message}`);
+      throw new Error('LEAD_INSERT_FAILED');
     }
 
     await supabase.from('activities').insert({
