@@ -90,8 +90,51 @@ serve(async (req) => {
       return new Response('Verification failed', { status: 403, headers: corsHeaders });
     }
 
-    const body = await req.json();
-    console.log('TikTok webhook payload:', JSON.stringify(body));
+    // Read raw body for signature verification
+    const rawBody = await req.text();
+
+    // Verify HMAC-SHA256 signature when TIKTOK_WEBHOOK_SECRET is configured.
+    // TikTok's signature header name varies by integration; accept the common variants.
+    const webhookSecret = Deno.env.get('TIKTOK_WEBHOOK_SECRET');
+    if (webhookSecret) {
+      const sigHeader =
+        req.headers.get('x-tt-signature') ||
+        req.headers.get('x-tiktok-signature') ||
+        req.headers.get('x-signature') ||
+        '';
+      const provided = sigHeader.startsWith('sha256=') ? sigHeader.slice(7) : sigHeader;
+      if (!provided) {
+        console.warn('TikTok webhook: missing signature header');
+        return new Response(JSON.stringify({ error: 'Missing signature' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const enc = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        'raw', enc.encode(webhookSecret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+      );
+      const sigBuf = await crypto.subtle.sign('HMAC', key, enc.encode(rawBody));
+      const expected = Array.from(new Uint8Array(sigBuf))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+      // Constant-time comparison
+      if (expected.length !== provided.length) {
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      let diff = 0;
+      for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ provided.charCodeAt(i);
+      if (diff !== 0) {
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    } else {
+      console.warn('TikTok webhook: TIKTOK_WEBHOOK_SECRET not configured — signature verification disabled');
+    }
+
+    const body = JSON.parse(rawBody);
+    console.log('TikTok webhook payload received');
 
     const leads: Array<{ name?: string; email?: string; phone?: string; city?: string; plz?: string; [key: string]: unknown }> = [];
 
