@@ -210,7 +210,7 @@ serve(async (req) => {
 
     if (error) {
       console.error('Error inserting form lead:', error);
-      throw new Error(`Lead konnte nicht gespeichert werden: ${error.message}`);
+      throw new Error('LEAD_INSERT_FAILED');
     }
 
     await supabase.from('activities').insert({
@@ -240,7 +240,7 @@ serve(async (req) => {
     }), { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('Form webhook error:', error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
+    return new Response(JSON.stringify({ error: 'Interner Fehler. Bitte versuchen Sie es erneut.' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

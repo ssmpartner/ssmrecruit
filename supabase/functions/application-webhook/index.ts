@@ -275,7 +275,7 @@ serve(async (req) => {
 
     if (error) {
       console.error('Error inserting application:', error);
-      throw new Error(`Bewerbung konnte nicht gespeichert werden: ${error.message}`);
+      throw new Error('APPLICATION_INSERT_FAILED');
     }
 
     // 6. Create lead from application
@@ -405,7 +405,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Application webhook error:', error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
+    return new Response(JSON.stringify({ error: 'Interner Fehler. Bitte versuchen Sie es erneut.' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
