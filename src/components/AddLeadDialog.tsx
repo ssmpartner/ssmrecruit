@@ -356,19 +356,35 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Agentur *</label>
-                  <select value={form.agencyId} onChange={e => set('agencyId', e.target.value)} className={inputCls('agencyId')}>
+                  <select
+                    value={form.agencyId}
+                    onChange={e => set('agencyId', e.target.value)}
+                    className={inputCls('agencyId') + (!isSuperadmin ? ' opacity-70 cursor-not-allowed' : '')}
+                    disabled={!isSuperadmin}
+                  >
                     <option value="">Wählen…</option>
                     {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </select>
                   {errors.agencyId && <p className="text-xs text-destructive mt-0.5">{errors.agencyId}</p>}
+                  {!isSuperadmin && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Automatisch deine Agentur</p>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Mitarbeiter *</label>
-                  <select value={form.employeeId} onChange={e => set('employeeId', e.target.value)} className={inputCls('employeeId')}>
+                  <select
+                    value={form.employeeId}
+                    onChange={e => set('employeeId', e.target.value)}
+                    className={inputCls('employeeId') + (!isSuperadmin ? ' opacity-70 cursor-not-allowed' : '')}
+                    disabled={!isSuperadmin}
+                  >
                     <option value="">Wählen…</option>
                     {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                   </select>
                   {errors.employeeId && <p className="text-xs text-destructive mt-0.5">{errors.employeeId}</p>}
+                  {!isSuperadmin && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Automatisch dir zugewiesen</p>
+                  )}
                 </div>
               </div>
               <div>
