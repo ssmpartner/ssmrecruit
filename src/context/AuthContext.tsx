@@ -95,11 +95,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // 1. Restore session from storage first
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session && isPreviewBypassEnabled()) {
-        applyPreviewBypass();
-        setLoading(false);
-        return;
-      }
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -110,10 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // 2. Listen for subsequent auth changes (sign in/out) — no await inside!
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session && isPreviewBypassEnabled()) {
-        applyPreviewBypass();
-        return;
-      }
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
