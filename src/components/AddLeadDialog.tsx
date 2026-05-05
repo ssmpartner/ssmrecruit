@@ -267,7 +267,7 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
               <div className="grid grid-cols-[120px_1fr] gap-3">
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Anrede</label>
-                  <select value={form.position} onChange={e => set('position', e.target.value)} className="h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                  <select value={form.salutation} onChange={e => set('salutation', e.target.value)} className="h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
                     <option value="">–</option>
                     <option value="Herr">Herr</option>
                     <option value="Frau">Frau</option>
