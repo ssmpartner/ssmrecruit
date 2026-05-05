@@ -291,7 +291,10 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
                 </div>
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Strasse / Nr.</label>
+                <label className="text-xs font-medium text-muted-foreground">Geburtsdatum (optional)</label>
+                <input type="date" value={form.birthDate} onChange={e => set('birthDate', e.target.value)}
+                  className={fieldCls} max={new Date().toISOString().slice(0, 10)} />
+              </div>
                 <AddressAutocomplete
                   value={form.address}
                   onChange={val => set('address', val)}
