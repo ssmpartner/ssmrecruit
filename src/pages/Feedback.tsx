@@ -251,7 +251,22 @@ export default function Feedback() {
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Beschreibung</label>
-                <Textarea value={description} onChange={e => setDescription(e.target.value)} maxLength={4000} rows={6} placeholder="Was wünschst du dir? Was funktioniert nicht?" />
+                <Textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  onPaste={async (e) => {
+                    const files = Array.from(e.clipboardData.files);
+                    if (files.length === 0) return;
+                    e.preventDefault();
+                    setUploadingNew(true);
+                    const up = await uploadFiles(files);
+                    setFeedbackAttachments(prev => [...prev, ...up]);
+                    setUploadingNew(false);
+                  }}
+                  maxLength={4000}
+                  rows={6}
+                  placeholder="Was wünschst du dir? Was funktioniert nicht? (Tipp: Screenshot mit Strg+V einfügen)"
+                />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
