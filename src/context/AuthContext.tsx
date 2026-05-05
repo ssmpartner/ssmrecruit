@@ -36,30 +36,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const isPreviewBypassEnabled = () => {
-  if (typeof window === 'undefined') return false;
-  const hostname = window.location.hostname;
-  return hostname.includes('lovableproject.com') || hostname.startsWith('id-preview--') || hostname === 'localhost' || hostname === '127.0.0.1';
-};
-
-const PREVIEW_USER_ID = '00000000-0000-4000-8000-000000000001';
-const PREVIEW_USER = {
-  id: PREVIEW_USER_ID,
-  aud: 'authenticated',
-  role: 'authenticated',
-  email: 'preview@ssmpartner.ch',
-  app_metadata: {},
-  user_metadata: { display_name: 'Preview Admin' },
-  created_at: new Date(0).toISOString(),
-  updated_at: new Date(0).toISOString(),
-} as unknown as User;
-
-const PREVIEW_PROFILE: Profile = {
-  id: PREVIEW_USER_ID,
-  display_name: 'Preview Admin',
-  avatar_url: null,
-};
-
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
