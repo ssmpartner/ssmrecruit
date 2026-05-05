@@ -123,7 +123,7 @@ export default function LeadDetailSheet() {
       position: selectedLead.position, address: selectedLead.address, plz: selectedLead.plz,
       city: selectedLead.city, canton: selectedLead.canton, cantonCode: selectedLead.cantonCode,
       notes: selectedLead.notes, source: selectedLead.source, createdAt: selectedLead.createdAt,
-      altEmail: selectedLead.altEmail || '', altPhone: selectedLead.altPhone || '',
+      altEmail: selectedLead.altEmail || '', altPhone: selectedLead.altPhone || '', birthDate: selectedLead.birthDate || '',
     });
     setEditing(true);
   };
