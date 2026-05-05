@@ -183,17 +183,50 @@ export default function Feedback() {
   async function addComment(feedbackId: string, asOfficial = false) {
     if (!user) return;
     const text = (commentDrafts[feedbackId] ?? '').trim();
-    if (!text) return;
+    const atts = commentAttachments[feedbackId] ?? [];
+    if (!text && atts.length === 0) return;
     const { error } = await supabase.from('feedback_comments').insert({
       feedback_id: feedbackId,
       comment: text.slice(0, 2000),
       is_official: asOfficial && isSuperadmin,
       created_by_user_id: user.id,
       created_by_name: userName,
+      attachments: atts,
     });
     if (error) { toast.error('Kommentar fehlgeschlagen'); return; }
     setCommentDrafts(d => ({ ...d, [feedbackId]: '' }));
+    setCommentAttachments(a => ({ ...a, [feedbackId]: [] }));
     load();
+  }
+
+  function AttachmentPreview({ items, onRemove }: { items: Attachment[]; onRemove?: (i: number) => void }) {
+    if (!items || items.length === 0) return null;
+    return (
+      <div className="flex flex-wrap gap-2 mt-2">
+        {items.map((a, i) => {
+          const isImg = a.type?.startsWith('image/');
+          return (
+            <div key={i} className="relative group border rounded-md overflow-hidden bg-muted/30">
+              {isImg ? (
+                <a href={a.url} target="_blank" rel="noreferrer">
+                  <img src={a.url} alt={a.name} className="h-20 w-20 object-cover" />
+                </a>
+              ) : (
+                <a href={a.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 px-2 py-2 text-xs">
+                  <Paperclip className="h-3 w-3" />{a.name}
+                </a>
+              )}
+              {onRemove && (
+                <button type="button" onClick={() => onRemove(i)}
+                  className="absolute top-0.5 right-0.5 bg-background/90 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition">
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
   }
 
   const filtered = filter === 'all' ? feedbacks : feedbacks.filter(f => f.status === filter);
