@@ -15,6 +15,7 @@ const SWISS_PHONE_REGEX = /^\+41\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
 interface FormState {
   name: string;
+  salutation: string;
   email: string;
   phone: string;
   address: string;
@@ -31,7 +32,7 @@ interface FormState {
 }
 
 const emptyForm: FormState = {
-  name: '', email: '', phone: '+41 ', address: '', plz: '', city: '', canton: '', cantonCode: '',
+  name: '', salutation: '', email: '', phone: '+41 ', address: '', plz: '', city: '', canton: '', cantonCode: '',
   position: '', source: 'website', notes: '', agencyId: '', employeeId: '', birthDate: '',
 };
 
