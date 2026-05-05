@@ -150,21 +150,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hostname === 'localhost' ||
         hostname === '127.0.0.1';
 
-      // In Preview/Dev: try direct login first; if the local password is stale,
-      // sync once via central SSO and then retry the local session login.
+      // In Preview/Dev: keep authentication local only. Calling the central SSO
+      // proxy here can raise a 400 runtime error in the preview when SSO rejects
+      // developer credentials, even though the local backend login is the source
+      // of truth for preview access.
       if (isPreview) {
-        const firstAttempt = await supabase.auth.signInWithPassword({ email, password });
-        if (!firstAttempt.error) return { error: null };
-
-        const raw = (firstAttempt.error.message || '').toLowerCase();
-        const isInvalidCredentials = raw.includes('invalid') || raw.includes('credentials');
-        if (!isInvalidCredentials) return { error: firstAttempt.error };
-
-        const syncResult = await syncSsoUser(email, password);
-        if (syncResult.error) return syncResult;
-
-        const retryAttempt = await supabase.auth.signInWithPassword({ email, password });
-        return { error: retryAttempt.error };
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        return { error };
       }
 
       // Production: verify via SSO proxy first
