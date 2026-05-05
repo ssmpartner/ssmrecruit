@@ -85,6 +85,8 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
   const [unsuitableAgeTooOld, setUnsuitableAgeTooOld] = useState(false);
   const [unsuitableAge, setUnsuitableAge] = useState('');
   const [unsuitableBirthdate, setUnsuitableBirthdate] = useState('');
+  const [unsuitableNoLeads, setUnsuitableNoLeads] = useState(false);
+  const [unsuitableNoNetwork, setUnsuitableNoNetwork] = useState(false);
 
   // Internal wizard
   const [internalConfirmed, setInternalConfirmed] = useState(false);
