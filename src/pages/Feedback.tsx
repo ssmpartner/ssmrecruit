@@ -273,6 +273,28 @@ export default function Feedback() {
                   </Select>
                 </div>
               </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Anhänge / Screenshots (optional)</label>
+                <label className="inline-flex items-center gap-2 cursor-pointer rounded-md border border-dashed px-3 py-2 text-xs hover:bg-muted/50">
+                  <ImageIcon className="h-4 w-4" />
+                  {uploadingNew ? 'Lade hoch…' : 'Dateien wählen oder einfügen (Bilder, PDF…)'}
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,application/pdf"
+                    className="hidden"
+                    onChange={async (e) => {
+                      if (!e.target.files?.length) return;
+                      setUploadingNew(true);
+                      const up = await uploadFiles(e.target.files);
+                      setFeedbackAttachments(prev => [...prev, ...up]);
+                      setUploadingNew(false);
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+                <AttachmentPreview items={feedbackAttachments} onRemove={(i) => setFeedbackAttachments(prev => prev.filter((_, idx) => idx !== i))} />
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Abbrechen</Button>
