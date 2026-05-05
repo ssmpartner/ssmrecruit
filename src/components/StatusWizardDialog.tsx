@@ -82,7 +82,9 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
   const [unsuitableLanguages, setUnsuitableLanguages] = useState<string[]>([]);
   const [unsuitableRegisters, setUnsuitableRegisters] = useState<string[]>([]);
   const [unsuitableAgeTooYoung, setUnsuitableAgeTooYoung] = useState(false);
+  const [unsuitableAgeTooOld, setUnsuitableAgeTooOld] = useState(false);
   const [unsuitableAge, setUnsuitableAge] = useState('');
+  const [unsuitableBirthdate, setUnsuitableBirthdate] = useState('');
 
   // Internal wizard
   const [internalConfirmed, setInternalConfirmed] = useState(false);
@@ -227,8 +229,14 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           if (unsuitableRegisters.length > 0) answers.registers = unsuitableRegisters;
           if (unsuitableAgeTooYoung) {
             answers.age_too_young = true;
-            if (unsuitableAge.trim()) answers.age = unsuitableAge.trim();
             answers.reactivatable = true;
+          }
+          if (unsuitableAgeTooOld) {
+            answers.age_too_old = true;
+          }
+          if ((unsuitableAgeTooYoung || unsuitableAgeTooOld)) {
+            if (unsuitableAge.trim()) answers.age = unsuitableAge.trim();
+            if (unsuitableBirthdate.trim()) answers.birthdate = unsuitableBirthdate.trim();
           }
           newStatus = 'not_suitable';
           break;
@@ -272,7 +280,7 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             attempts: 'Versuche', matching_failed: 'Matching fehlgeschlagen',
             confirmed: 'Bestätigt', escalated: 'Eskaliert',
             languages: 'Sprache(n) nicht passend', registers: 'Register-Einträge',
-            age_too_young: 'Zu jung', age: 'Alter', reactivatable: 'Später reaktivierbar',
+            age_too_young: 'Zu jung', age_too_old: 'Zu alt', age: 'Alter', birthdate: 'Geburtsdatum', reactivatable: 'Später reaktivierbar',
           };
           return `${labels[k] || k}: ${v}`;
         })
@@ -354,7 +362,9 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
     setUnsuitableLanguages([]);
     setUnsuitableRegisters([]);
     setUnsuitableAgeTooYoung(false);
+    setUnsuitableAgeTooOld(false);
     setUnsuitableAge('');
+    setUnsuitableBirthdate('');
     setInternalConfirmed(false);
   };
 
@@ -602,15 +612,36 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             </div>
 
             <div className="rounded-md border bg-muted/30 p-2.5 space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer text-sm">
-                <input type="checkbox" checked={unsuitableAgeTooYoung}
-                  onChange={e => setUnsuitableAgeTooYoung(e.target.checked)}
-                  className="h-4 w-4 rounded border-input" />
-                Zu jung
-              </label>
-              {unsuitableAgeTooYoung && (
-                <input type="text" value={unsuitableAge} onChange={e => setUnsuitableAge(e.target.value)}
-                  placeholder="Alter (z.B. 17)" className={inputCls} />
+              <p className="text-xs font-medium text-muted-foreground">Alter (optional)</p>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <input type="checkbox" checked={unsuitableAgeTooYoung}
+                    onChange={e => setUnsuitableAgeTooYoung(e.target.checked)}
+                    className="h-4 w-4 rounded border-input" />
+                  Zu jung
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <input type="checkbox" checked={unsuitableAgeTooOld}
+                    onChange={e => setUnsuitableAgeTooOld(e.target.checked)}
+                    className="h-4 w-4 rounded border-input" />
+                  Zu alt
+                </label>
+              </div>
+              {(unsuitableAgeTooYoung || unsuitableAgeTooOld) && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Alter</label>
+                    <input type="number" min="0" max="120" value={unsuitableAge}
+                      onChange={e => setUnsuitableAge(e.target.value)}
+                      placeholder="z.B. 17" className={cn(inputCls, 'mt-1')} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Geburtsdatum</label>
+                    <input type="date" value={unsuitableBirthdate}
+                      onChange={e => setUnsuitableBirthdate(e.target.value)}
+                      className={cn(inputCls, 'mt-1')} />
+                  </div>
+                </div>
               )}
             </div>
 
