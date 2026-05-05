@@ -15,6 +15,7 @@ const SWISS_PHONE_REGEX = /^\+41\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
 interface FormState {
   name: string;
+  salutation: string;
   email: string;
   phone: string;
   address: string;
@@ -31,7 +32,7 @@ interface FormState {
 }
 
 const emptyForm: FormState = {
-  name: '', email: '', phone: '+41 ', address: '', plz: '', city: '', canton: '', cantonCode: '',
+  name: '', salutation: '', email: '', phone: '+41 ', address: '', plz: '', city: '', canton: '', cantonCode: '',
   position: '', source: 'website', notes: '', agencyId: '', employeeId: '', birthDate: '',
 };
 
@@ -172,6 +173,19 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
     }
   }, [set]);
 
+  // Auto-fill canton (and PLZ if unique) when user enters/leaves the city field
+  const autofillFromCity = useCallback((cityValue: string) => {
+    const v = cityValue.trim().toLowerCase();
+    if (!v) return;
+    const matches = swissLocations.filter(l => l.city.toLowerCase() === v);
+    if (matches.length === 0) return;
+    setForm(prev => {
+      const next = { ...prev, city: matches[0].city, canton: matches[0].canton, cantonCode: matches[0].cantonCode };
+      if (!prev.plz && matches.length === 1) next.plz = matches[0].plz;
+      return next;
+    });
+  }, []);
+
   const validate = (): boolean => {
     const errs: Partial<Record<keyof FormState, string>> = {};
     if (!form.name.trim()) errs.name = 'Name ist erforderlich';
@@ -190,7 +204,7 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
     if (!validate()) return;
     addLead({
       name: form.name.trim(),
-      salutation: '',
+      salutation: form.salutation,
       email: form.email.trim(),
       phone: form.phone.trim(),
       address: form.address.trim(),
@@ -266,7 +280,7 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
               <div className="grid grid-cols-[120px_1fr] gap-3">
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Anrede</label>
-                  <select value={form.position} onChange={e => set('position', e.target.value)} className="h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                  <select value={form.salutation} onChange={e => set('salutation', e.target.value)} className="h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
                     <option value="">–</option>
                     <option value="Herr">Herr</option>
                     <option value="Frau">Frau</option>
@@ -328,7 +342,8 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
                 <div className="relative">
                   <label className="text-xs font-medium text-muted-foreground">Ort</label>
                   <input value={form.city} onChange={e => set('city', e.target.value)}
-                    onFocus={() => setCityFocused(true)} onBlur={() => setTimeout(() => setCityFocused(false), 150)}
+                    onFocus={() => setCityFocused(true)}
+                    onBlur={() => { setTimeout(() => setCityFocused(false), 150); autofillFromCity(form.city); }}
                     className={inputCls('city')} placeholder="Zürich" maxLength={100} autoComplete="off" />
                   {errors.city && <p className="text-xs text-destructive mt-0.5">{errors.city}</p>}
                   <SuggestionDropdown visible={cityFocused && citySuggestions.length > 0 && form.city.length >= 1}
