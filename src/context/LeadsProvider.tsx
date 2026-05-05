@@ -50,6 +50,7 @@ function dbToLead(row: any): Lead {
     assignedApproverRole: row.assigned_approver_role || '',
     altEmail: row.alt_email || '',
     altPhone: row.alt_phone || '',
+    birthDate: row.birth_date || '',
   };
 }
 
@@ -318,6 +319,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.assignedApproverRole !== undefined) dbUpdates.assigned_approver_role = updates.assignedApproverRole;
     if (updates.altEmail !== undefined) dbUpdates.alt_email = updates.altEmail;
     if (updates.altPhone !== undefined) dbUpdates.alt_phone = updates.altPhone;
+    if (updates.birthDate !== undefined) dbUpdates.birth_date = updates.birthDate || null;
     dbUpdates.updated_at = updatedAt;
 
     await supabase.from('leads').update(dbUpdates).eq('id', id);
@@ -477,6 +479,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       notes: leadData.notes,
       campaign: leadData.campaign || '',
       lead_lifecycle: leadData.lifecycle || 'active',
+      birth_date: leadData.birthDate || null,
     });
   }, [addActivity, addNotification, checkForDuplicates]);
 

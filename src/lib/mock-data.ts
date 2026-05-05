@@ -66,6 +66,7 @@ export interface Lead {
   assignedApproverRole?: string;
   altEmail?: string;
   altPhone?: string;
+  birthDate?: string;
 }
 
 export interface Appointment {

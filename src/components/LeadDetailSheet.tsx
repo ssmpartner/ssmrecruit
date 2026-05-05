@@ -54,7 +54,7 @@ export default function LeadDetailSheet() {
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
   const [showPlzDropdown, setShowPlzDropdown] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [form, setForm] = useState({ name: '', salutation: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '', altEmail: '', altPhone: '' });
+  const [form, setForm] = useState({ name: '', salutation: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '', altEmail: '', altPhone: '', birthDate: '' });
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
@@ -123,7 +123,7 @@ export default function LeadDetailSheet() {
       position: selectedLead.position, address: selectedLead.address, plz: selectedLead.plz,
       city: selectedLead.city, canton: selectedLead.canton, cantonCode: selectedLead.cantonCode,
       notes: selectedLead.notes, source: selectedLead.source, createdAt: selectedLead.createdAt,
-      altEmail: selectedLead.altEmail || '', altPhone: selectedLead.altPhone || '',
+      altEmail: selectedLead.altEmail || '', altPhone: selectedLead.altPhone || '', birthDate: selectedLead.birthDate || '',
     });
     setEditing(true);
   };
@@ -595,6 +595,12 @@ export default function LeadDetailSheet() {
                               </div>
                             )}
                             <div>
+                              <label className="text-sm text-muted-foreground">Geburtsdatum (optional)</label>
+                              <input type="date" value={form.birthDate}
+                                onChange={e => setForm(prev => ({ ...prev, birthDate: e.target.value }))}
+                                max={new Date().toISOString().slice(0, 10)} className={inputCls} />
+                            </div>
+                            <div>
                               <label className="text-sm text-muted-foreground">Strasse & Nr.</label>
                               <AddressAutocomplete
                                 value={form.address}
@@ -692,6 +698,7 @@ export default function LeadDetailSheet() {
                                 ...(!isFrozenForEmployee ? [['Telefon', selectedLead.phone]] : []),
                                 ...(selectedLead.altPhone ? [['Alt. Telefon', selectedLead.altPhone]] : []),
                                 ['Position', selectedLead.position],
+                                ['Geburtsdatum', selectedLead.birthDate ? new Date(selectedLead.birthDate).toLocaleDateString('de-CH') : ''],
                                 ['Leaddatum', new Date(selectedLead.createdAt).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
                                ['Adresse', selectedLead.address],
                                ['Ort', selectedLead.plz || selectedLead.city ? `${selectedLead.plz} ${selectedLead.city}`.trim() : ''],

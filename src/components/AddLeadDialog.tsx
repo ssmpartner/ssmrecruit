@@ -27,11 +27,12 @@ interface FormState {
   notes: string;
   agencyId: string;
   employeeId: string;
+  birthDate: string;
 }
 
 const emptyForm: FormState = {
   name: '', email: '', phone: '+41 ', address: '', plz: '', city: '', canton: '', cantonCode: '',
-  position: '', source: 'website', notes: '', agencyId: '', employeeId: '',
+  position: '', source: 'website', notes: '', agencyId: '', employeeId: '', birthDate: '',
 };
 
 type Step = 'lead' | 'ask' | 'appointment';
@@ -205,6 +206,7 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
       notes: form.notes.trim(),
       campaign: '',
       lifecycle: 'active',
+      birthDate: form.birthDate || undefined,
     });
     // Find the newly created lead ID (latest one)
     setTimeout(() => {
@@ -287,6 +289,11 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
                   <input value={form.phone} onChange={e => set('phone', e.target.value)} className={inputCls('phone')} placeholder="+41 79 123 45 67" maxLength={20} />
                   {errors.phone && <p className="text-xs text-destructive mt-0.5">{errors.phone}</p>}
                 </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Geburtsdatum (optional)</label>
+                <input type="date" value={form.birthDate} onChange={e => set('birthDate', e.target.value)}
+                  className={fieldCls} max={new Date().toISOString().slice(0, 10)} />
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Strasse / Nr.</label>
