@@ -229,8 +229,14 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           if (unsuitableRegisters.length > 0) answers.registers = unsuitableRegisters;
           if (unsuitableAgeTooYoung) {
             answers.age_too_young = true;
-            if (unsuitableAge.trim()) answers.age = unsuitableAge.trim();
             answers.reactivatable = true;
+          }
+          if (unsuitableAgeTooOld) {
+            answers.age_too_old = true;
+          }
+          if ((unsuitableAgeTooYoung || unsuitableAgeTooOld)) {
+            if (unsuitableAge.trim()) answers.age = unsuitableAge.trim();
+            if (unsuitableBirthdate.trim()) answers.birthdate = unsuitableBirthdate.trim();
           }
           newStatus = 'not_suitable';
           break;
