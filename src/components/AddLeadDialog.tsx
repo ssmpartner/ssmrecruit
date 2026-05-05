@@ -206,6 +206,7 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
       notes: form.notes.trim(),
       campaign: '',
       lifecycle: 'active',
+      birthDate: form.birthDate || undefined,
     });
     // Find the newly created lead ID (latest one)
     setTimeout(() => {
