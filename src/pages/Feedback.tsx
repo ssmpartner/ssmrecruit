@@ -376,10 +376,11 @@ export default function Feedback() {
                     )}
                   </div>
                 </div>
-                <p className="text-sm whitespace-pre-wrap mb-4">{f.description}</p>
+                <p className="text-sm whitespace-pre-wrap mb-2">{f.description}</p>
+                <AttachmentPreview items={f.attachments ?? []} />
 
                 {fComments.length > 0 && (
-                  <div className="space-y-2 mb-3 border-t pt-3">
+                  <div className="space-y-2 mb-3 border-t pt-3 mt-4">
                     {fComments.map(c => (
                       <div key={c.id} className={`rounded-lg p-3 text-sm ${c.is_official ? 'bg-primary/10 border border-primary/30' : 'bg-muted/50'}`}>
                         <div className="flex items-center gap-2 mb-1">
@@ -388,21 +389,54 @@ export default function Feedback() {
                           <span className="text-xs text-muted-foreground">· {formatDistanceToNow(new Date(c.created_at), { addSuffix: true, locale: de })}</span>
                         </div>
                         <p className="whitespace-pre-wrap">{c.comment}</p>
+                        <AttachmentPreview items={c.attachments ?? []} />
                       </div>
                     ))}
                   </div>
                 )}
 
-                <div className="flex gap-2 items-start">
-                  <Textarea
-                    value={commentDrafts[f.id] ?? ''}
-                    onChange={e => setCommentDrafts(d => ({ ...d, [f.id]: e.target.value }))}
-                    placeholder="Kommentar hinzufügen..."
-                    rows={2}
-                    maxLength={2000}
-                    className="text-sm"
-                  />
+                <div className="flex gap-2 items-start mt-3">
+                  <div className="flex-1">
+                    <Textarea
+                      value={commentDrafts[f.id] ?? ''}
+                      onChange={e => setCommentDrafts(d => ({ ...d, [f.id]: e.target.value }))}
+                      onPaste={async (e) => {
+                        const files = Array.from(e.clipboardData.files);
+                        if (files.length === 0) return;
+                        e.preventDefault();
+                        setUploadingComment(s => ({ ...s, [f.id]: true }));
+                        const up = await uploadFiles(files);
+                        setCommentAttachments(a => ({ ...a, [f.id]: [...(a[f.id] ?? []), ...up] }));
+                        setUploadingComment(s => ({ ...s, [f.id]: false }));
+                      }}
+                      placeholder="Kommentar hinzufügen... (Screenshot mit Strg+V einfügen)"
+                      rows={2}
+                      maxLength={2000}
+                      className="text-sm"
+                    />
+                    <AttachmentPreview
+                      items={commentAttachments[f.id] ?? []}
+                      onRemove={(i) => setCommentAttachments(a => ({ ...a, [f.id]: (a[f.id] ?? []).filter((_, idx) => idx !== i) }))}
+                    />
+                  </div>
                   <div className="flex flex-col gap-1.5">
+                    <label className="inline-flex items-center justify-center h-8 w-8 rounded-md border cursor-pointer hover:bg-muted/50" title="Anhang hinzufügen">
+                      {uploadingComment[f.id] ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Paperclip className="h-3.5 w-3.5" />}
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,application/pdf"
+                        className="hidden"
+                        onChange={async (e) => {
+                          if (!e.target.files?.length) return;
+                          setUploadingComment(s => ({ ...s, [f.id]: true }));
+                          const up = await uploadFiles(e.target.files);
+                          setCommentAttachments(a => ({ ...a, [f.id]: [...(a[f.id] ?? []), ...up] }));
+                          setUploadingComment(s => ({ ...s, [f.id]: false }));
+                          e.target.value = '';
+                        }}
+                      />
+                    </label>
                     <Button size="sm" onClick={() => addComment(f.id, false)}>Senden</Button>
                     {isSuperadmin && (
                       <Button size="sm" variant="outline" onClick={() => addComment(f.id, true)} title="Als offizielle Antwort markieren">
