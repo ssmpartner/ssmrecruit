@@ -222,6 +222,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
 
   return (
     <div className="space-y-4">
+      {uploadBar}
       {/* Uploaded Documents */}
       {docUploads.length > 0 && (
         <div className="rounded-lg border bg-card p-4 space-y-3">
