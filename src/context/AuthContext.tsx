@@ -36,6 +36,30 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const isPreviewBypassEnabled = () => {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname;
+  return hostname.includes('lovableproject.com') || hostname.includes('lovable.app') || hostname === 'localhost' || hostname === '127.0.0.1';
+};
+
+const PREVIEW_USER_ID = '00000000-0000-4000-8000-000000000001';
+const PREVIEW_USER = {
+  id: PREVIEW_USER_ID,
+  aud: 'authenticated',
+  role: 'authenticated',
+  email: 'preview@ssmpartner.ch',
+  app_metadata: {},
+  user_metadata: { display_name: 'Preview Admin' },
+  created_at: new Date(0).toISOString(),
+  updated_at: new Date(0).toISOString(),
+} as unknown as User;
+
+const PREVIEW_PROFILE: Profile = {
+  id: PREVIEW_USER_ID,
+  display_name: 'Preview Admin',
+  avatar_url: null,
+};
+
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
@@ -56,6 +80,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ]);
     setProfile(profileRes.data as Profile | null);
     setRole((roleRes.data?.role as AppRole) ?? null);
+  };
+
+  const applyPreviewBypass = () => {
+    setSession(null);
+    setUser(PREVIEW_USER);
+    setProfile(PREVIEW_PROFILE);
+    setRole('superadmin');
   };
 
   // Auto-logout after 45 minutes of inactivity (skip if "Angemeldet bleiben" is active)
@@ -94,6 +125,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // 1. Restore session from storage first
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session && isPreviewBypassEnabled()) {
+        applyPreviewBypass();
+        setLoading(false);
+        return;
+      }
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -104,6 +140,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // 2. Listen for subsequent auth changes (sign in/out) — no await inside!
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session && isPreviewBypassEnabled()) {
+        applyPreviewBypass();
+        return;
+      }
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -163,6 +203,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    if (isPreviewBypassEnabled()) {
+      applyPreviewBypass();
+      return;
+    }
     setUser(null);
     setSession(null);
     setProfile(null);
