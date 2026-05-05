@@ -280,7 +280,7 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             attempts: 'Versuche', matching_failed: 'Matching fehlgeschlagen',
             confirmed: 'Bestätigt', escalated: 'Eskaliert',
             languages: 'Sprache(n) nicht passend', registers: 'Register-Einträge',
-            age_too_young: 'Zu jung', age: 'Alter', reactivatable: 'Später reaktivierbar',
+            age_too_young: 'Zu jung', age_too_old: 'Zu alt', age: 'Alter', birthdate: 'Geburtsdatum', reactivatable: 'Später reaktivierbar',
           };
           return `${labels[k] || k}: ${v}`;
         })
