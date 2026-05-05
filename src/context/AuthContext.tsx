@@ -39,7 +39,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const isPreviewBypassEnabled = () => {
   if (typeof window === 'undefined') return false;
   const hostname = window.location.hostname;
-  return hostname.includes('lovableproject.com') || hostname.includes('lovable.app') || hostname === 'localhost' || hostname === '127.0.0.1';
+  return hostname.includes('lovableproject.com') || hostname.startsWith('id-preview--') || hostname === 'localhost' || hostname === '127.0.0.1';
 };
 
 const PREVIEW_USER_ID = '00000000-0000-4000-8000-000000000001';
