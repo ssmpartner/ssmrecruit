@@ -13,6 +13,8 @@ import { Plus, MessageSquare, Trash2, Loader2, Paperclip, X, Image as ImageIcon 
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 
+type Attachment = { path: string; url: string; name: string; type: string };
+
 type Feedback = {
   id: string;
   title: string;
@@ -26,6 +28,7 @@ type Feedback = {
   created_at: string;
   updated_at: string;
   resolved_at: string | null;
+  attachments: Attachment[] | null;
 };
 
 type Comment = {
@@ -36,6 +39,7 @@ type Comment = {
   created_by_user_id: string;
   created_by_name: string;
   created_at: string;
+  attachments: Attachment[] | null;
 };
 
 const STATUS_OPTIONS = [
