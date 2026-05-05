@@ -240,6 +240,8 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             if (unsuitableAge.trim()) answers.age = unsuitableAge.trim();
             if (unsuitableBirthdate.trim()) answers.birthdate = unsuitableBirthdate.trim();
           }
+          if (unsuitableNoLeads) answers.no_leads_150 = true;
+          if (unsuitableNoNetwork) answers.no_network = true;
           newStatus = 'not_suitable';
           break;
 
