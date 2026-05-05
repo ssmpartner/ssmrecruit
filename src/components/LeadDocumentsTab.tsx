@@ -41,6 +41,48 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const [docUploads, setDocUploads] = useState<DocumentUpload[]>([]);
   const [copiedToken, setCopiedToken] = useState('');
   const [resending, setResending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadType, setUploadType] = useState<string>('cv');
+
+  async function handleInternalUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of files) {
+        if (file.size > 20 * 1024 * 1024) {
+          toast({ title: 'Datei zu gross', description: `${file.name}: max. 20 MB`, variant: 'destructive' });
+          continue;
+        }
+        const ext = file.name.split('.').pop() || 'bin';
+        const path = `${leadId}/internal/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from('lead-documents').upload(path, file, {
+          contentType: file.type || 'application/octet-stream',
+        });
+        if (upErr) throw upErr;
+        const { error: insErr } = await supabase.from('document_uploads').insert({
+          lead_id: leadId,
+          file_name: file.name,
+          file_type: uploadType,
+          file_path: path,
+          file_size: file.size,
+        } as any);
+        if (insErr) throw insErr;
+        await supabase.from('activities').insert({
+          id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+          description: `Dokument "${file.name}" intern hochgeladen (${documentTypeLabels[uploadType] || uploadType})`,
+          user: 'System',
+        });
+      }
+      toast({ title: '✅ Upload abgeschlossen', description: `${files.length} Datei(en)` });
+      loadData();
+    } catch (err: any) {
+      toast({ title: 'Upload fehlgeschlagen', description: err.message || 'Unbekannter Fehler', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  }
 
   useEffect(() => {
     loadData();
@@ -138,12 +180,38 @@ export default function LeadDocumentsTab({ leadId }: Props) {
 
   const hasContent = docUploads.length > 0 || docRequests.length > 0;
 
+  const uploadBar = (
+    <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3 flex flex-wrap items-center gap-2">
+      <Upload className="h-4 w-4 text-primary" />
+      <span className="text-sm font-medium text-primary">Intern hochladen:</span>
+      <select
+        value={uploadType}
+        onChange={e => setUploadType(e.target.value)}
+        disabled={uploading}
+        className="h-8 rounded-md border bg-background px-2 text-xs"
+      >
+        {Object.entries(documentTypeLabels).map(([v, l]) => (
+          <option key={v} value={v}>{l}</option>
+        ))}
+      </select>
+      <label className={`inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+        {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+        Datei(en) wählen
+        <input type="file" multiple className="hidden" disabled={uploading} onChange={handleInternalUpload} />
+      </label>
+      <span className="text-[11px] text-muted-foreground ml-auto">Max. 20 MB pro Datei</span>
+    </div>
+  );
+
   if (!hasContent) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Upload className="h-10 w-10 text-muted-foreground/40 mb-3" />
-        <p className="text-sm font-medium text-muted-foreground">Noch keine Dokumente vorhanden</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">Senden Sie einen Dokumenten-Upload-Link über das Aktionspanel links.</p>
+      <div className="space-y-4">
+        {uploadBar}
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <Upload className="h-10 w-10 text-muted-foreground/40 mb-3" />
+          <p className="text-sm font-medium text-muted-foreground">Noch keine Dokumente vorhanden</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Direkt oben hochladen oder einen Upload-Link an den Lead senden.</p>
+        </div>
       </div>
     );
   }
@@ -154,6 +222,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
 
   return (
     <div className="space-y-4">
+      {uploadBar}
       {/* Uploaded Documents */}
       {docUploads.length > 0 && (
         <div className="rounded-lg border bg-card p-4 space-y-3">

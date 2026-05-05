@@ -1,0 +1,1 @@
+ALTER TABLE public.document_uploads ALTER COLUMN request_id DROP NOT NULL;
