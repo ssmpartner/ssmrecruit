@@ -85,8 +85,28 @@ export default function Feedback() {
 
   // Comment input per feedback id
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
+  const [commentAttachments, setCommentAttachments] = useState<Record<string, Attachment[]>>({});
+  const [feedbackAttachments, setFeedbackAttachments] = useState<Attachment[]>([]);
+  const [uploadingNew, setUploadingNew] = useState(false);
+  const [uploadingComment, setUploadingComment] = useState<Record<string, boolean>>({});
 
-  const userName = (user?.user_metadata as { display_name?: string; full_name?: string } | undefined)?.display_name
+  async function uploadFiles(files: FileList | File[]): Promise<Attachment[]> {
+    const arr = Array.from(files);
+    const results: Attachment[] = [];
+    for (const file of arr) {
+      if (file.size > 20 * 1024 * 1024) {
+        toast.error(`${file.name}: max. 20MB`);
+        continue;
+      }
+      const ext = file.name.split('.').pop() ?? 'bin';
+      const path = `${user?.id ?? 'anon'}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from('feedback-attachments').upload(path, file, { contentType: file.type });
+      if (error) { toast.error(`Upload fehlgeschlagen: ${file.name}`); continue; }
+      const { data } = supabase.storage.from('feedback-attachments').getPublicUrl(path);
+      results.push({ path, url: data.publicUrl, name: file.name, type: file.type });
+    }
+    return results;
+  }
     || (user?.user_metadata as { full_name?: string } | undefined)?.full_name
     || user?.email
     || 'Mitarbeiter';
