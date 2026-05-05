@@ -11,7 +11,12 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const isPreview = window.location.hostname.includes('lovableproject.com');
+  const hostname = window.location.hostname;
+  const isPreview =
+    hostname.includes('lovableproject.com') ||
+    hostname.includes('lovable.app') ||
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
