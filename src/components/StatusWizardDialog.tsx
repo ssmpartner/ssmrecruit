@@ -652,6 +652,22 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
               )}
             </div>
 
+            <div className="rounded-md border bg-muted/30 p-2.5 space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">Weitere Gründe (optional)</p>
+              <label className="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" checked={unsuitableNoLeads}
+                  onChange={e => setUnsuitableNoLeads(e.target.checked)}
+                  className="h-4 w-4 rounded border-input" />
+                Hat keine 150 Leads
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" checked={unsuitableNoNetwork}
+                  onChange={e => setUnsuitableNoNetwork(e.target.checked)}
+                  className="h-4 w-4 rounded border-input" />
+                Kein Umfeld
+              </label>
+            </div>
+
             <div>
               <label className="text-xs font-medium text-muted-foreground">Begründung (optional)</label>
               <textarea value={matchingReason} onChange={e => setMatchingReason(e.target.value)}
