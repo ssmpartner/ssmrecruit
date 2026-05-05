@@ -130,6 +130,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
+  const syncSsoUser = async (email: string, password: string) => {
+    const ssoRes = await supabase.functions.invoke('sso-proxy', {
+      body: { email, password },
+    });
+    const ssoData = ssoRes.data;
+    if (ssoRes.error || ssoData?.error) {
+      return { error: new Error(ssoData?.error || ssoRes.error?.message || 'SSO-Fehler') };
+    }
+    return { error: null };
+  };
+
   const signIn = async (email: string, password: string) => {
     try {
       const hostname = window.location.hostname;
@@ -139,20 +150,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hostname === 'localhost' ||
         hostname === '127.0.0.1';
 
-      // In Preview/Dev: skip SSO proxy and sign in directly against Supabase
+      // In Preview/Dev: try direct login first; if the local password is stale,
+      // sync once via central SSO and then retry the local session login.
       if (isPreview) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        return { error };
+        const firstAttempt = await supabase.auth.signInWithPassword({ email, password });
+        if (!firstAttempt.error) return { error: null };
+
+        const raw = (firstAttempt.error.message || '').toLowerCase();
+        const isInvalidCredentials = raw.includes('invalid') || raw.includes('credentials');
+        if (!isInvalidCredentials) return { error: firstAttempt.error };
+
+        const syncResult = await syncSsoUser(email, password);
+        if (syncResult.error) return syncResult;
+
+        const retryAttempt = await supabase.auth.signInWithPassword({ email, password });
+        return { error: retryAttempt.error };
       }
 
       // Production: verify via SSO proxy first
-      const ssoRes = await supabase.functions.invoke('sso-proxy', {
-        body: { email, password },
-      });
-      const ssoData = ssoRes.data;
-      if (ssoRes.error || ssoData?.error) {
-        return { error: new Error(ssoData?.error || ssoRes.error?.message || 'SSO-Fehler') };
-      }
+      const syncResult = await syncSsoUser(email, password);
+      if (syncResult.error) return syncResult;
 
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return { error };
