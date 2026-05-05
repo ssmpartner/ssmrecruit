@@ -1699,7 +1699,7 @@ export type Database = {
           file_type: string
           id: string
           lead_id: string
-          request_id: string
+          request_id: string | null
           uploaded_at: string
         }
         Insert: {
@@ -1709,7 +1709,7 @@ export type Database = {
           file_type?: string
           id?: string
           lead_id: string
-          request_id: string
+          request_id?: string | null
           uploaded_at?: string
         }
         Update: {
@@ -1719,7 +1719,7 @@ export type Database = {
           file_type?: string
           id?: string
           lead_id?: string
-          request_id?: string
+          request_id?: string | null
           uploaded_at?: string
         }
         Relationships: [
