@@ -27,11 +27,12 @@ interface FormState {
   notes: string;
   agencyId: string;
   employeeId: string;
+  birthDate: string;
 }
 
 const emptyForm: FormState = {
   name: '', email: '', phone: '+41 ', address: '', plz: '', city: '', canton: '', cantonCode: '',
-  position: '', source: 'website', notes: '', agencyId: '', employeeId: '',
+  position: '', source: 'website', notes: '', agencyId: '', employeeId: '', birthDate: '',
 };
 
 type Step = 'lead' | 'ask' | 'appointment';
