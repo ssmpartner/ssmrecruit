@@ -131,23 +131,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      // 1. Verify via SSO proxy (also provisions/updates local user)
+      const hostname = window.location.hostname;
+      const isPreview =
+        hostname.includes('lovableproject.com') ||
+        hostname.includes('lovable.app') ||
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1';
+
+      // In Preview/Dev: skip SSO proxy and sign in directly against Supabase
+      if (isPreview) {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        return { error };
+      }
+
+      // Production: verify via SSO proxy first
       const ssoRes = await supabase.functions.invoke('sso-proxy', {
         body: { email, password },
       });
-
       const ssoData = ssoRes.data;
       if (ssoRes.error || ssoData?.error) {
         return { error: new Error(ssoData?.error || ssoRes.error?.message || 'SSO-Fehler') };
       }
 
-      // 2. Sign in locally (user is now guaranteed to exist and be confirmed)
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return { error };
-
       return { error: null };
     } catch (err: any) {
-      return { error: new Error(err.message || "SSO-Authentifizierung fehlgeschlagen") };
+      return { error: new Error(err.message || 'Authentifizierung fehlgeschlagen') };
     }
   };
 
