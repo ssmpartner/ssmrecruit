@@ -370,6 +370,8 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
     setUnsuitableAgeTooOld(false);
     setUnsuitableAge('');
     setUnsuitableBirthdate('');
+    setUnsuitableNoLeads(false);
+    setUnsuitableNoNetwork(false);
     setInternalConfirmed(false);
   };
 
