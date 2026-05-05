@@ -595,6 +595,12 @@ export default function LeadDetailSheet() {
                               </div>
                             )}
                             <div>
+                              <label className="text-sm text-muted-foreground">Geburtsdatum (optional)</label>
+                              <input type="date" value={form.birthDate}
+                                onChange={e => setForm(prev => ({ ...prev, birthDate: e.target.value }))}
+                                max={new Date().toISOString().slice(0, 10)} className={inputCls} />
+                            </div>
+                            <div>
                               <label className="text-sm text-muted-foreground">Strasse & Nr.</label>
                               <AddressAutocomplete
                                 value={form.address}
