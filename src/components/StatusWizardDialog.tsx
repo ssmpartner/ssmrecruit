@@ -362,7 +362,9 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
     setUnsuitableLanguages([]);
     setUnsuitableRegisters([]);
     setUnsuitableAgeTooYoung(false);
+    setUnsuitableAgeTooOld(false);
     setUnsuitableAge('');
+    setUnsuitableBirthdate('');
     setInternalConfirmed(false);
   };
 
