@@ -173,6 +173,19 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
     }
   }, [set]);
 
+  // Auto-fill canton (and PLZ if unique) when user enters/leaves the city field
+  const autofillFromCity = useCallback((cityValue: string) => {
+    const v = cityValue.trim().toLowerCase();
+    if (!v) return;
+    const matches = swissLocations.filter(l => l.city.toLowerCase() === v);
+    if (matches.length === 0) return;
+    setForm(prev => {
+      const next = { ...prev, city: matches[0].city, canton: matches[0].canton, cantonCode: matches[0].cantonCode };
+      if (!prev.plz && matches.length === 1) next.plz = matches[0].plz;
+      return next;
+    });
+  }, []);
+
   const validate = (): boolean => {
     const errs: Partial<Record<keyof FormState, string>> = {};
     if (!form.name.trim()) errs.name = 'Name ist erforderlich';
