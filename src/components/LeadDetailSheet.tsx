@@ -54,7 +54,7 @@ export default function LeadDetailSheet() {
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
   const [showPlzDropdown, setShowPlzDropdown] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [form, setForm] = useState({ name: '', salutation: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '', altEmail: '', altPhone: '' });
+  const [form, setForm] = useState({ name: '', salutation: '', email: '', phone: '', position: '', address: '', plz: '', city: '', canton: '', cantonCode: '', notes: '', source: '' as string, createdAt: '', altEmail: '', altPhone: '', birthDate: '' });
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
