@@ -107,6 +107,8 @@ export default function Feedback() {
     }
     return results;
   }
+
+  const userName = (user?.user_metadata as { display_name?: string; full_name?: string } | undefined)?.display_name
     || (user?.user_metadata as { full_name?: string } | undefined)?.full_name
     || user?.email
     || 'Mitarbeiter';
