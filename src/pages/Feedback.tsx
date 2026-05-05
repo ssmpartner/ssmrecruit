@@ -9,9 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, MessageSquare, Trash2, Loader2 } from 'lucide-react';
+import { Plus, MessageSquare, Trash2, Loader2, Paperclip, X, Image as ImageIcon } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
+
+type Attachment = { path: string; url: string; name: string; type: string };
 
 type Feedback = {
   id: string;
@@ -26,6 +28,7 @@ type Feedback = {
   created_at: string;
   updated_at: string;
   resolved_at: string | null;
+  attachments: Attachment[] | null;
 };
 
 type Comment = {
@@ -36,6 +39,7 @@ type Comment = {
   created_by_user_id: string;
   created_by_name: string;
   created_at: string;
+  attachments: Attachment[] | null;
 };
 
 const STATUS_OPTIONS = [
@@ -81,6 +85,28 @@ export default function Feedback() {
 
   // Comment input per feedback id
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
+  const [commentAttachments, setCommentAttachments] = useState<Record<string, Attachment[]>>({});
+  const [feedbackAttachments, setFeedbackAttachments] = useState<Attachment[]>([]);
+  const [uploadingNew, setUploadingNew] = useState(false);
+  const [uploadingComment, setUploadingComment] = useState<Record<string, boolean>>({});
+
+  async function uploadFiles(files: FileList | File[]): Promise<Attachment[]> {
+    const arr = Array.from(files);
+    const results: Attachment[] = [];
+    for (const file of arr) {
+      if (file.size > 20 * 1024 * 1024) {
+        toast.error(`${file.name}: max. 20MB`);
+        continue;
+      }
+      const ext = file.name.split('.').pop() ?? 'bin';
+      const path = `${user?.id ?? 'anon'}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from('feedback-attachments').upload(path, file, { contentType: file.type });
+      if (error) { toast.error(`Upload fehlgeschlagen: ${file.name}`); continue; }
+      const { data } = supabase.storage.from('feedback-attachments').getPublicUrl(path);
+      results.push({ path, url: data.publicUrl, name: file.name, type: file.type });
+    }
+    return results;
+  }
 
   const userName = (user?.user_metadata as { display_name?: string; full_name?: string } | undefined)?.display_name
     || (user?.user_metadata as { full_name?: string } | undefined)?.full_name
@@ -123,6 +149,7 @@ export default function Feedback() {
       created_by_user_id: user.id,
       created_by_name: userName,
       created_by_email: user.email ?? '',
+      attachments: feedbackAttachments,
     });
     setSubmitting(false);
     if (error) {
@@ -131,6 +158,7 @@ export default function Feedback() {
     }
     toast.success('Feedback gesendet – vielen Dank!');
     setTitle(''); setDescription(''); setCategory('improvement'); setPriority('medium');
+    setFeedbackAttachments([]);
     setDialogOpen(false);
     load();
   }
@@ -155,17 +183,50 @@ export default function Feedback() {
   async function addComment(feedbackId: string, asOfficial = false) {
     if (!user) return;
     const text = (commentDrafts[feedbackId] ?? '').trim();
-    if (!text) return;
+    const atts = commentAttachments[feedbackId] ?? [];
+    if (!text && atts.length === 0) return;
     const { error } = await supabase.from('feedback_comments').insert({
       feedback_id: feedbackId,
       comment: text.slice(0, 2000),
       is_official: asOfficial && isSuperadmin,
       created_by_user_id: user.id,
       created_by_name: userName,
+      attachments: atts,
     });
     if (error) { toast.error('Kommentar fehlgeschlagen'); return; }
     setCommentDrafts(d => ({ ...d, [feedbackId]: '' }));
+    setCommentAttachments(a => ({ ...a, [feedbackId]: [] }));
     load();
+  }
+
+  function AttachmentPreview({ items, onRemove }: { items: Attachment[]; onRemove?: (i: number) => void }) {
+    if (!items || items.length === 0) return null;
+    return (
+      <div className="flex flex-wrap gap-2 mt-2">
+        {items.map((a, i) => {
+          const isImg = a.type?.startsWith('image/');
+          return (
+            <div key={i} className="relative group border rounded-md overflow-hidden bg-muted/30">
+              {isImg ? (
+                <a href={a.url} target="_blank" rel="noreferrer">
+                  <img src={a.url} alt={a.name} className="h-20 w-20 object-cover" />
+                </a>
+              ) : (
+                <a href={a.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 px-2 py-2 text-xs">
+                  <Paperclip className="h-3 w-3" />{a.name}
+                </a>
+              )}
+              {onRemove && (
+                <button type="button" onClick={() => onRemove(i)}
+                  className="absolute top-0.5 right-0.5 bg-background/90 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition">
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
   }
 
   const filtered = filter === 'all' ? feedbacks : feedbacks.filter(f => f.status === filter);
@@ -190,7 +251,22 @@ export default function Feedback() {
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Beschreibung</label>
-                <Textarea value={description} onChange={e => setDescription(e.target.value)} maxLength={4000} rows={6} placeholder="Was wünschst du dir? Was funktioniert nicht?" />
+                <Textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  onPaste={async (e) => {
+                    const files = Array.from(e.clipboardData.files);
+                    if (files.length === 0) return;
+                    e.preventDefault();
+                    setUploadingNew(true);
+                    const up = await uploadFiles(files);
+                    setFeedbackAttachments(prev => [...prev, ...up]);
+                    setUploadingNew(false);
+                  }}
+                  maxLength={4000}
+                  rows={6}
+                  placeholder="Was wünschst du dir? Was funktioniert nicht? (Tipp: Screenshot mit Strg+V einfügen)"
+                />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -211,6 +287,28 @@ export default function Feedback() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Anhänge / Screenshots (optional)</label>
+                <label className="inline-flex items-center gap-2 cursor-pointer rounded-md border border-dashed px-3 py-2 text-xs hover:bg-muted/50">
+                  <ImageIcon className="h-4 w-4" />
+                  {uploadingNew ? 'Lade hoch…' : 'Dateien wählen oder einfügen (Bilder, PDF…)'}
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,application/pdf"
+                    className="hidden"
+                    onChange={async (e) => {
+                      if (!e.target.files?.length) return;
+                      setUploadingNew(true);
+                      const up = await uploadFiles(e.target.files);
+                      setFeedbackAttachments(prev => [...prev, ...up]);
+                      setUploadingNew(false);
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+                <AttachmentPreview items={feedbackAttachments} onRemove={(i) => setFeedbackAttachments(prev => prev.filter((_, idx) => idx !== i))} />
               </div>
             </div>
             <DialogFooter>
@@ -278,10 +376,11 @@ export default function Feedback() {
                     )}
                   </div>
                 </div>
-                <p className="text-sm whitespace-pre-wrap mb-4">{f.description}</p>
+                <p className="text-sm whitespace-pre-wrap mb-2">{f.description}</p>
+                <AttachmentPreview items={f.attachments ?? []} />
 
                 {fComments.length > 0 && (
-                  <div className="space-y-2 mb-3 border-t pt-3">
+                  <div className="space-y-2 mb-3 border-t pt-3 mt-4">
                     {fComments.map(c => (
                       <div key={c.id} className={`rounded-lg p-3 text-sm ${c.is_official ? 'bg-primary/10 border border-primary/30' : 'bg-muted/50'}`}>
                         <div className="flex items-center gap-2 mb-1">
@@ -290,21 +389,54 @@ export default function Feedback() {
                           <span className="text-xs text-muted-foreground">· {formatDistanceToNow(new Date(c.created_at), { addSuffix: true, locale: de })}</span>
                         </div>
                         <p className="whitespace-pre-wrap">{c.comment}</p>
+                        <AttachmentPreview items={c.attachments ?? []} />
                       </div>
                     ))}
                   </div>
                 )}
 
-                <div className="flex gap-2 items-start">
-                  <Textarea
-                    value={commentDrafts[f.id] ?? ''}
-                    onChange={e => setCommentDrafts(d => ({ ...d, [f.id]: e.target.value }))}
-                    placeholder="Kommentar hinzufügen..."
-                    rows={2}
-                    maxLength={2000}
-                    className="text-sm"
-                  />
+                <div className="flex gap-2 items-start mt-3">
+                  <div className="flex-1">
+                    <Textarea
+                      value={commentDrafts[f.id] ?? ''}
+                      onChange={e => setCommentDrafts(d => ({ ...d, [f.id]: e.target.value }))}
+                      onPaste={async (e) => {
+                        const files = Array.from(e.clipboardData.files);
+                        if (files.length === 0) return;
+                        e.preventDefault();
+                        setUploadingComment(s => ({ ...s, [f.id]: true }));
+                        const up = await uploadFiles(files);
+                        setCommentAttachments(a => ({ ...a, [f.id]: [...(a[f.id] ?? []), ...up] }));
+                        setUploadingComment(s => ({ ...s, [f.id]: false }));
+                      }}
+                      placeholder="Kommentar hinzufügen... (Screenshot mit Strg+V einfügen)"
+                      rows={2}
+                      maxLength={2000}
+                      className="text-sm"
+                    />
+                    <AttachmentPreview
+                      items={commentAttachments[f.id] ?? []}
+                      onRemove={(i) => setCommentAttachments(a => ({ ...a, [f.id]: (a[f.id] ?? []).filter((_, idx) => idx !== i) }))}
+                    />
+                  </div>
                   <div className="flex flex-col gap-1.5">
+                    <label className="inline-flex items-center justify-center h-8 w-8 rounded-md border cursor-pointer hover:bg-muted/50" title="Anhang hinzufügen">
+                      {uploadingComment[f.id] ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Paperclip className="h-3.5 w-3.5" />}
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,application/pdf"
+                        className="hidden"
+                        onChange={async (e) => {
+                          if (!e.target.files?.length) return;
+                          setUploadingComment(s => ({ ...s, [f.id]: true }));
+                          const up = await uploadFiles(e.target.files);
+                          setCommentAttachments(a => ({ ...a, [f.id]: [...(a[f.id] ?? []), ...up] }));
+                          setUploadingComment(s => ({ ...s, [f.id]: false }));
+                          e.target.value = '';
+                        }}
+                      />
+                    </label>
                     <Button size="sm" onClick={() => addComment(f.id, false)}>Senden</Button>
                     {isSuperadmin && (
                       <Button size="sm" variant="outline" onClick={() => addComment(f.id, true)} title="Als offizielle Antwort markieren">

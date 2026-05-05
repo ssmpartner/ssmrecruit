@@ -2097,6 +2097,7 @@ export type Database = {
       }
       feedback: {
         Row: {
+          attachments: Json
           category: string
           created_at: string
           created_by_email: string
@@ -2111,6 +2112,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachments?: Json
           category?: string
           created_at?: string
           created_by_email?: string
@@ -2125,6 +2127,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachments?: Json
           category?: string
           created_at?: string
           created_by_email?: string
@@ -2142,6 +2145,7 @@ export type Database = {
       }
       feedback_comments: {
         Row: {
+          attachments: Json
           comment: string
           created_at: string
           created_by_name: string
@@ -2151,6 +2155,7 @@ export type Database = {
           is_official: boolean
         }
         Insert: {
+          attachments?: Json
           comment: string
           created_at?: string
           created_by_name?: string
@@ -2160,6 +2165,7 @@ export type Database = {
           is_official?: boolean
         }
         Update: {
+          attachments?: Json
           comment?: string
           created_at?: string
           created_by_name?: string
