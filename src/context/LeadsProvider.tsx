@@ -50,6 +50,7 @@ function dbToLead(row: any): Lead {
     assignedApproverRole: row.assigned_approver_role || '',
     altEmail: row.alt_email || '',
     altPhone: row.alt_phone || '',
+    birthDate: row.birth_date || '',
   };
 }
 
