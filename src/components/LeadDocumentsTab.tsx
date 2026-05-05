@@ -180,12 +180,38 @@ export default function LeadDocumentsTab({ leadId }: Props) {
 
   const hasContent = docUploads.length > 0 || docRequests.length > 0;
 
+  const uploadBar = (
+    <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3 flex flex-wrap items-center gap-2">
+      <Upload className="h-4 w-4 text-primary" />
+      <span className="text-sm font-medium text-primary">Intern hochladen:</span>
+      <select
+        value={uploadType}
+        onChange={e => setUploadType(e.target.value)}
+        disabled={uploading}
+        className="h-8 rounded-md border bg-background px-2 text-xs"
+      >
+        {Object.entries(documentTypeLabels).map(([v, l]) => (
+          <option key={v} value={v}>{l}</option>
+        ))}
+      </select>
+      <label className={`inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+        {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+        Datei(en) wählen
+        <input type="file" multiple className="hidden" disabled={uploading} onChange={handleInternalUpload} />
+      </label>
+      <span className="text-[11px] text-muted-foreground ml-auto">Max. 20 MB pro Datei</span>
+    </div>
+  );
+
   if (!hasContent) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Upload className="h-10 w-10 text-muted-foreground/40 mb-3" />
-        <p className="text-sm font-medium text-muted-foreground">Noch keine Dokumente vorhanden</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">Senden Sie einen Dokumenten-Upload-Link über das Aktionspanel links.</p>
+      <div className="space-y-4">
+        {uploadBar}
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <Upload className="h-10 w-10 text-muted-foreground/40 mb-3" />
+          <p className="text-sm font-medium text-muted-foreground">Noch keine Dokumente vorhanden</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Direkt oben hochladen oder einen Upload-Link an den Lead senden.</p>
+        </div>
       </div>
     );
   }
