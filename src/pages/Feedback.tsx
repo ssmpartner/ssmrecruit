@@ -149,6 +149,7 @@ export default function Feedback() {
       created_by_user_id: user.id,
       created_by_name: userName,
       created_by_email: user.email ?? '',
+      attachments: feedbackAttachments,
     });
     setSubmitting(false);
     if (error) {
@@ -157,6 +158,7 @@ export default function Feedback() {
     }
     toast.success('Feedback gesendet – vielen Dank!');
     setTitle(''); setDescription(''); setCategory('improvement'); setPriority('medium');
+    setFeedbackAttachments([]);
     setDialogOpen(false);
     load();
   }
