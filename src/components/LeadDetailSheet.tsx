@@ -639,7 +639,22 @@ export default function LeadDetailSheet() {
                               </div>
                               <div>
                                  <label className="text-sm text-muted-foreground">Ort</label>
-                                 <input value={form.city} onChange={isSuperadmin ? e => setForm(prev => ({ ...prev, city: e.target.value })) : undefined} readOnly={!isSuperadmin} className={isSuperadmin ? inputCls : "h-10 w-full rounded-md border bg-muted px-3 text-sm"} />
+                                 <input
+                                   value={form.city}
+                                   onChange={isSuperadmin ? e => setForm(prev => ({ ...prev, city: e.target.value })) : undefined}
+                                   onBlur={isSuperadmin ? () => {
+                                     const v = form.city.trim().toLowerCase();
+                                     if (!v) return;
+                                     const matches = swissLocations.filter(l => l.city.toLowerCase() === v);
+                                     if (matches.length === 0) return;
+                                     setForm(prev => {
+                                       const next = { ...prev, city: matches[0].city, canton: matches[0].canton, cantonCode: matches[0].cantonCode };
+                                       if (!prev.plz && matches.length === 1) next.plz = matches[0].plz;
+                                       return next;
+                                     });
+                                   } : undefined}
+                                   readOnly={!isSuperadmin}
+                                   className={isSuperadmin ? inputCls : "h-10 w-full rounded-md border bg-muted px-3 text-sm"} />
                               </div>
                               <div>
                                 <label className="text-sm text-muted-foreground">Kanton</label>
