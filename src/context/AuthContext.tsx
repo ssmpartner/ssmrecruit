@@ -58,12 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRole((roleRes.data?.role as AppRole) ?? null);
   };
 
-  const applyPreviewBypass = () => {
-    setSession(null);
-    setUser(PREVIEW_USER);
-    setProfile(PREVIEW_PROFILE);
-    setRole('superadmin');
-  };
 
   // Auto-logout after 45 minutes of inactivity (skip if "Angemeldet bleiben" is active)
   useEffect(() => {
