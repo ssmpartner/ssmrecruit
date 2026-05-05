@@ -479,6 +479,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       notes: leadData.notes,
       campaign: leadData.campaign || '',
       lead_lifecycle: leadData.lifecycle || 'active',
+      birth_date: leadData.birthDate || null,
     });
   }, [addActivity, addNotification, checkForDuplicates]);
 
