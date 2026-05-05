@@ -217,10 +217,6 @@ export default function Feedback() {
                   <Paperclip className="h-3 w-3" />{a.name}
                 </a>
               )}
-                <a href={a.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 px-2 py-2 text-xs">
-                  <Paperclip className="h-3 w-3" />{a.name}
-                </a>
-              )}
               {onRemove && (
                 <button type="button" onClick={() => onRemove(i)}
                   className="absolute top-0.5 right-0.5 bg-background/90 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition">
