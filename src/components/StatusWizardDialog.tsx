@@ -612,15 +612,36 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             </div>
 
             <div className="rounded-md border bg-muted/30 p-2.5 space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer text-sm">
-                <input type="checkbox" checked={unsuitableAgeTooYoung}
-                  onChange={e => setUnsuitableAgeTooYoung(e.target.checked)}
-                  className="h-4 w-4 rounded border-input" />
-                Zu jung
-              </label>
-              {unsuitableAgeTooYoung && (
-                <input type="text" value={unsuitableAge} onChange={e => setUnsuitableAge(e.target.value)}
-                  placeholder="Alter (z.B. 17)" className={inputCls} />
+              <p className="text-xs font-medium text-muted-foreground">Alter (optional)</p>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <input type="checkbox" checked={unsuitableAgeTooYoung}
+                    onChange={e => setUnsuitableAgeTooYoung(e.target.checked)}
+                    className="h-4 w-4 rounded border-input" />
+                  Zu jung
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <input type="checkbox" checked={unsuitableAgeTooOld}
+                    onChange={e => setUnsuitableAgeTooOld(e.target.checked)}
+                    className="h-4 w-4 rounded border-input" />
+                  Zu alt
+                </label>
+              </div>
+              {(unsuitableAgeTooYoung || unsuitableAgeTooOld) && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Alter</label>
+                    <input type="number" min="0" max="120" value={unsuitableAge}
+                      onChange={e => setUnsuitableAge(e.target.value)}
+                      placeholder="z.B. 17" className={cn(inputCls, 'mt-1')} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Geburtsdatum</label>
+                    <input type="date" value={unsuitableBirthdate}
+                      onChange={e => setUnsuitableBirthdate(e.target.value)}
+                      className={cn(inputCls, 'mt-1')} />
+                  </div>
+                </div>
               )}
             </div>
 
