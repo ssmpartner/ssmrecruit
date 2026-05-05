@@ -85,6 +85,8 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
   const [unsuitableAgeTooOld, setUnsuitableAgeTooOld] = useState(false);
   const [unsuitableAge, setUnsuitableAge] = useState('');
   const [unsuitableBirthdate, setUnsuitableBirthdate] = useState('');
+  const [unsuitableNoLeads, setUnsuitableNoLeads] = useState(false);
+  const [unsuitableNoNetwork, setUnsuitableNoNetwork] = useState(false);
 
   // Internal wizard
   const [internalConfirmed, setInternalConfirmed] = useState(false);
@@ -238,6 +240,8 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             if (unsuitableAge.trim()) answers.age = unsuitableAge.trim();
             if (unsuitableBirthdate.trim()) answers.birthdate = unsuitableBirthdate.trim();
           }
+          if (unsuitableNoLeads) answers.no_leads_150 = true;
+          if (unsuitableNoNetwork) answers.no_network = true;
           newStatus = 'not_suitable';
           break;
 
@@ -281,6 +285,7 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             confirmed: 'Bestätigt', escalated: 'Eskaliert',
             languages: 'Sprache(n) nicht passend', registers: 'Register-Einträge',
             age_too_young: 'Zu jung', age_too_old: 'Zu alt', age: 'Alter', birthdate: 'Geburtsdatum', reactivatable: 'Später reaktivierbar',
+            no_leads_150: 'Hat keine 150 Leads', no_network: 'Kein Umfeld',
           };
           return `${labels[k] || k}: ${v}`;
         })
@@ -365,6 +370,8 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
     setUnsuitableAgeTooOld(false);
     setUnsuitableAge('');
     setUnsuitableBirthdate('');
+    setUnsuitableNoLeads(false);
+    setUnsuitableNoNetwork(false);
     setInternalConfirmed(false);
   };
 
@@ -643,6 +650,22 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="rounded-md border bg-muted/30 p-2.5 space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">Weitere Gründe (optional)</p>
+              <label className="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" checked={unsuitableNoLeads}
+                  onChange={e => setUnsuitableNoLeads(e.target.checked)}
+                  className="h-4 w-4 rounded border-input" />
+                Hat keine 150 Leads
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" checked={unsuitableNoNetwork}
+                  onChange={e => setUnsuitableNoNetwork(e.target.checked)}
+                  className="h-4 w-4 rounded border-input" />
+                Kein Umfeld
+              </label>
             </div>
 
             <div>
