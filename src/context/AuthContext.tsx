@@ -164,10 +164,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    if (isPreviewBypassEnabled()) {
-      applyPreviewBypass();
-      return;
-    }
     setUser(null);
     setSession(null);
     setProfile(null);
