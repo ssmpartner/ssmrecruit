@@ -319,6 +319,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.assignedApproverRole !== undefined) dbUpdates.assigned_approver_role = updates.assignedApproverRole;
     if (updates.altEmail !== undefined) dbUpdates.alt_email = updates.altEmail;
     if (updates.altPhone !== undefined) dbUpdates.alt_phone = updates.altPhone;
+    if (updates.birthDate !== undefined) dbUpdates.birth_date = updates.birthDate || null;
     dbUpdates.updated_at = updatedAt;
 
     await supabase.from('leads').update(dbUpdates).eq('id', id);
