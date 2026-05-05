@@ -89,6 +89,7 @@ export default function Feedback() {
   const [feedbackAttachments, setFeedbackAttachments] = useState<Attachment[]>([]);
   const [uploadingNew, setUploadingNew] = useState(false);
   const [uploadingComment, setUploadingComment] = useState<Record<string, boolean>>({});
+  const [lightbox, setLightbox] = useState<Attachment | null>(null);
 
   async function uploadFiles(files: FileList | File[]): Promise<Attachment[]> {
     const arr = Array.from(files);
