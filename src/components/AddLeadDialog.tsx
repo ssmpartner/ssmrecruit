@@ -342,7 +342,8 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
                 <div className="relative">
                   <label className="text-xs font-medium text-muted-foreground">Ort</label>
                   <input value={form.city} onChange={e => set('city', e.target.value)}
-                    onFocus={() => setCityFocused(true)} onBlur={() => setTimeout(() => setCityFocused(false), 150)}
+                    onFocus={() => setCityFocused(true)}
+                    onBlur={() => { setTimeout(() => setCityFocused(false), 150); autofillFromCity(form.city); }}
                     className={inputCls('city')} placeholder="Zürich" maxLength={100} autoComplete="off" />
                   {errors.city && <p className="text-xs text-destructive mt-0.5">{errors.city}</p>}
                   <SuggestionDropdown visible={cityFocused && citySuggestions.length > 0 && form.city.length >= 1}
