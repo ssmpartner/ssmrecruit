@@ -4,9 +4,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.48.0';
+const APP_VERSION = '2.50.0';
 
 const versionHistory = [
+  { version: '2.50.0', date: '05.05.2026', changes: [
+    'Feedback-Seite: Screenshots und Dateien können jetzt direkt beim neuen Feedback und bei Kommentaren hochgeladen werden – per Datei-Auswahl oder Strg+V (Einfügen aus der Zwischenablage). Bilder werden als Vorschau angezeigt',
+    'Lead-Detail «Dokumente»: Mitarbeiter können Dokumente nun direkt im Tab hochladen (mit Dokumenttyp-Auswahl), ohne externen Upload-Link. Upload wird automatisch in der Historie vermerkt',
+    'Lead-Erfassung & Lead-Detail: Neues optionales Feld «Geburtsdatum» (Datepicker)',
+    'Status-Wizard «Nicht passend»: Zusätzliche Gründe «Zu alt» (mit Altersangabe), «Hat keine 150 Leads» und «Kein Umfeld»',
+    'Manuelle Lead-Erfassung: Bugfix – «Anrede» (Herr/Frau) landete fälschlich im Feld «Position»',
+    'Adress-Autovervollständigung: Bidirektionales Auto-Fill zwischen PLZ, Ort und Kanton (Swiss-Locations) im Erfassungs- und Detail-Dialog',
+  ]},
   { version: '2.49.0', date: '30.04.2026', changes: [
     'Status-Wizard «Kontaktiert»: Datum & Uhrzeit werden jetzt automatisch vom System erfasst (keine manuelle Eingabe mehr)',
     'Status-Wizard «Kontaktiert» → Ergebnis «Termin vereinbart»: Pflicht-Termin-Block mit Termintyp-Dropdown (BG 1 Erstgespräch, BG 2 Fortsetzung, Vertragsunterzeichnung), Datum, Uhrzeit und Art (Telefon/Video/Vor Ort). Termin wird automatisch im Termine-Tab und Kalender angelegt, Status springt auf «Termin»',
