@@ -285,6 +285,7 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             confirmed: 'Bestätigt', escalated: 'Eskaliert',
             languages: 'Sprache(n) nicht passend', registers: 'Register-Einträge',
             age_too_young: 'Zu jung', age_too_old: 'Zu alt', age: 'Alter', birthdate: 'Geburtsdatum', reactivatable: 'Später reaktivierbar',
+            no_leads_150: 'Hat keine 150 Leads', no_network: 'Kein Umfeld',
           };
           return `${labels[k] || k}: ${v}`;
         })
