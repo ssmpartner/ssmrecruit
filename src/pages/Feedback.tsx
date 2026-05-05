@@ -89,6 +89,7 @@ export default function Feedback() {
   const [feedbackAttachments, setFeedbackAttachments] = useState<Attachment[]>([]);
   const [uploadingNew, setUploadingNew] = useState(false);
   const [uploadingComment, setUploadingComment] = useState<Record<string, boolean>>({});
+  const [lightbox, setLightbox] = useState<Attachment | null>(null);
 
   async function uploadFiles(files: FileList | File[]): Promise<Attachment[]> {
     const arr = Array.from(files);
@@ -208,9 +209,9 @@ export default function Feedback() {
           return (
             <div key={i} className="relative group border rounded-md overflow-hidden bg-muted/30">
               {isImg ? (
-                <a href={a.url} target="_blank" rel="noreferrer">
+                <button type="button" onClick={() => setLightbox(a)} className="block">
                   <img src={a.url} alt={a.name} className="h-20 w-20 object-cover" />
-                </a>
+                </button>
               ) : (
                 <a href={a.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 px-2 py-2 text-xs">
                   <Paperclip className="h-3 w-3" />{a.name}
@@ -450,6 +451,15 @@ export default function Feedback() {
           })}
         </div>
       )}
+
+      <Dialog open={!!lightbox} onOpenChange={(o) => !o && setLightbox(null)}>
+        <DialogContent className="max-w-[95vw] w-fit p-2 bg-background">
+          <DialogHeader className="sr-only"><DialogTitle>{lightbox?.name ?? 'Bild'}</DialogTitle></DialogHeader>
+          {lightbox && (
+            <img src={lightbox.url} alt={lightbox.name} className="max-h-[88vh] max-w-[92vw] object-contain rounded" />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
