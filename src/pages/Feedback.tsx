@@ -209,10 +209,14 @@ export default function Feedback() {
           return (
             <div key={i} className="relative group border rounded-md overflow-hidden bg-muted/30">
               {isImg ? (
-                <a href={a.url} target="_blank" rel="noreferrer">
+                <button type="button" onClick={() => setLightbox(a)} className="block">
                   <img src={a.url} alt={a.name} className="h-20 w-20 object-cover" />
-                </a>
+                </button>
               ) : (
+                <a href={a.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 px-2 py-2 text-xs">
+                  <Paperclip className="h-3 w-3" />{a.name}
+                </a>
+              )}
                 <a href={a.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 px-2 py-2 text-xs">
                   <Paperclip className="h-3 w-3" />{a.name}
                 </a>
