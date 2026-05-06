@@ -2544,6 +2544,7 @@ export type Database = {
           id: string
           lead_id: string | null
           read: boolean
+          recipient_user_id: string | null
           title: string
           type: string
         }
@@ -2553,6 +2554,7 @@ export type Database = {
           id?: string
           lead_id?: string | null
           read?: boolean
+          recipient_user_id?: string | null
           title: string
           type: string
         }
@@ -2562,6 +2564,7 @@ export type Database = {
           id?: string
           lead_id?: string | null
           read?: boolean
+          recipient_user_id?: string | null
           title?: string
           type?: string
         }
