@@ -27,3 +27,5 @@ project_id = "adettewqzanmkgnnjlop"
     verify_jwt = false
   [functions.complete-public-form]
     verify_jwt = false
+  [functions.lookup-public-form]
+    verify_jwt = false

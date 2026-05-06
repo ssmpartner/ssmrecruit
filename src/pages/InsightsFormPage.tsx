@@ -467,15 +467,16 @@ export default function InsightsFormPage() {
     setDiscAnswers(new Array(loadedDisc.length).fill(0));
     setMotivatorAnswers(new Array(loadedMotivators.length).fill(0));
 
-    const { data, error: err } = await supabase
-      .from('insights_requests').select('*').eq('token', token!).single();
-    if (err || !data) { setError('Dieser Link ist ungültig oder abgelaufen.'); setLoading(false); return; }
-    if (data.status === 'completed') { setAlreadyDone(true); setLoading(false); return; }
+    const { data, error: err } = await supabase.functions.invoke('lookup-public-form', {
+      body: { kind: 'insights_request', token },
+    });
+    const row = (data ?? {}) as { id?: string; lead_id?: string; status?: string; lead_name?: string | null; error?: string };
+    if (err || row.error || !row.id) { setError('Dieser Link ist ungültig oder abgelaufen.'); setLoading(false); return; }
+    if (row.status === 'completed') { setAlreadyDone(true); setLoading(false); return; }
 
-    setRequestId(data.id);
-    setLeadId(data.lead_id);
-    const { data: lead } = await supabase.from('leads').select('name').eq('id', data.lead_id).single();
-    if (lead) setLeadName(lead.name);
+    setRequestId(row.id);
+    setLeadId(row.lead_id ?? '');
+    if (row.lead_name) setLeadName(row.lead_name);
     setLoading(false);
   }
 
