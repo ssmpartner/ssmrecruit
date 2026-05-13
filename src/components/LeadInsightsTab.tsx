@@ -302,51 +302,8 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
         </div>
       ))}
 
-      {/* ── Appointment Suggestions ── */}
-      {appointmentSuggestions.length > 0 && (
-        <div className="rounded-lg border bg-card p-4 space-y-2">
-          <div className="flex items-center gap-2 mb-1">
-            <CalendarPlus className="h-4 w-4 text-primary" />
-            <h5 className="text-sm font-semibold">Terminvorschläge vom Kandidaten</h5>
-          </div>
-          {appointmentSuggestions.map(s => {
-            const dateStr = new Date(s.suggested_date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
-            return (
-              <div key={s.id} className={`flex items-center gap-3 rounded-lg border p-2.5 ${
-                s.status === 'accepted' ? 'bg-primary/5 border-primary/30' :
-                s.status === 'declined' ? 'bg-muted/30 border-muted opacity-60' :
-                'bg-background border-border'
-              }`}>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${s.status === 'declined' ? 'line-through text-muted-foreground' : ''}`}>
-                    {dateStr} um {s.suggested_time} Uhr
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {s.status === 'pending' && 'Ausstehend'}
-                    {s.status === 'accepted' && '✅ Angenommen'}
-                    {s.status === 'declined' && '❌ Abgelehnt'}
-                  </p>
-                </div>
-                {s.status === 'pending' && (
-                  <div className="flex gap-1.5">
-                    <button onClick={() => handleSuggestionAction(s.id, 'accepted')}
-                      className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-                      <CalendarCheck className="h-3 w-3" /> Annehmen
-                    </button>
-                    <button onClick={() => handleSuggestionAction(s.id, 'declined')}
-                      className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors">
-                      <X className="h-3 w-3" /> Ablehnen
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
       {/* ── Empty State ── */}
-      {!hasDisc && !hasAssessment && completedInsights.length === 0 && pendingInsights.length === 0 && appointmentSuggestions.length === 0 && (
+      {!hasDisc && !hasAssessment && completedInsights.length === 0 && pendingInsights.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <Brain className="h-10 w-10 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground">Noch keine Insights vorhanden</p>
