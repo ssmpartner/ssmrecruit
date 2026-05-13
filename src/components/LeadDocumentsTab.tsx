@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { FileText, File, Download, Clock, Copy, Check, Loader2, Upload, AlertTriangle, RefreshCw, CheckCircle2, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface Props {
   leadId: string;
@@ -46,6 +47,8 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const [resending, setResending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadType, setUploadType] = useState<string>('cv');
+  const [pendingDelete, setPendingDelete] = useState<DocumentUpload | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function handleInternalUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []);
@@ -158,8 +161,10 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     a.click();
   }
 
-  async function deleteFile(doc: DocumentUpload) {
-    if (!confirm(`Datei "${doc.file_name}" wirklich löschen?`)) return;
+  async function confirmDeleteFile() {
+    const doc = pendingDelete;
+    if (!doc) return;
+    setDeleting(true);
     try {
       const { error: delStErr } = await supabase.storage.from('lead-documents').remove([doc.file_path]);
       if (delStErr && !/not found/i.test(delStErr.message)) throw delStErr;
@@ -171,9 +176,12 @@ export default function LeadDocumentsTab({ leadId }: Props) {
         user: 'System',
       });
       toast({ title: '🗑️ Gelöscht', description: doc.file_name });
+      setPendingDelete(null);
       loadData();
     } catch (err: any) {
       toast({ title: 'Löschen fehlgeschlagen', description: err.message || 'Unbekannter Fehler', variant: 'destructive' });
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -261,6 +269,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const hasExpiredOrUsedAll = docRequests.length > 0 && !hasActiveLink;
 
   return (
+    <>
     <div className="space-y-4">
       {uploadBar}
       {/* Uploaded Documents */}
@@ -296,7 +305,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
                   className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
                   <Download className="h-3.5 w-3.5" /> Download
                 </button>
-                <button onClick={() => deleteFile(doc)}
+                <button onClick={() => setPendingDelete(doc)}
                   title="Löschen"
                   className="inline-flex items-center justify-center rounded-md border border-destructive/30 bg-background px-2 py-1.5 text-destructive hover:bg-destructive/10 transition-colors">
                   <Trash2 className="h-3.5 w-3.5" />
@@ -377,5 +386,27 @@ export default function LeadDocumentsTab({ leadId }: Props) {
         </button>
       )}
     </div>
+    <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && !deleting && setPendingDelete(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Dokument löschen?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Möchten Sie die Datei <strong>{pendingDelete?.file_name}</strong> wirklich endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting}>Abbrechen</AlertDialogCancel>
+          <AlertDialogAction
+            disabled={deleting}
+            onClick={(e) => { e.preventDefault(); confirmDeleteFile(); }}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            Löschen
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
