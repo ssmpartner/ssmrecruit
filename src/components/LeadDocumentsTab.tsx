@@ -177,7 +177,23 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     }
   }
 
-  function getRequestStatus(req: DocumentRequest): 'expired' | 'used' | 'pending' {
+  async function updateDocType(doc: DocumentUpload, newType: string) {
+    if (newType === doc.file_type) return;
+    const oldLabel = documentTypeLabels[doc.file_type] || doc.file_type;
+    const newLabel = documentTypeLabels[newType] || newType;
+    const { error } = await supabase.from('document_uploads').update({ file_type: newType }).eq('id', doc.id);
+    if (error) {
+      toast({ title: 'Fehler', description: error.message, variant: 'destructive' });
+      return;
+    }
+    await supabase.from('activities').insert({
+      id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+      description: `Dokument "${doc.file_name}" neu klassifiziert: ${oldLabel} → ${newLabel}`,
+      user: 'System',
+    });
+    toast({ title: '✅ Aktualisiert', description: newLabel });
+    loadData();
+  }
     const uploadsForRequest = docUploads.filter(u => u.request_id === req.id);
     if (uploadsForRequest.length > 0) return 'used';
     if (req.status === 'completed') return 'used';
