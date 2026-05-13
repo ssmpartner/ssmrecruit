@@ -161,8 +161,10 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     a.click();
   }
 
-  async function deleteFile(doc: DocumentUpload) {
-    if (!confirm(`Datei "${doc.file_name}" wirklich löschen?`)) return;
+  async function confirmDeleteFile() {
+    const doc = pendingDelete;
+    if (!doc) return;
+    setDeleting(true);
     try {
       const { error: delStErr } = await supabase.storage.from('lead-documents').remove([doc.file_path]);
       if (delStErr && !/not found/i.test(delStErr.message)) throw delStErr;
@@ -174,9 +176,12 @@ export default function LeadDocumentsTab({ leadId }: Props) {
         user: 'System',
       });
       toast({ title: '🗑️ Gelöscht', description: doc.file_name });
+      setPendingDelete(null);
       loadData();
     } catch (err: any) {
       toast({ title: 'Löschen fehlgeschlagen', description: err.message || 'Unbekannter Fehler', variant: 'destructive' });
+    } finally {
+      setDeleting(false);
     }
   }
 
