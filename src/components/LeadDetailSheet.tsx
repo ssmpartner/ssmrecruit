@@ -40,6 +40,12 @@ const activityIcon: Record<ActivityEntry['type'], typeof Clock> = {
   appointment: CalendarIcon,
 };
 
+const appointmentTypeConfig = {
+  phone: { label: 'Telefon', icon: Phone },
+  video: { label: 'Video-Call', icon: Video },
+  onsite: { label: 'Vor Ort', icon: Building2 },
+} as const;
+
 interface AppointmentSuggestion {
   id: string;
   lead_id: string;
