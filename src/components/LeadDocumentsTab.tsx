@@ -258,10 +258,17 @@ export default function LeadDocumentsTab({ leadId }: Props) {
                   {documentTypeLabels[doc.file_type] || doc.file_type} • {(doc.file_size / 1024).toFixed(0)} KB • {new Date(doc.uploaded_at).toLocaleDateString('de-CH')}
                 </p>
               </div>
-              <button onClick={() => downloadFile(doc.file_path, doc.file_name)}
-                className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
-                <Download className="h-3.5 w-3.5" /> Download
-              </button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button onClick={() => downloadFile(doc.file_path, doc.file_name)}
+                  className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
+                  <Download className="h-3.5 w-3.5" /> Download
+                </button>
+                <button onClick={() => deleteFile(doc)}
+                  title="Löschen"
+                  className="inline-flex items-center justify-center rounded-md border border-destructive/30 bg-background px-2 py-1.5 text-destructive hover:bg-destructive/10 transition-colors">
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
