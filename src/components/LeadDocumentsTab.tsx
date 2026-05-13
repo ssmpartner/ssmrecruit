@@ -31,6 +31,9 @@ const documentTypeLabels: Record<string, string> = {
   certificate: 'Zertifikat',
   reference: 'Arbeitszeugnis',
   id: 'Ausweis',
+  betreibungsauszug: 'Betreibungsauszug',
+  strafregisterauszug: 'Strafregisterauszug',
+  leadsliste: 'Leadsliste',
   other: 'Sonstiges',
 };
 
