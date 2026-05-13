@@ -251,7 +251,7 @@ export default function LeadDetailSheet() {
   const allRightTabs = [
     { key: 'info' as const, label: 'Info', icon: User, hideForReview: false, hideWhenFrozen: false },
     { key: 'insights' as const, label: 'Insights', icon: Brain, hideForReview: false, hideWhenFrozen: false },
-    { key: 'documents' as const, label: 'Dokumente', icon: Upload, hideForReview: false, hideWhenFrozen: true },
+    { key: 'documents' as const, label: 'Dokumente', icon: Upload, count: docCount, hideForReview: false, hideWhenFrozen: true },
     { key: 'flow' as const, label: 'Flow', icon: Workflow, hideForReview: true, hideWhenFrozen: false },
     { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length, hideForReview: true, hideWhenFrozen: false },
     { key: 'activity' as const, label: 'Aktivität', icon: Activity, hideForReview: false, hideWhenFrozen: false },
