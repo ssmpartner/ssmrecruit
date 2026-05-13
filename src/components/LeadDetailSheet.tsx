@@ -85,6 +85,25 @@ export default function LeadDetailSheet() {
       });
   }, [selectedLead?.id, hasControllingStatus]);
 
+  // Document upload count for the current lead (shown as badge on Dokumente tab + Info section)
+  const [docCount, setDocCount] = useState(0);
+  useEffect(() => {
+    if (!selectedLead) { setDocCount(0); return; }
+    const leadId = selectedLead.id;
+    const load = async () => {
+      const { count } = await supabase
+        .from('document_uploads')
+        .select('id', { count: 'exact', head: true })
+        .eq('lead_id', leadId);
+      setDocCount(count ?? 0);
+    };
+    load();
+    const ch = supabase.channel(`doc-count-${leadId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'document_uploads', filter: `lead_id=eq.${leadId}` }, load)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [selectedLead?.id]);
+
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
     [selectedLead, appointments]
@@ -232,7 +251,7 @@ export default function LeadDetailSheet() {
   const allRightTabs = [
     { key: 'info' as const, label: 'Info', icon: User, hideForReview: false, hideWhenFrozen: false },
     { key: 'insights' as const, label: 'Insights', icon: Brain, hideForReview: false, hideWhenFrozen: false },
-    { key: 'documents' as const, label: 'Dokumente', icon: Upload, hideForReview: false, hideWhenFrozen: true },
+    { key: 'documents' as const, label: 'Dokumente', icon: Upload, count: docCount, hideForReview: false, hideWhenFrozen: true },
     { key: 'flow' as const, label: 'Flow', icon: Workflow, hideForReview: true, hideWhenFrozen: false },
     { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length, hideForReview: true, hideWhenFrozen: false },
     { key: 'activity' as const, label: 'Aktivität', icon: Activity, hideForReview: false, hideWhenFrozen: false },

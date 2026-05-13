@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, File, Download, Clock, Copy, Check, Loader2, Upload, AlertTriangle, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { FileText, File, Download, Clock, Copy, Check, Loader2, Upload, AlertTriangle, RefreshCw, CheckCircle2, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 
@@ -155,6 +155,25 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     a.click();
   }
 
+  async function deleteFile(doc: DocumentUpload) {
+    if (!confirm(`Datei "${doc.file_name}" wirklich löschen?`)) return;
+    try {
+      const { error: delStErr } = await supabase.storage.from('lead-documents').remove([doc.file_path]);
+      if (delStErr && !/not found/i.test(delStErr.message)) throw delStErr;
+      const { error: delDbErr } = await supabase.from('document_uploads').delete().eq('id', doc.id);
+      if (delDbErr) throw delDbErr;
+      await supabase.from('activities').insert({
+        id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+        description: `Dokument "${doc.file_name}" gelöscht (${documentTypeLabels[doc.file_type] || doc.file_type})`,
+        user: 'System',
+      });
+      toast({ title: '🗑️ Gelöscht', description: doc.file_name });
+      loadData();
+    } catch (err: any) {
+      toast({ title: 'Löschen fehlgeschlagen', description: err.message || 'Unbekannter Fehler', variant: 'destructive' });
+    }
+  }
+
   function getRequestStatus(req: DocumentRequest): 'expired' | 'used' | 'pending' {
     const uploadsForRequest = docUploads.filter(u => u.request_id === req.id);
     if (uploadsForRequest.length > 0) return 'used';
@@ -239,10 +258,17 @@ export default function LeadDocumentsTab({ leadId }: Props) {
                   {documentTypeLabels[doc.file_type] || doc.file_type} • {(doc.file_size / 1024).toFixed(0)} KB • {new Date(doc.uploaded_at).toLocaleDateString('de-CH')}
                 </p>
               </div>
-              <button onClick={() => downloadFile(doc.file_path, doc.file_name)}
-                className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
-                <Download className="h-3.5 w-3.5" /> Download
-              </button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button onClick={() => downloadFile(doc.file_path, doc.file_name)}
+                  className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
+                  <Download className="h-3.5 w-3.5" /> Download
+                </button>
+                <button onClick={() => deleteFile(doc)}
+                  title="Löschen"
+                  className="inline-flex items-center justify-center rounded-md border border-destructive/30 bg-background px-2 py-1.5 text-destructive hover:bg-destructive/10 transition-colors">
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
