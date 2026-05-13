@@ -85,6 +85,25 @@ export default function LeadDetailSheet() {
       });
   }, [selectedLead?.id, hasControllingStatus]);
 
+  // Document upload count for the current lead (shown as badge on Dokumente tab + Info section)
+  const [docCount, setDocCount] = useState(0);
+  useEffect(() => {
+    if (!selectedLead) { setDocCount(0); return; }
+    const leadId = selectedLead.id;
+    const load = async () => {
+      const { count } = await supabase
+        .from('document_uploads')
+        .select('id', { count: 'exact', head: true })
+        .eq('lead_id', leadId);
+      setDocCount(count ?? 0);
+    };
+    load();
+    const ch = supabase.channel(`doc-count-${leadId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'document_uploads', filter: `lead_id=eq.${leadId}` }, load)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [selectedLead?.id]);
+
   const leadAppointments = useMemo(() =>
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
     [selectedLead, appointments]
