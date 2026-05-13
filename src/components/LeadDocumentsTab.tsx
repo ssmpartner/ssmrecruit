@@ -47,6 +47,8 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const [resending, setResending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadType, setUploadType] = useState<string>('cv');
+  const [pendingDelete, setPendingDelete] = useState<DocumentUpload | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function handleInternalUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []);
