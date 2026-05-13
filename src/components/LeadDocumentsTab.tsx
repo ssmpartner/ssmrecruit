@@ -269,6 +269,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const hasExpiredOrUsedAll = docRequests.length > 0 && !hasActiveLink;
 
   return (
+    <>
     <div className="space-y-4">
       {uploadBar}
       {/* Uploaded Documents */}
