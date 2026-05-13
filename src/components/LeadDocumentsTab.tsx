@@ -155,6 +155,25 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     a.click();
   }
 
+  async function deleteFile(doc: DocumentUpload) {
+    if (!confirm(`Datei "${doc.file_name}" wirklich löschen?`)) return;
+    try {
+      const { error: delStErr } = await supabase.storage.from('lead-documents').remove([doc.file_path]);
+      if (delStErr && !/not found/i.test(delStErr.message)) throw delStErr;
+      const { error: delDbErr } = await supabase.from('document_uploads').delete().eq('id', doc.id);
+      if (delDbErr) throw delDbErr;
+      await supabase.from('activities').insert({
+        id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+        description: `Dokument "${doc.file_name}" gelöscht (${documentTypeLabels[doc.file_type] || doc.file_type})`,
+        user: 'System',
+      });
+      toast({ title: '🗑️ Gelöscht', description: doc.file_name });
+      loadData();
+    } catch (err: any) {
+      toast({ title: 'Löschen fehlgeschlagen', description: err.message || 'Unbekannter Fehler', variant: 'destructive' });
+    }
+  }
+
   function getRequestStatus(req: DocumentRequest): 'expired' | 'used' | 'pending' {
     const uploadsForRequest = docUploads.filter(u => u.request_id === req.id);
     if (uploadsForRequest.length > 0) return 'used';
