@@ -120,6 +120,20 @@ export default function LeadDetailSheet() {
     [selectedLead, appointments]
   );
 
+  // Load appointment suggestions from insights form
+  useEffect(() => {
+    if (!selectedLead) { setAppointmentSuggestions([]); return; }
+    const loadSuggestions = async () => {
+      const { data } = await supabase.from('appointment_suggestions').select('*').eq('lead_id', selectedLead.id).order('suggested_date', { ascending: true });
+      setAppointmentSuggestions(data as AppointmentSuggestion[] || []);
+    };
+    loadSuggestions();
+    const ch = supabase.channel(`apt-suggestions-${selectedLead.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointment_suggestions', filter: `lead_id=eq.${selectedLead.id}` }, loadSuggestions)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [selectedLead?.id]);
+
   const activeLeads = useMemo(() => leads.filter(l => l.lifecycle === 'active'), [leads]);
 
   // Duplicate detection for current lead
