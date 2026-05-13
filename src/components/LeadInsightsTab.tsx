@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  Brain, CheckCircle2, Clock, Copy, Check, Loader2, CalendarPlus,
-  CalendarCheck, X, Send, ExternalLink, Eye, EyeOff, Download, FileText
+  Brain, CheckCircle2, Clock, Copy, Check, Loader2, X, Send, ExternalLink, Eye, EyeOff, Download, FileText
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import InsightsTab from './InsightsTab';
@@ -53,7 +52,6 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [insightsRequests, setInsightsRequests] = useState<InsightsRequest[]>([]);
-  const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
   const [assessments, setAssessments] = useState<AssessmentSummary[]>([]);
   const [expandedInsights, setExpandedInsights] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState('');
@@ -66,20 +64,17 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
     loadData();
     const ch = supabase.channel(`insights-tab-${leadId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'insights_requests', filter: `lead_id=eq.${leadId}` }, () => loadData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointment_suggestions', filter: `lead_id=eq.${leadId}` }, () => loadData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'assessment_results', filter: `lead_id=eq.${leadId}` }, () => loadData())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [leadId]);
 
   async function loadData() {
-    const [insRes, sugRes, assRes] = await Promise.all([
+    const [insRes, assRes] = await Promise.all([
       supabase.from('insights_requests').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }),
-      supabase.from('appointment_suggestions').select('*').eq('lead_id', leadId).order('suggested_date', { ascending: true }),
       supabase.from('assessment_results').select('id, completed_at').eq('lead_id', leadId).order('completed_at', { ascending: false }),
     ]);
     if (insRes.data) setInsightsRequests(insRes.data as any[]);
-    if (sugRes.data) setAppointmentSuggestions(sugRes.data as any[]);
     if (assRes.data) setAssessments(assRes.data as any[]);
     setLoading(false);
   }
@@ -120,28 +115,6 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
     setSendingLink(false);
     loadData();
   }, [leadId, toast]);
-
-  async function handleSuggestionAction(id: string, action: 'accepted' | 'declined') {
-    await supabase.from('appointment_suggestions').update({
-      status: action,
-      responded_at: new Date().toISOString(),
-    }).eq('id', id);
-
-    if (action === 'accepted') {
-      const suggestion = appointmentSuggestions.find(s => s.id === id);
-      if (suggestion) {
-        addActivity(leadId, 'appointment', `Terminvorschlag angenommen: ${new Date(suggestion.suggested_date).toLocaleDateString('de-CH')} um ${suggestion.suggested_time}`);
-        const otherPending = appointmentSuggestions.filter(s => s.id !== id && s.status === 'pending');
-        for (const other of otherPending) {
-          await supabase.from('appointment_suggestions').update({ status: 'declined', responded_at: new Date().toISOString() }).eq('id', other.id);
-        }
-      }
-    } else {
-      addActivity(leadId, 'note', 'Terminvorschlag abgelehnt');
-    }
-    toast({ title: action === 'accepted' ? '✅ Termin angenommen' : '❌ Termin abgelehnt' });
-    loadData();
-  }
 
   const handleDownloadPdf = useCallback(async () => {
     setGeneratingPdf(true);
@@ -328,51 +301,8 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
         </div>
       ))}
 
-      {/* ── Appointment Suggestions ── */}
-      {appointmentSuggestions.length > 0 && (
-        <div className="rounded-lg border bg-card p-4 space-y-2">
-          <div className="flex items-center gap-2 mb-1">
-            <CalendarPlus className="h-4 w-4 text-primary" />
-            <h5 className="text-sm font-semibold">Terminvorschläge vom Kandidaten</h5>
-          </div>
-          {appointmentSuggestions.map(s => {
-            const dateStr = new Date(s.suggested_date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
-            return (
-              <div key={s.id} className={`flex items-center gap-3 rounded-lg border p-2.5 ${
-                s.status === 'accepted' ? 'bg-primary/5 border-primary/30' :
-                s.status === 'declined' ? 'bg-muted/30 border-muted opacity-60' :
-                'bg-background border-border'
-              }`}>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${s.status === 'declined' ? 'line-through text-muted-foreground' : ''}`}>
-                    {dateStr} um {s.suggested_time} Uhr
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {s.status === 'pending' && 'Ausstehend'}
-                    {s.status === 'accepted' && '✅ Angenommen'}
-                    {s.status === 'declined' && '❌ Abgelehnt'}
-                  </p>
-                </div>
-                {s.status === 'pending' && (
-                  <div className="flex gap-1.5">
-                    <button onClick={() => handleSuggestionAction(s.id, 'accepted')}
-                      className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-                      <CalendarCheck className="h-3 w-3" /> Annehmen
-                    </button>
-                    <button onClick={() => handleSuggestionAction(s.id, 'declined')}
-                      className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors">
-                      <X className="h-3 w-3" /> Ablehnen
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
       {/* ── Empty State ── */}
-      {!hasDisc && !hasAssessment && completedInsights.length === 0 && pendingInsights.length === 0 && appointmentSuggestions.length === 0 && (
+      {!hasDisc && !hasAssessment && completedInsights.length === 0 && pendingInsights.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <Brain className="h-10 w-10 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground">Noch keine Insights vorhanden</p>

@@ -16,7 +16,7 @@ import SourceBadge from './SourceBadge';
 import {
   Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
   FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus,
-  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Brain, Upload, EyeOff, Eye, Shield, CheckCircle2, AlertTriangle, GitMerge
+  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Brain, Upload, EyeOff, Eye, Shield, CheckCircle2, AlertTriangle, GitMerge, CalendarPlus, CalendarCheck
 } from 'lucide-react';
 import { detectDuplicates, type DuplicatePair } from '@/lib/duplicate-detection';
 import { useToast } from '@/hooks/use-toast';
@@ -46,6 +46,15 @@ const appointmentTypeConfig = {
   onsite: { label: 'Vor Ort', icon: Building2 },
 } as const;
 
+interface AppointmentSuggestion {
+  id: string;
+  lead_id: string;
+  suggested_date: string;
+  suggested_time: string;
+  status: string;
+  responded_at: string | null;
+}
+
 export default function LeadDetailSheet() {
   const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings, leads, leadSources, mergeLead } = useLeads();
   const { toast } = useToast();
@@ -61,6 +70,7 @@ export default function LeadDetailSheet() {
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'insights' | 'documents'>('info');
   const [confirmReset, setConfirmReset] = useState(false);
+  const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
   const leadIsNew = selectedLead?.status === 'new';
   const isMarkedViewed = selectedLead?.isRead ?? false;
 
@@ -109,6 +119,20 @@ export default function LeadDetailSheet() {
     selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
     [selectedLead, appointments]
   );
+
+  // Load appointment suggestions from insights form
+  useEffect(() => {
+    if (!selectedLead) { setAppointmentSuggestions([]); return; }
+    const loadSuggestions = async () => {
+      const { data } = await supabase.from('appointment_suggestions').select('*').eq('lead_id', selectedLead.id).order('suggested_date', { ascending: true });
+      setAppointmentSuggestions(data as AppointmentSuggestion[] || []);
+    };
+    loadSuggestions();
+    const ch = supabase.channel(`apt-suggestions-${selectedLead.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointment_suggestions', filter: `lead_id=eq.${selectedLead.id}` }, loadSuggestions)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [selectedLead?.id]);
 
   const activeLeads = useMemo(() => leads.filter(l => l.lifecycle === 'active'), [leads]);
 
@@ -249,12 +273,38 @@ export default function LeadDetailSheet() {
   const inputCls = "h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
   const inputErr = (field: string) => fieldErrors[field] ? inputCls + ' border-destructive ring-1 ring-destructive/30' : inputCls;
 
+  async function handleSuggestionAction(id: string, action: 'accepted' | 'declined') {
+    await supabase.from('appointment_suggestions').update({
+      status: action,
+      responded_at: new Date().toISOString(),
+    }).eq('id', id);
+
+    if (action === 'accepted') {
+      const suggestion = appointmentSuggestions.find(s => s.id === id);
+      if (suggestion) {
+        addActivity(selectedLead!.id, 'appointment', `Terminvorschlag angenommen: ${new Date(suggestion.suggested_date).toLocaleDateString('de-CH')} um ${suggestion.suggested_time}`);
+        const otherPending = appointmentSuggestions.filter(s => s.id !== id && s.status === 'pending');
+        for (const other of otherPending) {
+          await supabase.from('appointment_suggestions').update({ status: 'declined', responded_at: new Date().toISOString() }).eq('id', other.id);
+        }
+      }
+    } else {
+      addActivity(selectedLead!.id, 'note', 'Terminvorschlag abgelehnt');
+    }
+    toast({ title: action === 'accepted' ? '✅ Termin angenommen' : '❌ Termin abgelehnt' });
+    // Refresh suggestions
+    if (selectedLead) {
+      const { data } = await supabase.from('appointment_suggestions').select('*').eq('lead_id', selectedLead.id).order('suggested_date', { ascending: true });
+      setAppointmentSuggestions(data as AppointmentSuggestion[] || []);
+    }
+  }
+
   const allRightTabs = [
     { key: 'info' as const, label: 'Info', icon: User, hideForReview: false, hideWhenFrozen: false },
     { key: 'insights' as const, label: 'Insights', icon: Brain, hideForReview: false, hideWhenFrozen: false },
     { key: 'documents' as const, label: 'Dokumente', icon: Upload, count: docCount, hideForReview: false, hideWhenFrozen: true },
     { key: 'flow' as const, label: 'Flow', icon: Workflow, hideForReview: true, hideWhenFrozen: false },
-    { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length, hideForReview: true, hideWhenFrozen: false },
+    { key: 'appointments' as const, label: 'Termine', icon: CalendarIcon, count: leadAppointments.length + appointmentSuggestions.length, hideForReview: true, hideWhenFrozen: false },
     { key: 'activity' as const, label: 'Aktivität', icon: Activity, hideForReview: false, hideWhenFrozen: false },
     { key: 'status' as const, label: 'Status', icon: FileText, hideForReview: false, hideWhenFrozen: false },
   ];
@@ -841,7 +891,49 @@ export default function LeadDetailSheet() {
                           </div>
                         )}
 
-                        {leadAppointments.length === 0 && !showAptForm && (
+                        {appointmentSuggestions.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 mb-1">
+                              <CalendarPlus className="h-4 w-4 text-primary" />
+                              <h5 className="text-sm font-semibold">Terminvorschläge vom Kandidaten</h5>
+                            </div>
+                            {appointmentSuggestions.map(s => {
+                              const dateStr = new Date(s.suggested_date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+                              return (
+                                <div key={s.id} className={`flex items-center gap-3 rounded-lg border p-2.5 ${
+                                  s.status === 'accepted' ? 'bg-primary/5 border-primary/30' :
+                                  s.status === 'declined' ? 'bg-muted/30 border-muted opacity-60' :
+                                  'bg-background border-border'
+                                }`}>
+                                  <div className="flex-1 min-w-0">
+                                    <p className={`text-sm font-medium ${s.status === 'declined' ? 'line-through text-muted-foreground' : ''}`}>
+                                      {dateStr} um {s.suggested_time} Uhr
+                                    </p>
+                                    <p className="text-[11px] text-muted-foreground">
+                                      {s.status === 'pending' && 'Ausstehend'}
+                                      {s.status === 'accepted' && '✅ Angenommen'}
+                                      {s.status === 'declined' && '❌ Abgelehnt'}
+                                    </p>
+                                  </div>
+                                  {s.status === 'pending' && (
+                                    <div className="flex gap-1.5">
+                                      <button onClick={() => handleSuggestionAction(s.id, 'accepted')}
+                                        className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                                        <CalendarCheck className="h-3 w-3" /> Annehmen
+                                      </button>
+                                      <button onClick={() => handleSuggestionAction(s.id, 'declined')}
+                                        className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors">
+                                        <X className="h-3 w-3" /> Ablehnen
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {leadAppointments.length === 0 && appointmentSuggestions.length === 0 && !showAptForm && (
                           <p className="text-sm text-muted-foreground py-8 text-center">Noch keine Termine</p>
                         )}
                         <div className="space-y-2">
