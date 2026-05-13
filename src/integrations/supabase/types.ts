@@ -2357,6 +2357,27 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_personal_data: {
+        Row: {
+          data: Json
+          lead_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          data?: Json
+          lead_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          data?: Json
+          lead_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       lead_sources: {
         Row: {
           color: string
