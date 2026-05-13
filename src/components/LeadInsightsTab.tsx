@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  Brain, CheckCircle2, Clock, Copy, Check, Loader2, CalendarPlus,
-  CalendarCheck, X, Send, ExternalLink, Eye, EyeOff, Download, FileText
+  Brain, CheckCircle2, Clock, Copy, Check, Loader2, Send, ExternalLink, Eye, EyeOff, Download, FileText
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import InsightsTab from './InsightsTab';
