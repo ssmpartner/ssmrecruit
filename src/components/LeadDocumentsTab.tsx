@@ -194,6 +194,8 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     toast({ title: '✅ Aktualisiert', description: newLabel });
     loadData();
   }
+
+  function getRequestStatus(req: DocumentRequest): 'expired' | 'used' | 'pending' {
     const uploadsForRequest = docUploads.filter(u => u.request_id === req.id);
     if (uploadsForRequest.length > 0) return 'used';
     if (req.status === 'completed') return 'used';
