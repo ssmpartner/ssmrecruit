@@ -162,13 +162,13 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (existingEmp) {
+          // WICHTIG: agency_id und role NICHT überschreiben — bestehende lokale Zuweisung
+          // ist die Quelle der Wahrheit. SSO liefert hier oft veraltete/leere Werte.
           const { error: upErr } = await admin.from('employees').update({
             name: displayName,
             email,
             avatar: avatarUrl,
             user_id: userId,
-            agency_id: agencyId,
-            role: finalRole,
             updated_at: new Date().toISOString(),
           }).eq('id', existingEmp.id);
           if (upErr) { failed++; errors.push({ email, message: `Update fehlgeschlagen: ${upErr.message}` }); continue; }
