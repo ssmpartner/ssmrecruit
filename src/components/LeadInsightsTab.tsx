@@ -53,7 +53,6 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [insightsRequests, setInsightsRequests] = useState<InsightsRequest[]>([]);
-  const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
   const [assessments, setAssessments] = useState<AssessmentSummary[]>([]);
   const [expandedInsights, setExpandedInsights] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState('');
@@ -66,20 +65,17 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
     loadData();
     const ch = supabase.channel(`insights-tab-${leadId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'insights_requests', filter: `lead_id=eq.${leadId}` }, () => loadData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointment_suggestions', filter: `lead_id=eq.${leadId}` }, () => loadData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'assessment_results', filter: `lead_id=eq.${leadId}` }, () => loadData())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [leadId]);
 
   async function loadData() {
-    const [insRes, sugRes, assRes] = await Promise.all([
+    const [insRes, assRes] = await Promise.all([
       supabase.from('insights_requests').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }),
-      supabase.from('appointment_suggestions').select('*').eq('lead_id', leadId).order('suggested_date', { ascending: true }),
       supabase.from('assessment_results').select('id, completed_at').eq('lead_id', leadId).order('completed_at', { ascending: false }),
     ]);
     if (insRes.data) setInsightsRequests(insRes.data as any[]);
-    if (sugRes.data) setAppointmentSuggestions(sugRes.data as any[]);
     if (assRes.data) setAssessments(assRes.data as any[]);
     setLoading(false);
   }
@@ -120,28 +116,6 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
     setSendingLink(false);
     loadData();
   }, [leadId, toast]);
-
-  async function handleSuggestionAction(id: string, action: 'accepted' | 'declined') {
-    await supabase.from('appointment_suggestions').update({
-      status: action,
-      responded_at: new Date().toISOString(),
-    }).eq('id', id);
-
-    if (action === 'accepted') {
-      const suggestion = appointmentSuggestions.find(s => s.id === id);
-      if (suggestion) {
-        addActivity(leadId, 'appointment', `Terminvorschlag angenommen: ${new Date(suggestion.suggested_date).toLocaleDateString('de-CH')} um ${suggestion.suggested_time}`);
-        const otherPending = appointmentSuggestions.filter(s => s.id !== id && s.status === 'pending');
-        for (const other of otherPending) {
-          await supabase.from('appointment_suggestions').update({ status: 'declined', responded_at: new Date().toISOString() }).eq('id', other.id);
-        }
-      }
-    } else {
-      addActivity(leadId, 'note', 'Terminvorschlag abgelehnt');
-    }
-    toast({ title: action === 'accepted' ? '✅ Termin angenommen' : '❌ Termin abgelehnt' });
-    loadData();
-  }
 
   const handleDownloadPdf = useCallback(async () => {
     setGeneratingPdf(true);
