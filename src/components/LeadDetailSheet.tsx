@@ -40,11 +40,14 @@ const activityIcon: Record<ActivityEntry['type'], typeof Clock> = {
   appointment: CalendarIcon,
 };
 
-const appointmentTypeConfig = {
-  phone: { label: 'Telefon', icon: Phone },
-  video: { label: 'Video-Call', icon: Video },
-  onsite: { label: 'Vor Ort', icon: Building2 },
-} as const;
+interface AppointmentSuggestion {
+  id: string;
+  lead_id: string;
+  suggested_date: string;
+  suggested_time: string;
+  status: string;
+  responded_at: string | null;
+}
 
 export default function LeadDetailSheet() {
   const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings, leads, leadSources, mergeLead } = useLeads();
@@ -61,6 +64,7 @@ export default function LeadDetailSheet() {
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'insights' | 'documents'>('info');
   const [confirmReset, setConfirmReset] = useState(false);
+  const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
   const leadIsNew = selectedLead?.status === 'new';
   const isMarkedViewed = selectedLead?.isRead ?? false;
 
