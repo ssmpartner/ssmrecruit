@@ -273,6 +273,32 @@ export default function LeadDetailSheet() {
   const inputCls = "h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
   const inputErr = (field: string) => fieldErrors[field] ? inputCls + ' border-destructive ring-1 ring-destructive/30' : inputCls;
 
+  async function handleSuggestionAction(id: string, action: 'accepted' | 'declined') {
+    await supabase.from('appointment_suggestions').update({
+      status: action,
+      responded_at: new Date().toISOString(),
+    }).eq('id', id);
+
+    if (action === 'accepted') {
+      const suggestion = appointmentSuggestions.find(s => s.id === id);
+      if (suggestion) {
+        addActivity(selectedLead!.id, 'appointment', `Terminvorschlag angenommen: ${new Date(suggestion.suggested_date).toLocaleDateString('de-CH')} um ${suggestion.suggested_time}`);
+        const otherPending = appointmentSuggestions.filter(s => s.id !== id && s.status === 'pending');
+        for (const other of otherPending) {
+          await supabase.from('appointment_suggestions').update({ status: 'declined', responded_at: new Date().toISOString() }).eq('id', other.id);
+        }
+      }
+    } else {
+      addActivity(selectedLead!.id, 'note', 'Terminvorschlag abgelehnt');
+    }
+    toast({ title: action === 'accepted' ? '✅ Termin angenommen' : '❌ Termin abgelehnt' });
+    // Refresh suggestions
+    if (selectedLead) {
+      const { data } = await supabase.from('appointment_suggestions').select('*').eq('lead_id', selectedLead.id).order('suggested_date', { ascending: true });
+      setAppointmentSuggestions(data as AppointmentSuggestion[] || []);
+    }
+  }
+
   const allRightTabs = [
     { key: 'info' as const, label: 'Info', icon: User, hideForReview: false, hideWhenFrozen: false },
     { key: 'insights' as const, label: 'Insights', icon: Brain, hideForReview: false, hideWhenFrozen: false },
