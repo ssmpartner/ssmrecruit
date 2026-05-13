@@ -275,9 +275,21 @@ export default function LeadDocumentsTab({ leadId }: Props) {
               <File className="h-5 w-5 text-muted-foreground shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{doc.file_name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {documentTypeLabels[doc.file_type] || doc.file_type} • {(doc.file_size / 1024).toFixed(0)} KB • {new Date(doc.uploaded_at).toLocaleDateString('de-CH')}
-                </p>
+                <div className="mt-1 flex items-center gap-2 flex-wrap">
+                  <select
+                    value={documentTypeLabels[doc.file_type] ? doc.file_type : 'other'}
+                    onChange={e => updateDocType(doc, e.target.value)}
+                    className="h-6 rounded border bg-background px-1.5 text-[11px] font-medium text-primary focus:ring-1 focus:ring-ring"
+                    title="Dokumenttyp ändern"
+                  >
+                    {Object.entries(documentTypeLabels).map(([v, l]) => (
+                      <option key={v} value={v}>{l}</option>
+                    ))}
+                  </select>
+                  <span className="text-xs text-muted-foreground">
+                    {(doc.file_size / 1024).toFixed(0)} KB • {new Date(doc.uploaded_at).toLocaleDateString('de-CH')}
+                  </span>
+                </div>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <button onClick={() => downloadFile(doc.file_path, doc.file_name)}
