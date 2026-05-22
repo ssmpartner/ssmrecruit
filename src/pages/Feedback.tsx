@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Plus, MessageSquare, Trash2, Loader2, Paperclip, X, Image as ImageIcon } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -90,6 +91,8 @@ export default function Feedback() {
   const [uploadingNew, setUploadingNew] = useState(false);
   const [uploadingComment, setUploadingComment] = useState<Record<string, boolean>>({});
   const [lightbox, setLightbox] = useState<Attachment | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Feedback | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function uploadFiles(files: FileList | File[]): Promise<Attachment[]> {
     const arr = Array.from(files);
@@ -174,11 +177,19 @@ export default function Feedback() {
   }
 
   async function deleteFeedback(id: string) {
-    if (!confirm('Feedback wirklich löschen?')) return;
-    const { error } = await supabase.from('feedback').delete().eq('id', id);
-    if (error) { toast.error('Löschen fehlgeschlagen'); return; }
+    setDeleting(true);
+    // Delete comments first (CASCADE should handle, but explicit avoids any silent RLS issues)
+    await supabase.from('feedback_comments').delete().eq('feedback_id', id);
+    const { data, error } = await supabase.from('feedback').delete().eq('id', id).select('id');
+    setDeleting(false);
+    setDeleteTarget(null);
+    if (error) { toast.error(`Löschen fehlgeschlagen: ${error.message}`); return; }
+    if (!data || data.length === 0) {
+      toast.error('Löschen nicht erlaubt (keine Berechtigung)');
+      return;
+    }
     toast.success('Feedback gelöscht');
-    load();
+    setFeedbacks(prev => prev.filter(f => f.id !== id));
   }
 
   async function addComment(feedbackId: string, asOfficial = false) {
@@ -371,7 +382,7 @@ export default function Feedback() {
                       </Select>
                     )}
                     {canDelete && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => deleteFeedback(f.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeleteTarget(f)} title="Feedback löschen">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
@@ -460,6 +471,28 @@ export default function Feedback() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && !deleting && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Feedback löschen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              «{deleteTarget?.title}» wird unwiderruflich gelöscht – inklusive aller Kommentare.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(e) => { e.preventDefault(); if (deleteTarget) deleteFeedback(deleteTarget.id); }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
