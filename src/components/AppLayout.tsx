@@ -52,14 +52,15 @@ export default function AppLayout() {
       <AppSidebar />
       <div className={`transition-all duration-300 ${collapsed ? 'pl-[68px]' : 'pl-64'}`}>
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-card/90 backdrop-blur-md px-8">
-          <div className="relative w-80">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Leads, Agenturen suchen..."
-              className="h-9 w-full rounded-xl border bg-muted/50 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-ring focus:bg-background transition-all"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            className="group relative flex h-9 w-80 items-center gap-2 rounded-xl border bg-muted/50 px-3 text-sm text-muted-foreground hover:bg-background hover:border-ring/40 transition-all"
+          >
+            <Search className="h-4 w-4" />
+            <span className="flex-1 text-left">Leads, Agenturen, Mitarbeiter suchen…</span>
+            <kbd className="hidden md:inline-flex h-5 items-center rounded border bg-background px-1.5 text-[10px] font-medium">⌘K</kbd>
+          </button>
           <div className="flex items-center gap-4">
             <NotificationCenter />
             <DropdownMenu>
