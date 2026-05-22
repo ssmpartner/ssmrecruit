@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  Brain, CheckCircle2, Clock, Copy, Check, Loader2, X, Send, ExternalLink, Eye, EyeOff, Download, FileText
+  Brain, CheckCircle2, Clock, Copy, Check, Loader2, X, Link as LinkIcon, Mail, ExternalLink, Eye, EyeOff, Download, History
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import InsightsTab from './InsightsTab';
@@ -20,6 +20,7 @@ interface InsightsRequest {
   token: string;
   status: string;
   sent_at: string;
+  created_at?: string;
   completed_at: string | null;
   responses: Record<string, string>;
 }
