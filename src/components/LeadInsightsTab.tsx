@@ -54,7 +54,7 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
   const leadEmail = (lead as any)?.email || (lead as any)?.altEmail || '';
   const [showHistory, setShowHistory] = useState(false);
   const [emailSendingId, setEmailSendingId] = useState<string | null>(null);
-  const { discResults, addActivity } = useLeads();
+  
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [insightsRequests, setInsightsRequests] = useState<InsightsRequest[]>([]);
