@@ -461,7 +461,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     addActivity(id, 'status_change', `Lead "${leadData.name}" manuell erfasst`);
     addNotification({ type: 'lead_new', title: 'Neuer Lead', description: `${leadData.name} wurde erfasst.`, leadId: id });
 
-    await supabase.from('leads').insert({
+    const { error: insertError } = await supabase.from('leads').insert({
       id,
       name: leadData.name,
       salutation: leadData.salutation || '',
@@ -482,6 +482,12 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       lead_lifecycle: leadData.lifecycle || 'active',
       birth_date: leadData.birthDate || null,
     });
+    if (insertError) {
+      // Rollback optimistic insert so the UI matches the DB
+      setLeads((prev) => prev.filter(l => l.id !== id));
+      toast.error('Lead konnte nicht gespeichert werden', { description: insertError.message });
+      console.error('[addLead] insert failed', insertError);
+    }
   }, [addActivity, addNotification, checkForDuplicates]);
 
   const archiveLead = useCallback(async (id: string) => {
