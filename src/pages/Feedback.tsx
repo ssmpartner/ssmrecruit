@@ -460,6 +460,16 @@ export default function Feedback() {
               </Card>
             );
           })}
+        </div>
+      )}
+
+      <Dialog open={!!lightbox} onOpenChange={(o) => !o && setLightbox(null)}>
+        <DialogContent className="max-w-[95vw] w-fit p-2 bg-background">
+          <DialogHeader className="sr-only"><DialogTitle>{lightbox?.name ?? 'Bild'}</DialogTitle></DialogHeader>
+          {lightbox && (
+            <img src={lightbox.url} alt={lightbox.name} className="max-h-[88vh] max-w-[92vw] object-contain rounded" />
+          )}
+        </DialogContent>
       </Dialog>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && !deleting && setDeleteTarget(null)}>
@@ -483,17 +493,6 @@ export default function Feedback() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-      )}
-
-      <Dialog open={!!lightbox} onOpenChange={(o) => !o && setLightbox(null)}>
-        <DialogContent className="max-w-[95vw] w-fit p-2 bg-background">
-          <DialogHeader className="sr-only"><DialogTitle>{lightbox?.name ?? 'Bild'}</DialogTitle></DialogHeader>
-          {lightbox && (
-            <img src={lightbox.url} alt={lightbox.name} className="max-h-[88vh] max-w-[92vw] object-contain rounded" />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
