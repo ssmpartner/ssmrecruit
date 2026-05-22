@@ -149,11 +149,20 @@ Deno.serve(async (req) => {
         }, { onConflict: 'id' });
 
         const validRoles = ['superadmin','admin','backoffice','analyst','teamleiter','controlling','geschaeftsleitung','hr','agency_manager'];
-        const finalRole = validRoles.includes(role) ? role : 'backoffice';
-        await admin.from('user_roles').upsert(
-          { user_id: userId, role: finalRole as any },
-          { onConflict: 'user_id,role' }
-        );
+        const hasValidRole = validRoles.includes(role);
+        // Unbekannte SSO-Rollen (z. B. 'finanzcoach', 'operations', leer) erhalten KEINE
+        // Berechtigungs-Rolle → sie sehen/bearbeiten nur ihre eigenen zugewiesenen Leads.
+        // employees.role bleibt die Job-Bezeichnung aus dem SSO (oder 'employee' als Fallback).
+        const finalRole = hasValidRole ? role : 'employee';
+        if (hasValidRole) {
+          await admin.from('user_roles').upsert(
+            { user_id: userId, role: role as any },
+            { onConflict: 'user_id,role' }
+          );
+        } else {
+          // Sicherstellen, dass keine veraltete privilegierte Rolle hängen bleibt.
+          await admin.from('user_roles').delete().eq('user_id', userId);
+        }
 
         const { data: existingEmp } = await admin
           .from('employees')
@@ -189,6 +198,7 @@ Deno.serve(async (req) => {
           created++;
           createdItems.push({ email, user_id: userId, employee_id: empId, role: finalRole, agency_id: agencyId });
         }
+
       } catch (e: any) {
         failed++;
         errors.push({ email: emailRaw, message: e?.message || 'Unbekannter Fehler' });
