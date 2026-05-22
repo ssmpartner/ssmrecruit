@@ -9,6 +9,7 @@ import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
+import { resolveFirstName } from '@/lib/display-name';
 import { statusConfig } from '@/lib/mock-data';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -67,7 +68,7 @@ function MiniStat({ icon: Icon, label, value, color, onClick }: { icon: any; lab
 
 export default function Dashboard() {
   const { leads, employees, agencies, appointments, leadSources, setSelectedLead } = useLeads();
-  const { profile, isControlling, isGeschaeftsleitung, isHR, isReviewRole, isSuperadmin } = useAuth();
+  const { profile, user, isControlling, isGeschaeftsleitung, isHR, isReviewRole, isSuperadmin } = useAuth();
   const navigate = useNavigate();
   const [showAddLead, setShowAddLead] = useState(false);
   const [now, setNow] = useState(new Date());
@@ -136,7 +137,7 @@ export default function Dashboard() {
   const newCount = activeLeads.filter(l => l.status === 'new').length;
   const conversionRate = activeLeads.length > 0 ? ((hiredCount / activeLeads.length) * 100).toFixed(1) : '0';
 
-  const displayName = profile?.display_name?.split(' ')[0] || 'User';
+  const displayName = resolveFirstName(profile?.display_name, user?.email, 'User');
 
   // Role-specific leads
   const roleLeads = useMemo(() => {
