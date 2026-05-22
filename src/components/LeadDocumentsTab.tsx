@@ -255,9 +255,19 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const hasContent = docUploads.length > 0 || docRequests.length > 0;
 
   const uploadBar = (
-    <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3 flex flex-wrap items-center gap-2">
-      <Upload className="h-4 w-4 text-primary" />
-      <span className="text-sm font-medium text-primary">Intern hochladen:</span>
+    <div
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragOver}
+      onDragLeave={handleDragLeave}
+      className={`rounded-lg border-2 border-dashed p-3 flex flex-wrap items-center gap-2 transition-colors ${
+        isDragging ? 'border-primary bg-primary/15 ring-2 ring-primary/40' : 'border-primary/30 bg-primary/5'
+      }`}
+    >
+      <Upload className={`h-4 w-4 text-primary ${isDragging ? 'animate-bounce' : ''}`} />
+      <span className="text-sm font-medium text-primary">
+        {isDragging ? 'Dateien hier ablegen…' : 'Intern hochladen (Drag & Drop möglich):'}
+      </span>
       <select
         value={uploadType}
         onChange={e => setUploadType(e.target.value)}
@@ -276,6 +286,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
       <span className="text-[11px] text-muted-foreground ml-auto">Max. 20 MB pro Datei</span>
     </div>
   );
+
 
   if (!hasContent) {
     return (
