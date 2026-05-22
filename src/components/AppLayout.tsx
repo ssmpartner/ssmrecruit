@@ -105,6 +105,7 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   );
 }
