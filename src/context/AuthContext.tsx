@@ -162,18 +162,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (!isCredErr) return { error: firstAttempt.error };
 
-        // 1) Try central SSO sync first
-        const syncResult = await syncSsoUser(email, password);
-        if (!syncResult.error) {
-          const retry = await supabase.auth.signInWithPassword({ email, password });
-          if (!retry.error) return { error: null };
-        }
-
-        // 2) Fallback: dev-login bypass (whitelisted dev emails only)
-        const devRes = await supabase.functions.invoke('dev-login', {
-          body: { email, password },
-        });
-        if (devRes.error || (devRes.data as any)?.error) {
+        // Preview only: dev-login bypass for whitelisted dev emails.
+        // We intentionally do NOT call sso-proxy here — central SSO rejections
+        // surface as a 400 runtime error in preview.
+        try {
+          const devRes = await supabase.functions.invoke('dev-login', {
+            body: { email, password },
+          });
+          if (devRes.error || (devRes.data as any)?.error) {
+            return { error: firstAttempt.error };
+          }
+        } catch {
           return { error: firstAttempt.error };
         }
         const { error } = await supabase.auth.signInWithPassword({ email, password });
