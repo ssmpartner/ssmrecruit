@@ -391,29 +391,42 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <Brain className="h-10 w-10 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground">Noch keine Insights vorhanden</p>
-          <p className="text-xs text-muted-foreground/70 mt-1">Klicken Sie oben auf «Link senden», um den Insights & DISC-Wizard zu starten.</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Klicken Sie oben auf «Link generieren», um den Insights & DISC-Wizard zu starten.</p>
         </div>
       )}
 
-      {/* ── Send Confirmation Dialog ── */}
+      {/* ── Generate Link Dialog ── */}
       <Dialog open={showSendConfirm} onOpenChange={setShowSendConfirm}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Insights-Link senden</DialogTitle>
+            <DialogTitle>Insights-Link generieren</DialogTitle>
             <DialogDescription>
-              Möchten Sie einen neuen Insights & DISC-Test-Link für <strong>{leadName}</strong> erstellen? Der Link wird automatisch in die Zwischenablage kopiert.
+              Es wird ein neuer Insights & DISC-Test-Link für <strong>{leadName}</strong> erstellt und automatisch in die Zwischenablage kopiert. Der Versand per E-Mail ist optional.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
+          <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+            {leadEmail
+              ? <>Hinterlegte E-Mail: <strong className="text-foreground">{leadEmail}</strong></>
+              : <>Für diesen Lead ist keine E-Mail-Adresse hinterlegt – Versand per E-Mail nicht möglich.</>}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-2 flex-col sm:flex-row">
             <Button variant="outline" onClick={() => setShowSendConfirm(false)}>
               Abbrechen
             </Button>
-            <Button onClick={() => { setShowSendConfirm(false); handleSendInsightsLink(); }}>
-              Bestätigen
+            <Button variant="secondary" onClick={() => { setShowSendConfirm(false); handleGenerateLink(false); }}>
+              <LinkIcon className="h-3.5 w-3.5" /> Nur generieren
+            </Button>
+            <Button
+              disabled={!leadEmail}
+              onClick={() => { setShowSendConfirm(false); handleGenerateLink(true); }}
+              title={leadEmail ? '' : 'Keine E-Mail-Adresse'}
+            >
+              <Mail className="h-3.5 w-3.5" /> Generieren & per E-Mail senden
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }
