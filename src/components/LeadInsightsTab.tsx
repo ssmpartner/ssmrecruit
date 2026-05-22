@@ -216,15 +216,15 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
               Link generieren
             </button>
 
-            {/* History toggle */}
-            {insightsRequests.length > 0 && (
+            {/* Completed history toggle */}
+            {completedInsights.length > 0 && (
               <button
                 onClick={() => setShowHistory(s => !s)}
                 className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
-                title="Verlauf aller Links anzeigen"
+                title="Abgeschlossene Links anzeigen"
               >
                 <History className="h-3 w-3" />
-                Verlauf ({insightsRequests.length})
+                {showHistory ? 'Verlauf ausblenden' : `Verlauf (${completedInsights.length})`}
               </button>
             )}
 
