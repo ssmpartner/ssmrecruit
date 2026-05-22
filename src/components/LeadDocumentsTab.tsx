@@ -49,6 +49,65 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const [uploadType, setUploadType] = useState<string>('cv');
   const [pendingDelete, setPendingDelete] = useState<DocumentUpload | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  async function uploadFiles(files: File[]) {
+    if (files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of files) {
+        if (file.size > 20 * 1024 * 1024) {
+          toast({ title: 'Datei zu gross', description: `${file.name}: max. 20 MB`, variant: 'destructive' });
+          continue;
+        }
+        const ext = file.name.split('.').pop() || 'bin';
+        const path = `${leadId}/internal/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from('lead-documents').upload(path, file, {
+          contentType: file.type || 'application/octet-stream',
+        });
+        if (upErr) throw upErr;
+        const { error: insErr } = await supabase.from('document_uploads').insert({
+          lead_id: leadId,
+          file_name: file.name,
+          file_type: uploadType,
+          file_path: path,
+          file_size: file.size,
+        } as any);
+        if (insErr) throw insErr;
+        await supabase.from('activities').insert({
+          id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+          description: `Dokument "${file.name}" intern hochgeladen (${documentTypeLabels[uploadType] || uploadType})`,
+          user: 'System',
+        });
+      }
+      toast({ title: '✅ Upload abgeschlossen', description: `${files.length} Datei(en)` });
+      loadData();
+    } catch (err: any) {
+      toast({ title: 'Upload fehlgeschlagen', description: err.message || 'Unbekannter Fehler', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length > 0) uploadFiles(files);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }
 
   async function handleInternalUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []);
