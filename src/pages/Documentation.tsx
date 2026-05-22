@@ -4,9 +4,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.51.0';
+const APP_VERSION = '2.52.0';
 
 const versionHistory = [
+  { version: '2.52.0', date: '22.05.2026', changes: [
+    'Insights-Tab: Links können jetzt jederzeit generiert werden (unabhängig von bereits aktiven Links) – mit Kopierfunktion und optionalem E-Mail-Versand',
+    'Insights-Tab: Neuer «Verlauf»-Bereich zeigt alle abgeschlossenen Insights-Anfragen mit Status-Badge (Abgeschlossen), Zeitstempel und Kopierfunktion',
+    'Insights-Tab: Aktive Links werden separat angezeigt (Amber-Badge «Aktiv») mit Aktionen: Kopieren, per E-Mail erneut senden, Vorschau und Öffnen',
+    'Insights-Tab: E-Mail-Versand ist optional – «Nur generieren» kopiert den Link direkt in die Zwischenablage, «Generieren & per E-Mail senden» öffnet das lokale Mail-Programm',
+    'Anzeigename: Wenn kein Display-Name vorhanden oder die E-Mail-Adresse als Name gespeichert ist, wird der E-Mail-Lokalteil automatisch hübsch formatiert (z. B. bilel.chagra → Bilel Chagra)',
+    'Dashboard & Topbar: Grußformel und Benutzeranzeige verwenden jetzt den korrekt aufgelösten Namen statt der rohen E-Mail-Adresse',
+  ]},
   { version: '2.51.0', date: '22.05.2026', changes: [
     'Globale Suche: Neues fokussiertes Such-Overlay in der Topbar (Klick oder ⌘K) mit zentriertem Suchfeld, abgedunkeltem Hintergrund und Bereichen für Leads, Agenturen und Mitarbeiter',
     'Globale Suche: Rollenbasierter Scope – Review-Rollen (Controlling, Geschäftsleitung, HR) und Backoffice durchsuchen ausschliesslich Leads',
