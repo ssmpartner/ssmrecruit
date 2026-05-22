@@ -96,11 +96,35 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
     toast({ title: 'Kopiert!', description: 'Link in der Zwischenablage.' });
   }
 
-  const handleSendInsightsLink = useCallback(async () => {
+  function buildMailto(token: string) {
+    const url = getPublicUrl(token);
+    const subject = encodeURIComponent('Ihr Insights & DISC-Test bei SSM Partner');
+    const body = encodeURIComponent(
+      `Guten Tag ${leadName},\n\nbitte füllen Sie über den folgenden Link unseren kurzen Insights & DISC-Test aus:\n\n${url}\n\nVielen Dank!\nIhr SSM Partner Team`,
+    );
+    return `mailto:${leadEmail}?subject=${subject}&body=${body}`;
+  }
+
+  function sendByEmail(token: string, reqId: string) {
+    if (!leadEmail) {
+      toast({ title: 'Keine E-Mail-Adresse', description: 'Für diesen Lead ist keine E-Mail hinterlegt.', variant: 'destructive' });
+      return;
+    }
+    setEmailSendingId(reqId);
+    window.location.href = buildMailto(token);
+    supabase.from('activities').insert({
+      id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+      description: `Insights-Link per E-Mail an ${leadEmail} gesendet`, user: 'System',
+    }).then(() => {
+      setTimeout(() => setEmailSendingId(null), 1500);
+    });
+  }
+
+  const handleGenerateLink = useCallback(async (alsoSendEmail: boolean) => {
     setSendingLink(true);
     const { data, error } = await supabase
       .from('insights_requests')
-      .insert({ lead_id: leadId, sent_via: 'manual' })
+      .insert({ lead_id: leadId, sent_via: alsoSendEmail ? 'email' : 'manual' })
       .select()
       .single();
 
@@ -112,15 +136,20 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
 
     await supabase.from('activities').insert({
       id: crypto.randomUUID(), lead_id: leadId, type: 'note',
-      description: 'Insights & DISC-Test-Link erstellt', user: 'System',
+      description: alsoSendEmail ? 'Insights-Link erstellt & per E-Mail gesendet' : 'Insights-Link erstellt (manuell)',
+      user: 'System',
     });
 
     const url = getPublicUrl((data as any).token);
     await navigator.clipboard.writeText(url);
-    toast({ title: '✅ Link erstellt & kopiert', description: url });
+    toast({ title: '✅ Link erstellt & kopiert', description: alsoSendEmail ? 'E-Mail-Programm wird geöffnet.' : url });
+    if (alsoSendEmail && leadEmail) {
+      window.location.href = buildMailto((data as any).token);
+    }
     setSendingLink(false);
     loadData();
-  }, [leadId, toast]);
+  }, [leadId, toast, leadEmail, leadName]);
+
 
   const handleDownloadPdf = useCallback(async () => {
     setGeneratingPdf(true);
