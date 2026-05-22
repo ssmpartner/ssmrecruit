@@ -260,32 +260,43 @@ export default function LeadDocumentsTab({ leadId }: Props) {
       onDragOver={handleDragOver}
       onDragEnter={handleDragOver}
       onDragLeave={handleDragLeave}
-      className={`rounded-lg border-2 border-dashed p-3 flex flex-wrap items-center gap-2 transition-colors ${
+      className={`rounded-xl border-2 border-dashed p-6 transition-colors ${
         isDragging ? 'border-primary bg-primary/15 ring-2 ring-primary/40' : 'border-primary/30 bg-primary/5'
       }`}
     >
-      <Upload className={`h-4 w-4 text-primary ${isDragging ? 'animate-bounce' : ''}`} />
-      <span className="text-sm font-medium text-primary">
-        {isDragging ? 'Dateien hier ablegen…' : 'Intern hochladen (Drag & Drop möglich):'}
-      </span>
-      <select
-        value={uploadType}
-        onChange={e => setUploadType(e.target.value)}
-        disabled={uploading}
-        className="h-8 rounded-md border bg-background px-2 text-xs"
-      >
-        {Object.entries(documentTypeLabels).map(([v, l]) => (
-          <option key={v} value={v}>{l}</option>
-        ))}
-      </select>
-      <label className={`inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-        {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-        Datei(en) wählen
-        <input type="file" multiple className="hidden" disabled={uploading} onChange={handleInternalUpload} />
-      </label>
-      <span className="text-[11px] text-muted-foreground ml-auto">Max. 20 MB pro Datei</span>
+      <div className="flex flex-col items-center text-center gap-3">
+        <div className={`rounded-full bg-primary/10 p-3 ${isDragging ? 'animate-bounce' : ''}`}>
+          <Upload className="h-7 w-7 text-primary" />
+        </div>
+        <div>
+          <p className="text-base font-semibold text-primary">
+            {isDragging ? 'Dateien hier ablegen…' : 'Dokumente hochladen'}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Dateien per Drag & Drop hierher ziehen oder unten auswählen · max. 20 MB pro Datei
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
+          <select
+            value={uploadType}
+            onChange={e => setUploadType(e.target.value)}
+            disabled={uploading}
+            className="h-10 rounded-md border bg-background px-3 text-sm"
+          >
+            {Object.entries(documentTypeLabels).map(([v, l]) => (
+              <option key={v} value={v}>{l}</option>
+            ))}
+          </select>
+          <label className={`inline-flex items-center gap-2 rounded-md border bg-background px-4 py-2 text-sm font-medium hover:bg-muted transition-colors cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            Datei(en) wählen
+            <input type="file" multiple className="hidden" disabled={uploading} onChange={handleInternalUpload} />
+          </label>
+        </div>
+      </div>
     </div>
   );
+
 
 
   if (!hasContent) {
