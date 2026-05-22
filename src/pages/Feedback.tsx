@@ -177,11 +177,19 @@ export default function Feedback() {
   }
 
   async function deleteFeedback(id: string) {
-    if (!confirm('Feedback wirklich löschen?')) return;
-    const { error } = await supabase.from('feedback').delete().eq('id', id);
-    if (error) { toast.error('Löschen fehlgeschlagen'); return; }
+    setDeleting(true);
+    // Delete comments first (CASCADE should handle, but explicit avoids any silent RLS issues)
+    await supabase.from('feedback_comments').delete().eq('feedback_id', id);
+    const { data, error } = await supabase.from('feedback').delete().eq('id', id).select('id');
+    setDeleting(false);
+    setDeleteTarget(null);
+    if (error) { toast.error(`Löschen fehlgeschlagen: ${error.message}`); return; }
+    if (!data || data.length === 0) {
+      toast.error('Löschen nicht erlaubt (keine Berechtigung)');
+      return;
+    }
     toast.success('Feedback gelöscht');
-    load();
+    setFeedbacks(prev => prev.filter(f => f.id !== id));
   }
 
   async function addComment(feedbackId: string, asOfficial = false) {
