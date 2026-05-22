@@ -6,6 +6,7 @@ import { Search, ChevronDown, ExternalLink, Settings, LogOut } from 'lucide-reac
 import NotificationCenter from './NotificationCenter';
 import { useAuth } from '@/context/AuthContext';
 import { useSidebarState } from '@/context/SidebarContext';
+import { resolveDisplayName } from '@/lib/display-name';
 import {
   DropdownMenu,
   DropdownMenuContent,
