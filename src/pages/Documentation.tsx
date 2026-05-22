@@ -4,9 +4,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.50.0';
+const APP_VERSION = '2.51.0';
 
 const versionHistory = [
+  { version: '2.51.0', date: '22.05.2026', changes: [
+    'Globale Suche: Neues fokussiertes Such-Overlay in der Topbar (Klick oder ⌘K) mit zentriertem Suchfeld, abgedunkeltem Hintergrund und Bereichen für Leads, Agenturen und Mitarbeiter',
+    'Globale Suche: Rollenbasierter Scope – Review-Rollen (Controlling, Geschäftsleitung, HR) und Backoffice durchsuchen ausschliesslich Leads',
+    'Leads-Suche: Suchfeld berücksichtigt jetzt auch die Telefonnummer (Leerzeichen, Bindestriche und Klammern werden ignoriert)',
+    'Lead-Detail «Dokumente»: Drag & Drop-Upload direkt auf die vergrösserte Upload-Leiste – mit visuellem Feedback beim Ziehen',
+    'Lead-Erfassung: Bugfix – Quellen «Eigene Leads» und «Weiterempfehlung» konnten nicht gespeichert werden (veralteter DB-Check-Constraint entfernt, harte Fehlermeldung statt stillem Verlust)',
+    'Dev-Login: Stabilisierter Fallback-Login für Entwickler-Konten via dedizierte Edge Function',
+  ]},
   { version: '2.50.0', date: '05.05.2026', changes: [
     'Feedback-Seite: Screenshots und Dateien können jetzt direkt beim neuen Feedback und bei Kommentaren hochgeladen werden – per Datei-Auswahl oder Strg+V (Einfügen aus der Zwischenablage). Bilder werden als Vorschau angezeigt',
     'Lead-Detail «Dokumente»: Mitarbeiter können Dokumente nun direkt im Tab hochladen (mit Dokumenttyp-Auswahl), ohne externen Upload-Link. Upload wird automatisch in der Historie vermerkt',
