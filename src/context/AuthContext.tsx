@@ -150,11 +150,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hostname === 'localhost' ||
         hostname === '127.0.0.1';
 
-      // In Preview/Dev: keep authentication local only. Calling the central SSO
-      // proxy here can raise a 400 runtime error in the preview when SSO rejects
-      // developer credentials, even though the local backend login is the source
-      // of truth for preview access.
       if (isPreview) {
+        const firstAttempt = await supabase.auth.signInWithPassword({ email, password });
+        if (!firstAttempt.error) return { error: null };
+
+        const raw = firstAttempt.error.message?.toLowerCase() || '';
+        const canTrySsoSync =
+          raw.includes('invalid') ||
+          raw.includes('credentials') ||
+          raw.includes('zugangsdaten');
+
+        if (!canTrySsoSync) return { error: firstAttempt.error };
+
+        const syncResult = await syncSsoUser(email, password);
+        if (syncResult.error) return { error: firstAttempt.error };
+
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         return { error };
       }
