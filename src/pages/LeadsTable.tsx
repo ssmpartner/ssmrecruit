@@ -104,7 +104,10 @@ export default function LeadsTable() {
       }
       if (search) {
         const q = search.toLowerCase();
-        if (!l.name.toLowerCase().includes(q) && !l.email.toLowerCase().includes(q) && !l.city.toLowerCase().includes(q) && !l.plz.includes(q)) return false;
+        const phoneDigits = (l.phone || '').replace(/\D/g, '');
+        const qDigits = q.replace(/\D/g, '');
+        const phoneMatch = qDigits.length > 0 && phoneDigits.includes(qDigits);
+        if (!l.name.toLowerCase().includes(q) && !l.email.toLowerCase().includes(q) && !l.city.toLowerCase().includes(q) && !l.plz.includes(q) && !phoneMatch) return false;
       }
       return true;
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
