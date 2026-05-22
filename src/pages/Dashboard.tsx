@@ -67,7 +67,7 @@ function MiniStat({ icon: Icon, label, value, color, onClick }: { icon: any; lab
 
 export default function Dashboard() {
   const { leads, employees, agencies, appointments, leadSources, setSelectedLead } = useLeads();
-  const { profile, isControlling, isGeschaeftsleitung, isHR, isReviewRole, isSuperadmin } = useAuth();
+  const { profile, user, isControlling, isGeschaeftsleitung, isHR, isReviewRole, isSuperadmin } = useAuth();
   const navigate = useNavigate();
   const [showAddLead, setShowAddLead] = useState(false);
   const [now, setNow] = useState(new Date());
