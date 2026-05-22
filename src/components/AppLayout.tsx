@@ -18,6 +18,18 @@ export default function AppLayout() {
   const { profile, user, signOut } = useAuth();
   const { collapsed } = useSidebarState();
   const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const initials = (profile?.display_name || user?.email || 'U')
     .split(' ')
