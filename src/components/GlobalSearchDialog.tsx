@@ -79,7 +79,7 @@ export default function GlobalSearchDialog({ open, onOpenChange }: Props) {
             }
             className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
           />
-          <kbd className="hidden sm:inline-flex h-6 items-center rounded border bg-muted px-2 text-[10px] font-medium text-muted-foreground">ESC</kbd>
+          
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto p-2">
