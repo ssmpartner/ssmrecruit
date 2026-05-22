@@ -66,7 +66,7 @@ export default function GlobalSearchDialog({ open, onOpenChange }: Props) {
         className="max-w-2xl p-0 gap-0 top-[20%] translate-y-0 border-2 shadow-2xl"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <div className="flex items-center gap-3 border-b px-5 py-4">
+        <div className="flex items-center gap-3 border-b px-5 py-4 pr-14">
           <Search className="h-5 w-5 text-muted-foreground" />
           <input
             autoFocus
@@ -79,7 +79,7 @@ export default function GlobalSearchDialog({ open, onOpenChange }: Props) {
             }
             className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
           />
-          <kbd className="hidden sm:inline-flex h-6 items-center rounded border bg-muted px-2 text-[10px] font-medium text-muted-foreground">ESC</kbd>
+          
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto p-2">
