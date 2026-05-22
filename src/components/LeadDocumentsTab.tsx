@@ -49,10 +49,9 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const [uploadType, setUploadType] = useState<string>('cv');
   const [pendingDelete, setPendingDelete] = useState<DocumentUpload | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
-  async function handleInternalUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files || []);
-    e.target.value = '';
+  async function uploadFiles(files: File[]) {
     if (files.length === 0) return;
     setUploading(true);
     try {
@@ -89,6 +88,33 @@ export default function LeadDocumentsTab({ leadId }: Props) {
       setUploading(false);
     }
   }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length > 0) uploadFiles(files);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }
+
+  async function handleInternalUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    await uploadFiles(files);
+  }
+
 
   useEffect(() => {
     loadData();
@@ -229,9 +255,19 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const hasContent = docUploads.length > 0 || docRequests.length > 0;
 
   const uploadBar = (
-    <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3 flex flex-wrap items-center gap-2">
-      <Upload className="h-4 w-4 text-primary" />
-      <span className="text-sm font-medium text-primary">Intern hochladen:</span>
+    <div
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragOver}
+      onDragLeave={handleDragLeave}
+      className={`rounded-lg border-2 border-dashed p-3 flex flex-wrap items-center gap-2 transition-colors ${
+        isDragging ? 'border-primary bg-primary/15 ring-2 ring-primary/40' : 'border-primary/30 bg-primary/5'
+      }`}
+    >
+      <Upload className={`h-4 w-4 text-primary ${isDragging ? 'animate-bounce' : ''}`} />
+      <span className="text-sm font-medium text-primary">
+        {isDragging ? 'Dateien hier ablegen…' : 'Intern hochladen (Drag & Drop möglich):'}
+      </span>
       <select
         value={uploadType}
         onChange={e => setUploadType(e.target.value)}
@@ -250,6 +286,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
       <span className="text-[11px] text-muted-foreground ml-auto">Max. 20 MB pro Datei</span>
     </div>
   );
+
 
   if (!hasContent) {
     return (
