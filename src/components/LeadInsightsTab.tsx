@@ -205,15 +205,28 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
             )}
           </div>
           <div className="flex items-center gap-1.5">
-            {/* Send new link */}
+            {/* Generate link (anytime, sending optional) */}
             <button
               onClick={() => setShowSendConfirm(true)}
               disabled={sendingLink}
               className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+              title="Neuen Insights-Link generieren (Versand optional)"
             >
-              {sendingLink ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-              Link senden
+              {sendingLink ? <Loader2 className="h-3 w-3 animate-spin" /> : <LinkIcon className="h-3 w-3" />}
+              Link generieren
             </button>
+
+            {/* History toggle */}
+            {insightsRequests.length > 0 && (
+              <button
+                onClick={() => setShowHistory(s => !s)}
+                className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
+                title="Verlauf aller Links anzeigen"
+              >
+                <History className="h-3 w-3" />
+                Verlauf ({insightsRequests.length})
+              </button>
+            )}
 
             {/* PDF download */}
             {hasAnyResults && (
@@ -237,10 +250,9 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
               <div key={req.id} className="flex items-center gap-2 rounded-md bg-muted/40 px-2.5 py-2">
                 <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                 <span className="text-xs text-muted-foreground flex-1 truncate">
-                  Gesendet: {new Date(req.sent_at).toLocaleDateString('de-CH')}
+                  Erstellt: {new Date(req.created_at || req.sent_at).toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'short' })}
                 </span>
                 <div className="flex items-center gap-1">
-                  {/* Preview */}
                   <button
                     onClick={() => setPreviewToken(previewToken === req.token ? null : req.token)}
                     className="flex h-6 w-6 items-center justify-center rounded border bg-background hover:bg-muted transition-colors"
@@ -248,7 +260,6 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
                   >
                     {previewToken === req.token ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                   </button>
-                  {/* Copy */}
                   <button
                     onClick={() => copyLink(req.token)}
                     className="flex h-6 w-6 items-center justify-center rounded border bg-background hover:bg-muted transition-colors"
@@ -256,7 +267,14 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
                   >
                     {copiedToken === req.token ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
                   </button>
-                  {/* Open in new tab */}
+                  <button
+                    onClick={() => sendByEmail(req.token, req.id)}
+                    disabled={!leadEmail}
+                    className="flex h-6 w-6 items-center justify-center rounded border bg-background hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    title={leadEmail ? `Per E-Mail an ${leadEmail} senden` : 'Keine E-Mail-Adresse hinterlegt'}
+                  >
+                    {emailSendingId === req.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3" />}
+                  </button>
                   <a
                     href={getPublicUrl(req.token)}
                     target="_blank"
@@ -271,7 +289,39 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
             ))}
           </div>
         )}
+
+        {/* Full history */}
+        {showHistory && insightsRequests.length > 0 && (
+          <div className="mt-3 space-y-1.5 border-t pt-3">
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Verlauf aller Links</p>
+            {insightsRequests.map(req => {
+              const isCompleted = req.status === 'completed';
+              return (
+                <div key={`hist-${req.id}`} className="flex items-center gap-2 rounded-md bg-muted/20 border border-dashed px-2.5 py-1.5">
+                  {isCompleted
+                    ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                    : <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+                  <span className="text-[11px] text-muted-foreground flex-1 truncate">
+                    {new Date(req.created_at || req.sent_at).toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'short' })}
+                    {isCompleted && req.completed_at && ` → abgeschlossen ${new Date(req.completed_at).toLocaleDateString('de-CH')}`}
+                  </span>
+                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {isCompleted ? 'Abgeschlossen' : 'Aktiv'}
+                  </span>
+                  <button
+                    onClick={() => copyLink(req.token)}
+                    className="flex h-5 w-5 items-center justify-center rounded border bg-background hover:bg-muted transition-colors"
+                    title="Link kopieren"
+                  >
+                    {copiedToken === req.token ? <Check className="h-2.5 w-2.5 text-primary" /> : <Copy className="h-2.5 w-2.5" />}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
+
 
       {/* ── Mini Preview ── */}
       {previewToken && (
