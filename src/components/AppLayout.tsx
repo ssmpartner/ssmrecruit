@@ -55,10 +55,10 @@ export default function AppLayout() {
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className="group relative flex h-9 w-80 items-center gap-2 rounded-xl border bg-muted/50 px-3 text-sm text-muted-foreground hover:bg-background hover:border-ring/40 transition-all"
+            className="group relative flex h-9 w-96 items-center gap-2 rounded-xl border bg-muted/50 px-3 text-sm text-muted-foreground hover:bg-background hover:border-ring/40 transition-all"
           >
-            <Search className="h-4 w-4" />
-            <span className="flex-1 text-left">Leads, Agenturen, Mitarbeiter suchen…</span>
+            <Search className="h-4 w-4 shrink-0" />
+            <span className="flex-1 text-left truncate">Suchen…</span>
             <kbd className="hidden md:inline-flex h-5 items-center rounded border bg-background px-1.5 text-[10px] font-medium">⌘K</kbd>
           </button>
           <div className="flex items-center gap-4">
