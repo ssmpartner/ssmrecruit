@@ -32,7 +32,8 @@ export default function AppLayout() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const initials = (profile?.display_name || user?.email || 'U')
+  const displayName = resolveDisplayName(profile?.display_name, user?.email, 'Benutzer');
+  const initials = displayName
     .split(' ')
     .map(w => w[0])
     .join('')
