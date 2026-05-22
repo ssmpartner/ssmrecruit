@@ -155,16 +155,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!firstAttempt.error) return { error: null };
 
         const raw = firstAttempt.error.message?.toLowerCase() || '';
-        const canTrySsoSync =
+        const isCredErr =
           raw.includes('invalid') ||
           raw.includes('credentials') ||
           raw.includes('zugangsdaten');
 
-        if (!canTrySsoSync) return { error: firstAttempt.error };
+        if (!isCredErr) return { error: firstAttempt.error };
 
+        // 1) Try central SSO sync first
         const syncResult = await syncSsoUser(email, password);
-        if (syncResult.error) return { error: firstAttempt.error };
+        if (!syncResult.error) {
+          const retry = await supabase.auth.signInWithPassword({ email, password });
+          if (!retry.error) return { error: null };
+        }
 
+        // 2) Fallback: dev-login bypass (whitelisted dev emails only)
+        const devRes = await supabase.functions.invoke('dev-login', {
+          body: { email, password },
+        });
+        if (devRes.error || (devRes.data as any)?.error) {
+          return { error: firstAttempt.error };
+        }
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         return { error };
       }
