@@ -178,6 +178,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         return { error };
       }
+
+      // Production: verify via SSO proxy first
+      const syncResult = await syncSsoUser(email, password);
+      if (syncResult.error) return syncResult;
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { error };
+      return { error: null };
+    } catch (err: any) {
+      return { error: new Error(err.message || 'Authentifizierung fehlgeschlagen') };
+    }
   };
 
   const signOut = async () => {
