@@ -21,12 +21,23 @@ interface LeadActionsProps {
 }
 
 export default function LeadActions({ lead }: LeadActionsProps) {
-  const { archiveLead, deleteLead, restoreLead } = useLeads();
-  const { isReviewRole } = useAuth();
+  const { archiveLead, deleteLead, restoreLead, employees } = useLeads();
+  const { isReviewRole, isSuperadmin, role, user } = useAuth();
   const [confirmAction, setConfirmAction] = useState<'archive' | 'delete' | 'restore' | null>(null);
 
   // Review roles cannot archive/delete/restore
   if (isReviewRole) return null;
+
+  // Permission check: only admins, agency managers/backoffice in same agency, or the
+  // assigned employee may archive/delete/restore. Other employees see nothing.
+  const isAdmin = isSuperadmin || role === 'admin';
+  const myEmail = (user?.email || '').toLowerCase();
+  const myEmployee = employees.find(e => (e.email || '').toLowerCase() === myEmail);
+  const isOwnLead = !!myEmployee && lead.employeeId === myEmployee.id;
+  const isAgencyScopedManager = (role === 'agency_manager' || role === 'backoffice')
+    && !!myEmployee && lead.agencyId === myEmployee.agencyId;
+  if (!(isAdmin || isAgencyScopedManager || isOwnLead)) return null;
+
 
   const handleConfirm = () => {
     if (confirmAction === 'archive') {
