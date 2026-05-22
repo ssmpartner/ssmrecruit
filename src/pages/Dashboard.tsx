@@ -9,6 +9,7 @@ import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
+import { resolveFirstName } from '@/lib/display-name';
 import { statusConfig } from '@/lib/mock-data';
 import { supabase } from '@/integrations/supabase/client';
 
