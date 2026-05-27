@@ -40,11 +40,19 @@ serve(async (req) => {
 
     const table = kind === 'document_request' ? 'document_requests' : 'insights_requests';
 
+    const selectCols = kind === 'document_request'
+      ? 'id, lead_id, status, expires_at, sent_at'
+      : 'id, lead_id, status, sent_at';
+
     const { data: row, error } = await supabase
       .from(table)
-      .select('id, lead_id, status, expires_at, sent_at')
+      .select(selectCols)
       .eq('token', token)
       .maybeSingle();
+
+    if (error) {
+      console.error('lookup-public-form db error:', error);
+    }
 
     if (error || !row) {
       return new Response(JSON.stringify({ error: 'Token not found' }), {
