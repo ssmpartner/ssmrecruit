@@ -83,6 +83,19 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const total = items.length;
   const pct = Math.round((doneCount / total) * 100);
   const ready = doneCount === total;
+  const handleSubmit = async () => {
+    if (!lead || !ready || submitting) return;
+    setSubmitting(true);
+    try {
+      updateLead(leadId, { status: 'ready_for_controlling' });
+      addActivity(leadId, 'status_change', `Lead zur Controlling-Prüfung eingereicht (Einstellungs-Readiness 100 %)`);
+      toast({ title: '✅ Eingereicht', description: 'Lead wurde an Controlling übergeben.' });
+    } catch (e) {
+      toast({ title: 'Fehler beim Einreichen', description: (e as Error).message, variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="rounded-xl border bg-card overflow-hidden">
