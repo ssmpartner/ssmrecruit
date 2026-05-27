@@ -431,35 +431,6 @@ export default function LeadDocumentsTab({ leadId }: Props) {
           })}
         </div>
       )}
-
-      {/* Generate upload link – two modes */}
-      <div className="space-y-2">
-        <h5 className="text-sm font-semibold text-muted-foreground">Upload-Link generieren</h5>
-        <div className="grid sm:grid-cols-2 gap-2">
-          <button
-            onClick={() => resendLink('application')}
-            disabled={resending}
-            className="flex items-start gap-3 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-left hover:bg-primary/10 transition-colors disabled:opacity-50"
-          >
-            {resending ? <Loader2 className="h-4 w-4 animate-spin mt-0.5 text-primary shrink-0" /> : <RefreshCw className="h-4 w-4 mt-0.5 text-primary shrink-0" />}
-            <div className="min-w-0">
-              <div className="text-sm font-semibold text-primary">Bewerbungs-Link</div>
-              <div className="text-[11px] text-muted-foreground">Lebenslauf, Arbeitszeugnis, Betreibungs- & Strafregisterauszug (+ optional Motivation)</div>
-            </div>
-          </button>
-          <button
-            onClick={() => resendLink('employment')}
-            disabled={resending}
-            className="flex items-start gap-3 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-left hover:bg-primary/10 transition-colors disabled:opacity-50"
-          >
-            {resending ? <Loader2 className="h-4 w-4 animate-spin mt-0.5 text-primary shrink-0" /> : <Upload className="h-4 w-4 mt-0.5 text-primary shrink-0" />}
-            <div className="min-w-0">
-              <div className="text-sm font-semibold text-primary">Arbeitsvertrag-Link</div>
-              <div className="text-[11px] text-muted-foreground">Personalstammdaten + ID, Bankkarte, VBV, KK-Karte, Führerausweis (+ Ausländerbewilligung)</div>
-            </div>
-          </button>
-        </div>
-      </div>
     </div>
     <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && !deleting && setPendingDelete(null)}>
       <AlertDialogContent>
