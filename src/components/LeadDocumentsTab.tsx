@@ -15,6 +15,7 @@ interface DocumentRequest {
   status: string;
   sent_at: string;
   expires_at: string;
+  kind?: 'application' | 'employment' | null;
 }
 
 interface DocumentUpload {
