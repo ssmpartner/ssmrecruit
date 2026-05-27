@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Circle, AlertCircle, Trophy } from 'lucide-react';
+import { CheckCircle2, Circle, AlertCircle, Trophy, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeads } from '@/context/useLeads';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { statusConfig } from '@/lib/mock-data';
 import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
 
 interface Props {
@@ -21,7 +23,11 @@ function matchMilestone(title: string): 'bg' | 'bg2' | 'contract' | null {
 }
 
 export default function LeadHiringReadiness({ leadId }: Props) {
-  const { appointments } = useLeads();
+  const { appointments, leads, updateLead, addActivity } = useLeads();
+  const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+  const lead = leads.find(l => l.id === leadId);
+  const alreadySubmitted = lead && ['ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired'].includes(lead.status);
   const [personnelDone, setPersonnelDone] = useState(false);
   const [docsDoneCount, setDocsDoneCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -77,6 +83,19 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const total = items.length;
   const pct = Math.round((doneCount / total) * 100);
   const ready = doneCount === total;
+  const handleSubmit = async () => {
+    if (!lead || !ready || submitting) return;
+    setSubmitting(true);
+    try {
+      updateLead(leadId, { status: 'ready_for_controlling' });
+      addActivity(leadId, 'status_change', `Lead zur Controlling-Prüfung eingereicht (Einstellungs-Readiness 100 %)`);
+      toast({ title: '✅ Eingereicht', description: 'Lead wurde an Controlling übergeben.' });
+    } catch (e) {
+      toast({ title: 'Fehler beim Einreichen', description: (e as Error).message, variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="rounded-xl border bg-card overflow-hidden">
@@ -120,6 +139,30 @@ export default function LeadHiringReadiness({ leadId }: Props) {
           </div>
         ))}
       </div>
+
+      {(ready || alreadySubmitted) && (
+        <div className={cn('border-t p-3 flex items-center justify-between gap-3', alreadySubmitted ? 'bg-muted/30' : 'bg-emerald-50/50 dark:bg-emerald-950/20')}>
+          <div className="text-xs text-muted-foreground">
+            {alreadySubmitted
+              ? <>Bereits weitergeleitet · Status: <strong className="text-foreground">{lead && statusConfig[lead.status]?.label}</strong></>
+              : 'Alle Anforderungen erfüllt — Lead an Controlling weiterleiten.'}
+          </div>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!ready || submitting || !!alreadySubmitted}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-opacity',
+              alreadySubmitted
+                ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                : 'bg-emerald-600 text-white hover:opacity-90 disabled:opacity-50',
+            )}
+          >
+            {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+            {alreadySubmitted ? 'Bereits eingereicht' : 'An Controlling einreichen'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
