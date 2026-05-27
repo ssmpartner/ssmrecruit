@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 interface Body {
-  kind: 'document_request' | 'insights_request';
+  kind: 'document_request' | 'insights_request' | 'personnel_request';
   token: string;
 }
 
@@ -27,7 +27,7 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    if (kind !== 'document_request' && kind !== 'insights_request') {
+    if (kind !== 'document_request' && kind !== 'insights_request' && kind !== 'personnel_request') {
       return new Response(JSON.stringify({ error: 'Invalid kind' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -38,11 +38,15 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    const table = kind === 'document_request' ? 'document_requests' : 'insights_requests';
+    const table = kind === 'document_request'
+      ? 'document_requests'
+      : kind === 'insights_request'
+        ? 'insights_requests'
+        : 'personnel_requests';
 
-    const selectCols = kind === 'document_request'
-      ? 'id, lead_id, status, expires_at, sent_at'
-      : 'id, lead_id, status, sent_at';
+    const selectCols = kind === 'insights_request'
+      ? 'id, lead_id, status, sent_at'
+      : 'id, lead_id, status, expires_at, sent_at';
 
     const { data: row, error } = await supabase
       .from(table)
