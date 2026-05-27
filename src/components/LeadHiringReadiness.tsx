@@ -139,6 +139,30 @@ export default function LeadHiringReadiness({ leadId }: Props) {
           </div>
         ))}
       </div>
+
+      {(ready || alreadySubmitted) && (
+        <div className={cn('border-t p-3 flex items-center justify-between gap-3', alreadySubmitted ? 'bg-muted/30' : 'bg-emerald-50/50 dark:bg-emerald-950/20')}>
+          <div className="text-xs text-muted-foreground">
+            {alreadySubmitted
+              ? <>Bereits weitergeleitet · Status: <strong className="text-foreground">{lead && statusConfig[lead.status]?.label}</strong></>
+              : 'Alle Anforderungen erfüllt — Lead an Controlling weiterleiten.'}
+          </div>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!ready || submitting || !!alreadySubmitted}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-opacity',
+              alreadySubmitted
+                ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                : 'bg-emerald-600 text-white hover:opacity-90 disabled:opacity-50',
+            )}
+          >
+            {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+            {alreadySubmitted ? 'Bereits eingereicht' : 'An Controlling einreichen'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
