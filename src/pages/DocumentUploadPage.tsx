@@ -55,7 +55,7 @@ export default function DocumentUploadPage() {
   const [kind, setKind] = useState<Kind>('application');
 
   // Slot uploads (per-slot tracking)
-  const [slotUploads, setSlotUploads] = useState<Record<string, { name: string; path: string; size: number; id?: string }>>({});
+  const [slotUploads, setSlotUploads] = useState<Record<string, { name: string; path: string; size: number; id?: string; uploadedAt?: string }>>({});
   const [pending, setPending] = useState<PendingUpload[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -65,6 +65,8 @@ export default function DocumentUploadPage() {
   const [personnelData, setPersonnelData] = useState<PersonnelData>({ kinder: [] });
   const [personnelErrors, setPersonnelErrors] = useState<Record<string, string>>({});
   const [personnelComplete, setPersonnelComplete] = useState(false);
+  const [personnelSubmittedAt, setPersonnelSubmittedAt] = useState<string | null>(null);
+  const [personnelVersion, setPersonnelVersion] = useState<number>(0);
   const [personnelSaving, setPersonnelSaving] = useState(false);
 
   useEffect(() => {
