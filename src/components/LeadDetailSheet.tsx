@@ -804,12 +804,13 @@ export default function LeadDetailSheet() {
                           </div>
                         )}
 
-                        {/* Personalien (Personalblatt) – derzeit nur für Muster-Lead aktiv */}
-                        {selectedLead && /mustermann/i.test(selectedLead.name) && (
-                          <div className="pt-2">
-                            <LeadPersonnelSection leadId={selectedLead.id} />
-                          </div>
-                        )}
+                      </div>
+                    )}
+
+                    {/* Personalien Tab */}
+                    {rightTab === 'personnel' && selectedLead && (
+                      <div className="space-y-3">
+                        <LeadPersonnelSection leadId={selectedLead.id} />
                       </div>
                     )}
 
