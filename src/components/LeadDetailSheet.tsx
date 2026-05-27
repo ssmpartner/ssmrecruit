@@ -28,6 +28,7 @@ import LeadFlowTimeline from './LeadFlowTimeline';
 import LeadInsightsTab from './LeadInsightsTab';
 import LeadDocumentsTab from './LeadDocumentsTab';
 import LeadPersonnelSection from './LeadPersonnelSection';
+import LeadHiringReadiness from './LeadHiringReadiness';
 import AddressAutocomplete, { type AddressSuggestion } from './AddressAutocomplete';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
@@ -802,10 +803,15 @@ export default function LeadDetailSheet() {
                               </div>
                             )}
                           </div>
-                        )}
+                         )}
 
-                      </div>
-                    )}
+                        {selectedLead && (
+                          <div className="pt-2">
+                            <LeadHiringReadiness leadId={selectedLead.id} />
+                          </div>
+                        )}
+                       </div>
+                     )}
 
                     {/* Personalien Tab */}
                     {rightTab === 'personnel' && selectedLead && (
