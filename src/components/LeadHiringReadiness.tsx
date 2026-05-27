@@ -23,7 +23,11 @@ function matchMilestone(title: string): 'bg' | 'bg2' | 'contract' | null {
 }
 
 export default function LeadHiringReadiness({ leadId }: Props) {
-  const { appointments } = useLeads();
+  const { appointments, leads, updateLead, addActivity } = useLeads();
+  const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+  const lead = leads.find(l => l.id === leadId);
+  const alreadySubmitted = lead && ['ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired'].includes(lead.status);
   const [personnelDone, setPersonnelDone] = useState(false);
   const [docsDoneCount, setDocsDoneCount] = useState(0);
   const [loading, setLoading] = useState(true);
