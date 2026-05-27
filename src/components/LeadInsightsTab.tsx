@@ -392,29 +392,30 @@ export default function LeadInsightsTab({ leadId, leadName }: Props) {
 
       {/* ── Generate Link Dialog ── */}
       <Dialog open={showSendConfirm} onOpenChange={setShowSendConfirm}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Insights-Link generieren</DialogTitle>
             <DialogDescription>
               Es wird ein neuer Insights & DISC-Test-Link für <strong>{leadName}</strong> erstellt und automatisch in die Zwischenablage kopiert. Der Versand per E-Mail ist optional.
             </DialogDescription>
           </DialogHeader>
-          <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground break-all">
             {leadEmail
               ? <>Hinterlegte E-Mail: <strong className="text-foreground">{leadEmail}</strong></>
               : <>Für diesen Lead ist keine E-Mail-Adresse hinterlegt – Versand per E-Mail nicht möglich.</>}
           </div>
-          <DialogFooter className="gap-2 sm:gap-2 flex-col sm:flex-row">
-            <Button variant="outline" onClick={() => setShowSendConfirm(false)}>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+            <Button variant="outline" onClick={() => setShowSendConfirm(false)} className="w-full sm:w-auto">
               Abbrechen
             </Button>
-            <Button variant="secondary" onClick={() => { setShowSendConfirm(false); handleGenerateLink(false); }}>
+            <Button variant="secondary" onClick={() => { setShowSendConfirm(false); handleGenerateLink(false); }} className="w-full sm:w-auto">
               <LinkIcon className="h-3.5 w-3.5" /> Nur generieren
             </Button>
             <Button
               disabled={!leadEmail}
               onClick={() => { setShowSendConfirm(false); handleGenerateLink(true); }}
               title={leadEmail ? '' : 'Keine E-Mail-Adresse'}
+              className="w-full sm:w-auto"
             >
               <Mail className="h-3.5 w-3.5" /> Generieren & per E-Mail senden
             </Button>
