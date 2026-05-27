@@ -31,7 +31,8 @@ interface PersonnelRequestRow {
 
 export default function LeadPersonnelSection({ leadId }: Props) {
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { profile, role } = useAuth();
+  const canViewData = role === 'superadmin' || role === 'admin' || role === 'hr';
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -44,6 +45,7 @@ export default function LeadPersonnelSection({ leadId }: Props) {
   const [showHistory, setShowHistory] = useState(false);
   const [generatingLink, setGeneratingLink] = useState(false);
   const [copiedToken, setCopiedToken] = useState('');
+  const isComplete = meta.version > 0 && Object.keys(validatePersonnel(data)).length === 0;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -161,12 +163,20 @@ export default function LeadPersonnelSection({ leadId }: Props) {
     <div className="space-y-3">
       {/* Infobox + Link generation (always visible, outside accordion) */}
       <div className="rounded-lg border bg-primary/5 p-3 space-y-3">
-        <div className="flex items-start gap-2">
-          <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-          <div className="text-xs text-foreground/80 leading-relaxed">
-            Damit der Kandidat seine Personalien korrekt einreicht, sollte er das Formular selbst ausfüllen.
-            Erstelle dazu einen Link und sende ihn dem Kandidaten zu. Der Link ist <strong>14 Tage</strong> gültig.
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2">
+            <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <div className="text-xs text-foreground/80 leading-relaxed">
+              Damit der Kandidat seine Personalien korrekt einreicht, sollte er das Formular selbst ausfüllen.
+              Erstelle dazu einen Link und sende ihn dem Kandidaten zu. Der Link ist <strong>14 Tage</strong> gültig.
+            </div>
           </div>
+          <span className={cn(
+            'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+            isComplete ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700',
+          )}>
+            {isComplete ? '✓ Vollständig' : 'Unvollständig'}
+          </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -178,7 +188,7 @@ export default function LeadPersonnelSection({ leadId }: Props) {
             {generatingLink ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
             Link für Kandidat generieren
           </button>
-          {versions.length > 0 && (
+          {canViewData && versions.length > 0 && (
             <button
               type="button"
               onClick={() => setShowHistory(s => !s)}
@@ -235,44 +245,56 @@ export default function LeadPersonnelSection({ leadId }: Props) {
         )}
       </div>
 
-      {/* Form (collapsible) */}
-      <div className="rounded-lg border bg-muted/20">
-        <button onClick={() => setOpen(o => !o)} className="flex w-full items-center justify-between p-3 hover:bg-muted/40 transition-colors rounded-t-lg">
-          <div className="flex items-center gap-2">
-            {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            <UserSquare2 className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold">Personalien (Personalblatt)</span>
-            {meta.version > 0 && (
-              <span className="text-xs text-muted-foreground">– v{meta.version} · {fmtDate(meta.updated_at)} · {meta.updated_by} {meta.updated_via === 'public' && '(Kandidat)'}</span>
-            )}
-          </div>
-          {dirty && <span className="text-xs text-amber-600 font-medium">Ungespeicherte Änderungen</span>}
-        </button>
+      {/* Form (collapsible) — only for Admin / Superadmin / HR */}
+      {canViewData ? (
+        <div className="rounded-lg border bg-muted/20">
+          <button onClick={() => setOpen(o => !o)} className="flex w-full items-center justify-between p-3 hover:bg-muted/40 transition-colors rounded-t-lg">
+            <div className="flex items-center gap-2">
+              {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              <UserSquare2 className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold">Personalien (Personalblatt)</span>
+              {meta.version > 0 && (
+                <span className="text-xs text-muted-foreground">– v{meta.version} · {fmtDate(meta.updated_at)} · {meta.updated_by} {meta.updated_via === 'public' && '(Kandidat)'}</span>
+              )}
+            </div>
+            {dirty && <span className="text-xs text-amber-600 font-medium">Ungespeicherte Änderungen</span>}
+          </button>
 
-        {open && (
-          <div className="p-4 space-y-5 border-t">
-            {loading ? (
-              <div className="flex items-center justify-center py-8 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin mr-2" /> Laden…</div>
-            ) : (
-              <>
-                <PersonnelFormFields data={data} onChange={handleChange} errors={errors} />
+          {open && (
+            <div className="p-4 space-y-5 border-t">
+              {loading ? (
+                <div className="flex items-center justify-center py-8 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin mr-2" /> Laden…</div>
+              ) : (
+                <>
+                  <PersonnelFormFields data={data} onChange={handleChange} errors={errors} />
 
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <div className="text-xs text-muted-foreground">
-                    {Object.keys(errors).length > 0 && <span className="text-destructive">{Object.keys(errors).length} Pflichtfelder fehlen</span>}
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="text-xs text-muted-foreground">
+                      {Object.keys(errors).length > 0 && <span className="text-destructive">{Object.keys(errors).length} Pflichtfelder fehlen</span>}
+                    </div>
+                    <button onClick={save} disabled={!dirty || saving}
+                      className={cn("inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity",
+                        (!dirty || saving) ? "opacity-50 cursor-not-allowed" : "hover:opacity-90")}>
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      Speichern
+                    </button>
                   </div>
-                  <button onClick={save} disabled={!dirty || saving}
-                    className={cn("inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity",
-                      (!dirty || saving) ? "opacity-50 cursor-not-allowed" : "hover:opacity-90")}>
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    Speichern
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="rounded-lg border bg-muted/10 p-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <UserSquare2 className="h-4 w-4 text-primary" />
+          <span>
+            Die Personalien-Daten sind nur für <strong>Admin, Superadmin und HR</strong> einsehbar.
+            {meta.version > 0
+              ? ` Status: ${isComplete ? 'vollständig eingereicht' : 'unvollständig'} (v${meta.version}, ${fmtDate(meta.updated_at)}).`
+              : ' Es wurden noch keine Personalien erfasst.'}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
