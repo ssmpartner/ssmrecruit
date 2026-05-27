@@ -392,10 +392,13 @@ export default function LeadDocumentsTab({ leadId }: Props) {
                     <Clock className="h-4 w-4 text-amber-500 shrink-0" />
                   )}
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-medium">
                         {new Date(req.sent_at).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
                       </span>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {req.kind === 'employment' ? 'Arbeitsvertrag' : 'Bewerbung'}
+                      </Badge>
                       {status === 'expired' ? (
                         <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Abgelaufen</Badge>
                       ) : status === 'used' ? (
