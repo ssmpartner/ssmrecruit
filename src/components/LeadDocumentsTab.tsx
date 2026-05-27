@@ -15,6 +15,7 @@ interface DocumentRequest {
   status: string;
   sent_at: string;
   expires_at: string;
+  kind?: 'application' | 'employment' | null;
 }
 
 interface DocumentUpload {
@@ -391,10 +392,13 @@ export default function LeadDocumentsTab({ leadId }: Props) {
                     <Clock className="h-4 w-4 text-amber-500 shrink-0" />
                   )}
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-medium">
                         {new Date(req.sent_at).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
                       </span>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {req.kind === 'employment' ? 'Arbeitsvertrag' : 'Bewerbung'}
+                      </Badge>
                       {status === 'expired' ? (
                         <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Abgelaufen</Badge>
                       ) : status === 'used' ? (
@@ -428,27 +432,34 @@ export default function LeadDocumentsTab({ leadId }: Props) {
         </div>
       )}
 
-      {/* Resend buttons when all links expired or used */}
-      {hasExpiredOrUsedAll && (
+      {/* Generate upload link – two modes */}
+      <div className="space-y-2">
+        <h5 className="text-sm font-semibold text-muted-foreground">Upload-Link generieren</h5>
         <div className="grid sm:grid-cols-2 gap-2">
           <button
             onClick={() => resendLink('application')}
             disabled={resending}
-            className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+            className="flex items-start gap-3 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-left hover:bg-primary/10 transition-colors disabled:opacity-50"
           >
-            {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            Bewerbungs-Link senden
+            {resending ? <Loader2 className="h-4 w-4 animate-spin mt-0.5 text-primary shrink-0" /> : <RefreshCw className="h-4 w-4 mt-0.5 text-primary shrink-0" />}
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-primary">Bewerbungs-Link</div>
+              <div className="text-[11px] text-muted-foreground">Lebenslauf, Arbeitszeugnis, Betreibungs- & Strafregisterauszug (+ optional Motivation)</div>
+            </div>
           </button>
           <button
             onClick={() => resendLink('employment')}
             disabled={resending}
-            className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+            className="flex items-start gap-3 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-left hover:bg-primary/10 transition-colors disabled:opacity-50"
           >
-            {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            Arbeitsvertrag-Link senden
+            {resending ? <Loader2 className="h-4 w-4 animate-spin mt-0.5 text-primary shrink-0" /> : <Upload className="h-4 w-4 mt-0.5 text-primary shrink-0" />}
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-primary">Arbeitsvertrag-Link</div>
+              <div className="text-[11px] text-muted-foreground">Personalstammdaten + ID, Bankkarte, VBV, KK-Karte, Führerausweis (+ Ausländerbewilligung)</div>
+            </div>
           </button>
         </div>
-      )}
+      </div>
     </div>
     <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && !deleting && setPendingDelete(null)}>
       <AlertDialogContent>
