@@ -295,7 +295,7 @@ export default function DocumentUploadPage() {
                   eAMT – Betreibungsregisterauszug
                 </a>
                 <a
-                  href="https://www.fedpol.admin.ch/de/bestellmoeglichkeiten-strafregisterauszug"
+                  href="https://www.e-service.admin.ch/crex/cms/content/strafregister/uebersicht_de"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
