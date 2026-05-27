@@ -65,7 +65,7 @@ export default function PersonnelFormPage() {
 
     const { error: upErr } = await supabase.from('lead_personal_data').upsert([{
       lead_id: info.lead_id,
-      data: data as unknown as Record<string, unknown>,
+      data: data as unknown as never,
       version: nextVersion,
       updated_at: nowIso,
       updated_by: updatedBy,
@@ -76,7 +76,7 @@ export default function PersonnelFormPage() {
     await supabase.from('lead_personal_data_versions').insert([{
       lead_id: info.lead_id,
       version: nextVersion,
-      data: data as unknown as Record<string, unknown>,
+      data: data as unknown as never,
       updated_at: nowIso,
       updated_by: updatedBy,
       updated_via: 'public',
