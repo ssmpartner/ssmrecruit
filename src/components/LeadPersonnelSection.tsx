@@ -31,7 +31,8 @@ interface PersonnelRequestRow {
 
 export default function LeadPersonnelSection({ leadId }: Props) {
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { profile, role } = useAuth();
+  const canViewData = role === 'superadmin' || role === 'admin' || role === 'hr';
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -44,6 +45,7 @@ export default function LeadPersonnelSection({ leadId }: Props) {
   const [showHistory, setShowHistory] = useState(false);
   const [generatingLink, setGeneratingLink] = useState(false);
   const [copiedToken, setCopiedToken] = useState('');
+  const isComplete = meta.version > 0 && Object.keys(validatePersonnel(data)).length === 0;
 
   const load = useCallback(async () => {
     setLoading(true);
