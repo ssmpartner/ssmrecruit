@@ -363,8 +363,10 @@ export default function DocumentUploadPage() {
               {slots.map(slot => {
                 const existing = slotUploads[slot.key];
                 const queued = pending.find(p => p.slotKey === slot.key);
-                const done = !!existing;
+                const replacing = !!existing && !!queued;
+                const done = !!existing && !queued;
                 const inputId = `slot-${slot.key}`;
+                const replaceId = `slot-replace-${slot.key}`;
                 return (
                   <div
                     key={slot.key}
@@ -372,6 +374,7 @@ export default function DocumentUploadPage() {
                     onDragOver={e => e.preventDefault()}
                     className={`rounded-lg border p-3 flex items-center gap-3 ${
                       done ? 'border-success/30 bg-success/10' :
+                      replacing ? 'border-amber-300 bg-amber-50 dark:bg-amber-950/20' :
                       queued ? 'border-primary/30 bg-primary/5' :
                       slot.required ? 'border-border' : 'border-dashed border-border'
                     }`}
@@ -385,17 +388,39 @@ export default function DocumentUploadPage() {
                         {slot.label}
                         {slot.required && <span className="text-destructive ml-1">*</span>}
                       </p>
-                      {(existing || queued) && (
+                      {done && (
+                        <p className="text-xs text-emerald-700 dark:text-emerald-300 truncate">
+                          ✓ Eingereicht am {fmtDate(existing.uploadedAt)} · {existing.name}
+                        </p>
+                      )}
+                      {replacing && (
+                        <p className="text-xs text-amber-700 dark:text-amber-300 truncate">
+                          Wird ersetzt durch: {queued!.file.name} (neue Version)
+                          {queued!.error && <span className="text-destructive ml-2">{queued!.error}</span>}
+                        </p>
+                      )}
+                      {!existing && queued && (
                         <p className="text-xs text-muted-foreground truncate">
-                          {existing?.name ?? queued?.file.name}
-                          {queued?.error && <span className="text-destructive ml-2">{queued.error}</span>}
+                          {queued.file.name}
+                          {queued.error && <span className="text-destructive ml-2">{queued.error}</span>}
                         </p>
                       )}
                     </div>
                     {done ? (
-                      <span className="text-xs text-success font-medium">Hochgeladen</span>
+                      <>
+                        <label htmlFor={replaceId} className="cursor-pointer inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted">
+                          <Upload className="h-3.5 w-3.5" /> Erneut einreichen
+                        </label>
+                        <input
+                          id={replaceId}
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png,.heic"
+                          className="hidden"
+                          onChange={e => pickFile(slot.key, e.target.files?.[0] ?? null)}
+                        />
+                      </>
                     ) : queued ? (
-                      <button onClick={() => removePending(slot.key)} className="text-muted-foreground hover:text-destructive" disabled={queued.uploading}>
+                      <button onClick={() => removePending(slot.key)} className="text-muted-foreground hover:text-destructive" disabled={queued.uploading} title={replacing ? 'Ersetzung abbrechen' : 'Entfernen'}>
                         <X className="h-4 w-4" />
                       </button>
                     ) : (
