@@ -301,6 +301,7 @@ export default function LeadDetailSheet() {
 
   const allRightTabs = [
     { key: 'info' as const, label: 'Info', icon: User, hideForReview: false, hideWhenFrozen: false },
+    { key: 'personnel' as const, label: 'Personalien', icon: IdCard, hideForReview: false, hideWhenFrozen: false },
     { key: 'insights' as const, label: 'Insights', icon: Brain, hideForReview: false, hideWhenFrozen: false },
     { key: 'documents' as const, label: 'Dokumente', icon: Upload, count: docCount, hideForReview: false, hideWhenFrozen: true },
     { key: 'flow' as const, label: 'Flow', icon: Workflow, hideForReview: true, hideWhenFrozen: false },
