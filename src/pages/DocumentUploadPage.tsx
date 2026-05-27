@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle2, Loader2, AlertCircle, Upload, FileText, X, File } from 'lucide-react';
+import { CheckCircle2, Loader2, AlertCircle, Upload, X, File } from 'lucide-react';
 
 const documentTypes = [
   { value: 'cv', label: 'Lebenslauf (CV)' },
@@ -46,7 +46,6 @@ export default function DocumentUploadPage() {
 
     if (err || !data) { setError('Dieser Link ist ungültig oder abgelaufen.'); setLoading(false); return; }
 
-    // Check if link is expired (48h)
     const expiresAt = (data as any).expires_at;
     if (expiresAt && new Date(expiresAt) <= new Date()) {
       setError('Dieser Upload-Link ist abgelaufen. Bitte fordern Sie einen neuen Link an.');
@@ -60,7 +59,6 @@ export default function DocumentUploadPage() {
     const { data: lead } = await supabase.from('leads').select('name').eq('id', data.lead_id).single();
     if (lead) setLeadName(lead.name);
 
-    // Load existing uploads
     const { data: uploads } = await supabase
       .from('document_uploads')
       .select('*')
@@ -116,7 +114,6 @@ export default function DocumentUploadPage() {
         continue;
       }
 
-      // Record in DB
       await supabase.from('document_uploads').insert({
         request_id: requestId,
         lead_id: leadId,
@@ -130,12 +127,10 @@ export default function DocumentUploadPage() {
     }
 
     if (allOk) {
-      // Update request status via secure edge function (token-validated)
       await supabase.functions.invoke('complete-public-form', {
         body: { kind: 'document_request', token: token! },
       });
 
-      // Notify recruiter
       await supabase.from('notifications').insert({
         title: 'Dokumente hochgeladen',
         type: 'document',
@@ -162,74 +157,72 @@ export default function DocumentUploadPage() {
   }, []);
 
   if (loading) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
 
   if (completed) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-        <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">Upload abgeschlossen</h1>
-        <p className="text-slate-600">Ihre Dokumente wurden erfolgreich hochgeladen. Vielen Dank!</p>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-card rounded-2xl shadow-lg p-8 text-center border border-border">
+        <CheckCircle2 className="h-16 w-16 text-success mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-foreground mb-2">Upload abgeschlossen</h1>
+        <p className="text-muted-foreground">Ihre Dokumente wurden erfolgreich hochgeladen. Vielen Dank!</p>
       </div>
     </div>
   );
 
   if (error && !requestId) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-        <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">Link ungültig</h1>
-        <p className="text-slate-600">{error}</p>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-card rounded-2xl shadow-lg p-8 text-center border border-border">
+        <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-foreground mb-2">Link ungültig</h1>
+        <p className="text-muted-foreground">{error}</p>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-card rounded-2xl shadow-lg overflow-hidden border border-border">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-700 to-blue-600 px-8 py-6 text-white">
+          <div className="px-8 py-6 text-primary-foreground" style={{ background: 'var(--gradient-hero)' }}>
             <h1 className="text-2xl font-bold">SSM Recruit – Dokumente</h1>
-            <p className="text-blue-100 mt-1">
+            <p className="mt-1 opacity-90">
               {leadName ? `Hallo ${leadName.split(' ')[0]}, b` : 'B'}itte laden Sie die angeforderten Dokumente hoch.
             </p>
           </div>
 
           <div className="p-8 space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 flex items-center gap-2">
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-sm text-destructive flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 shrink-0" /> {error}
               </div>
             )}
 
-            {/* Existing uploads */}
             {existingUploads.length > 0 && (
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-slate-700">Bereits hochgeladen</h3>
+                <h3 className="text-sm font-semibold text-foreground">Bereits hochgeladen</h3>
                 {existingUploads.map(u => (
-                  <div key={u.id} className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-                    <span className="text-sm text-slate-700">{u.file_name}</span>
-                    <span className="text-xs text-slate-500 ml-auto">{documentTypes.find(d => d.value === u.file_type)?.label || u.file_type}</span>
+                  <div key={u.id} className="flex items-center gap-3 rounded-lg border border-success/30 bg-success/10 p-3">
+                    <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
+                    <span className="text-sm text-foreground">{u.file_name}</span>
+                    <span className="text-xs text-muted-foreground ml-auto">{documentTypes.find(d => d.value === u.file_type)?.label || u.file_type}</span>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Drop zone */}
             <div
               onDrop={handleDrop}
               onDragOver={e => e.preventDefault()}
-              className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-colors cursor-pointer"
+              className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary hover:bg-accent/10 transition-colors cursor-pointer"
               onClick={() => document.getElementById('file-input')?.click()}
             >
-              <Upload className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-              <p className="text-sm font-medium text-slate-700">Dateien hierhin ziehen oder klicken</p>
-              <p className="text-xs text-slate-500 mt-1">PDF, JPG, PNG, DOCX (max. 10 MB pro Datei)</p>
+              <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm font-medium text-foreground">Dateien hierhin ziehen oder klicken</p>
+              <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG, DOCX (max. 10 MB pro Datei)</p>
               <input
                 id="file-input"
                 type="file"
@@ -240,36 +233,35 @@ export default function DocumentUploadPage() {
               />
             </div>
 
-            {/* File list */}
             {files.length > 0 && (
               <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-slate-700">Ausgewählte Dateien</h3>
+                <h3 className="text-sm font-semibold text-foreground">Ausgewählte Dateien</h3>
                 {files.map((f, idx) => (
-                  <div key={idx} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <div key={idx} className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 p-3">
                     {f.done ? (
-                      <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                      <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
                     ) : f.uploading ? (
-                      <Loader2 className="h-5 w-5 animate-spin text-blue-600 shrink-0" />
+                      <Loader2 className="h-5 w-5 animate-spin text-primary shrink-0" />
                     ) : (
-                      <File className="h-5 w-5 text-slate-400 shrink-0" />
+                      <File className="h-5 w-5 text-muted-foreground shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-700 truncate">{f.file.name}</p>
-                      <p className="text-xs text-slate-500">{(f.file.size / 1024).toFixed(0)} KB</p>
-                      {f.error && <p className="text-xs text-red-600">{f.error}</p>}
+                      <p className="text-sm font-medium text-foreground truncate">{f.file.name}</p>
+                      <p className="text-xs text-muted-foreground">{(f.file.size / 1024).toFixed(0)} KB</p>
+                      {f.error && <p className="text-xs text-destructive">{f.error}</p>}
                     </div>
                     <select
                       value={f.type}
                       onChange={e => setFileType(idx, e.target.value)}
                       disabled={f.done}
-                      className="h-8 rounded border border-slate-200 bg-white px-2 text-xs"
+                      className="h-8 rounded border border-border bg-background px-2 text-xs"
                     >
                       {documentTypes.map(dt => (
                         <option key={dt.value} value={dt.value}>{dt.label}</option>
                       ))}
                     </select>
                     {!f.done && (
-                      <button onClick={() => removeFile(idx)} className="text-slate-400 hover:text-red-500">
+                      <button onClick={() => removeFile(idx)} className="text-muted-foreground hover:text-destructive">
                         <X className="h-4 w-4" />
                       </button>
                     )}
@@ -281,7 +273,7 @@ export default function DocumentUploadPage() {
             <button
               onClick={handleUpload}
               disabled={submitting || files.length === 0}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
               {submitting ? 'Wird hochgeladen...' : `${files.length} Datei(en) hochladen`}
@@ -289,7 +281,7 @@ export default function DocumentUploadPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-slate-400 mt-6">© SSM Recruit • Ihre Daten werden vertraulich behandelt.</p>
+        <p className="text-center text-xs text-muted-foreground mt-6">© SSM Recruit • Ihre Daten werden vertraulich behandelt.</p>
       </div>
     </div>
   );
