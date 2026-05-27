@@ -188,7 +188,7 @@ export default function LeadPersonnelSection({ leadId }: Props) {
             {generatingLink ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
             Link für Kandidat generieren
           </button>
-          {versions.length > 0 && (
+          {canViewData && versions.length > 0 && (
             <button
               type="button"
               onClick={() => setShowHistory(s => !s)}
