@@ -245,44 +245,56 @@ export default function LeadPersonnelSection({ leadId }: Props) {
         )}
       </div>
 
-      {/* Form (collapsible) */}
-      <div className="rounded-lg border bg-muted/20">
-        <button onClick={() => setOpen(o => !o)} className="flex w-full items-center justify-between p-3 hover:bg-muted/40 transition-colors rounded-t-lg">
-          <div className="flex items-center gap-2">
-            {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            <UserSquare2 className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold">Personalien (Personalblatt)</span>
-            {meta.version > 0 && (
-              <span className="text-xs text-muted-foreground">– v{meta.version} · {fmtDate(meta.updated_at)} · {meta.updated_by} {meta.updated_via === 'public' && '(Kandidat)'}</span>
-            )}
-          </div>
-          {dirty && <span className="text-xs text-amber-600 font-medium">Ungespeicherte Änderungen</span>}
-        </button>
+      {/* Form (collapsible) — only for Admin / Superadmin / HR */}
+      {canViewData ? (
+        <div className="rounded-lg border bg-muted/20">
+          <button onClick={() => setOpen(o => !o)} className="flex w-full items-center justify-between p-3 hover:bg-muted/40 transition-colors rounded-t-lg">
+            <div className="flex items-center gap-2">
+              {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              <UserSquare2 className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold">Personalien (Personalblatt)</span>
+              {meta.version > 0 && (
+                <span className="text-xs text-muted-foreground">– v{meta.version} · {fmtDate(meta.updated_at)} · {meta.updated_by} {meta.updated_via === 'public' && '(Kandidat)'}</span>
+              )}
+            </div>
+            {dirty && <span className="text-xs text-amber-600 font-medium">Ungespeicherte Änderungen</span>}
+          </button>
 
-        {open && (
-          <div className="p-4 space-y-5 border-t">
-            {loading ? (
-              <div className="flex items-center justify-center py-8 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin mr-2" /> Laden…</div>
-            ) : (
-              <>
-                <PersonnelFormFields data={data} onChange={handleChange} errors={errors} />
+          {open && (
+            <div className="p-4 space-y-5 border-t">
+              {loading ? (
+                <div className="flex items-center justify-center py-8 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin mr-2" /> Laden…</div>
+              ) : (
+                <>
+                  <PersonnelFormFields data={data} onChange={handleChange} errors={errors} />
 
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <div className="text-xs text-muted-foreground">
-                    {Object.keys(errors).length > 0 && <span className="text-destructive">{Object.keys(errors).length} Pflichtfelder fehlen</span>}
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="text-xs text-muted-foreground">
+                      {Object.keys(errors).length > 0 && <span className="text-destructive">{Object.keys(errors).length} Pflichtfelder fehlen</span>}
+                    </div>
+                    <button onClick={save} disabled={!dirty || saving}
+                      className={cn("inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity",
+                        (!dirty || saving) ? "opacity-50 cursor-not-allowed" : "hover:opacity-90")}>
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      Speichern
+                    </button>
                   </div>
-                  <button onClick={save} disabled={!dirty || saving}
-                    className={cn("inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity",
-                      (!dirty || saving) ? "opacity-50 cursor-not-allowed" : "hover:opacity-90")}>
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    Speichern
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="rounded-lg border bg-muted/10 p-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <UserSquare2 className="h-4 w-4 text-primary" />
+          <span>
+            Die Personalien-Daten sind nur für <strong>Admin, Superadmin und HR</strong> einsehbar.
+            {meta.version > 0
+              ? ` Status: ${isComplete ? 'vollständig eingereicht' : 'unvollständig'} (v${meta.version}, ${fmtDate(meta.updated_at)}).`
+              : ' Es wurden noch keine Personalien erfasst.'}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
