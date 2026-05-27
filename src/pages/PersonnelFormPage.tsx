@@ -63,24 +63,24 @@ export default function PersonnelFormPage() {
     const nextVersion = ((cur?.version as number | undefined) ?? 0) + 1;
     const updatedBy = (info.lead_name ? `${info.lead_name} (Kandidat)` : 'Kandidat');
 
-    const { error: upErr } = await supabase.from('lead_personal_data').upsert({
+    const { error: upErr } = await supabase.from('lead_personal_data').upsert([{
       lead_id: info.lead_id,
       data: data as unknown as Record<string, unknown>,
       version: nextVersion,
       updated_at: nowIso,
       updated_by: updatedBy,
       updated_via: 'public',
-    });
+    }]);
     if (upErr) { setErrorMsg(upErr.message); setState('ready'); return; }
 
-    await supabase.from('lead_personal_data_versions').insert({
+    await supabase.from('lead_personal_data_versions').insert([{
       lead_id: info.lead_id,
       version: nextVersion,
       data: data as unknown as Record<string, unknown>,
       updated_at: nowIso,
       updated_by: updatedBy,
       updated_via: 'public',
-    });
+    }]);
 
     await supabase.from('personnel_requests').update({
       status: 'completed',

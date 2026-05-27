@@ -86,28 +86,28 @@ export default function LeadPersonnelSection({ leadId }: Props) {
     const updatedBy = profile?.display_name ?? 'System';
     const nowIso = new Date().toISOString();
 
-    const { error } = await supabase.from('lead_personal_data').upsert({
+    const { error } = await supabase.from('lead_personal_data').upsert([{
       lead_id: leadId,
       data: data as unknown as Record<string, unknown>,
       version: nextVersion,
       updated_at: nowIso,
       updated_by: updatedBy,
       updated_via: 'internal',
-    });
+    }]);
     if (error) {
       setSaving(false);
       toast({ title: 'Fehler beim Speichern', description: error.message, variant: 'destructive' });
       return;
     }
 
-    await supabase.from('lead_personal_data_versions').insert({
+    await supabase.from('lead_personal_data_versions').insert([{
       lead_id: leadId,
       version: nextVersion,
       data: data as unknown as Record<string, unknown>,
       updated_at: nowIso,
       updated_by: updatedBy,
       updated_via: 'internal',
-    });
+    }]);
 
     await supabase.from('activities').insert({
       id: crypto.randomUUID(),
