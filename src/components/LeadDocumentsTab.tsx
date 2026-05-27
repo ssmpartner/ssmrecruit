@@ -146,11 +146,11 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     toast({ title: 'Kopiert!', description: 'Link in der Zwischenablage.' });
   }
 
-  async function resendLink() {
+  async function resendLink(kind: 'application' | 'employment' = 'application') {
     setResending(true);
     const { data, error } = await supabase
       .from('document_requests')
-      .insert({ lead_id: leadId, sent_via: 'manual' })
+      .insert({ lead_id: leadId, sent_via: 'manual', kind } as any)
       .select()
       .single();
 
@@ -162,12 +162,18 @@ export default function LeadDocumentsTab({ leadId }: Props) {
 
     await supabase.from('activities').insert({
       id: crypto.randomUUID(), lead_id: leadId, type: 'note',
-      description: 'Neuer Dokumenten-Upload-Link erstellt (erneut gesendet)', user: 'System',
+      description: kind === 'employment'
+        ? 'Arbeitsvertrag-Dokumenten-Link erstellt (mit Personalstammdaten)'
+        : 'Bewerbungs-Dokumenten-Link erstellt',
+      user: 'System',
     });
 
     const url = `${window.location.origin}/document-upload?token=${(data as any).token}`;
     await navigator.clipboard.writeText(url);
-    toast({ title: '✅ Neuer Link erstellt & kopiert', description: 'Gültig für 48 Stunden.' });
+    toast({
+      title: kind === 'employment' ? '✅ Arbeitsvertrag-Link erstellt & kopiert' : '✅ Bewerbungs-Link erstellt & kopiert',
+      description: 'Gültig für 48 Stunden.',
+    });
     setResending(false);
     loadData();
   }
@@ -422,16 +428,26 @@ export default function LeadDocumentsTab({ leadId }: Props) {
         </div>
       )}
 
-      {/* Resend button when all links expired or used */}
+      {/* Resend buttons when all links expired or used */}
       {hasExpiredOrUsedAll && (
-        <button
-          onClick={resendLink}
-          disabled={resending}
-          className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
-        >
-          {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          Neuen Upload-Link senden
-        </button>
+        <div className="grid sm:grid-cols-2 gap-2">
+          <button
+            onClick={() => resendLink('application')}
+            disabled={resending}
+            className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+          >
+            {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Bewerbungs-Link senden
+          </button>
+          <button
+            onClick={() => resendLink('employment')}
+            disabled={resending}
+            className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+          >
+            {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            Arbeitsvertrag-Link senden
+          </button>
+        </div>
       )}
     </div>
     <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && !deleting && setPendingDelete(null)}>

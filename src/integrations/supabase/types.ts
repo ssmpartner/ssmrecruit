@@ -1660,6 +1660,7 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
+          kind: string
           lead_id: string
           reminder_sent_at: string | null
           sent_at: string
@@ -1671,6 +1672,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
+          kind?: string
           lead_id: string
           reminder_sent_at?: string | null
           sent_at?: string
@@ -1682,6 +1684,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
+          kind?: string
           lead_id?: string
           reminder_sent_at?: string | null
           sent_at?: string
