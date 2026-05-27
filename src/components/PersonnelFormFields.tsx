@@ -124,7 +124,7 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
 
   return (
     <fieldset disabled={disabled} className="space-y-5">
-      <Section title="Personalien">
+      <Section title="Personalien" group="personalien">
         <Grid>
           <Field label="AHV-Nr. (756.xxxx.xxxx.xx) *" error={errors.ahvNr}><input className={inputCls('ahvNr')} value={data.ahvNr ?? ''} onChange={e => set('ahvNr', e.target.value)} placeholder="756." /></Field>
           <Field label="Nationalität *" error={errors.nationalitaet}><input className={inputCls('nationalitaet')} value={data.nationalitaet ?? ''} onChange={e => set('nationalitaet', e.target.value)} /></Field>
@@ -135,7 +135,7 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
         </Grid>
       </Section>
 
-      <Section title="Zivilstand">
+      <Section title="Zivilstand" group="zivilstand">
         <Grid>
           <Field label="Status *" error={errors.zivilstand}>
             <select className={inputCls('zivilstand')} value={data.zivilstand ?? ''} onChange={e => set('zivilstand', e.target.value as PersonnelData['zivilstand'])}>
@@ -152,7 +152,7 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
         </Grid>
       </Section>
 
-      <Section title="Konfession *">
+      <Section title="Konfession *" group="zivilstand">
         <Field label="" error={errors.konfession}>
           <select className={inputCls('konfession')} value={data.konfession ?? ''} onChange={e => set('konfession', e.target.value as PersonnelData['konfession'])}>
             <option value="">—</option>
@@ -164,7 +164,7 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
         </Field>
       </Section>
 
-      <Section title="Angaben zur Lohnüberweisung">
+      <Section title="Angaben zur Lohnüberweisung" group="bank">
         <Grid>
           <Field label="Bankname *" error={errors.bankName}><input className={inputCls('bankName')} value={data.bankName ?? ''} onChange={e => set('bankName', e.target.value)} /></Field>
           <Field label="BIC *" error={errors.bic}><input className={inputCls('bic')} value={data.bic ?? ''} onChange={e => set('bic', e.target.value)} /></Field>
@@ -173,14 +173,14 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
         </Grid>
       </Section>
 
-      <Section title="Versicherungen">
+      <Section title="Versicherungen" group="versicherung">
         <Grid>
           <Field label="Krankenkasse *" error={errors.krankenkasse}><input className={inputCls('krankenkasse')} value={data.krankenkasse ?? ''} onChange={e => set('krankenkasse', e.target.value)} /></Field>
           <Field label="Bisherige Pensionskasse *" error={errors.pensionskasse}><input className={inputCls('pensionskasse')} value={data.pensionskasse ?? ''} onChange={e => set('pensionskasse', e.target.value)} /></Field>
         </Grid>
       </Section>
 
-      <Section title="Anstellung">
+      <Section title="Anstellung" group="anstellung">
         <Grid>
           <Field label="Arbeitsbeginn (Eintrittsdatum) *" error={errors.arbeitsbeginn}><input type="date" className={inputCls('arbeitsbeginn')} value={data.arbeitsbeginn ?? ''} onChange={e => set('arbeitsbeginn', e.target.value)} /></Field>
           <Field label="Anstellungsdauer *" error={errors.anstellungsdauer}>
@@ -202,7 +202,7 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
         </Grid>
       </Section>
 
-      <Section title="Höchste Ausbildung *">
+      <Section title="Höchste Ausbildung *" group="anstellung">
         <Field label="" error={errors.hoechsteAusbildung}>
           <select className={inputCls('hoechsteAusbildung')} value={data.hoechsteAusbildung ?? ''} onChange={e => set('hoechsteAusbildung', e.target.value)}>
             <option value="">—</option>
@@ -213,7 +213,7 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
         </Field>
       </Section>
 
-      <Section title="Andere Arbeitgeber (optional)">
+      <Section title="Andere Arbeitgeber (optional)" group="erwerb">
         <Grid>
           <Field label="Name Arbeitgeber"><input className={baseInput} value={data.andereAgName ?? ''} onChange={e => set('andereAgName', e.target.value)} /></Field>
           <Field label="Stellenantritt"><input type="date" className={baseInput} value={data.andereAgStellenantritt ?? ''} onChange={e => set('andereAgStellenantritt', e.target.value)} /></Field>
@@ -222,7 +222,7 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
         </Grid>
       </Section>
 
-      <Section title="Bei Erwerbstätigkeit">
+      <Section title="Bei Erwerbstätigkeit" group="erwerb">
         <Grid>
           <YesNo label="Bezug von Lohn oder Ersatzeinkommen (Taggeld)? *" value={data.bezugLohnTaggeld} onChange={v => set('bezugLohnTaggeld', v)} cls={inputCls('bezugLohnTaggeld')} error={errors.bezugLohnTaggeld} />
           <YesNo label="Bezug von Lohn oder Ersatzeinkommen + Rente? *" value={data.bezugLohnRente} onChange={v => set('bezugLohnRente', v)} cls={inputCls('bezugLohnRente')} error={errors.bezugLohnRente} />
@@ -232,7 +232,7 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
       </Section>
 
       {showEhe && (
-        <Section title="Angaben zum Ehepartner">
+        <Section title="Angaben zum Ehepartner" group="zivilstand">
           <Grid>
             <Field label="Name *" error={errors.epName}><input className={inputCls('epName')} value={data.epName ?? ''} onChange={e => set('epName', e.target.value)} /></Field>
             <Field label="Vorname *" error={errors.epVorname}><input className={inputCls('epVorname')} value={data.epVorname ?? ''} onChange={e => set('epVorname', e.target.value)} /></Field>
@@ -247,7 +247,7 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
         </Section>
       )}
 
-      <Section title="Kinder">
+      <Section title="Kinder" group="kinder">
         <div className="space-y-2">
           <Field label="Anzahl Kinder *" error={errors.anzahlKinder}>
             <input className={inputCls('anzahlKinder')} type="number" min={0} value={data.anzahlKinder ?? ''} onChange={e => set('anzahlKinder', e.target.value)} />
@@ -275,9 +275,9 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children, group }: { title: string; children: React.ReactNode; group?: string }) {
   return (
-    <div>
+    <div data-group={group}>
       <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">{title}</h5>
       {children}
     </div>
