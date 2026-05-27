@@ -97,24 +97,30 @@ export default function DocumentUploadPage() {
 
     const [{ data: lead }, { data: uploads }, { data: personal }] = await Promise.all([
       supabase.from('leads').select('name').eq('id', row.lead_id).single(),
-      supabase.from('document_uploads').select('id, file_name, file_type, file_path, file_size').eq('lead_id', row.lead_id),
-      supabase.from('lead_personal_data').select('data, version').eq('lead_id', row.lead_id).maybeSingle(),
+      supabase.from('document_uploads').select('id, file_name, file_type, file_path, file_size, uploaded_at').eq('lead_id', row.lead_id).order('uploaded_at', { ascending: false }),
+      supabase.from('lead_personal_data').select('data, version, updated_at').eq('lead_id', row.lead_id).maybeSingle(),
     ]);
     if (lead) setLeadName((lead as { name: string }).name);
 
     if (uploads) {
       const map: typeof slotUploads = {};
-      (uploads as Array<{ id: string; file_name: string; file_type: string; file_path: string; file_size: number }>).forEach(u => {
-        if (!map[u.file_type]) map[u.file_type] = { name: u.file_name, path: u.file_path, size: u.file_size, id: u.id };
+      // Keep the most recent (already ordered desc) per file_type as the "current version"
+      (uploads as Array<{ id: string; file_name: string; file_type: string; file_path: string; file_size: number; uploaded_at: string }>).forEach(u => {
+        if (!map[u.file_type]) map[u.file_type] = { name: u.file_name, path: u.file_path, size: u.file_size, id: u.id, uploadedAt: u.uploaded_at };
       });
       setSlotUploads(map);
     }
 
     if (personal) {
       const pdata = ((personal as { data?: PersonnelData }).data) ?? { kinder: [] };
+      const pversion = ((personal as { version?: number }).version ?? 0);
+      const pupdated = ((personal as { updated_at?: string }).updated_at) ?? null;
       setPersonnelData(pdata);
       const errs = validatePersonnel(pdata);
-      setPersonnelComplete(((personal as { version?: number }).version ?? 0) > 0 && Object.keys(errs).length === 0);
+      const complete = pversion > 0 && Object.keys(errs).length === 0;
+      setPersonnelComplete(complete);
+      setPersonnelVersion(pversion);
+      setPersonnelSubmittedAt(complete ? pupdated : null);
     }
 
     setLoading(false);
