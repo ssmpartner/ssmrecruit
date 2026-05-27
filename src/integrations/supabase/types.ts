@@ -2363,18 +2363,54 @@ export type Database = {
           lead_id: string
           updated_at: string
           updated_by: string | null
+          updated_via: string
+          version: number
         }
         Insert: {
           data?: Json
           lead_id: string
           updated_at?: string
           updated_by?: string | null
+          updated_via?: string
+          version?: number
         }
         Update: {
           data?: Json
           lead_id?: string
           updated_at?: string
           updated_by?: string | null
+          updated_via?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      lead_personal_data_versions: {
+        Row: {
+          data: Json
+          id: string
+          lead_id: string
+          updated_at: string
+          updated_by: string
+          updated_via: string
+          version: number
+        }
+        Insert: {
+          data?: Json
+          id?: string
+          lead_id: string
+          updated_at?: string
+          updated_by?: string
+          updated_via?: string
+          version: number
+        }
+        Update: {
+          data?: Json
+          id?: string
+          lead_id?: string
+          updated_at?: string
+          updated_by?: string
+          updated_via?: string
+          version?: number
         }
         Relationships: []
       }
@@ -2588,6 +2624,45 @@ export type Database = {
           recipient_user_id?: string | null
           title?: string
           type?: string
+        }
+        Relationships: []
+      }
+      personnel_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          lead_id: string
+          reminder_sent_at: string | null
+          sent_at: string
+          sent_via: string
+          status: string
+          token: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          lead_id: string
+          reminder_sent_at?: string | null
+          sent_at?: string
+          sent_via?: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          lead_id?: string
+          reminder_sent_at?: string | null
+          sent_at?: string
+          sent_via?: string
+          status?: string
+          token?: string
         }
         Relationships: []
       }
