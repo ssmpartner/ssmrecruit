@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Circle, AlertCircle, Trophy } from 'lucide-react';
+import { CheckCircle2, Circle, AlertCircle, Trophy, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeads } from '@/context/useLeads';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { statusConfig } from '@/lib/mock-data';
 import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
 
 interface Props {
