@@ -325,9 +325,15 @@ export default function DocumentUploadPage() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold">1. Personalstammdaten</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Bitte füllen Sie Ihre Personalstammdaten aus – diese werden im nächsten Schritt automatisch übernommen.
-                      </p>
+                      {personnelComplete && personnelSubmittedAt ? (
+                        <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">
+                          ✓ Eingereicht am {fmtDate(personnelSubmittedAt)}{personnelVersion > 1 ? ` · Version ${personnelVersion}` : ''}. Sie können die Angaben bei Bedarf erneut einreichen — es wird eine neue Version gespeichert.
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Bitte füllen Sie Ihre Personalstammdaten aus – diese werden im nächsten Schritt automatisch übernommen.
+                        </p>
+                      )}
                     </div>
                   </div>
                   <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${personnelComplete ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
@@ -339,7 +345,7 @@ export default function DocumentUploadPage() {
                   className="w-full inline-flex items-center justify-center gap-2 rounded-lg border bg-background px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
                 >
                   <UserSquare2 className="h-4 w-4" />
-                  {personnelComplete ? 'Personalstammdaten anzeigen / ändern' : 'Personalstammdaten ausfüllen'}
+                  {personnelComplete ? 'Personalstammdaten anzeigen / erneut einreichen' : 'Personalstammdaten ausfüllen'}
                 </button>
 
                 <label className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
