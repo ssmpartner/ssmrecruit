@@ -802,10 +802,15 @@ export default function LeadDetailSheet() {
                               </div>
                             )}
                           </div>
-                        )}
+                         )}
 
-                      </div>
-                    )}
+                        {selectedLead && (
+                          <div className="pt-2">
+                            <LeadHiringReadiness leadId={selectedLead.id} />
+                          </div>
+                        )}
+                       </div>
+                     )}
 
                     {/* Personalien Tab */}
                     {rightTab === 'personnel' && selectedLead && (
