@@ -163,12 +163,20 @@ export default function LeadPersonnelSection({ leadId }: Props) {
     <div className="space-y-3">
       {/* Infobox + Link generation (always visible, outside accordion) */}
       <div className="rounded-lg border bg-primary/5 p-3 space-y-3">
-        <div className="flex items-start gap-2">
-          <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-          <div className="text-xs text-foreground/80 leading-relaxed">
-            Damit der Kandidat seine Personalien korrekt einreicht, sollte er das Formular selbst ausfüllen.
-            Erstelle dazu einen Link und sende ihn dem Kandidaten zu. Der Link ist <strong>14 Tage</strong> gültig.
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2">
+            <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <div className="text-xs text-foreground/80 leading-relaxed">
+              Damit der Kandidat seine Personalien korrekt einreicht, sollte er das Formular selbst ausfüllen.
+              Erstelle dazu einen Link und sende ihn dem Kandidaten zu. Der Link ist <strong>14 Tage</strong> gültig.
+            </div>
           </div>
+          <span className={cn(
+            'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+            isComplete ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700',
+          )}>
+            {isComplete ? '✓ Vollständig' : 'Unvollständig'}
+          </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
