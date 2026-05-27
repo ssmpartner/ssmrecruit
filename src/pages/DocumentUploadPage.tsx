@@ -55,7 +55,7 @@ export default function DocumentUploadPage() {
   const [kind, setKind] = useState<Kind>('application');
 
   // Slot uploads (per-slot tracking)
-  const [slotUploads, setSlotUploads] = useState<Record<string, { name: string; path: string; size: number; id?: string }>>({});
+  const [slotUploads, setSlotUploads] = useState<Record<string, { name: string; path: string; size: number; id?: string; uploadedAt?: string }>>({});
   const [pending, setPending] = useState<PendingUpload[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -65,6 +65,8 @@ export default function DocumentUploadPage() {
   const [personnelData, setPersonnelData] = useState<PersonnelData>({ kinder: [] });
   const [personnelErrors, setPersonnelErrors] = useState<Record<string, string>>({});
   const [personnelComplete, setPersonnelComplete] = useState(false);
+  const [personnelSubmittedAt, setPersonnelSubmittedAt] = useState<string | null>(null);
+  const [personnelVersion, setPersonnelVersion] = useState<number>(0);
   const [personnelSaving, setPersonnelSaving] = useState(false);
 
   useEffect(() => {
@@ -95,24 +97,30 @@ export default function DocumentUploadPage() {
 
     const [{ data: lead }, { data: uploads }, { data: personal }] = await Promise.all([
       supabase.from('leads').select('name').eq('id', row.lead_id).single(),
-      supabase.from('document_uploads').select('id, file_name, file_type, file_path, file_size').eq('lead_id', row.lead_id),
-      supabase.from('lead_personal_data').select('data, version').eq('lead_id', row.lead_id).maybeSingle(),
+      supabase.from('document_uploads').select('id, file_name, file_type, file_path, file_size, uploaded_at').eq('lead_id', row.lead_id).order('uploaded_at', { ascending: false }),
+      supabase.from('lead_personal_data').select('data, version, updated_at').eq('lead_id', row.lead_id).maybeSingle(),
     ]);
     if (lead) setLeadName((lead as { name: string }).name);
 
     if (uploads) {
       const map: typeof slotUploads = {};
-      (uploads as Array<{ id: string; file_name: string; file_type: string; file_path: string; file_size: number }>).forEach(u => {
-        if (!map[u.file_type]) map[u.file_type] = { name: u.file_name, path: u.file_path, size: u.file_size, id: u.id };
+      // Keep the most recent (already ordered desc) per file_type as the "current version"
+      (uploads as Array<{ id: string; file_name: string; file_type: string; file_path: string; file_size: number; uploaded_at: string }>).forEach(u => {
+        if (!map[u.file_type]) map[u.file_type] = { name: u.file_name, path: u.file_path, size: u.file_size, id: u.id, uploadedAt: u.uploaded_at };
       });
       setSlotUploads(map);
     }
 
     if (personal) {
       const pdata = ((personal as { data?: PersonnelData }).data) ?? { kinder: [] };
+      const pversion = ((personal as { version?: number }).version ?? 0);
+      const pupdated = ((personal as { updated_at?: string }).updated_at) ?? null;
       setPersonnelData(pdata);
       const errs = validatePersonnel(pdata);
-      setPersonnelComplete(((personal as { version?: number }).version ?? 0) > 0 && Object.keys(errs).length === 0);
+      const complete = pversion > 0 && Object.keys(errs).length === 0;
+      setPersonnelComplete(complete);
+      setPersonnelVersion(pversion);
+      setPersonnelSubmittedAt(complete ? pupdated : null);
     }
 
     setLoading(false);
@@ -161,7 +169,15 @@ export default function DocumentUploadPage() {
       return;
     }
     setPersonnelComplete(true);
+    setPersonnelSubmittedAt(new Date().toISOString());
+    setPersonnelVersion(v => v + 1);
     setPersonnelOpen(false);
+  }
+
+  function fmtDate(iso?: string | null) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+    catch { return ''; }
   }
 
   async function handleSubmit() {
@@ -309,9 +325,15 @@ export default function DocumentUploadPage() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold">1. Personalstammdaten</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Bitte füllen Sie Ihre Personalstammdaten aus – diese werden im nächsten Schritt automatisch übernommen.
-                      </p>
+                      {personnelComplete && personnelSubmittedAt ? (
+                        <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">
+                          ✓ Eingereicht am {fmtDate(personnelSubmittedAt)}{personnelVersion > 1 ? ` · Version ${personnelVersion}` : ''}. Sie können die Angaben bei Bedarf erneut einreichen — es wird eine neue Version gespeichert.
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Bitte füllen Sie Ihre Personalstammdaten aus – diese werden im nächsten Schritt automatisch übernommen.
+                        </p>
+                      )}
                     </div>
                   </div>
                   <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${personnelComplete ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
@@ -323,7 +345,7 @@ export default function DocumentUploadPage() {
                   className="w-full inline-flex items-center justify-center gap-2 rounded-lg border bg-background px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
                 >
                   <UserSquare2 className="h-4 w-4" />
-                  {personnelComplete ? 'Personalstammdaten anzeigen / ändern' : 'Personalstammdaten ausfüllen'}
+                  {personnelComplete ? 'Personalstammdaten anzeigen / erneut einreichen' : 'Personalstammdaten ausfüllen'}
                 </button>
 
                 <label className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
@@ -341,8 +363,10 @@ export default function DocumentUploadPage() {
               {slots.map(slot => {
                 const existing = slotUploads[slot.key];
                 const queued = pending.find(p => p.slotKey === slot.key);
-                const done = !!existing;
+                const replacing = !!existing && !!queued;
+                const done = !!existing && !queued;
                 const inputId = `slot-${slot.key}`;
+                const replaceId = `slot-replace-${slot.key}`;
                 return (
                   <div
                     key={slot.key}
@@ -350,6 +374,7 @@ export default function DocumentUploadPage() {
                     onDragOver={e => e.preventDefault()}
                     className={`rounded-lg border p-3 flex items-center gap-3 ${
                       done ? 'border-success/30 bg-success/10' :
+                      replacing ? 'border-amber-300 bg-amber-50 dark:bg-amber-950/20' :
                       queued ? 'border-primary/30 bg-primary/5' :
                       slot.required ? 'border-border' : 'border-dashed border-border'
                     }`}
@@ -363,17 +388,39 @@ export default function DocumentUploadPage() {
                         {slot.label}
                         {slot.required && <span className="text-destructive ml-1">*</span>}
                       </p>
-                      {(existing || queued) && (
+                      {done && (
+                        <p className="text-xs text-emerald-700 dark:text-emerald-300 truncate">
+                          ✓ Eingereicht am {fmtDate(existing.uploadedAt)} · {existing.name}
+                        </p>
+                      )}
+                      {replacing && (
+                        <p className="text-xs text-amber-700 dark:text-amber-300 truncate">
+                          Wird ersetzt durch: {queued!.file.name} (neue Version)
+                          {queued!.error && <span className="text-destructive ml-2">{queued!.error}</span>}
+                        </p>
+                      )}
+                      {!existing && queued && (
                         <p className="text-xs text-muted-foreground truncate">
-                          {existing?.name ?? queued?.file.name}
-                          {queued?.error && <span className="text-destructive ml-2">{queued.error}</span>}
+                          {queued.file.name}
+                          {queued.error && <span className="text-destructive ml-2">{queued.error}</span>}
                         </p>
                       )}
                     </div>
                     {done ? (
-                      <span className="text-xs text-success font-medium">Hochgeladen</span>
+                      <>
+                        <label htmlFor={replaceId} className="cursor-pointer inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted">
+                          <Upload className="h-3.5 w-3.5" /> Erneut einreichen
+                        </label>
+                        <input
+                          id={replaceId}
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png,.heic"
+                          className="hidden"
+                          onChange={e => pickFile(slot.key, e.target.files?.[0] ?? null)}
+                        />
+                      </>
                     ) : queued ? (
-                      <button onClick={() => removePending(slot.key)} className="text-muted-foreground hover:text-destructive" disabled={queued.uploading}>
+                      <button onClick={() => removePending(slot.key)} className="text-muted-foreground hover:text-destructive" disabled={queued.uploading} title={replacing ? 'Ersetzung abbrechen' : 'Entfernen'}>
                         <X className="h-4 w-4" />
                       </button>
                     ) : (
