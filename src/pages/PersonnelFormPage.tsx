@@ -452,18 +452,14 @@ function StepSlice({ stepKey, data, onChange, errors, disabled }: {
   return (
     <div className={cn('personnel-step', `personnel-step-${stepKey}`)}>
       <style>{`
-        .personnel-step fieldset > div { display: none; }
-        .personnel-step-personalien fieldset > div:nth-of-type(1) { display: block; }
-        .personnel-step-zivilstand fieldset > div:nth-of-type(2),
-        .personnel-step-zivilstand fieldset > div:nth-of-type(3),
-        .personnel-step-zivilstand fieldset > div:nth-of-type(11) { display: block; }
-        .personnel-step-bank fieldset > div:nth-of-type(4) { display: block; }
-        .personnel-step-versicherung fieldset > div:nth-of-type(5) { display: block; }
-        .personnel-step-anstellung fieldset > div:nth-of-type(6),
-        .personnel-step-anstellung fieldset > div:nth-of-type(7) { display: block; }
-        .personnel-step-erwerb fieldset > div:nth-of-type(8),
-        .personnel-step-erwerb fieldset > div:nth-of-type(9) { display: block; }
-        .personnel-step-kinder fieldset > div:nth-of-type(12) { display: block; }
+        .personnel-step fieldset > div[data-group] { display: none; }
+        .personnel-step-personalien fieldset > div[data-group="personalien"] { display: block; }
+        .personnel-step-zivilstand fieldset > div[data-group="zivilstand"] { display: block; }
+        .personnel-step-bank fieldset > div[data-group="bank"] { display: block; }
+        .personnel-step-versicherung fieldset > div[data-group="versicherung"] { display: block; }
+        .personnel-step-anstellung fieldset > div[data-group="anstellung"] { display: block; }
+        .personnel-step-erwerb fieldset > div[data-group="erwerb"] { display: block; }
+        .personnel-step-kinder fieldset > div[data-group="kinder"] { display: block; }
       `}</style>
       <PersonnelFormFields data={data} onChange={onChange} errors={errors} disabled={disabled} />
     </div>
