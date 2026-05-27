@@ -64,11 +64,11 @@ export default function LeadActionPanel({ leadId, leadName, leadStatus, onSchedu
     setSendingInsights(false);
   }
 
-  async function createDocumentRequest() {
+  async function createDocumentRequest(kind: 'application' | 'employment' = 'application') {
     setSendingDocs(true);
     const { data, error } = await supabase
       .from('document_requests')
-      .insert({ lead_id: leadId, sent_via: 'manual' })
+      .insert({ lead_id: leadId, sent_via: 'manual', kind } as any)
       .select()
       .single();
 
@@ -80,13 +80,16 @@ export default function LeadActionPanel({ leadId, leadName, leadStatus, onSchedu
 
     await supabase.from('activities').insert({
       id: crypto.randomUUID(), lead_id: leadId, type: 'note',
-      description: 'Dokumenten-Upload-Link erstellt', user: 'System',
+      description: kind === 'employment'
+        ? 'Arbeitsvertrag-Dokumenten-Link erstellt (mit Personalstammdaten)'
+        : 'Bewerbungs-Dokumenten-Link erstellt',
+      user: 'System',
     });
 
     const url = `${window.location.origin}/document-upload?token=${(data as any).token}`;
     await navigator.clipboard.writeText(url);
     setNewLink({ type: 'documents', url });
-    toast({ title: '✅ Upload-Link erstellt & kopiert' });
+    toast({ title: kind === 'employment' ? '✅ Arbeitsvertrag-Link erstellt & kopiert' : '✅ Bewerbungs-Link erstellt & kopiert' });
     setSendingDocs(false);
   }
 
