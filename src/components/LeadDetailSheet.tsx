@@ -16,7 +16,7 @@ import SourceBadge from './SourceBadge';
 import {
   Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
   FileText, Activity, CalendarIcon, Phone, Video, Building2, Trash2, Plus,
-  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Brain, Upload, EyeOff, Eye, Shield, CheckCircle2, AlertTriangle, GitMerge, CalendarPlus, CalendarCheck
+  Link2, Send, Copy, ChevronLeft, ChevronRight, X, Workflow, Brain, Upload, EyeOff, Eye, Shield, CheckCircle2, AlertTriangle, GitMerge, CalendarPlus, CalendarCheck, IdCard
 } from 'lucide-react';
 import { detectDuplicates, type DuplicatePair } from '@/lib/duplicate-detection';
 import { useToast } from '@/hooks/use-toast';
@@ -68,7 +68,7 @@ export default function LeadDetailSheet() {
   const [showAptForm, setShowAptForm] = useState(false);
   const [aptForm, setAptForm] = useState({ title: '', date: undefined as Date | undefined, time: '09:00', duration: 30, type: 'phone' as 'phone' | 'video' | 'onsite', notes: '' });
   const [activeCallAptId, setActiveCallAptId] = useState<string | null>(null);
-  const [rightTab, setRightTab] = useState<'info' | 'appointments' | 'activity' | 'flow' | 'status' | 'insights' | 'documents'>('info');
+  const [rightTab, setRightTab] = useState<'info' | 'personnel' | 'appointments' | 'activity' | 'flow' | 'status' | 'insights' | 'documents'>('info');
   const [confirmReset, setConfirmReset] = useState(false);
   const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
   const leadIsNew = selectedLead?.status === 'new';
@@ -301,6 +301,7 @@ export default function LeadDetailSheet() {
 
   const allRightTabs = [
     { key: 'info' as const, label: 'Info', icon: User, hideForReview: false, hideWhenFrozen: false },
+    { key: 'personnel' as const, label: 'Personalien', icon: IdCard, hideForReview: false, hideWhenFrozen: false },
     { key: 'insights' as const, label: 'Insights', icon: Brain, hideForReview: false, hideWhenFrozen: false },
     { key: 'documents' as const, label: 'Dokumente', icon: Upload, count: docCount, hideForReview: false, hideWhenFrozen: true },
     { key: 'flow' as const, label: 'Flow', icon: Workflow, hideForReview: true, hideWhenFrozen: false },
@@ -803,12 +804,13 @@ export default function LeadDetailSheet() {
                           </div>
                         )}
 
-                        {/* Personalien (Personalblatt) – derzeit nur für Muster-Lead aktiv */}
-                        {selectedLead && /mustermann/i.test(selectedLead.name) && (
-                          <div className="pt-2">
-                            <LeadPersonnelSection leadId={selectedLead.id} />
-                          </div>
-                        )}
+                      </div>
+                    )}
+
+                    {/* Personalien Tab */}
+                    {rightTab === 'personnel' && selectedLead && (
+                      <div className="space-y-3">
+                        <LeadPersonnelSection leadId={selectedLead.id} />
                       </div>
                     )}
 
