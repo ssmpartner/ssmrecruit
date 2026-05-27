@@ -169,7 +169,15 @@ export default function DocumentUploadPage() {
       return;
     }
     setPersonnelComplete(true);
+    setPersonnelSubmittedAt(new Date().toISOString());
+    setPersonnelVersion(v => v + 1);
     setPersonnelOpen(false);
+  }
+
+  function fmtDate(iso?: string | null) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+    catch { return ''; }
   }
 
   async function handleSubmit() {
