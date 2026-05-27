@@ -146,11 +146,11 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     toast({ title: 'Kopiert!', description: 'Link in der Zwischenablage.' });
   }
 
-  async function resendLink() {
+  async function resendLink(kind: 'application' | 'employment' = 'application') {
     setResending(true);
     const { data, error } = await supabase
       .from('document_requests')
-      .insert({ lead_id: leadId, sent_via: 'manual' })
+      .insert({ lead_id: leadId, sent_via: 'manual', kind } as any)
       .select()
       .single();
 
@@ -162,12 +162,18 @@ export default function LeadDocumentsTab({ leadId }: Props) {
 
     await supabase.from('activities').insert({
       id: crypto.randomUUID(), lead_id: leadId, type: 'note',
-      description: 'Neuer Dokumenten-Upload-Link erstellt (erneut gesendet)', user: 'System',
+      description: kind === 'employment'
+        ? 'Arbeitsvertrag-Dokumenten-Link erstellt (mit Personalstammdaten)'
+        : 'Bewerbungs-Dokumenten-Link erstellt',
+      user: 'System',
     });
 
     const url = `${window.location.origin}/document-upload?token=${(data as any).token}`;
     await navigator.clipboard.writeText(url);
-    toast({ title: '✅ Neuer Link erstellt & kopiert', description: 'Gültig für 48 Stunden.' });
+    toast({
+      title: kind === 'employment' ? '✅ Arbeitsvertrag-Link erstellt & kopiert' : '✅ Bewerbungs-Link erstellt & kopiert',
+      description: 'Gültig für 48 Stunden.',
+    });
     setResending(false);
     loadData();
   }
