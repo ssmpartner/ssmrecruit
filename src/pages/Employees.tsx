@@ -4,6 +4,8 @@ import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 type SyncItem = { email: string; user_id: string; employee_id: string; role: string; agency_id: string };
 type SyncError = { email: string; message: string };
