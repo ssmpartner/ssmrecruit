@@ -244,6 +244,19 @@ export default function Employees() {
                   </div>
                 </div>
 
+                {/* Lead assignment toggle */}
+                <div className="mb-3 flex items-center justify-between rounded-lg border p-3">
+                  <Label htmlFor={`emp-leads-${emp.id}`} className="text-sm cursor-pointer">
+                    Leads erhalten
+                  </Label>
+                  <Switch
+                    id={`emp-leads-${emp.id}`}
+                    checked={emp.canReceiveLeads !== false}
+                    onCheckedChange={(checked) => handleToggleLeads(emp.id, checked)}
+                    disabled={togglingId === emp.id}
+                  />
+                </div>
+
                 <div className="rounded-lg bg-secondary p-3">
                   <p className="text-sm font-medium flex items-center gap-1">
                     <Users className="h-3.5 w-3.5" /> {empLeads.length} zugewiesene Leads
