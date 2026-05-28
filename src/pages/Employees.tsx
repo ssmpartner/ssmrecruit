@@ -4,6 +4,8 @@ import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 type SyncItem = { email: string; user_id: string; employee_id: string; role: string; agency_id: string };
 type SyncError = { email: string; message: string };
@@ -21,6 +23,7 @@ export default function Employees() {
   const { employees, agencies, leads, updateEmployee, refreshData } = useLeads() as any;
   const { isSuperadmin } = useAuth();
   const [changingId, setChangingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
 
@@ -33,6 +36,17 @@ export default function Employees() {
       toast.error('Fehler beim Zuweisen');
     }
     setChangingId(null);
+  };
+
+  const handleToggleLeads = async (empId: string, checked: boolean) => {
+    setTogglingId(empId);
+    try {
+      updateEmployee(empId, { canReceiveLeads: checked });
+      toast.success(checked ? 'Lead-Zuweisung aktiviert' : 'Lead-Zuweisung pausiert');
+    } catch {
+      toast.error('Fehler beim Aktualisieren');
+    }
+    setTogglingId(null);
   };
 
   const handleSync = async () => {
@@ -228,6 +242,19 @@ export default function Employees() {
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   </div>
+                </div>
+
+                {/* Lead assignment toggle */}
+                <div className="mb-3 flex items-center justify-between rounded-lg border p-3">
+                  <Label htmlFor={`emp-leads-${emp.id}`} className="text-sm cursor-pointer">
+                    Leads erhalten
+                  </Label>
+                  <Switch
+                    id={`emp-leads-${emp.id}`}
+                    checked={emp.canReceiveLeads !== false}
+                    onCheckedChange={(checked) => handleToggleLeads(emp.id, checked)}
+                    disabled={togglingId === emp.id}
+                  />
                 </div>
 
                 <div className="rounded-lg bg-secondary p-3">

@@ -1912,6 +1912,7 @@ export type Database = {
         Row: {
           agency_id: string
           avatar: string | null
+          can_receive_leads: boolean
           created_at: string
           email: string
           id: string
@@ -1923,6 +1924,7 @@ export type Database = {
         Insert: {
           agency_id: string
           avatar?: string | null
+          can_receive_leads?: boolean
           created_at?: string
           email: string
           id: string
@@ -1934,6 +1936,7 @@ export type Database = {
         Update: {
           agency_id?: string
           avatar?: string | null
+          can_receive_leads?: boolean
           created_at?: string
           email?: string
           id?: string

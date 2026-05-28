@@ -197,6 +197,7 @@ export interface Employee {
   role: 'admin' | 'agency_manager' | 'employee';
   agencyId: string;
   avatar?: string;
+  canReceiveLeads?: boolean;
 }
 
 // Ordered status flow for employees

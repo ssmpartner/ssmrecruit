@@ -63,6 +63,7 @@ function dbToEmployee(row: any): Employee {
     role: row.role,
     agencyId: row.agency_id,
     avatar: row.avatar ?? undefined,
+    canReceiveLeads: row.can_receive_leads ?? true,
   };
 }
 
@@ -598,6 +599,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.role !== undefined) dbUpdates.role = updates.role;
     if (updates.agencyId !== undefined) dbUpdates.agency_id = updates.agencyId;
     if (updates.avatar !== undefined) dbUpdates.avatar = updates.avatar;
+    if (updates.canReceiveLeads !== undefined) dbUpdates.can_receive_leads = updates.canReceiveLeads;
     await supabase.from('employees').update(dbUpdates as any).eq('id', id);
   }, []);
 
