@@ -23,6 +23,7 @@ export default function Employees() {
   const { employees, agencies, leads, updateEmployee, refreshData } = useLeads() as any;
   const { isSuperadmin } = useAuth();
   const [changingId, setChangingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
 
@@ -35,6 +36,17 @@ export default function Employees() {
       toast.error('Fehler beim Zuweisen');
     }
     setChangingId(null);
+  };
+
+  const handleToggleLeads = async (empId: string, checked: boolean) => {
+    setTogglingId(empId);
+    try {
+      updateEmployee(empId, { canReceiveLeads: checked });
+      toast.success(checked ? 'Lead-Zuweisung aktiviert' : 'Lead-Zuweisung pausiert');
+    } catch {
+      toast.error('Fehler beim Aktualisieren');
+    }
+    setTogglingId(null);
   };
 
   const handleSync = async () => {
