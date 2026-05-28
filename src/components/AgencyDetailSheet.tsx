@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, Save, Palette, Navigation, Loader2 } from 'lucide-react';
 import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, AGENCY_COLORS, type Agency } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
@@ -19,7 +20,7 @@ interface AgencyDetailSheetProps {
 }
 
 export default function AgencyDetailSheet({ agency, open, onOpenChange }: AgencyDetailSheetProps) {
-  const { updateAgency, employees, leads } = useLeads();
+  const { updateAgency, employees, leads, updateEmployee } = useLeads();
   const [form, setForm] = useState({
     name: '',
     contactEmail: '',
@@ -408,7 +409,19 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
                       <p className="text-sm font-medium truncate">{emp.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{emp.email}</p>
                     </div>
-                    <Badge variant="secondary" className="text-xs">{emp.role}</Badge>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={emp.canReceiveLeads !== false}
+                          onCheckedChange={(checked) => updateEmployee(emp.id, { canReceiveLeads: checked })}
+                          id={`lead-assign-${emp.id}`}
+                        />
+                        <Label htmlFor={`lead-assign-${emp.id}`} className="text-xs text-muted-foreground cursor-pointer whitespace-nowrap">
+                          {emp.canReceiveLeads !== false ? 'Lead-Zuweisung aktiv' : 'Lead-Zuweisung pausiert'}
+                        </Label>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">{emp.role}</Badge>
+                    </div>
                   </div>
                 ))}
               </div>
