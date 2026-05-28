@@ -67,6 +67,8 @@ export interface Lead {
   altEmail?: string;
   altPhone?: string;
   birthDate?: string;
+  isDemo?: boolean;
+
 }
 
 export interface Appointment {
