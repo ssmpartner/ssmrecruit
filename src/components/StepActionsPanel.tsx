@@ -276,19 +276,14 @@ export default function StepActionsPanel({
           <div className="border-t pt-3 mt-2">
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Sub-Step: Controlling Prüfung</p>
             <p className="text-[11px] text-muted-foreground mb-3">
-              Wenn alle Voraussetzungen erfüllt sind, wird der Lead automatisch dem Controlling zugewiesen.
+              Die Weiterleitung ans Controlling erfolgt ausschliesslich über die Einstellungs-Readiness bei 100%.
             </p>
             <div className="flex gap-2">
               <button
-                onClick={() => {
-                  updateLead(leadId, { status: 'ready_for_controlling' });
-                  addActivity(leadId, 'status_change', 'Lead vollständig abgeschlossen → Controlling Prüfung');
-                  toast({ title: '✅ Lead vollständig abgeschlossen', description: `${leadName} wurde an das Controlling übergeben.` });
-                }}
-                disabled={!allComplete}
+                disabled
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
               >
-                <ClipboardCheck className="h-4 w-4" /> Lead vollständig abschliessen
+                <ClipboardCheck className="h-4 w-4" /> Über Readiness einreichen
               </button>
               <button
                 onClick={() => {
@@ -301,6 +296,9 @@ export default function StepActionsPanel({
                 Ablehnen
               </button>
             </div>
+            <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" /> Erforderlich: BG 1, BG 2, Personalien und Dokumente. Vertragsunterzeichnung zählt erst ab Management Approved.
+            </p>
             {!allComplete && (
               <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" /> Fehlend: {missingItems.join(', ')}
