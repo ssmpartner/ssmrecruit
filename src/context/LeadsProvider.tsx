@@ -52,7 +52,9 @@ function dbToLead(row: any): Lead {
     altEmail: row.alt_email || '',
     altPhone: row.alt_phone || '',
     birthDate: row.birth_date || '',
+    isDemo: row.is_demo ?? false,
   };
+
 }
 
 function dbToEmployee(row: any): Employee {
