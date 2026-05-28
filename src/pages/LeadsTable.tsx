@@ -397,6 +397,11 @@ export default function LeadsTable() {
                               Neu
                             </span>
                           )}
+                          {lead.isDemo && (
+                            <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 uppercase tracking-wider dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                              Demo
+                            </span>
+                          )}
                         </div>
                       </td>
                       {!isControlling && <td className="px-5 py-3 text-muted-foreground text-xs">{lead.phone}</td>}
