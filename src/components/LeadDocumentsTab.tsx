@@ -198,6 +198,34 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     a.click();
   }
 
+  async function previewFile(doc: DocumentUpload) {
+    setPreviewDoc(doc);
+    setPreviewLoading(true);
+    setPreviewUrl(null);
+    const { data, error } = await supabase.storage
+      .from('lead-documents')
+      .createSignedUrl(doc.file_path, 3600);
+    if (error || !data?.signedUrl) {
+      toast({ title: 'Vorschau fehlgeschlagen', description: error?.message || 'Datei nicht verfügbar', variant: 'destructive' });
+      setPreviewDoc(null);
+      setPreviewLoading(false);
+      return;
+    }
+    setPreviewUrl(data.signedUrl);
+    setPreviewLoading(false);
+  }
+
+  function closePreview() {
+    setPreviewDoc(null);
+    setPreviewUrl(null);
+    setPreviewLoading(false);
+  }
+
+  function isPreviewable(fileName: string): boolean {
+    const lower = fileName.toLowerCase();
+    return lower.endsWith('.pdf') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.gif') || lower.endsWith('.webp') || lower.endsWith('.svg');
+  }
+
   async function confirmDeleteFile() {
     const doc = pendingDelete;
     if (!doc) return;
