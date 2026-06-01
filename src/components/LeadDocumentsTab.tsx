@@ -51,6 +51,9 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const [pendingDelete, setPendingDelete] = useState<DocumentUpload | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<DocumentUpload | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   async function uploadFiles(files: File[]) {
     if (files.length === 0) return;
