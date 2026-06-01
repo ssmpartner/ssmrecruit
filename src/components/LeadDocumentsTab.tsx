@@ -420,6 +420,12 @@ export default function LeadDocumentsTab({ leadId }: Props) {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
+                {isPreviewable(doc.file_name) && (
+                  <button onClick={() => previewFile(doc)}
+                    className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
+                    <Eye className="h-3.5 w-3.5" /> Ansehen
+                  </button>
+                )}
                 <button onClick={() => downloadFile(doc.file_path, doc.file_name)}
                   className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
                   <Download className="h-3.5 w-3.5" /> Download
