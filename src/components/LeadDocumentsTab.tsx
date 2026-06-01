@@ -523,6 +523,23 @@ export default function LeadDocumentsTab({ leadId }: Props) {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    <Dialog open={!!previewDoc} onOpenChange={(o) => !o && closePreview()}>
+      <DialogContent className="max-w-4xl w-[90vw] h-[80vh] p-0 flex flex-col overflow-hidden">
+        <DialogHeader className="px-4 py-3 border-b shrink-0">
+          <DialogTitle className="text-base truncate">{previewDoc?.file_name}</DialogTitle>
+        </DialogHeader>
+        <div className="flex-1 overflow-auto p-4 bg-muted/30 flex items-center justify-center">
+          {previewLoading && <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />}
+          {!previewLoading && previewUrl && previewDoc && (
+            previewDoc.file_name.toLowerCase().endsWith('.pdf') ? (
+              <iframe src={previewUrl} className="w-full h-full rounded border bg-white" title={previewDoc.file_name} />
+            ) : (
+              <img src={previewUrl} alt={previewDoc.file_name} className="max-w-full max-h-full rounded shadow-lg object-contain" />
+            )
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
     </>
   );
 }
