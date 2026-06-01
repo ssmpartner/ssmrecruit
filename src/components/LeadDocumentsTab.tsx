@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, File, Download, Clock, Copy, Check, Loader2, Upload, AlertTriangle, RefreshCw, CheckCircle2, Trash2 } from 'lucide-react';
+import { FileText, File, Download, Clock, Copy, Check, Loader2, Upload, AlertTriangle, RefreshCw, CheckCircle2, Trash2, Eye, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Props {
   leadId: string;
@@ -51,6 +52,9 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const [pendingDelete, setPendingDelete] = useState<DocumentUpload | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<DocumentUpload | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   async function uploadFiles(files: File[]) {
     if (files.length === 0) return;
@@ -192,6 +196,34 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     a.download = fileName;
     a.target = '_blank';
     a.click();
+  }
+
+  async function previewFile(doc: DocumentUpload) {
+    setPreviewDoc(doc);
+    setPreviewLoading(true);
+    setPreviewUrl(null);
+    const { data, error } = await supabase.storage
+      .from('lead-documents')
+      .createSignedUrl(doc.file_path, 3600);
+    if (error || !data?.signedUrl) {
+      toast({ title: 'Vorschau fehlgeschlagen', description: error?.message || 'Datei nicht verfügbar', variant: 'destructive' });
+      setPreviewDoc(null);
+      setPreviewLoading(false);
+      return;
+    }
+    setPreviewUrl(data.signedUrl);
+    setPreviewLoading(false);
+  }
+
+  function closePreview() {
+    setPreviewDoc(null);
+    setPreviewUrl(null);
+    setPreviewLoading(false);
+  }
+
+  function isPreviewable(fileName: string): boolean {
+    const lower = fileName.toLowerCase();
+    return lower.endsWith('.pdf') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.gif') || lower.endsWith('.webp') || lower.endsWith('.svg');
   }
 
   async function confirmDeleteFile() {
@@ -388,6 +420,12 @@ export default function LeadDocumentsTab({ leadId }: Props) {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
+                {isPreviewable(doc.file_name) && (
+                  <button onClick={() => previewFile(doc)}
+                    className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
+                    <Eye className="h-3.5 w-3.5" /> Ansehen
+                  </button>
+                )}
                 <button onClick={() => downloadFile(doc.file_path, doc.file_name)}
                   className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
                   <Download className="h-3.5 w-3.5" /> Download
@@ -485,6 +523,23 @@ export default function LeadDocumentsTab({ leadId }: Props) {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    <Dialog open={!!previewDoc} onOpenChange={(o) => !o && closePreview()}>
+      <DialogContent className="max-w-4xl w-[90vw] h-[80vh] p-0 flex flex-col overflow-hidden">
+        <DialogHeader className="px-4 py-3 border-b shrink-0">
+          <DialogTitle className="text-base truncate">{previewDoc?.file_name}</DialogTitle>
+        </DialogHeader>
+        <div className="flex-1 overflow-auto p-4 bg-muted/30 flex items-center justify-center">
+          {previewLoading && <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />}
+          {!previewLoading && previewUrl && previewDoc && (
+            previewDoc.file_name.toLowerCase().endsWith('.pdf') ? (
+              <iframe src={previewUrl} className="w-full h-full rounded border bg-white" title={previewDoc.file_name} />
+            ) : (
+              <img src={previewUrl} alt={previewDoc.file_name} className="max-w-full max-h-full rounded shadow-lg object-contain" />
+            )
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
     </>
   );
 }
