@@ -67,7 +67,7 @@ const BACKOFFICE_BLOCKED_PREFIXES = ['/agencies', '/employees', '/processes', '/
 // Routes restricted to superadmin only
 const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice'];
 
-const SSM_PORTAL_URL = 'https://ssmpartner.lovable.app/portal';
+const SSM_PORTAL_URL = 'https://ssmpartner.ch/portal';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, role } = useAuth();

@@ -59,7 +59,7 @@ export default function ProfileSettings() {
           E-Mail-Adresse und Passwort werden zentral über das SSM Portal verwaltet.
         </p>
         <a
-          href="https://ssmpartner.lovable.app/portal"
+          href="https://ssmpartner.ch/portal"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
