@@ -3,7 +3,7 @@ import { ExternalLink, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
-const SSM_PORTAL_URL = 'https://ssmpartner.lovable.app/portal';
+const SSM_PORTAL_URL = 'https://ssmpartner.ch/portal';
 
 export default function Login() {
   const { signIn } = useAuth();
