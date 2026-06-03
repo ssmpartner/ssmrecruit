@@ -2363,6 +2363,33 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_document_waivers: {
+        Row: {
+          created_at: string
+          doc_key: string
+          id: string
+          lead_id: string
+          reason: string
+          waived_by: string
+        }
+        Insert: {
+          created_at?: string
+          doc_key: string
+          id?: string
+          lead_id: string
+          reason?: string
+          waived_by?: string
+        }
+        Update: {
+          created_at?: string
+          doc_key?: string
+          id?: string
+          lead_id?: string
+          reason?: string
+          waived_by?: string
+        }
+        Relationships: []
+      }
       lead_personal_data: {
         Row: {
           data: Json
