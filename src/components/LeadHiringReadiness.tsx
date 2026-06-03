@@ -13,6 +13,16 @@ interface Props {
 
 const REQUIRED_DOC_KEYS = ['id_front', 'id_back', 'bank_front', 'bank_back', 'vbv', 'kk_card', 'fuehrerausweis'];
 
+const REQUIRED_DOC_LABELS: Record<string, string> = {
+  id_front: 'Ausweis (Vorderseite)',
+  id_back: 'Ausweis (Rückseite)',
+  bank_front: 'Bankkarte (Vorderseite)',
+  bank_back: 'Bankkarte (Rückseite)',
+  vbv: 'VBV-Ausweis',
+  kk_card: 'Krankenkassenkarte',
+  fuehrerausweis: 'Führerausweis',
+};
+
 // Manuell ausgewählte Kategorien → erfüllen welche Required-Slots
 // (1 PDF mit beiden Seiten deckt v + r ab)
 const MANUAL_TO_REQUIRED: Record<string, string[]> = {
