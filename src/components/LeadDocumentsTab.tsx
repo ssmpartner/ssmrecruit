@@ -1,10 +1,31 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, File, Download, Clock, Copy, Check, Loader2, Upload, AlertTriangle, RefreshCw, CheckCircle2, Trash2, Eye, X } from 'lucide-react';
+import { FileText, File, Download, Clock, Copy, Check, Loader2, Upload, AlertTriangle, RefreshCw, CheckCircle2, Trash2, Eye, X, ShieldCheck, CircleSlash } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+// Pflichtdokumente für Arbeitsvertrag-Readiness (Single Source of Truth – synchron zu LeadHiringReadiness)
+const REQUIRED_DOC_KEYS = ['id', 'bank', 'vbv', 'kk_card', 'fuehrerausweis', 'leadsliste', 'insight_r4'];
+const REQUIRED_DOC_LABELS: Record<string, string> = {
+  id: 'Ausweis',
+  bank: 'Bankkarte',
+  vbv: 'VBV-Ausweis',
+  kk_card: 'Krankenkasse',
+  fuehrerausweis: 'Führerausweis',
+  leadsliste: 'Leadsliste',
+  insight_r4: 'Insight R4',
+};
+const UPLOAD_TO_REQUIRED: Record<string, string> = {
+  id: 'id', id_front: 'id', id_back: 'id',
+  bank: 'bank', bank_front: 'bank', bank_back: 'bank',
+  vbv: 'vbv',
+  kk_card: 'kk_card',
+  fuehrerausweis: 'fuehrerausweis',
+  leadsliste: 'leadsliste',
+  insight_r4: 'insight_r4',
+};
 
 interface Props {
   leadId: string;
@@ -52,6 +73,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const [loading, setLoading] = useState(true);
   const [docRequests, setDocRequests] = useState<DocumentRequest[]>([]);
   const [docUploads, setDocUploads] = useState<DocumentUpload[]>([]);
+  const [waivedKeys, setWaivedKeys] = useState<Set<string>>(new Set());
   const [copiedToken, setCopiedToken] = useState('');
   const [resending, setResending] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -138,12 +160,14 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   }, [leadId]);
 
   async function loadData() {
-    const [docRes, uploadsRes] = await Promise.all([
+    const [docRes, uploadsRes, waiversRes] = await Promise.all([
       supabase.from('document_requests').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }),
       supabase.from('document_uploads').select('*').eq('lead_id', leadId).order('uploaded_at', { ascending: false }),
+      supabase.from('lead_document_waivers').select('doc_key').eq('lead_id', leadId),
     ]);
     if (docRes.data) setDocRequests(docRes.data as any[]);
     if (uploadsRes.data) setDocUploads(uploadsRes.data as any[]);
+    if (waiversRes.data) setWaivedKeys(new Set((waiversRes.data as any[]).map(w => w.doc_key)));
     setLoading(false);
   }
 
@@ -300,6 +324,58 @@ export default function LeadDocumentsTab({ leadId }: Props) {
 
   const hasContent = docUploads.length > 0 || docRequests.length > 0;
 
+  // Welche Pflicht-Slots sind durch einen Upload abgedeckt?
+  const uploadedRequiredSlots = new Set<string>();
+  docUploads.forEach(u => {
+    const slot = UPLOAD_TO_REQUIRED[u.file_type];
+    if (slot) uploadedRequiredSlots.add(slot);
+  });
+  const docResolvedCount = REQUIRED_DOC_KEYS.filter(k => uploadedRequiredSlots.has(k) || waivedKeys.has(k)).length;
+  const docTotalCount = REQUIRED_DOC_KEYS.length;
+
+  const requiredDocsPanel = (
+    <div className="rounded-lg border bg-card p-4 space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          <h5 className="text-sm font-semibold">Pflichtdokumente (Arbeitsvertrag)</h5>
+        </div>
+        <span className={`text-xs font-semibold ${docResolvedCount === docTotalCount ? 'text-emerald-600' : 'text-amber-600'}`}>
+          {docResolvedCount}/{docTotalCount} erledigt
+        </span>
+      </div>
+      <p className="text-[11px] text-muted-foreground -mt-1">
+        Verzicht («Hat er nicht») wird in der Einstellungs-Readiness gesetzt.
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {REQUIRED_DOC_KEYS.map(k => {
+          const uploaded = uploadedRequiredSlots.has(k);
+          const waived = waivedKeys.has(k);
+          const label = REQUIRED_DOC_LABELS[k];
+          if (uploaded) {
+            return (
+              <span key={k} className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="h-3.5 w-3.5" /> {label}
+              </span>
+            );
+          }
+          if (waived) {
+            return (
+              <span key={k} className="inline-flex items-center gap-1.5 rounded-full bg-muted border border-border px-2.5 py-1 text-[11px] font-medium text-muted-foreground line-through">
+                <CircleSlash className="h-3.5 w-3.5" /> {label}
+              </span>
+            );
+          }
+          return (
+            <span key={k} className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300">
+              <AlertTriangle className="h-3.5 w-3.5" /> {label} fehlt
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   const uploadBar = (
     <div
       onDrop={handleDrop}
@@ -380,6 +456,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
       <div className="space-y-4">
         {uploadBar}
         {linkGenerator}
+        {requiredDocsPanel}
         <div className="flex flex-col items-center justify-center py-10 text-center">
           <Upload className="h-10 w-10 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground">Noch keine Dokumente vorhanden</p>
@@ -398,6 +475,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     <div className="space-y-4">
       {uploadBar}
       {linkGenerator}
+      {requiredDocsPanel}
       {/* Uploaded Documents */}
       {docUploads.length > 0 && (
         <div className="rounded-lg border bg-card p-4 space-y-3">
@@ -405,11 +483,20 @@ export default function LeadDocumentsTab({ leadId }: Props) {
             <FileText className="h-4 w-4 text-primary" />
             <h5 className="text-sm font-semibold">Hochgeladene Dokumente ({docUploads.length})</h5>
           </div>
-          {docUploads.map(doc => (
+          {docUploads.map(doc => {
+            const requiredSlot = UPLOAD_TO_REQUIRED[doc.file_type];
+            return (
             <div key={doc.id} className="flex items-center gap-3 rounded-lg bg-muted/30 border p-3">
               <File className="h-5 w-5 text-muted-foreground shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{doc.file_name}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-medium truncate">{doc.file_name}</p>
+                  {requiredSlot && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                      <CheckCircle2 className="h-3 w-3" /> Pflicht: {REQUIRED_DOC_LABELS[requiredSlot]}
+                    </span>
+                  )}
+                </div>
                 <div className="mt-1 flex items-center gap-2 flex-wrap">
                   <select
                     value={documentTypeLabels[doc.file_type] ? doc.file_type : 'other'}
@@ -444,7 +531,8 @@ export default function LeadDocumentsTab({ leadId }: Props) {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
