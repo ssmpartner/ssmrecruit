@@ -456,6 +456,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
       <div className="space-y-4">
         {uploadBar}
         {linkGenerator}
+        {requiredDocsPanel}
         <div className="flex flex-col items-center justify-center py-10 text-center">
           <Upload className="h-10 w-10 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground">Noch keine Dokumente vorhanden</p>
