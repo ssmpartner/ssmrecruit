@@ -13,6 +13,7 @@ interface Props {
 
 const REQUIRED_DOC_KEYS = [
   'id', 'bank', 'vbv', 'kk_card', 'fuehrerausweis',
+  'betreibungsauszug', 'strafregisterauszug',
   'leadsliste', 'insight_r4',
 ];
 
@@ -22,6 +23,8 @@ const REQUIRED_DOC_LABELS: Record<string, string> = {
   vbv: 'VBV-Ausweis',
   kk_card: 'Krankenkasse',
   fuehrerausweis: 'Führerausweis',
+  betreibungsauszug: 'Betreibungsauszug',
+  strafregisterauszug: 'Strafregisterauszug',
   leadsliste: 'Leadsliste',
   insight_r4: 'Insight R4',
 };
@@ -34,6 +37,8 @@ const UPLOAD_TO_REQUIRED: Record<string, string> = {
   vbv: 'vbv',
   kk_card: 'kk_card',
   fuehrerausweis: 'fuehrerausweis',
+  betreibungsauszug: 'betreibungsauszug',
+  strafregisterauszug: 'strafregisterauszug',
   leadsliste: 'leadsliste',
   insight_r4: 'insight_r4',
 };
