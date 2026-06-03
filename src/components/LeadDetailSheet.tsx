@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { type ActivityEntry } from '@/context/leads-context';
 import { useLeads } from '@/context/useLeads';
-import { statusConfig, getAllowedNextStatuses, type LeadStatus } from '@/lib/mock-data';
+import { statusConfig, getAllowedNextStatuses, type Appointment, type LeadStatus } from '@/lib/mock-data';
 import { lookupPlz, searchPlz, cantons, swissLocations, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
@@ -73,6 +73,7 @@ export default function LeadDetailSheet() {
   const [rightTab, setRightTab] = useState<'info' | 'personnel' | 'appointments' | 'activity' | 'flow' | 'status' | 'insights' | 'documents'>('info');
   const [confirmReset, setConfirmReset] = useState(false);
   const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
+  const [leadDbAppointments, setLeadDbAppointments] = useState<Appointment[]>([]);
   const leadIsNew = selectedLead?.status === 'new';
   const isMarkedViewed = selectedLead?.isRead ?? false;
 
@@ -117,10 +118,37 @@ export default function LeadDetailSheet() {
     return () => { supabase.removeChannel(ch); };
   }, [selectedLead?.id]);
 
-  const leadAppointments = useMemo(() =>
-    selectedLead ? appointments.filter(a => a.leadId === selectedLead.id).sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)) : [],
-    [selectedLead, appointments]
-  );
+  useEffect(() => {
+    if (!selectedLead) { setLeadDbAppointments([]); return; }
+    const loadLeadAppointments = async () => {
+      const { data } = await supabase.from('appointments').select('*').eq('lead_id', selectedLead.id).order('date', { ascending: true }).order('time', { ascending: true });
+      setLeadDbAppointments(((data ?? []) as any[]).map(row => ({
+        id: row.id,
+        leadId: row.lead_id,
+        title: row.title,
+        date: row.date,
+        time: row.time,
+        duration: row.duration,
+        type: row.type,
+        meetingLink: row.meeting_link ?? undefined,
+        notes: row.notes,
+        createdBy: row.created_by,
+        createdAt: row.created_at,
+      })));
+    };
+    loadLeadAppointments();
+    const ch = supabase.channel(`lead-appointments-${selectedLead.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: `lead_id=eq.${selectedLead.id}` }, loadLeadAppointments)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [selectedLead?.id]);
+
+  const leadAppointments = useMemo(() => {
+    if (!selectedLead) return [];
+    return [...appointments.filter(a => a.leadId === selectedLead.id), ...leadDbAppointments]
+      .filter((a, index, all) => all.findIndex(entry => entry.id === a.id) === index)
+      .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`));
+  }, [selectedLead, appointments, leadDbAppointments]);
 
   // Load appointment suggestions from insights form
   useEffect(() => {

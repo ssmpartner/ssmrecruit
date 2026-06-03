@@ -148,7 +148,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Fetch all rows from a table, paginating past the 1000-row default limit
-  const fetchAll = useCallback(async (table: 'leads' | 'activities', orderCol = 'created_at', ascending = false) => {
+  const fetchAll = useCallback(async (table: 'leads' | 'activities' | 'appointments', orderCol = 'created_at', ascending = false) => {
     const PAGE = 1000;
     let page = 0;
     let allRows: any[] = [];
@@ -176,7 +176,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
           supabase.from('employees').select('*'),
           supabase.from('agencies').select('*'),
           fetchAll('activities', 'created_at', false),
-          supabase.from('appointments').select('*').order('created_at', { ascending: false }),
+          fetchAll('appointments', 'created_at', false),
           supabase.from('disc_results').select('*'),
           supabase.from('app_settings').select('*'),
           supabase.from('lead_sources').select('*').order('sort_order'),
@@ -186,7 +186,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         if (employeesRes.data) setEmployees(employeesRes.data.map(dbToEmployee));
         if (agenciesRes.data) setAgencies(agenciesRes.data.map(dbToAgency));
         if (activitiesData) setActivities(activitiesData.map(dbToActivity));
-        if (appointmentsRes.data) setAppointments(appointmentsRes.data.map(dbToAppointment));
+        if (appointmentsRes) setAppointments(appointmentsRes.map(dbToAppointment));
         if (discRes.data) setDiscResults(discRes.data.map(dbToDiscResult));
         if (sourcesRes.data) setLeadSources(sourcesRes.data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, color: r.color || '#6B7280', sortOrder: r.sort_order })));
 
