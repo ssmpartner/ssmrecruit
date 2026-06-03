@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 
-type TabKey = 'active' | 'archived' | 'deleted' | 'duplicates';
+type TabKey = 'active' | 'archived' | 'deleted' | 'duplicates' | 'demo';
 type PageSize = 10 | 20 | 30 | 50 | 100 | 'all';
 
 const PAGE_SIZES: { value: PageSize; label: string }[] = [
@@ -70,9 +70,12 @@ export default function LeadsTable() {
   }, [setSelectedLead, isSuperadmin, updateLead]);
 
   const lifecycleLeads = useMemo(() => {
+    if (activeTab === 'demo') {
+      return leads.filter(l => l.isDemo);
+    }
     const lifecycle: LeadLifecycle = activeTab === 'active' ? 'active' : activeTab === 'archived' ? 'archived' : 'deleted';
     let filtered = leads.filter(l => l.lifecycle === lifecycle);
-    
+
     // Role-based status filtering for review roles
     if (isControlling) {
       filtered = filtered.filter(l => l.status === 'ready_for_controlling');
@@ -81,7 +84,7 @@ export default function LeadsTable() {
     } else if (isHR) {
       filtered = filtered.filter(l => l.status === 'hr_processing');
     }
-    
+
     return filtered;
   }, [leads, activeTab, isControlling, isGeschaeftsleitung, isHR]);
 
@@ -176,11 +179,14 @@ export default function LeadsTable() {
   const archivedCount = leads.filter(l => l.lifecycle === 'archived').length;
   const deletedCount = leads.filter(l => l.lifecycle === 'deleted').length;
 
+  const demoCount = leads.filter(l => l.isDemo).length;
+
   const tabs: { key: TabKey; label: string; icon: React.ReactNode; count: number; superadminOnly?: boolean; hideForReview?: boolean }[] = [
     { key: 'active', label: isControlling ? 'Zu prüfen' : isGeschaeftsleitung ? 'Freigaben offen' : isHR ? 'Onboarding' : 'Aktiv', icon: null, count: activeCount },
     { key: 'archived', label: 'Archiviert', icon: <Archive className="h-3.5 w-3.5" />, count: archivedCount, superadminOnly: true, hideForReview: true },
     { key: 'deleted', label: 'Gelöscht', icon: <Trash2 className="h-3.5 w-3.5" />, count: deletedCount, superadminOnly: true, hideForReview: true },
     { key: 'duplicates', label: 'Doppelte Leads', icon: <Copy className="h-3.5 w-3.5" />, count: 0, hideForReview: true },
+    { key: 'demo', label: 'Demo', icon: null, count: demoCount, superadminOnly: true, hideForReview: true },
   ];
 
   // Generate page numbers for pagination
@@ -208,7 +214,9 @@ export default function LeadsTable() {
           <p className="text-muted-foreground">
             {isReviewRole
               ? `${filtered.length} Lead${filtered.length !== 1 ? 's' : ''} zur Bearbeitung`
-              : activeTab === 'duplicates' ? 'KI-basierte Duplikat-Erkennung' : `${filtered.length} von ${lifecycleLeads.length} Leads`
+              : activeTab === 'duplicates' ? 'KI-basierte Duplikat-Erkennung'
+              : activeTab === 'demo' ? `${filtered.length} Demo-/Muster-Lead${filtered.length !== 1 ? 's' : ''}`
+              : `${filtered.length} von ${lifecycleLeads.length} Leads`
             }
           </p>
         </div>
@@ -355,7 +363,7 @@ export default function LeadsTable() {
                 {paginatedLeads.length === 0 && (
                   <tr>
                     <td colSpan={isSuperadmin && !isReviewRole ? 11 : isReviewRole ? 9 : 10} className="px-5 py-12 text-center text-muted-foreground">
-                      {activeTab === 'archived' ? 'Keine archivierten Leads vorhanden.' : activeTab === 'deleted' ? 'Keine gelöschten Leads vorhanden.' : 'Keine Leads gefunden.'}
+                      {activeTab === 'archived' ? 'Keine archivierten Leads vorhanden.' : activeTab === 'deleted' ? 'Keine gelöschten Leads vorhanden.' : activeTab === 'demo' ? 'Keine Demo-/Muster-Leads vorhanden.' : 'Keine Leads gefunden.'}
                     </td>
                   </tr>
                 )}
