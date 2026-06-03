@@ -1,10 +1,31 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, File, Download, Clock, Copy, Check, Loader2, Upload, AlertTriangle, RefreshCw, CheckCircle2, Trash2, Eye, X } from 'lucide-react';
+import { FileText, File, Download, Clock, Copy, Check, Loader2, Upload, AlertTriangle, RefreshCw, CheckCircle2, Trash2, Eye, X, ShieldCheck, CircleSlash } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+// Pflichtdokumente für Arbeitsvertrag-Readiness (Single Source of Truth – synchron zu LeadHiringReadiness)
+const REQUIRED_DOC_KEYS = ['id', 'bank', 'vbv', 'kk_card', 'fuehrerausweis', 'leadsliste', 'insight_r4'];
+const REQUIRED_DOC_LABELS: Record<string, string> = {
+  id: 'Ausweis',
+  bank: 'Bankkarte',
+  vbv: 'VBV-Ausweis',
+  kk_card: 'Krankenkasse',
+  fuehrerausweis: 'Führerausweis',
+  leadsliste: 'Leadsliste',
+  insight_r4: 'Insight R4',
+};
+const UPLOAD_TO_REQUIRED: Record<string, string> = {
+  id: 'id', id_front: 'id', id_back: 'id',
+  bank: 'bank', bank_front: 'bank', bank_back: 'bank',
+  vbv: 'vbv',
+  kk_card: 'kk_card',
+  fuehrerausweis: 'fuehrerausweis',
+  leadsliste: 'leadsliste',
+  insight_r4: 'insight_r4',
+};
 
 interface Props {
   leadId: string;
