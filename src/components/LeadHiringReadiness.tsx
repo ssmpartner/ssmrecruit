@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Circle, AlertCircle, Trophy, Send, Loader2, MinusCircle, X } from 'lucide-react';
+import { CheckCircle2, Circle, AlertCircle, Trophy, Send, Loader2, MinusCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeads } from '@/context/useLeads';
 import { cn } from '@/lib/utils';
