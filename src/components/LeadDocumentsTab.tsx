@@ -475,6 +475,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     <div className="space-y-4">
       {uploadBar}
       {linkGenerator}
+      {requiredDocsPanel}
       {/* Uploaded Documents */}
       {docUploads.length > 0 && (
         <div className="rounded-lg border bg-card p-4 space-y-3">
