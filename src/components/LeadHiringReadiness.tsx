@@ -68,8 +68,14 @@ export default function LeadHiringReadiness({ leadId }: Props) {
       const complete = !!row && (row.version ?? 0) > 0 && Object.keys(validatePersonnel(row.data ?? {})).length === 0;
       setPersonnelDone(complete);
       const types = new Set((dRes.data ?? []).map((u: { file_type: string }) => u.file_type));
-      setDocsDoneCount(REQUIRED_DOC_KEYS.filter(k => types.has(k)).length);
-      setManualDocTypes(Array.from(types).filter(t => !REQUIRED_DOC_KEYS.includes(t)));
+      // Erweitere mit den von manuellen Kategorien abgedeckten Slots
+      const expanded = new Set(types);
+      for (const t of types) {
+        const covers = MANUAL_TO_REQUIRED[t];
+        if (covers) covers.forEach(k => expanded.add(k));
+      }
+      setDocsDoneCount(REQUIRED_DOC_KEYS.filter(k => expanded.has(k)).length);
+      setManualDocTypes(Array.from(types).filter(t => !REQUIRED_DOC_KEYS.includes(t) && !MANUAL_TO_REQUIRED[t]));
       setLoading(false);
     })();
     return () => { alive = false; };
