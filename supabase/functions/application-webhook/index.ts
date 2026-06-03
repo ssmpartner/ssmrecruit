@@ -160,6 +160,14 @@ serve(async (req) => {
     let cvPath: string | null = null;
     let motivationLetterPath: string | null = null;
     const attachmentPaths: string[] = [];
+    // Track for mirroring to lead-documents
+    const uploadedDocs: { storagePath: string; fileName: string; contentType: string; size: number; fileType: string; data: Uint8Array }[] = [];
+
+    const classifyFileType = (fieldLower: string): string => {
+      if (DOC_FIELDS.cv.some(f => fieldLower.includes(f))) return 'cv';
+      if (DOC_FIELDS.motivation_letter.some(f => fieldLower.includes(f))) return 'motivation_letter';
+      return 'other';
+    };
 
     for (const upload of fileUploads) {
       const ext = upload.fileName.split('.').pop() || 'bin';
@@ -174,15 +182,20 @@ serve(async (req) => {
         continue;
       }
 
-      // Classify document
       const fieldLower = upload.fieldName;
-      if (DOC_FIELDS.cv.some(f => fieldLower.includes(f))) {
-        cvPath = storagePath;
-      } else if (DOC_FIELDS.motivation_letter.some(f => fieldLower.includes(f))) {
-        motivationLetterPath = storagePath;
-      } else {
-        attachmentPaths.push(storagePath);
-      }
+      const fileType = classifyFileType(fieldLower);
+      if (fileType === 'cv') cvPath = storagePath;
+      else if (fileType === 'motivation_letter') motivationLetterPath = storagePath;
+      else attachmentPaths.push(storagePath);
+
+      uploadedDocs.push({
+        storagePath,
+        fileName: upload.fileName,
+        contentType: upload.contentType,
+        size: upload.data.byteLength,
+        fileType,
+        data: upload.data,
+      });
     }
 
     // Handle base64 encoded files in JSON payload
@@ -208,18 +221,25 @@ serve(async (req) => {
             .upload(storagePath, binaryData, { contentType: ct });
 
           const fieldLower = key.toLowerCase();
-          if (DOC_FIELDS.cv.some(f => fieldLower.includes(f))) {
-            cvPath = storagePath;
-          } else if (DOC_FIELDS.motivation_letter.some(f => fieldLower.includes(f))) {
-            motivationLetterPath = storagePath;
-          } else {
-            attachmentPaths.push(storagePath);
-          }
+          const fileType = classifyFileType(fieldLower);
+          if (fileType === 'cv') cvPath = storagePath;
+          else if (fileType === 'motivation_letter') motivationLetterPath = storagePath;
+          else attachmentPaths.push(storagePath);
+
+          uploadedDocs.push({
+            storagePath,
+            fileName: value.filename as string,
+            contentType: ct,
+            size: binaryData.byteLength,
+            fileType,
+            data: binaryData,
+          });
         } catch (e) {
           console.error(`Base64 upload error for ${key}:`, e);
         }
       }
     }
+
 
     // 3. Determine status
     let status = 'complete';
