@@ -423,6 +423,11 @@ serve(async (req) => {
           }
         }
       }
+    } catch (e) {
+      console.error('Lead creation error (non-fatal):', e);
+    }
+
+
 
 
     // 7. Notification
