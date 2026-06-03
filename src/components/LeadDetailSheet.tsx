@@ -1037,7 +1037,7 @@ export default function LeadDetailSheet() {
                           );
                         })()}
 
-                        {!isReviewRole && (
+                        {canChangeStatus ? (
                           <section>
                             <h4 className="text-base font-semibold mb-3">Status ändern</h4>
                             <div className="mb-3">
@@ -1072,6 +1072,12 @@ export default function LeadDetailSheet() {
                               })()}
                             </div>
                            </section>
+                        ) : (
+                          <section className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 p-3">
+                            <p className="text-xs text-amber-800 dark:text-amber-300">
+                              Statusänderungen sind ausschliesslich dem Admin vorbehalten. Der reguläre Prozess läuft über die Wizards und die Einstellungs-Readiness.
+                            </p>
+                          </section>
                         )}
 
                          {isSuperadmin && selectedLead.status !== 'new' && (
