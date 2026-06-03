@@ -531,7 +531,8 @@ export default function LeadDocumentsTab({ leadId }: Props) {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
