@@ -59,7 +59,8 @@ interface AppointmentSuggestion {
 export default function LeadDetailSheet() {
   const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings, leads, leadSources, mergeLead } = useLeads();
   const { toast } = useToast();
-  const { isSuperadmin, profile, isReviewRole, isControlling, isGeschaeftsleitung, isHR } = useAuth();
+  const { isSuperadmin, isAdmin, profile, isReviewRole, isControlling, isGeschaeftsleitung, isHR } = useAuth();
+  const canChangeStatus = isSuperadmin || isAdmin;
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
