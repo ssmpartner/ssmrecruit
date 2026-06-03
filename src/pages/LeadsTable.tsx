@@ -214,7 +214,9 @@ export default function LeadsTable() {
           <p className="text-muted-foreground">
             {isReviewRole
               ? `${filtered.length} Lead${filtered.length !== 1 ? 's' : ''} zur Bearbeitung`
-              : activeTab === 'duplicates' ? 'KI-basierte Duplikat-Erkennung' : `${filtered.length} von ${lifecycleLeads.length} Leads`
+              : activeTab === 'duplicates' ? 'KI-basierte Duplikat-Erkennung'
+              : activeTab === 'demo' ? `${filtered.length} Demo-/Muster-Lead${filtered.length !== 1 ? 's' : ''}`
+              : `${filtered.length} von ${lifecycleLeads.length} Leads`
             }
           </p>
         </div>
