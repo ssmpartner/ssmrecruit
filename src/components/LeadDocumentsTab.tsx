@@ -37,6 +37,7 @@ const documentTypeLabels: Record<string, string> = {
   betreibungsauszug: 'Betreibungsauszug',
   strafregisterauszug: 'Strafregisterauszug',
   leadsliste: 'Leadsliste',
+  insight_r4: 'Insight R4',
   other: 'Sonstiges',
 };
 

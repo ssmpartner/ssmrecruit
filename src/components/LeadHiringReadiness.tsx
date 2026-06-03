@@ -13,6 +13,19 @@ interface Props {
 
 const REQUIRED_DOC_KEYS = ['id_front', 'id_back', 'bank_front', 'bank_back', 'vbv', 'kk_card', 'fuehrerausweis'];
 
+const MANUAL_DOC_LABELS: Record<string, string> = {
+  cv: 'Lebenslauf',
+  certificate: 'Zertifikat',
+  reference: 'Arbeitszeugnis',
+  id: 'Ausweis',
+  betreibungsauszug: 'Betreibungsauszug',
+  strafregisterauszug: 'Strafregisterauszug',
+  leadsliste: 'Leadsliste',
+  insight_r4: 'Insight R4',
+  motivation_letter: 'Motivationsschreiben',
+  other: 'Sonstiges',
+};
+
 // Match appointment titles loosely to the three milestones
 function matchMilestone(title: string): 'bg' | 'bg2' | 'contract' | null {
   const t = title.toLowerCase().trim();
@@ -30,6 +43,7 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const alreadySubmitted = lead && ['ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired'].includes(lead.status);
   const [personnelDone, setPersonnelDone] = useState(false);
   const [docsDoneCount, setDocsDoneCount] = useState(0);
+  const [manualDocTypes, setManualDocTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,6 +60,7 @@ export default function LeadHiringReadiness({ leadId }: Props) {
       setPersonnelDone(complete);
       const types = new Set((dRes.data ?? []).map((u: { file_type: string }) => u.file_type));
       setDocsDoneCount(REQUIRED_DOC_KEYS.filter(k => types.has(k)).length);
+      setManualDocTypes(Array.from(types).filter(t => !REQUIRED_DOC_KEYS.includes(t)));
       setLoading(false);
     })();
     return () => { alive = false; };
@@ -144,6 +159,21 @@ export default function LeadHiringReadiness({ leadId }: Props) {
             </span>
           </div>
         ))}
+        {manualDocTypes.length > 0 && (
+          <div className="px-3 py-2 bg-muted/20">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+              Weitere hochgeladene Dokumente
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {manualDocTypes.map(t => (
+                <span key={t} className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 text-[11px] font-medium border border-emerald-200 dark:border-emerald-900">
+                  <CheckCircle2 className="h-3 w-3" />
+                  {MANUAL_DOC_LABELS[t] || t}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {(ready || alreadySubmitted) && (
