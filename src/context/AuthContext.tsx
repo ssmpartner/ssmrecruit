@@ -24,6 +24,7 @@ interface AuthContextType {
   updatePassword: (newPassword: string) => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   isSuperadmin: boolean;
+  isAdmin: boolean;
   isTeamleiter: boolean;
   isControlling: boolean;
   isGeschaeftsleitung: boolean;
