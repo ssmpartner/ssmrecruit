@@ -31,6 +31,7 @@ interface DocumentUpload {
 
 const documentTypeLabels: Record<string, string> = {
   cv: 'Lebenslauf',
+  motivation_letter: 'Motivationsschreiben',
   certificate: 'Zertifikat',
   reference: 'Arbeitszeugnis',
   id: 'Ausweis',
@@ -38,6 +39,14 @@ const documentTypeLabels: Record<string, string> = {
   strafregisterauszug: 'Strafregisterauszug',
   leadsliste: 'Leadsliste',
   insight_r4: 'Insight R4',
+  // Arbeitsvertrag-Dokumente (zählen für Readiness)
+  id_front: 'ID / Ausweis (Vorderseite)',
+  id_back: 'ID / Ausweis (Rückseite)',
+  bank_front: 'Bankkarte (Vorderseite)',
+  bank_back: 'Bankkarte (Rückseite)',
+  vbv: 'VBV-Ausweis',
+  kk_card: 'Krankenkassenkarte',
+  fuehrerausweis: 'Führerausweis',
   other: 'Sonstiges',
 };
 
