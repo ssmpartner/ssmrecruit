@@ -13,6 +13,16 @@ interface Props {
 
 const REQUIRED_DOC_KEYS = ['id_front', 'id_back', 'bank_front', 'bank_back', 'vbv', 'kk_card', 'fuehrerausweis'];
 
+const REQUIRED_DOC_LABELS: Record<string, string> = {
+  id_front: 'Ausweis (Vorderseite)',
+  id_back: 'Ausweis (Rückseite)',
+  bank_front: 'Bankkarte (Vorderseite)',
+  bank_back: 'Bankkarte (Rückseite)',
+  vbv: 'VBV-Ausweis',
+  kk_card: 'Krankenkassenkarte',
+  fuehrerausweis: 'Führerausweis',
+};
+
 // Manuell ausgewählte Kategorien → erfüllen welche Required-Slots
 // (1 PDF mit beiden Seiten deckt v + r ab)
 const MANUAL_TO_REQUIRED: Record<string, string[]> = {
@@ -52,6 +62,7 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const alreadySubmitted = lead && ['ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired'].includes(lead.status);
   const [personnelDone, setPersonnelDone] = useState(false);
   const [docsDoneCount, setDocsDoneCount] = useState(0);
+  const [missingDocs, setMissingDocs] = useState<string[]>([]);
   const [manualDocTypes, setManualDocTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,13 +79,13 @@ export default function LeadHiringReadiness({ leadId }: Props) {
       const complete = !!row && (row.version ?? 0) > 0 && Object.keys(validatePersonnel(row.data ?? {})).length === 0;
       setPersonnelDone(complete);
       const types = new Set((dRes.data ?? []).map((u: { file_type: string }) => u.file_type));
-      // Erweitere mit den von manuellen Kategorien abgedeckten Slots
       const expanded = new Set(types);
       for (const t of types) {
         const covers = MANUAL_TO_REQUIRED[t];
         if (covers) covers.forEach(k => expanded.add(k));
       }
       setDocsDoneCount(REQUIRED_DOC_KEYS.filter(k => expanded.has(k)).length);
+      setMissingDocs(REQUIRED_DOC_KEYS.filter(k => !expanded.has(k)));
       setManualDocTypes(Array.from(types).filter(t => !REQUIRED_DOC_KEYS.includes(t) && !MANUAL_TO_REQUIRED[t]));
       setLoading(false);
     })();
@@ -102,23 +113,35 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const docsDone = docsDoneCount === REQUIRED_DOC_KEYS.length;
   const contractRequired = lead && ['management_approved', 'hr_processing', 'hired'].includes(lead.status);
 
-  const baseItems = [
-    { label: 'BG (Bewerbungsgespräch)', done: milestones.bg.done, hint: milestones.bg.date ? new Date(milestones.bg.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
-    { label: 'BG2 (Zweitgespräch)', done: milestones.bg2.done, hint: milestones.bg2.date ? new Date(milestones.bg2.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
-    { label: 'Personalien', done: personnelDone, hint: personnelDone ? 'Vollständig eingereicht' : 'Unvollständig' },
-    { label: 'Dokumente (Arbeitsvertrag)', done: docsDone, hint: `${docsDoneCount}/${REQUIRED_DOC_KEYS.length} eingereicht` },
+  type ReadinessItem = {
+    label: string;
+    progress: number; // 0..1
+    hint: string;
+    missing?: string[];
+  };
+
+  const baseItems: ReadinessItem[] = [
+    { label: 'BG (Bewerbungsgespräch)', progress: milestones.bg.done ? 1 : 0, hint: milestones.bg.date ? new Date(milestones.bg.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
+    { label: 'BG2 (Zweitgespräch)', progress: milestones.bg2.done ? 1 : 0, hint: milestones.bg2.date ? new Date(milestones.bg2.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
+    { label: 'Personalien', progress: personnelDone ? 1 : 0, hint: personnelDone ? 'Vollständig eingereicht' : 'Unvollständig' },
+    {
+      label: 'Dokumente (Arbeitsvertrag)',
+      progress: docsDoneCount / REQUIRED_DOC_KEYS.length,
+      hint: `${docsDoneCount}/${REQUIRED_DOC_KEYS.length} eingereicht`,
+      missing: missingDocs.map(k => REQUIRED_DOC_LABELS[k] || k),
+    },
   ];
-  const items = contractRequired
+  const items: ReadinessItem[] = contractRequired
     ? [
       ...baseItems,
-      { label: 'Vertragsunterzeichnung', done: milestones.contract.done, hint: milestones.contract.date ? new Date(milestones.contract.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
+      { label: 'Vertragsunterzeichnung', progress: milestones.contract.done ? 1 : 0, hint: milestones.contract.date ? new Date(milestones.contract.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
     ]
     : baseItems;
 
-  const doneCount = items.filter(i => i.done).length;
+  const totalProgress = items.reduce((s, i) => s + i.progress, 0);
   const total = items.length;
-  const pct = Math.round((doneCount / total) * 100);
-  const ready = doneCount === total;
+  const pct = Math.round((totalProgress / total) * 100);
+  const ready = totalProgress >= total;
   const handleSubmit = async () => {
     if (!lead || !ready || submitting) return;
     setSubmitting(true);
@@ -144,7 +167,7 @@ export default function LeadHiringReadiness({ leadId }: Props) {
           <div>
             <div className="text-sm font-semibold">Einstellungs-Readiness</div>
             <div className="text-xs text-muted-foreground">
-              {ready ? 'Bereit zur Einstellung ✓' : `${doneCount} von ${total} erledigt`}
+              {ready ? 'Bereit zur Einstellung ✓' : `${pct}% abgeschlossen`}
             </div>
           </div>
         </div>
@@ -157,23 +180,44 @@ export default function LeadHiringReadiness({ leadId }: Props) {
       </div>
 
       <div className="divide-y">
-        {items.map(it => (
-          <div key={it.label} className="flex items-center justify-between gap-2 px-3 py-2">
-            <div className="flex items-center gap-2 min-w-0">
-              {loading ? (
-                <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-              ) : it.done ? (
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              ) : (
-                <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
+        {items.map(it => {
+          const done = it.progress >= 1;
+          const partial = it.progress > 0 && it.progress < 1;
+          return (
+            <div key={it.label} className="px-3 py-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  {loading ? (
+                    <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                  ) : done ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className={cn('h-4 w-4 shrink-0', partial ? 'text-primary' : 'text-amber-500')} />
+                  )}
+                  <span className="text-sm font-medium truncate">{it.label}</span>
+                </div>
+                <span className={cn('text-xs shrink-0 tabular-nums', done ? 'text-emerald-700' : partial ? 'text-primary' : 'text-muted-foreground')}>
+                  {it.hint}
+                </span>
+              </div>
+              {it.progress < 1 && (
+                <div className="mt-1.5 ml-6 h-1 rounded-full bg-muted overflow-hidden">
+                  <div className={cn('h-full transition-all', partial ? 'bg-primary' : 'bg-amber-400/60')} style={{ width: `${Math.max(it.progress * 100, partial ? 8 : 0)}%` }} />
+                </div>
               )}
-              <span className={cn('text-sm font-medium truncate', it.done && 'text-foreground')}>{it.label}</span>
+              {!done && it.missing && it.missing.length > 0 && (
+                <div className="mt-1.5 ml-6 flex flex-wrap gap-1">
+                  {it.missing.map(m => (
+                    <span key={m} className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 text-[11px] font-medium border border-amber-200 dark:border-amber-900">
+                      <Circle className="h-2.5 w-2.5" />
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-            <span className={cn('text-xs shrink-0', it.done ? 'text-emerald-700' : 'text-muted-foreground')}>
-              {it.hint}
-            </span>
-          </div>
-        ))}
+          );
+        })}
         {manualDocTypes.length > 0 && (
           <div className="px-3 py-2 bg-muted/20">
             <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
