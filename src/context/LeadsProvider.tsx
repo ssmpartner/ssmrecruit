@@ -537,6 +537,15 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     const meetingLink = aptData.type === 'video' ? generateMeetingLink() : undefined;
     const appointment: Appointment = { ...aptData, id, meetingLink, createdAt: new Date().toISOString() };
 
+    // Resolve created_by → MUST be a valid employees.id (FK).
+    const userEmail = (user?.email || '').toLowerCase();
+    const myEmployee = employees.find(e => (e.email || '').toLowerCase() === userEmail);
+    const createdByEmployeeId = myEmployee?.id;
+    if (!createdByEmployeeId) {
+      toast.error('Termin konnte nicht gespeichert werden', { description: 'Kein Mitarbeiter-Datensatz für deinen Account gefunden.' });
+      return;
+    }
+
     setAppointments((prev) => [appointment, ...prev]);
 
     const typeLabel = aptData.type === 'phone' ? 'Telefon' : aptData.type === 'video' ? 'Video' : 'Vor Ort';
@@ -554,7 +563,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    await supabase.from('appointments').insert({
+    const { error } = await supabase.from('appointments').insert({
       id,
       lead_id: aptData.leadId,
       title: aptData.title,
@@ -563,10 +572,15 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       duration: aptData.duration,
       type: aptData.type,
       meeting_link: meetingLink,
-      notes: aptData.notes,
-      created_by: aptData.createdBy,
+      notes: aptData.notes ?? '',
+      created_by: createdByEmployeeId,
     });
-  }, [addActivity, appointmentSettings, leads, updateLead, addNotification]);
+    if (error) {
+      setAppointments((prev) => prev.filter(a => a.id !== id));
+      toast.error('Termin konnte nicht gespeichert werden', { description: error.message });
+      console.error('[addAppointment] insert failed', error);
+    }
+  }, [addActivity, appointmentSettings, leads, updateLead, addNotification, user, employees]);
 
   const removeAppointment = useCallback(async (id: string) => {
     setAppointments((prev) => {
