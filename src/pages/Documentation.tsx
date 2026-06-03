@@ -4,10 +4,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.52.0';
+const APP_VERSION = '2.53.0';
 
 const versionHistory = [
+  { version: '2.53.0', date: '03.06.2026', changes: [
+    'Bewerbungsformular: Hochgeladene Dokumente (Lebenslauf, Motivationsschreiben, Beilagen) erscheinen jetzt automatisch im Lead-Detail unter «Dokumente» mit korrektem Dokumenttyp (CV / Motivationsschreiben / Sonstiges)',
+    'Application-Webhook: Spiegelt Bewerbungs-Uploads in den lead-documents-Bucket und legt automatisch document_uploads-Einträge an – kein manueller Re-Upload mehr nötig',
+    'Lead-Detail «Dokumente»: Neuer «Ansehen»-Button öffnet PDFs und Bilder direkt im Vorschau-Dialog (statt nur Download)',
+    'Portal-URLs: Alle Verlinkungen auf https://ssmpartner.ch korrigiert (Login, Profil-Einstellungen, App-Layout)',
+    'Demo-Leads: Vollständige Beispieldaten je nach Rolle und Status (Personalien, Dokumente, BG-1/BG-2-Termine) – als DEMO gekennzeichnet, nur für Superadmins sichtbar',
+    'Einstellungs-Readiness: Strikte Gatekeeping-Logik – Übergabe ans Controlling nur bei 100% (Personalien + Dokumente + BG1 + BG2). Vertragsunterzeichnung erst ab Management Approved relevant',
+  ]},
   { version: '2.52.0', date: '22.05.2026', changes: [
+
     'Insights-Tab: Links können jetzt jederzeit generiert werden (unabhängig von bereits aktiven Links) – mit Kopierfunktion und optionalem E-Mail-Versand',
     'Insights-Tab: Neuer «Verlauf»-Bereich zeigt alle abgeschlossenen Insights-Anfragen mit Status-Badge (Abgeschlossen), Zeitstempel und Kopierfunktion',
     'Insights-Tab: Aktive Links werden separat angezeigt (Amber-Badge «Aktiv») mit Aktionen: Kopieren, per E-Mail erneut senden, Vorschau und Öffnen',
