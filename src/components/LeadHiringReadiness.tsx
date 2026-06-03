@@ -13,6 +13,19 @@ interface Props {
 
 const REQUIRED_DOC_KEYS = ['id_front', 'id_back', 'bank_front', 'bank_back', 'vbv', 'kk_card', 'fuehrerausweis'];
 
+const MANUAL_DOC_LABELS: Record<string, string> = {
+  cv: 'Lebenslauf',
+  certificate: 'Zertifikat',
+  reference: 'Arbeitszeugnis',
+  id: 'Ausweis',
+  betreibungsauszug: 'Betreibungsauszug',
+  strafregisterauszug: 'Strafregisterauszug',
+  leadsliste: 'Leadsliste',
+  insight_r4: 'Insight R4',
+  motivation_letter: 'Motivationsschreiben',
+  other: 'Sonstiges',
+};
+
 // Match appointment titles loosely to the three milestones
 function matchMilestone(title: string): 'bg' | 'bg2' | 'contract' | null {
   const t = title.toLowerCase().trim();
