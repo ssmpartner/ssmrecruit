@@ -7,7 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // Pflichtdokumente für Arbeitsvertrag-Readiness (Single Source of Truth – synchron zu LeadHiringReadiness)
-const REQUIRED_DOC_KEYS = ['id', 'bank', 'vbv', 'kk_card', 'fuehrerausweis', 'leadsliste', 'insight_r4'];
+const REQUIRED_DOC_KEYS = ['id', 'bank', 'vbv', 'kk_card', 'fuehrerausweis', 'betreibungsauszug', 'strafregisterauszug', 'leadsliste', 'insight_r4'];
 const REQUIRED_DOC_LABELS: Record<string, string> = {
   id: 'Ausweis',
   bank: 'Bankkarte',
