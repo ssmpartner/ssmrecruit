@@ -159,6 +159,21 @@ export default function LeadHiringReadiness({ leadId }: Props) {
             </span>
           </div>
         ))}
+        {manualDocTypes.length > 0 && (
+          <div className="px-3 py-2 bg-muted/20">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+              Weitere hochgeladene Dokumente
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {manualDocTypes.map(t => (
+                <span key={t} className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 text-[11px] font-medium border border-emerald-200 dark:border-emerald-900">
+                  <CheckCircle2 className="h-3 w-3" />
+                  {MANUAL_DOC_LABELS[t] || t}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {(ready || alreadySubmitted) && (
