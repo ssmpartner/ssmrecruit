@@ -13,6 +13,7 @@ interface Props {
 
 const REQUIRED_DOC_KEYS = [
   'id', 'bank', 'vbv', 'kk_card', 'fuehrerausweis',
+  'betreibungsauszug', 'strafregisterauszug',
   'leadsliste', 'insight_r4',
 ];
 
