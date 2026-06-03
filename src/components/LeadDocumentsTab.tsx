@@ -78,6 +78,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   const [docRequests, setDocRequests] = useState<DocumentRequest[]>([]);
   const [docUploads, setDocUploads] = useState<DocumentUpload[]>([]);
   const [waivedKeys, setWaivedKeys] = useState<Set<string>>(new Set());
+  const [busyWaiverKey, setBusyWaiverKey] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState('');
   const [resending, setResending] = useState(false);
   const [uploading, setUploading] = useState(false);
