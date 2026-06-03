@@ -382,13 +382,14 @@ export default function LeadDocumentsTab({ leadId }: Props) {
         </span>
       </div>
       <p className="text-[11px] text-muted-foreground -mt-1">
-        Verzicht («Hat er nicht») wird in der Einstellungs-Readiness gesetzt.
+        Klicke ein fehlendes Dokument an, um es als «Hat er nicht» zu markieren.
       </p>
       <div className="flex flex-wrap gap-1.5">
         {REQUIRED_DOC_KEYS.map(k => {
           const uploaded = uploadedRequiredSlots.has(k);
           const waived = waivedKeys.has(k);
           const label = REQUIRED_DOC_LABELS[k];
+          const busy = busyWaiverKey === k;
           if (uploaded) {
             return (
               <span key={k} className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
@@ -398,15 +399,29 @@ export default function LeadDocumentsTab({ leadId }: Props) {
           }
           if (waived) {
             return (
-              <span key={k} className="inline-flex items-center gap-1.5 rounded-full bg-muted border border-border px-2.5 py-1 text-[11px] font-medium text-muted-foreground line-through">
-                <CircleSlash className="h-3.5 w-3.5" /> {label}
-              </span>
+              <button
+                key={k}
+                type="button"
+                disabled={busy}
+                onClick={() => toggleWaiver(k, true)}
+                title="Verzicht aufheben"
+                className="inline-flex items-center gap-1.5 rounded-full bg-muted border border-border px-2.5 py-1 text-[11px] font-medium text-muted-foreground line-through hover:bg-muted/70 disabled:opacity-50 transition-colors"
+              >
+                {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CircleSlash className="h-3.5 w-3.5" />} {label}
+              </button>
             );
           }
           return (
-            <span key={k} className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300">
-              <AlertTriangle className="h-3.5 w-3.5" /> {label} fehlt
-            </span>
+            <button
+              key={k}
+              type="button"
+              disabled={busy}
+              onClick={() => toggleWaiver(k, false)}
+              title="Als «Hat er nicht» markieren"
+              className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/50 disabled:opacity-50 transition-colors"
+            >
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <AlertTriangle className="h-3.5 w-3.5" />} {label} fehlt
+            </button>
           );
         })}
       </div>
