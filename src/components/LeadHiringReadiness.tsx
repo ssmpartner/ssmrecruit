@@ -12,33 +12,30 @@ interface Props {
 }
 
 const REQUIRED_DOC_KEYS = [
-  'id_front', 'id_back',
-  'bank_front', 'bank_back',
-  'vbv', 'kk_card', 'fuehrerausweis',
+  'id', 'bank', 'vbv', 'kk_card', 'fuehrerausweis',
   'leadsliste', 'insight_r4',
 ];
 
 const REQUIRED_DOC_LABELS: Record<string, string> = {
-  id_front: 'Ausweis (Vorderseite)',
-  id_back: 'Ausweis (Rückseite)',
-  bank_front: 'Bankkarte (Vorderseite)',
-  bank_back: 'Bankkarte (Rückseite)',
+  id: 'Ausweis',
+  bank: 'Bankkarte',
   vbv: 'VBV-Ausweis',
-  kk_card: 'Krankenkassenkarte',
+  kk_card: 'Krankenkasse',
   fuehrerausweis: 'Führerausweis',
-  leadsliste: 'Leadsliste (intern)',
-  insight_r4: 'Insight R4 (intern)',
+  leadsliste: 'Leadsliste',
+  insight_r4: 'Insight R4',
 };
 
-// Manuell ausgewählte Kategorien → erfüllen welche Required-Slots
-const MANUAL_TO_REQUIRED: Record<string, string[]> = {
-  id: ['id_front', 'id_back'],
-  bank: ['bank_front', 'bank_back'],
-  vbv: ['vbv'],
-  kk_card: ['kk_card'],
-  fuehrerausweis: ['fuehrerausweis'],
-  leadsliste: ['leadsliste'],
-  insight_r4: ['insight_r4'],
+// Hochgeladener file_type → erfüllt welchen Required-Slot
+// (Vorder-/Rückseite zählen alle als ein erfülltes Dokument)
+const UPLOAD_TO_REQUIRED: Record<string, string> = {
+  id: 'id', id_front: 'id', id_back: 'id',
+  bank: 'bank', bank_front: 'bank', bank_back: 'bank',
+  vbv: 'vbv',
+  kk_card: 'kk_card',
+  fuehrerausweis: 'fuehrerausweis',
+  leadsliste: 'leadsliste',
+  insight_r4: 'insight_r4',
 };
 
 // Match appointment titles loosely to the three milestones
