@@ -324,6 +324,58 @@ export default function LeadDocumentsTab({ leadId }: Props) {
 
   const hasContent = docUploads.length > 0 || docRequests.length > 0;
 
+  // Welche Pflicht-Slots sind durch einen Upload abgedeckt?
+  const uploadedRequiredSlots = new Set<string>();
+  docUploads.forEach(u => {
+    const slot = UPLOAD_TO_REQUIRED[u.file_type];
+    if (slot) uploadedRequiredSlots.add(slot);
+  });
+  const docResolvedCount = REQUIRED_DOC_KEYS.filter(k => uploadedRequiredSlots.has(k) || waivedKeys.has(k)).length;
+  const docTotalCount = REQUIRED_DOC_KEYS.length;
+
+  const requiredDocsPanel = (
+    <div className="rounded-lg border bg-card p-4 space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          <h5 className="text-sm font-semibold">Pflichtdokumente (Arbeitsvertrag)</h5>
+        </div>
+        <span className={`text-xs font-semibold ${docResolvedCount === docTotalCount ? 'text-emerald-600' : 'text-amber-600'}`}>
+          {docResolvedCount}/{docTotalCount} erledigt
+        </span>
+      </div>
+      <p className="text-[11px] text-muted-foreground -mt-1">
+        Verzicht («Hat er nicht») wird in der Einstellungs-Readiness gesetzt.
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {REQUIRED_DOC_KEYS.map(k => {
+          const uploaded = uploadedRequiredSlots.has(k);
+          const waived = waivedKeys.has(k);
+          const label = REQUIRED_DOC_LABELS[k];
+          if (uploaded) {
+            return (
+              <span key={k} className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="h-3.5 w-3.5" /> {label}
+              </span>
+            );
+          }
+          if (waived) {
+            return (
+              <span key={k} className="inline-flex items-center gap-1.5 rounded-full bg-muted border border-border px-2.5 py-1 text-[11px] font-medium text-muted-foreground line-through">
+                <CircleSlash className="h-3.5 w-3.5" /> {label}
+              </span>
+            );
+          }
+          return (
+            <span key={k} className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300">
+              <AlertTriangle className="h-3.5 w-3.5" /> {label} fehlt
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   const uploadBar = (
     <div
       onDrop={handleDrop}
