@@ -483,11 +483,20 @@ export default function LeadDocumentsTab({ leadId }: Props) {
             <FileText className="h-4 w-4 text-primary" />
             <h5 className="text-sm font-semibold">Hochgeladene Dokumente ({docUploads.length})</h5>
           </div>
-          {docUploads.map(doc => (
+          {docUploads.map(doc => {
+            const requiredSlot = UPLOAD_TO_REQUIRED[doc.file_type];
+            return (
             <div key={doc.id} className="flex items-center gap-3 rounded-lg bg-muted/30 border p-3">
               <File className="h-5 w-5 text-muted-foreground shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{doc.file_name}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-medium truncate">{doc.file_name}</p>
+                  {requiredSlot && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                      <CheckCircle2 className="h-3 w-3" /> Pflicht: {REQUIRED_DOC_LABELS[requiredSlot]}
+                    </span>
+                  )}
+                </div>
                 <div className="mt-1 flex items-center gap-2 flex-wrap">
                   <select
                     value={documentTypeLabels[doc.file_type] ? doc.file_type : 'other'}
