@@ -113,23 +113,35 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const docsDone = docsDoneCount === REQUIRED_DOC_KEYS.length;
   const contractRequired = lead && ['management_approved', 'hr_processing', 'hired'].includes(lead.status);
 
-  const baseItems = [
-    { label: 'BG (Bewerbungsgespräch)', done: milestones.bg.done, hint: milestones.bg.date ? new Date(milestones.bg.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
-    { label: 'BG2 (Zweitgespräch)', done: milestones.bg2.done, hint: milestones.bg2.date ? new Date(milestones.bg2.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
-    { label: 'Personalien', done: personnelDone, hint: personnelDone ? 'Vollständig eingereicht' : 'Unvollständig' },
-    { label: 'Dokumente (Arbeitsvertrag)', done: docsDone, hint: `${docsDoneCount}/${REQUIRED_DOC_KEYS.length} eingereicht` },
+  type ReadinessItem = {
+    label: string;
+    progress: number; // 0..1
+    hint: string;
+    missing?: string[];
+  };
+
+  const baseItems: ReadinessItem[] = [
+    { label: 'BG (Bewerbungsgespräch)', progress: milestones.bg.done ? 1 : 0, hint: milestones.bg.date ? new Date(milestones.bg.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
+    { label: 'BG2 (Zweitgespräch)', progress: milestones.bg2.done ? 1 : 0, hint: milestones.bg2.date ? new Date(milestones.bg2.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
+    { label: 'Personalien', progress: personnelDone ? 1 : 0, hint: personnelDone ? 'Vollständig eingereicht' : 'Unvollständig' },
+    {
+      label: 'Dokumente (Arbeitsvertrag)',
+      progress: docsDoneCount / REQUIRED_DOC_KEYS.length,
+      hint: `${docsDoneCount}/${REQUIRED_DOC_KEYS.length} eingereicht`,
+      missing: missingDocs.map(k => REQUIRED_DOC_LABELS[k] || k),
+    },
   ];
-  const items = contractRequired
+  const items: ReadinessItem[] = contractRequired
     ? [
       ...baseItems,
-      { label: 'Vertragsunterzeichnung', done: milestones.contract.done, hint: milestones.contract.date ? new Date(milestones.contract.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
+      { label: 'Vertragsunterzeichnung', progress: milestones.contract.done ? 1 : 0, hint: milestones.contract.date ? new Date(milestones.contract.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
     ]
     : baseItems;
 
-  const doneCount = items.filter(i => i.done).length;
+  const totalProgress = items.reduce((s, i) => s + i.progress, 0);
   const total = items.length;
-  const pct = Math.round((doneCount / total) * 100);
-  const ready = doneCount === total;
+  const pct = Math.round((totalProgress / total) * 100);
+  const ready = totalProgress >= total;
   const handleSubmit = async () => {
     if (!lead || !ready || submitting) return;
     setSubmitting(true);
