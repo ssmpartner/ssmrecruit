@@ -24,6 +24,7 @@ interface AuthContextType {
   updatePassword: (newPassword: string) => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   isSuperadmin: boolean;
+  isAdmin: boolean;
   isTeamleiter: boolean;
   isControlling: boolean;
   isGeschaeftsleitung: boolean;
@@ -232,6 +233,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user, session, profile, role, loading,
       isSuperadmin: role === 'superadmin',
+      isAdmin: role === 'admin',
       isTeamleiter: role === 'teamleiter',
       isControlling: role === 'controlling',
       isGeschaeftsleitung: role === 'geschaeftsleitung',

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { type LeadStatus, statusConfig } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import StatusWizardDialog, { type WizardType } from './StatusWizardDialog';
 import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardDialog';
@@ -39,6 +40,8 @@ export default function StepActionsPanel({
   discCompleted, documentsCompleted, insightsSent,
 }: StepActionsPanelProps) {
   const { updateLead, addActivity } = useLeads();
+  const { isSuperadmin, isAdmin, isControlling } = useAuth();
+  const canManageControllingStep = isSuperadmin || isAdmin || isControlling;
   const { toast } = useToast();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [activeWizardType, setActiveWizardType] = useState<WizardType>('contacted');
@@ -272,39 +275,41 @@ export default function StepActionsPanel({
             </div>
           </button>
 
-          {/* Sub-Step: Controlling Prüfung */}
-          <div className="border-t pt-3 mt-2">
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Sub-Step: Controlling Prüfung</p>
-            <p className="text-[11px] text-muted-foreground mb-3">
-              Die Weiterleitung ans Controlling erfolgt ausschliesslich über die Einstellungs-Readiness bei 100%.
-            </p>
-            <div className="flex gap-2">
-              <button
-                disabled
-                className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
-              >
-                <ClipboardCheck className="h-4 w-4" /> Über Readiness einreichen
-              </button>
-              <button
-                onClick={() => {
-                  updateLead(leadId, { status: 'rejected' });
-                  addActivity(leadId, 'status_change', 'Lead abgelehnt im Follow-up');
-                  toast({ title: '❌ Abgelehnt', description: `${leadName} wurde abgelehnt.` });
-                }}
-                className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
-              >
-                Ablehnen
-              </button>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" /> Erforderlich: BG 1, BG 2, Personalien und Dokumente. Vertragsunterzeichnung zählt erst ab Management Approved.
-            </p>
-            {!allComplete && (
-              <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" /> Fehlend: {missingItems.join(', ')}
+          {/* Sub-Step: Controlling Prüfung — nur für Admin / Superadmin / Controlling */}
+          {canManageControllingStep && (
+            <div className="border-t pt-3 mt-2">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Sub-Step: Controlling Prüfung</p>
+              <p className="text-[11px] text-muted-foreground mb-3">
+                Die Weiterleitung ans Controlling erfolgt ausschliesslich über die Einstellungs-Readiness bei 100%.
               </p>
-            )}
-          </div>
+              <div className="flex gap-2">
+                <button
+                  disabled
+                  className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                >
+                  <ClipboardCheck className="h-4 w-4" /> Über Readiness einreichen
+                </button>
+                <button
+                  onClick={() => {
+                    updateLead(leadId, { status: 'rejected' });
+                    addActivity(leadId, 'status_change', 'Lead abgelehnt im Follow-up');
+                    toast({ title: '❌ Abgelehnt', description: `${leadName} wurde abgelehnt.` });
+                  }}
+                  className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  Ablehnen
+                </button>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" /> Erforderlich: BG 1, BG 2, Personalien und Dokumente. Vertragsunterzeichnung zählt erst ab Management Approved.
+              </p>
+              {!allComplete && (
+                <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" /> Fehlend: {missingItems.join(', ')}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );

@@ -59,7 +59,8 @@ interface AppointmentSuggestion {
 export default function LeadDetailSheet() {
   const { selectedLead, setSelectedLead, updateLead, addActivity, activities, employees, agencies, appointments, addAppointment, removeAppointment, sendAppointmentNotification, appointmentSettings, leads, leadSources, mergeLead } = useLeads();
   const { toast } = useToast();
-  const { isSuperadmin, profile, isReviewRole, isControlling, isGeschaeftsleitung, isHR } = useAuth();
+  const { isSuperadmin, isAdmin, profile, isReviewRole, isControlling, isGeschaeftsleitung, isHR } = useAuth();
+  const canChangeStatus = isSuperadmin || isAdmin;
   const [editing, setEditing] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [plzSuggestions, setPlzSuggestions] = useState<SwissLocation[]>([]);
@@ -1036,7 +1037,7 @@ export default function LeadDetailSheet() {
                           );
                         })()}
 
-                        {!isReviewRole && (
+                        {canChangeStatus ? (
                           <section>
                             <h4 className="text-base font-semibold mb-3">Status ändern</h4>
                             <div className="mb-3">
@@ -1071,6 +1072,12 @@ export default function LeadDetailSheet() {
                               })()}
                             </div>
                            </section>
+                        ) : (
+                          <section className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 p-3">
+                            <p className="text-xs text-amber-800 dark:text-amber-300">
+                              Statusänderungen sind ausschliesslich dem Admin vorbehalten. Der reguläre Prozess läuft über die Wizards und die Einstellungs-Readiness.
+                            </p>
+                          </section>
                         )}
 
                          {isSuperadmin && selectedLead.status !== 'new' && (
