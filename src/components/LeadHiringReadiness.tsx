@@ -23,6 +23,8 @@ const REQUIRED_DOC_LABELS: Record<string, string> = {
   vbv: 'VBV-Ausweis',
   kk_card: 'Krankenkasse',
   fuehrerausweis: 'Führerausweis',
+  betreibungsauszug: 'Betreibungsauszug',
+  strafregisterauszug: 'Strafregisterauszug',
   leadsliste: 'Leadsliste',
   insight_r4: 'Insight R4',
 };
