@@ -167,7 +167,7 @@ export default function LeadHiringReadiness({ leadId }: Props) {
           <div>
             <div className="text-sm font-semibold">Einstellungs-Readiness</div>
             <div className="text-xs text-muted-foreground">
-              {ready ? 'Bereit zur Einstellung ✓' : `${doneCount} von ${total} erledigt`}
+              {ready ? 'Bereit zur Einstellung ✓' : `${pct}% abgeschlossen`}
             </div>
           </div>
         </div>
