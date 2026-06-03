@@ -235,6 +235,9 @@ export default function LeadHiringReadiness({ leadId }: Props) {
             <div className="text-xs text-muted-foreground">
               {ready ? 'Bereit zur Einstellung ✓' : `${pct}% abgeschlossen`}
             </div>
+            <div className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">
+              Nur bei 100 % kann das gesamte Dossier an Controlling weitergeleitet werden!
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
