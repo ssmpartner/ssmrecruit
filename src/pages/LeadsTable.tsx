@@ -70,9 +70,12 @@ export default function LeadsTable() {
   }, [setSelectedLead, isSuperadmin, updateLead]);
 
   const lifecycleLeads = useMemo(() => {
+    if (activeTab === 'demo') {
+      return leads.filter(l => l.isDemo);
+    }
     const lifecycle: LeadLifecycle = activeTab === 'active' ? 'active' : activeTab === 'archived' ? 'archived' : 'deleted';
     let filtered = leads.filter(l => l.lifecycle === lifecycle);
-    
+
     // Role-based status filtering for review roles
     if (isControlling) {
       filtered = filtered.filter(l => l.status === 'ready_for_controlling');
@@ -81,7 +84,7 @@ export default function LeadsTable() {
     } else if (isHR) {
       filtered = filtered.filter(l => l.status === 'hr_processing');
     }
-    
+
     return filtered;
   }, [leads, activeTab, isControlling, isGeschaeftsleitung, isHR]);
 
