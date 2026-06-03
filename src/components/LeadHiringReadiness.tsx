@@ -180,23 +180,44 @@ export default function LeadHiringReadiness({ leadId }: Props) {
       </div>
 
       <div className="divide-y">
-        {items.map(it => (
-          <div key={it.label} className="flex items-center justify-between gap-2 px-3 py-2">
-            <div className="flex items-center gap-2 min-w-0">
-              {loading ? (
-                <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-              ) : it.done ? (
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              ) : (
-                <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
+        {items.map(it => {
+          const done = it.progress >= 1;
+          const partial = it.progress > 0 && it.progress < 1;
+          return (
+            <div key={it.label} className="px-3 py-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  {loading ? (
+                    <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                  ) : done ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className={cn('h-4 w-4 shrink-0', partial ? 'text-primary' : 'text-amber-500')} />
+                  )}
+                  <span className="text-sm font-medium truncate">{it.label}</span>
+                </div>
+                <span className={cn('text-xs shrink-0 tabular-nums', done ? 'text-emerald-700' : partial ? 'text-primary' : 'text-muted-foreground')}>
+                  {it.hint}
+                </span>
+              </div>
+              {it.progress < 1 && (
+                <div className="mt-1.5 ml-6 h-1 rounded-full bg-muted overflow-hidden">
+                  <div className={cn('h-full transition-all', partial ? 'bg-primary' : 'bg-amber-400/60')} style={{ width: `${Math.max(it.progress * 100, partial ? 8 : 0)}%` }} />
+                </div>
               )}
-              <span className={cn('text-sm font-medium truncate', it.done && 'text-foreground')}>{it.label}</span>
+              {!done && it.missing && it.missing.length > 0 && (
+                <div className="mt-1.5 ml-6 flex flex-wrap gap-1">
+                  {it.missing.map(m => (
+                    <span key={m} className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 text-[11px] font-medium border border-amber-200 dark:border-amber-900">
+                      <Circle className="h-2.5 w-2.5" />
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-            <span className={cn('text-xs shrink-0', it.done ? 'text-emerald-700' : 'text-muted-foreground')}>
-              {it.hint}
-            </span>
-          </div>
-        ))}
+          );
+        })}
         {manualDocTypes.length > 0 && (
           <div className="px-3 py-2 bg-muted/20">
             <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
