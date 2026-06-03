@@ -40,6 +40,8 @@ export default function StepActionsPanel({
   discCompleted, documentsCompleted, insightsSent,
 }: StepActionsPanelProps) {
   const { updateLead, addActivity } = useLeads();
+  const { isSuperadmin, isAdmin, isControlling } = useAuth();
+  const canManageControllingStep = isSuperadmin || isAdmin || isControlling;
   const { toast } = useToast();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [activeWizardType, setActiveWizardType] = useState<WizardType>('contacted');
