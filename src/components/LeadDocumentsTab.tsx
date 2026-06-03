@@ -153,6 +153,38 @@ export default function LeadDocumentsTab({ leadId }: Props) {
     e.target.value = '';
     await uploadFiles(files);
   }
+  async function toggleWaiver(key: string, currentlyWaived: boolean) {
+    setBusyWaiverKey(key);
+    try {
+      if (currentlyWaived) {
+        const { error } = await (supabase as any).from('lead_document_waivers').delete().eq('lead_id', leadId).eq('doc_key', key);
+        if (error) throw error;
+        await supabase.from('activities').insert({
+          id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+          description: `Verzicht zurückgenommen: "${REQUIRED_DOC_LABELS[key] || key}" wird wieder benötigt`,
+          user: 'System',
+        });
+        toast({ title: 'Verzicht aufgehoben', description: REQUIRED_DOC_LABELS[key] || key });
+      } else {
+        const { error } = await (supabase as any).from('lead_document_waivers').insert({
+          lead_id: leadId, doc_key: key, waived_by: 'manual', reason: 'Hat er nicht',
+        });
+        if (error) throw error;
+        await supabase.from('activities').insert({
+          id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+          description: `Dokument als "Hat er nicht" markiert: ${REQUIRED_DOC_LABELS[key] || key}`,
+          user: 'System',
+        });
+        toast({ title: '✓ Markiert', description: `${REQUIRED_DOC_LABELS[key] || key} – Hat er nicht` });
+      }
+      await loadData();
+    } catch (err: any) {
+      toast({ title: 'Fehler', description: err.message, variant: 'destructive' });
+    } finally {
+      setBusyWaiverKey(null);
+    }
+  }
+
 
 
   useEffect(() => {
