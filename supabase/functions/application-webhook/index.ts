@@ -393,11 +393,37 @@ serve(async (req) => {
         // Update application with lead_id
         if (leadId) {
           await supabase.from('applications').update({ lead_id: leadId }).eq('id', applicationId);
+
+          // Mirror uploaded application documents into lead-documents bucket
+          // so they appear in the Lead "Dokumente" tab.
+          for (const doc of uploadedDocs) {
+            try {
+              const ext = (doc.fileName.split('.').pop() || 'bin').toLowerCase();
+              const leadPath = `${leadId}/${crypto.randomUUID()}.${ext}`;
+              const { error: copyErr } = await supabase.storage
+                .from('lead-documents')
+                .upload(leadPath, doc.data, { contentType: doc.contentType });
+              if (copyErr) {
+                console.error(`Mirror upload error for ${doc.fileName}:`, copyErr);
+                continue;
+              }
+              const { error: insErr } = await supabase.from('document_uploads').insert({
+                lead_id: leadId,
+                file_name: doc.fileName,
+                file_path: leadPath,
+                file_size: doc.size,
+                file_type: doc.fileType,
+              });
+              if (insErr) {
+                console.error(`document_uploads insert error for ${doc.fileName}:`, insErr);
+              }
+            } catch (e) {
+              console.error(`Mirror doc error (non-fatal) for ${doc.fileName}:`, e);
+            }
+          }
         }
       }
-    } catch (e) {
-      console.error('Lead creation error (non-fatal):', e);
-    }
+
 
     // 7. Notification
     await supabase.from('notifications').insert({
