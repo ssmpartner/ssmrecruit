@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Circle, AlertCircle, Trophy, Send, Loader2 } from 'lucide-react';
+import { CheckCircle2, Circle, AlertCircle, Trophy, Send, Loader2, MinusCircle, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeads } from '@/context/useLeads';
 import { cn } from '@/lib/utils';
@@ -11,7 +11,12 @@ interface Props {
   leadId: string;
 }
 
-const REQUIRED_DOC_KEYS = ['id_front', 'id_back', 'bank_front', 'bank_back', 'vbv', 'kk_card', 'fuehrerausweis'];
+const REQUIRED_DOC_KEYS = [
+  'id_front', 'id_back',
+  'bank_front', 'bank_back',
+  'vbv', 'kk_card', 'fuehrerausweis',
+  'leadsliste', 'insight_r4',
+];
 
 const REQUIRED_DOC_LABELS: Record<string, string> = {
   id_front: 'Ausweis (Vorderseite)',
@@ -21,28 +26,19 @@ const REQUIRED_DOC_LABELS: Record<string, string> = {
   vbv: 'VBV-Ausweis',
   kk_card: 'Krankenkassenkarte',
   fuehrerausweis: 'Führerausweis',
+  leadsliste: 'Leadsliste (intern)',
+  insight_r4: 'Insight R4 (intern)',
 };
 
 // Manuell ausgewählte Kategorien → erfüllen welche Required-Slots
-// (1 PDF mit beiden Seiten deckt v + r ab)
 const MANUAL_TO_REQUIRED: Record<string, string[]> = {
   id: ['id_front', 'id_back'],
   bank: ['bank_front', 'bank_back'],
   vbv: ['vbv'],
   kk_card: ['kk_card'],
   fuehrerausweis: ['fuehrerausweis'],
-};
-
-const MANUAL_DOC_LABELS: Record<string, string> = {
-  cv: 'Lebenslauf',
-  motivation_letter: 'Motivationsschreiben',
-  certificate: 'Zertifikat',
-  reference: 'Arbeitszeugnis',
-  betreibungsauszug: 'Betreibungsauszug',
-  strafregisterauszug: 'Strafregisterauszug',
-  leadsliste: 'Leadsliste',
-  insight_r4: 'Insight R4',
-  other: 'Sonstiges',
+  leadsliste: ['leadsliste'],
+  insight_r4: ['insight_r4'],
 };
 
 // Match appointment titles loosely to the three milestones
