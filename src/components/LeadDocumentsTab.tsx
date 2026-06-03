@@ -25,6 +25,8 @@ const UPLOAD_TO_REQUIRED: Record<string, string> = {
   vbv: 'vbv',
   kk_card: 'kk_card',
   fuehrerausweis: 'fuehrerausweis',
+  betreibungsauszug: 'betreibungsauszug',
+  strafregisterauszug: 'strafregisterauszug',
   leadsliste: 'leadsliste',
   insight_r4: 'insight_r4',
 };
