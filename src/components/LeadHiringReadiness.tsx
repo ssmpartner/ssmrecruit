@@ -57,36 +57,71 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const lead = leads.find(l => l.id === leadId);
   const alreadySubmitted = lead && ['ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired'].includes(lead.status);
   const [personnelDone, setPersonnelDone] = useState(false);
-  const [docsDoneCount, setDocsDoneCount] = useState(0);
-  const [missingDocs, setMissingDocs] = useState<string[]>([]);
-  const [manualDocTypes, setManualDocTypes] = useState<string[]>([]);
+  const [uploadedKeys, setUploadedKeys] = useState<Set<string>>(new Set());
+  const [waivedKeys, setWaivedKeys] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+
+  async function loadAll() {
+    const [pRes, dRes, wRes] = await Promise.all([
+      supabase.from('lead_personal_data').select('data, version').eq('lead_id', leadId).maybeSingle(),
+      supabase.from('document_uploads').select('file_type').eq('lead_id', leadId),
+      (supabase as any).from('lead_document_waivers').select('doc_key').eq('lead_id', leadId),
+    ]);
+    const row = pRes.data as { data?: PersonnelData; version?: number } | null;
+    setPersonnelDone(!!row && (row.version ?? 0) > 0 && Object.keys(validatePersonnel(row.data ?? {})).length === 0);
+    const types = new Set((dRes.data ?? []).map((u: { file_type: string }) => u.file_type));
+    const expanded = new Set<string>(types);
+    for (const t of types) {
+      const covers = MANUAL_TO_REQUIRED[t];
+      if (covers) covers.forEach(k => expanded.add(k));
+    }
+    setUploadedKeys(new Set(REQUIRED_DOC_KEYS.filter(k => expanded.has(k))));
+    setWaivedKeys(new Set(((wRes.data ?? []) as { doc_key: string }[]).map(w => w.doc_key)));
+  }
 
   useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
-      const [pRes, dRes] = await Promise.all([
-        supabase.from('lead_personal_data').select('data, version').eq('lead_id', leadId).maybeSingle(),
-        supabase.from('document_uploads').select('file_type').eq('lead_id', leadId),
-      ]);
-      if (!alive) return;
-      const row = pRes.data as { data?: PersonnelData; version?: number } | null;
-      const complete = !!row && (row.version ?? 0) > 0 && Object.keys(validatePersonnel(row.data ?? {})).length === 0;
-      setPersonnelDone(complete);
-      const types = new Set((dRes.data ?? []).map((u: { file_type: string }) => u.file_type));
-      const expanded = new Set(types);
-      for (const t of types) {
-        const covers = MANUAL_TO_REQUIRED[t];
-        if (covers) covers.forEach(k => expanded.add(k));
-      }
-      setDocsDoneCount(REQUIRED_DOC_KEYS.filter(k => expanded.has(k)).length);
-      setMissingDocs(REQUIRED_DOC_KEYS.filter(k => !expanded.has(k)));
-      setManualDocTypes(Array.from(types).filter(t => !REQUIRED_DOC_KEYS.includes(t) && !MANUAL_TO_REQUIRED[t]));
-      setLoading(false);
+      await loadAll();
+      if (alive) setLoading(false);
     })();
     return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leadId]);
+
+  async function toggleWaiver(key: string, currentlyWaived: boolean) {
+    setBusyKey(key);
+    try {
+      if (currentlyWaived) {
+        const { error } = await (supabase as any).from('lead_document_waivers').delete().eq('lead_id', leadId).eq('doc_key', key);
+        if (error) throw error;
+        await supabase.from('activities').insert({
+          id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+          description: `Verzicht zurückgenommen: "${REQUIRED_DOC_LABELS[key] || key}" wird wieder benötigt`,
+          user: 'System',
+        });
+        toast({ title: 'Verzicht aufgehoben', description: REQUIRED_DOC_LABELS[key] || key });
+      } else {
+        const { error } = await (supabase as any).from('lead_document_waivers').insert({
+          lead_id: leadId, doc_key: key, waived_by: 'manual', reason: 'Hat er nicht',
+        });
+        if (error) throw error;
+        await supabase.from('activities').insert({
+          id: crypto.randomUUID(), lead_id: leadId, type: 'note',
+          description: `Dokument als "Hat er nicht" markiert: ${REQUIRED_DOC_LABELS[key] || key}`,
+          user: 'System',
+        });
+        toast({ title: '✓ Markiert', description: `${REQUIRED_DOC_LABELS[key] || key} – Hat er nicht` });
+      }
+      await loadAll();
+    } catch (err) {
+      toast({ title: 'Fehler', description: (err as Error).message, variant: 'destructive' });
+    } finally {
+      setBusyKey(null);
+    }
+  }
 
   const milestones = useMemo(() => {
     const now = Date.now();
@@ -106,15 +141,17 @@ export default function LeadHiringReadiness({ leadId }: Props) {
     return found;
   }, [appointments, leadId]);
 
-  const docsDone = docsDoneCount === REQUIRED_DOC_KEYS.length;
+  const docsResolved = REQUIRED_DOC_KEYS.filter(k => uploadedKeys.has(k) || waivedKeys.has(k)).length;
   const contractRequired = lead && ['management_approved', 'hr_processing', 'hired'].includes(lead.status);
 
-  type ReadinessItem = {
-    label: string;
-    progress: number; // 0..1
-    hint: string;
-    missing?: string[];
-  };
+  type DocStatus = 'uploaded' | 'waived' | 'missing';
+  const docStatuses: { key: string; label: string; status: DocStatus }[] = REQUIRED_DOC_KEYS.map(k => ({
+    key: k,
+    label: REQUIRED_DOC_LABELS[k] || k,
+    status: uploadedKeys.has(k) ? 'uploaded' : waivedKeys.has(k) ? 'waived' : 'missing',
+  }));
+
+  type ReadinessItem = { label: string; progress: number; hint: string; renderExtra?: () => JSX.Element };
 
   const baseItems: ReadinessItem[] = [
     { label: 'BG (Bewerbungsgespräch)', progress: milestones.bg.done ? 1 : 0, hint: milestones.bg.date ? new Date(milestones.bg.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
@@ -122,9 +159,48 @@ export default function LeadHiringReadiness({ leadId }: Props) {
     { label: 'Personalien', progress: personnelDone ? 1 : 0, hint: personnelDone ? 'Vollständig eingereicht' : 'Unvollständig' },
     {
       label: 'Dokumente (Arbeitsvertrag)',
-      progress: docsDoneCount / REQUIRED_DOC_KEYS.length,
-      hint: `${docsDoneCount}/${REQUIRED_DOC_KEYS.length} eingereicht`,
-      missing: missingDocs.map(k => REQUIRED_DOC_LABELS[k] || k),
+      progress: docsResolved / REQUIRED_DOC_KEYS.length,
+      hint: `${docsResolved}/${REQUIRED_DOC_KEYS.length} erledigt`,
+      renderExtra: () => (
+        <div className="mt-2 ml-6 grid grid-cols-1 sm:grid-cols-2 gap-1">
+          {docStatuses.map(d => {
+            const busy = busyKey === d.key;
+            const isUploaded = d.status === 'uploaded';
+            const isWaived = d.status === 'waived';
+            return (
+              <div key={d.key} className={cn(
+                'flex items-center justify-between gap-2 rounded-md border px-2 py-1 text-[11px]',
+                isUploaded ? 'border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-900'
+                  : isWaived ? 'border-muted bg-muted/40 text-muted-foreground'
+                  : 'border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900',
+              )}>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  {isUploaded ? <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />
+                    : isWaived ? <MinusCircle className="h-3 w-3 shrink-0" />
+                    : <Circle className="h-3 w-3 text-amber-600 shrink-0" />}
+                  <span className={cn('truncate font-medium', isWaived && 'line-through')}>{d.label}</span>
+                </div>
+                {!isUploaded && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => toggleWaiver(d.key, isWaived)}
+                    className={cn(
+                      'shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors disabled:opacity-50',
+                      isWaived
+                        ? 'text-primary hover:bg-primary/10'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground border border-dashed',
+                    )}
+                    title={isWaived ? 'Verzicht aufheben' : 'Als "Hat er nicht" markieren'}
+                  >
+                    {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : isWaived ? 'Doch benötigt' : 'Hat er nicht'}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ),
     },
   ];
   const items: ReadinessItem[] = contractRequired
@@ -138,6 +214,7 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const total = items.length;
   const pct = Math.round((totalProgress / total) * 100);
   const ready = totalProgress >= total;
+
   const handleSubmit = async () => {
     if (!lead || !ready || submitting) return;
     setSubmitting(true);
@@ -201,34 +278,10 @@ export default function LeadHiringReadiness({ leadId }: Props) {
                   <div className={cn('h-full transition-all', partial ? 'bg-primary' : 'bg-amber-400/60')} style={{ width: `${Math.max(it.progress * 100, partial ? 8 : 0)}%` }} />
                 </div>
               )}
-              {!done && it.missing && it.missing.length > 0 && (
-                <div className="mt-1.5 ml-6 flex flex-wrap gap-1">
-                  {it.missing.map(m => (
-                    <span key={m} className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 text-[11px] font-medium border border-amber-200 dark:border-amber-900">
-                      <Circle className="h-2.5 w-2.5" />
-                      {m}
-                    </span>
-                  ))}
-                </div>
-              )}
+              {it.renderExtra?.()}
             </div>
           );
         })}
-        {manualDocTypes.length > 0 && (
-          <div className="px-3 py-2 bg-muted/20">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
-              Weitere hochgeladene Dokumente
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {manualDocTypes.map(t => (
-                <span key={t} className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 text-[11px] font-medium border border-emerald-200 dark:border-emerald-900">
-                  <CheckCircle2 className="h-3 w-3" />
-                  {MANUAL_DOC_LABELS[t] || t}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {(ready || alreadySubmitted) && (
