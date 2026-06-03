@@ -67,13 +67,12 @@ export default function LeadHiringReadiness({ leadId }: Props) {
     ]);
     const row = pRes.data as { data?: PersonnelData; version?: number } | null;
     setPersonnelDone(!!row && (row.version ?? 0) > 0 && Object.keys(validatePersonnel(row.data ?? {})).length === 0);
-    const types = new Set((dRes.data ?? []).map((u: { file_type: string }) => u.file_type));
-    const expanded = new Set<string>(types);
-    for (const t of types) {
-      const covers = MANUAL_TO_REQUIRED[t];
-      if (covers) covers.forEach(k => expanded.add(k));
+    const fulfilled = new Set<string>();
+    for (const u of (dRes.data ?? []) as { file_type: string }[]) {
+      const slot = UPLOAD_TO_REQUIRED[u.file_type];
+      if (slot) fulfilled.add(slot);
     }
-    setUploadedKeys(new Set(REQUIRED_DOC_KEYS.filter(k => expanded.has(k))));
+    setUploadedKeys(new Set(REQUIRED_DOC_KEYS.filter(k => fulfilled.has(k))));
     setWaivedKeys(new Set(((wRes.data ?? []) as { doc_key: string }[]).map(w => w.doc_key)));
   }
 
