@@ -13,16 +13,25 @@ interface Props {
 
 const REQUIRED_DOC_KEYS = ['id_front', 'id_back', 'bank_front', 'bank_back', 'vbv', 'kk_card', 'fuehrerausweis'];
 
+// Manuell ausgewählte Kategorien → erfüllen welche Required-Slots
+// (1 PDF mit beiden Seiten deckt v + r ab)
+const MANUAL_TO_REQUIRED: Record<string, string[]> = {
+  id: ['id_front', 'id_back'],
+  bank: ['bank_front', 'bank_back'],
+  vbv: ['vbv'],
+  kk_card: ['kk_card'],
+  fuehrerausweis: ['fuehrerausweis'],
+};
+
 const MANUAL_DOC_LABELS: Record<string, string> = {
   cv: 'Lebenslauf',
+  motivation_letter: 'Motivationsschreiben',
   certificate: 'Zertifikat',
   reference: 'Arbeitszeugnis',
-  id: 'Ausweis',
   betreibungsauszug: 'Betreibungsauszug',
   strafregisterauszug: 'Strafregisterauszug',
   leadsliste: 'Leadsliste',
   insight_r4: 'Insight R4',
-  motivation_letter: 'Motivationsschreiben',
   other: 'Sonstiges',
 };
 
