@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { type LeadStatus, statusConfig } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import StatusWizardDialog, { type WizardType } from './StatusWizardDialog';
 import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardDialog';
