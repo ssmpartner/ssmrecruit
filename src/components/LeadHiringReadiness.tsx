@@ -12,33 +12,30 @@ interface Props {
 }
 
 const REQUIRED_DOC_KEYS = [
-  'id_front', 'id_back',
-  'bank_front', 'bank_back',
-  'vbv', 'kk_card', 'fuehrerausweis',
+  'id', 'bank', 'vbv', 'kk_card', 'fuehrerausweis',
   'leadsliste', 'insight_r4',
 ];
 
 const REQUIRED_DOC_LABELS: Record<string, string> = {
-  id_front: 'Ausweis (Vorderseite)',
-  id_back: 'Ausweis (Rückseite)',
-  bank_front: 'Bankkarte (Vorderseite)',
-  bank_back: 'Bankkarte (Rückseite)',
+  id: 'Ausweis',
+  bank: 'Bankkarte',
   vbv: 'VBV-Ausweis',
-  kk_card: 'Krankenkassenkarte',
+  kk_card: 'Krankenkasse',
   fuehrerausweis: 'Führerausweis',
-  leadsliste: 'Leadsliste (intern)',
-  insight_r4: 'Insight R4 (intern)',
+  leadsliste: 'Leadsliste',
+  insight_r4: 'Insight R4',
 };
 
-// Manuell ausgewählte Kategorien → erfüllen welche Required-Slots
-const MANUAL_TO_REQUIRED: Record<string, string[]> = {
-  id: ['id_front', 'id_back'],
-  bank: ['bank_front', 'bank_back'],
-  vbv: ['vbv'],
-  kk_card: ['kk_card'],
-  fuehrerausweis: ['fuehrerausweis'],
-  leadsliste: ['leadsliste'],
-  insight_r4: ['insight_r4'],
+// Hochgeladener file_type → erfüllt welchen Required-Slot
+// (Vorder-/Rückseite zählen alle als ein erfülltes Dokument)
+const UPLOAD_TO_REQUIRED: Record<string, string> = {
+  id: 'id', id_front: 'id', id_back: 'id',
+  bank: 'bank', bank_front: 'bank', bank_back: 'bank',
+  vbv: 'vbv',
+  kk_card: 'kk_card',
+  fuehrerausweis: 'fuehrerausweis',
+  leadsliste: 'leadsliste',
+  insight_r4: 'insight_r4',
 };
 
 // Match appointment titles loosely to the three milestones
@@ -70,13 +67,12 @@ export default function LeadHiringReadiness({ leadId }: Props) {
     ]);
     const row = pRes.data as { data?: PersonnelData; version?: number } | null;
     setPersonnelDone(!!row && (row.version ?? 0) > 0 && Object.keys(validatePersonnel(row.data ?? {})).length === 0);
-    const types = new Set((dRes.data ?? []).map((u: { file_type: string }) => u.file_type));
-    const expanded = new Set<string>(types);
-    for (const t of types) {
-      const covers = MANUAL_TO_REQUIRED[t];
-      if (covers) covers.forEach(k => expanded.add(k));
+    const fulfilled = new Set<string>();
+    for (const u of (dRes.data ?? []) as { file_type: string }[]) {
+      const slot = UPLOAD_TO_REQUIRED[u.file_type];
+      if (slot) fulfilled.add(slot);
     }
-    setUploadedKeys(new Set(REQUIRED_DOC_KEYS.filter(k => expanded.has(k))));
+    setUploadedKeys(new Set(REQUIRED_DOC_KEYS.filter(k => fulfilled.has(k))));
     setWaivedKeys(new Set(((wRes.data ?? []) as { doc_key: string }[]).map(w => w.doc_key)));
   }
 
@@ -162,41 +158,38 @@ export default function LeadHiringReadiness({ leadId }: Props) {
       progress: docsResolved / REQUIRED_DOC_KEYS.length,
       hint: `${docsResolved}/${REQUIRED_DOC_KEYS.length} erledigt`,
       renderExtra: () => (
-        <div className="mt-2 ml-6 grid grid-cols-1 sm:grid-cols-2 gap-1">
+        <div className="mt-2 ml-6 flex flex-wrap gap-1.5">
           {docStatuses.map(d => {
             const busy = busyKey === d.key;
             const isUploaded = d.status === 'uploaded';
             const isWaived = d.status === 'waived';
             return (
-              <div key={d.key} className={cn(
-                'flex items-center justify-between gap-2 rounded-md border px-2 py-1 text-[11px]',
-                isUploaded ? 'border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-900'
-                  : isWaived ? 'border-muted bg-muted/40 text-muted-foreground'
-                  : 'border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900',
-              )}>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  {isUploaded ? <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />
-                    : isWaived ? <MinusCircle className="h-3 w-3 shrink-0" />
-                    : <Circle className="h-3 w-3 text-amber-600 shrink-0" />}
-                  <span className={cn('truncate font-medium', isWaived && 'line-through')}>{d.label}</span>
-                </div>
-                {!isUploaded && (
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => toggleWaiver(d.key, isWaived)}
-                    className={cn(
-                      'shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors disabled:opacity-50',
-                      isWaived
-                        ? 'text-primary hover:bg-primary/10'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground border border-dashed',
-                    )}
-                    title={isWaived ? 'Verzicht aufheben' : 'Als "Hat er nicht" markieren'}
-                  >
-                    {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : isWaived ? 'Doch benötigt' : 'Hat er nicht'}
-                  </button>
+              <button
+                key={d.key}
+                type="button"
+                disabled={busy || isUploaded}
+                onClick={() => !isUploaded && toggleWaiver(d.key, isWaived)}
+                title={
+                  isUploaded ? 'Hochgeladen'
+                    : isWaived ? 'Verzicht aufheben'
+                    : 'Klick: als "Hat er nicht" markieren'
+                }
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors',
+                  isUploaded
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:border-emerald-900 dark:text-emerald-300 cursor-default'
+                    : isWaived
+                    ? 'border-muted bg-muted/50 text-muted-foreground line-through hover:bg-muted'
+                    : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/30 dark:border-amber-900 dark:text-amber-300',
+                  busy && 'opacity-50',
                 )}
-              </div>
+              >
+                {busy ? <Loader2 className="h-3 w-3 animate-spin" />
+                  : isUploaded ? <CheckCircle2 className="h-3 w-3" />
+                  : isWaived ? <MinusCircle className="h-3 w-3" />
+                  : <Circle className="h-3 w-3" />}
+                <span>{d.label}</span>
+              </button>
             );
           })}
         </div>
