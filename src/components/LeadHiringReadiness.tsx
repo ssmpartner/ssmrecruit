@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLeads } from '@/context/useLeads';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { statusConfig } from '@/lib/mock-data';
+import { statusConfig, type Appointment } from '@/lib/mock-data';
 import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
 
 interface Props {
@@ -48,7 +48,7 @@ function matchMilestone(title: string): 'bg' | 'bg2' | 'contract' | null {
   const t = title.toLowerCase().trim();
   if (/vertrags|unterzeich|contract/.test(t)) return 'contract';
   if (/\bbg\s*2\b|bg2|bewerbung.*2|zweit/.test(t)) return 'bg2';
-  if (/\bbg\b|bewerbungs?gespr|kennenlern|erstgespr/.test(t)) return 'bg';
+  if (/\bbg\s*1\b|bg1|\bbg\b|bewerbungs?gespr|kennenlern|erstgespr/.test(t)) return 'bg';
   return null;
 }
 
@@ -61,14 +61,16 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const [personnelDone, setPersonnelDone] = useState(false);
   const [uploadedKeys, setUploadedKeys] = useState<Set<string>>(new Set());
   const [waivedKeys, setWaivedKeys] = useState<Set<string>>(new Set());
+  const [leadDbAppointments, setLeadDbAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState<string | null>(null);
 
   async function loadAll() {
-    const [pRes, dRes, wRes] = await Promise.all([
+    const [pRes, dRes, wRes, aRes] = await Promise.all([
       supabase.from('lead_personal_data').select('data, version').eq('lead_id', leadId).maybeSingle(),
       supabase.from('document_uploads').select('file_type').eq('lead_id', leadId),
       (supabase as any).from('lead_document_waivers').select('doc_key').eq('lead_id', leadId),
+      supabase.from('appointments').select('*').eq('lead_id', leadId).order('date', { ascending: true }).order('time', { ascending: true }),
     ]);
     const row = pRes.data as { data?: PersonnelData; version?: number } | null;
     setPersonnelDone(!!row && (row.version ?? 0) > 0 && Object.keys(validatePersonnel(row.data ?? {})).length === 0);
@@ -79,6 +81,19 @@ export default function LeadHiringReadiness({ leadId }: Props) {
     }
     setUploadedKeys(new Set(REQUIRED_DOC_KEYS.filter(k => fulfilled.has(k))));
     setWaivedKeys(new Set(((wRes.data ?? []) as { doc_key: string }[]).map(w => w.doc_key)));
+    setLeadDbAppointments(((aRes.data ?? []) as any[]).map(row => ({
+      id: row.id,
+      leadId: row.lead_id,
+      title: row.title,
+      date: row.date,
+      time: row.time,
+      duration: row.duration,
+      type: row.type,
+      meetingLink: row.meeting_link ?? undefined,
+      notes: row.notes,
+      createdBy: row.created_by,
+      createdAt: row.created_at,
+    })));
   }
 
   useEffect(() => {
@@ -129,7 +144,9 @@ export default function LeadHiringReadiness({ leadId }: Props) {
     const found: Record<'bg' | 'bg2' | 'contract', { done: boolean; date?: string }> = {
       bg: { done: false }, bg2: { done: false }, contract: { done: false },
     };
-    appointments.filter(a => a.leadId === leadId).forEach(a => {
+    const combinedAppointments = [...appointments.filter(a => a.leadId === leadId), ...leadDbAppointments]
+      .filter((a, index, all) => all.findIndex(entry => entry.id === a.id) === index);
+    combinedAppointments.forEach(a => {
       const m = matchMilestone(a.title);
       if (!m) return;
       const ts = new Date(`${a.date}T${a.time || '00:00'}`).getTime();
@@ -140,7 +157,7 @@ export default function LeadHiringReadiness({ leadId }: Props) {
       if (isPast) found[m].done = true;
     });
     return found;
-  }, [appointments, leadId]);
+  }, [appointments, leadDbAppointments, leadId]);
 
   const docsResolved = REQUIRED_DOC_KEYS.filter(k => uploadedKeys.has(k) || waivedKeys.has(k)).length;
   const contractRequired = lead && ['management_approved', 'hr_processing', 'hired'].includes(lead.status);
