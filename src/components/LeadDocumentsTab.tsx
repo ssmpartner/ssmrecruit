@@ -160,12 +160,14 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   }, [leadId]);
 
   async function loadData() {
-    const [docRes, uploadsRes] = await Promise.all([
+    const [docRes, uploadsRes, waiversRes] = await Promise.all([
       supabase.from('document_requests').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }),
       supabase.from('document_uploads').select('*').eq('lead_id', leadId).order('uploaded_at', { ascending: false }),
+      supabase.from('lead_document_waivers').select('doc_key').eq('lead_id', leadId),
     ]);
     if (docRes.data) setDocRequests(docRes.data as any[]);
     if (uploadsRes.data) setDocUploads(uploadsRes.data as any[]);
+    if (waiversRes.data) setWaivedKeys(new Set((waiversRes.data as any[]).map(w => w.doc_key)));
     setLoading(false);
   }
 
