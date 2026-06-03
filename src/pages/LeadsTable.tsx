@@ -363,7 +363,7 @@ export default function LeadsTable() {
                 {paginatedLeads.length === 0 && (
                   <tr>
                     <td colSpan={isSuperadmin && !isReviewRole ? 11 : isReviewRole ? 9 : 10} className="px-5 py-12 text-center text-muted-foreground">
-                      {activeTab === 'archived' ? 'Keine archivierten Leads vorhanden.' : activeTab === 'deleted' ? 'Keine gelöschten Leads vorhanden.' : 'Keine Leads gefunden.'}
+                      {activeTab === 'archived' ? 'Keine archivierten Leads vorhanden.' : activeTab === 'deleted' ? 'Keine gelöschten Leads vorhanden.' : activeTab === 'demo' ? 'Keine Demo-/Muster-Leads vorhanden.' : 'Keine Leads gefunden.'}
                     </td>
                   </tr>
                 )}
