@@ -43,6 +43,7 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const alreadySubmitted = lead && ['ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired'].includes(lead.status);
   const [personnelDone, setPersonnelDone] = useState(false);
   const [docsDoneCount, setDocsDoneCount] = useState(0);
+  const [manualDocTypes, setManualDocTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,6 +60,7 @@ export default function LeadHiringReadiness({ leadId }: Props) {
       setPersonnelDone(complete);
       const types = new Set((dRes.data ?? []).map((u: { file_type: string }) => u.file_type));
       setDocsDoneCount(REQUIRED_DOC_KEYS.filter(k => types.has(k)).length);
+      setManualDocTypes(Array.from(types).filter(t => !REQUIRED_DOC_KEYS.includes(t)));
       setLoading(false);
     })();
     return () => { alive = false; };
