@@ -191,31 +191,14 @@ export default function PersonnelFormPage() {
       return;
     }
 
-    const nowIso = new Date().toISOString();
-    const { data: cur } = await supabase.from('lead_personal_data').select('version').eq('lead_id', info.lead_id).maybeSingle();
-    const nextVersion = ((cur?.version as number | undefined) ?? 0) + 1;
-    const updatedBy = info.lead_name ? `${info.lead_name} (Kandidat)` : 'Kandidat';
-
-    const { error: upErr } = await supabase.from('lead_personal_data').upsert([{
-      lead_id: info.lead_id, data: data as unknown as never, version: nextVersion,
-      updated_at: nowIso, updated_by: updatedBy, updated_via: 'public',
-    }]);
-    if (upErr) { setPageError(upErr.message); setPhase('ready'); return; }
-
-    await supabase.from('lead_personal_data_versions').insert([{
-      lead_id: info.lead_id, version: nextVersion, data: data as unknown as never,
-      updated_at: nowIso, updated_by: updatedBy, updated_via: 'public',
-    }]);
-
-    await supabase.from('personnel_requests').update({
-      status: 'completed', completed_at: nowIso,
-    }).eq('id', info.id);
-
-    await supabase.from('activities').insert({
-      id: crypto.randomUUID(), lead_id: info.lead_id, type: 'edit',
-      description: `Personalien vom Kandidaten eingereicht (Version ${nextVersion})`,
-      user: updatedBy,
+    const { data: res, error: fnErr } = await supabase.functions.invoke('submit-employment-personnel', {
+      body: { personnel_token: token, data },
     });
+    if (fnErr || !(res as { ok?: boolean } | null)?.ok) {
+      setPageError('Ihre Angaben konnten leider nicht gespeichert werden. Bitte versuchen Sie es in einem Moment erneut.');
+      setPhase('ready');
+      return;
+    }
 
     setPhase('success');
   };
