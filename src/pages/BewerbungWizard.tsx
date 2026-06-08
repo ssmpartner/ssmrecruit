@@ -5,7 +5,7 @@ import bewerbungHero from '@/assets/bewerbung-hero.jpg';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
 const ALLOWED_TYPES = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png'];
 
 type ApplicationType = '' | 'operations' | 'finanzcoach';
@@ -180,7 +180,7 @@ export default function BewerbungWizard() {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const f = e.target.files?.[0];
       if (!f) return;
-      if (f.size > MAX_FILE_SIZE) { setError('Datei zu gross (max. 10 MB)'); return; }
+      if (f.size > MAX_FILE_SIZE) { setError('Datei zu gross (max. 20 MB)'); return; }
       setter(f);
       setError('');
     };
