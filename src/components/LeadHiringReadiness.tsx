@@ -141,8 +141,10 @@ export default function LeadHiringReadiness({ leadId }: Props) {
 
   const milestones = useMemo(() => {
     const now = Date.now();
-    const found: Record<'bg' | 'bg2' | 'contract', { done: boolean; date?: string }> = {
-      bg: { done: false }, bg2: { done: false }, contract: { done: false },
+    const found: Record<'bg' | 'bg2' | 'contract', { done: boolean; scheduled: boolean; date?: string; isPast?: boolean }> = {
+      bg: { done: false, scheduled: false },
+      bg2: { done: false, scheduled: false },
+      contract: { done: false, scheduled: false },
     };
     const combinedAppointments = [...appointments.filter(a => a.leadId === leadId), ...leadDbAppointments]
       .filter((a, index, all) => all.findIndex(entry => entry.id === a.id) === index);
@@ -151,10 +153,10 @@ export default function LeadHiringReadiness({ leadId }: Props) {
       if (!m) return;
       const ts = new Date(`${a.date}T${a.time || '00:00'}`).getTime();
       const isPast = ts <= now;
-      if (isPast || found[m].done === false) {
-        found[m] = { done: isPast || found[m].done, date: a.date };
+      // Any matching appointment (past or future) counts as the milestone being reached
+      if (!found[m].date || isPast) {
+        found[m] = { done: true, scheduled: true, date: a.date, isPast };
       }
-      if (isPast) found[m].done = true;
     });
     return found;
   }, [appointments, leadDbAppointments, leadId]);
@@ -171,9 +173,15 @@ export default function LeadHiringReadiness({ leadId }: Props) {
 
   type ReadinessItem = { label: string; progress: number; hint: string; renderExtra?: () => JSX.Element };
 
+  const formatMilestoneHint = (m: { done: boolean; date?: string; isPast?: boolean }) => {
+    if (!m.date) return 'Noch kein Termin';
+    const d = new Date(m.date).toLocaleDateString('de-CH');
+    return m.isPast ? d : `Geplant: ${d}`;
+  };
+
   const baseItems: ReadinessItem[] = [
-    { label: 'BG (Bewerbungsgespräch)', progress: milestones.bg.done ? 1 : 0, hint: milestones.bg.date ? new Date(milestones.bg.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
-    { label: 'BG2 (Zweitgespräch)', progress: milestones.bg2.done ? 1 : 0, hint: milestones.bg2.date ? new Date(milestones.bg2.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
+    { label: 'BG (Bewerbungsgespräch)', progress: milestones.bg.done ? 1 : 0, hint: formatMilestoneHint(milestones.bg) },
+    { label: 'BG2 (Zweitgespräch)', progress: milestones.bg2.done ? 1 : 0, hint: formatMilestoneHint(milestones.bg2) },
     { label: 'Personalien', progress: personnelDone ? 1 : 0, hint: personnelDone ? 'Vollständig eingereicht' : 'Unvollständig' },
     {
       label: 'Dokumente (Arbeitsvertrag)',
@@ -221,7 +229,7 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const items: ReadinessItem[] = contractRequired
     ? [
       ...baseItems,
-      { label: 'Vertragsunterzeichnung', progress: milestones.contract.done ? 1 : 0, hint: milestones.contract.date ? new Date(milestones.contract.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
+      { label: 'Vertragsunterzeichnung', progress: milestones.contract.done ? 1 : 0, hint: formatMilestoneHint(milestones.contract) },
     ]
     : baseItems;
 
