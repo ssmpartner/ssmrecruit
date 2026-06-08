@@ -229,8 +229,7 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const items: ReadinessItem[] = contractRequired
     ? [
       ...baseItems,
-      { label: 'Vertragsunterzeichnung', progress: milestones.contract.done ? 1 : 0, hint: milestones.contract.date ? new Date(milestones.contract.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
-    ]
+      { label: 'Vertragsunterzeichnung', progress: milestones.contract.done ? 1 : 0, hint: formatMilestoneHint(milestones.contract) },
     : baseItems;
 
   const totalProgress = items.reduce((s, i) => s + i.progress, 0);
