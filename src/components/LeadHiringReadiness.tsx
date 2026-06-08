@@ -141,8 +141,10 @@ export default function LeadHiringReadiness({ leadId }: Props) {
 
   const milestones = useMemo(() => {
     const now = Date.now();
-    const found: Record<'bg' | 'bg2' | 'contract', { done: boolean; date?: string }> = {
-      bg: { done: false }, bg2: { done: false }, contract: { done: false },
+    const found: Record<'bg' | 'bg2' | 'contract', { done: boolean; scheduled: boolean; date?: string; isPast?: boolean }> = {
+      bg: { done: false, scheduled: false },
+      bg2: { done: false, scheduled: false },
+      contract: { done: false, scheduled: false },
     };
     const combinedAppointments = [...appointments.filter(a => a.leadId === leadId), ...leadDbAppointments]
       .filter((a, index, all) => all.findIndex(entry => entry.id === a.id) === index);
@@ -151,10 +153,10 @@ export default function LeadHiringReadiness({ leadId }: Props) {
       if (!m) return;
       const ts = new Date(`${a.date}T${a.time || '00:00'}`).getTime();
       const isPast = ts <= now;
-      if (isPast || found[m].done === false) {
-        found[m] = { done: isPast || found[m].done, date: a.date };
+      // Any matching appointment (past or future) counts as the milestone being reached
+      if (!found[m].date || isPast) {
+        found[m] = { done: true, scheduled: true, date: a.date, isPast };
       }
-      if (isPast) found[m].done = true;
     });
     return found;
   }, [appointments, leadDbAppointments, leadId]);
