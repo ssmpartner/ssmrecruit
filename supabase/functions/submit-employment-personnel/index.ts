@@ -7,7 +7,8 @@ const corsHeaders = {
 };
 
 interface Body {
-  document_token: string;
+  document_token?: string;
+  personnel_token?: string;
   data: Record<string, unknown>;
 }
 
@@ -20,8 +21,9 @@ serve(async (req) => {
   }
 
   try {
-    const { document_token, data } = (await req.json()) as Body;
-    if (!document_token || typeof document_token !== 'string' || document_token.length < 10 || document_token.length > 200) {
+    const { document_token, personnel_token, data } = (await req.json()) as Body;
+    const token = document_token || personnel_token;
+    if (!token || typeof token !== 'string' || token.length < 10 || token.length > 200) {
       return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -37,39 +39,64 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    const { data: dr, error: drErr } = await supabase
-      .from('document_requests')
-      .select('id, lead_id, expires_at, kind')
-      .eq('token', document_token)
-      .maybeSingle();
+    let leadId: string | null = null;
+    let requestKind: 'document' | 'personnel' = personnel_token ? 'personnel' : 'document';
+    let requestId: string | null = null;
 
-    if (drErr || !dr) {
-      return new Response(JSON.stringify({ error: 'Token not found' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    if (dr.expires_at && new Date(dr.expires_at).getTime() < Date.now()) {
-      return new Response(JSON.stringify({ error: 'Token expired' }), {
-        status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    if (dr.kind !== 'employment') {
-      return new Response(JSON.stringify({ error: 'Wrong link type' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (personnel_token) {
+      const { data: pr, error: prErr } = await supabase
+        .from('personnel_requests')
+        .select('id, lead_id, expires_at')
+        .eq('token', token)
+        .maybeSingle();
+      if (prErr || !pr) {
+        return new Response(JSON.stringify({ error: 'Token not found' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (pr.expires_at && new Date(pr.expires_at).getTime() < Date.now()) {
+        return new Response(JSON.stringify({ error: 'Token expired' }), {
+          status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      leadId = pr.lead_id;
+      requestId = pr.id;
+    } else {
+      const { data: dr, error: drErr } = await supabase
+        .from('document_requests')
+        .select('id, lead_id, expires_at, kind')
+        .eq('token', token)
+        .maybeSingle();
+      if (drErr || !dr) {
+        return new Response(JSON.stringify({ error: 'Token not found' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (dr.expires_at && new Date(dr.expires_at).getTime() < Date.now()) {
+        return new Response(JSON.stringify({ error: 'Token expired' }), {
+          status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (dr.kind !== 'employment') {
+        return new Response(JSON.stringify({ error: 'Wrong link type' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      leadId = dr.lead_id;
+      requestId = dr.id;
     }
 
     // Fetch current version
     const { data: cur } = await supabase
       .from('lead_personal_data')
       .select('version')
-      .eq('lead_id', dr.lead_id)
+      .eq('lead_id', leadId)
       .maybeSingle();
     const nextVersion = ((cur as { version?: number } | null)?.version ?? 0) + 1;
     const nowIso = new Date().toISOString();
 
     const upsertPayload = {
-      lead_id: dr.lead_id,
+      lead_id: leadId,
       data,
       version: nextVersion,
       updated_at: nowIso,
@@ -88,7 +115,7 @@ serve(async (req) => {
     }
 
     await supabase.from('lead_personal_data_versions').insert([{
-      lead_id: dr.lead_id,
+      lead_id: leadId,
       version: nextVersion,
       data,
       updated_at: nowIso,
@@ -96,9 +123,15 @@ serve(async (req) => {
       updated_via: 'public',
     }]);
 
+    if (requestKind === 'personnel' && requestId) {
+      await supabase.from('personnel_requests').update({
+        status: 'completed', completed_at: nowIso,
+      }).eq('id', requestId);
+    }
+
     await supabase.from('activities').insert({
       id: crypto.randomUUID(),
-      lead_id: dr.lead_id,
+      lead_id: leadId,
       type: 'edit',
       description: `Personalstammdaten vom Kandidaten ausgefüllt (Version ${nextVersion})`,
       user: 'Kandidat',
