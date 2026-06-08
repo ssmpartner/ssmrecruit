@@ -173,9 +173,15 @@ export default function LeadHiringReadiness({ leadId }: Props) {
 
   type ReadinessItem = { label: string; progress: number; hint: string; renderExtra?: () => JSX.Element };
 
+  const formatMilestoneHint = (m: { done: boolean; date?: string; isPast?: boolean }) => {
+    if (!m.date) return 'Noch kein Termin';
+    const d = new Date(m.date).toLocaleDateString('de-CH');
+    return m.isPast ? d : `Geplant: ${d}`;
+  };
+
   const baseItems: ReadinessItem[] = [
-    { label: 'BG (Bewerbungsgespräch)', progress: milestones.bg.done ? 1 : 0, hint: milestones.bg.date ? new Date(milestones.bg.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
-    { label: 'BG2 (Zweitgespräch)', progress: milestones.bg2.done ? 1 : 0, hint: milestones.bg2.date ? new Date(milestones.bg2.date).toLocaleDateString('de-CH') : 'Noch kein Termin' },
+    { label: 'BG (Bewerbungsgespräch)', progress: milestones.bg.done ? 1 : 0, hint: formatMilestoneHint(milestones.bg) },
+    { label: 'BG2 (Zweitgespräch)', progress: milestones.bg2.done ? 1 : 0, hint: formatMilestoneHint(milestones.bg2) },
     { label: 'Personalien', progress: personnelDone ? 1 : 0, hint: personnelDone ? 'Vollständig eingereicht' : 'Unvollständig' },
     {
       label: 'Dokumente (Arbeitsvertrag)',
