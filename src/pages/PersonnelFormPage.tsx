@@ -510,7 +510,7 @@ function DocsUploadStep({ files, onAdd, onRemove, onChangeType, onDrop }: {
       >
         <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
         <p className="text-sm font-medium text-foreground">Dateien hierhin ziehen oder klicken</p>
-        <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG, DOCX (max. 10 MB pro Datei)</p>
+        <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG, DOCX (max. 20 MB pro Datei)</p>
         <input
           id="personnel-file-input"
           type="file"

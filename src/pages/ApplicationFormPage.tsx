@@ -9,7 +9,7 @@ interface FileEntry {
   field: string;
 }
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const ALLOWED_TYPES = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png'];
 
 export default function ApplicationFormPage() {
@@ -78,7 +78,7 @@ export default function ApplicationFormPage() {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const f = e.target.files?.[0];
       if (!f) return;
-      if (f.size > MAX_FILE_SIZE) { setError('Datei zu gross (max. 10 MB)'); return; }
+      if (f.size > MAX_FILE_SIZE) { setError('Datei zu gross (max. 20 MB)'); return; }
       setter(f);
       setError('');
     };
