@@ -559,10 +559,12 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                               className="border-amber-300 text-amber-800 hover:bg-amber-50">
                               <Clock className="h-4 w-4" /> Auf Pendent setzen
                             </Button>
-                            <Button variant="outline" onClick={() => { setRejectReason(''); setRejectOpen(true); }}
-                              className="border-red-300 text-red-700 hover:bg-red-50">
-                              <XCircle className="h-4 w-4" /> Ablehnen
-                            </Button>
+                            {splitGl && (
+                              <Button variant="outline" onClick={() => { setRejectReason(''); setRejectOpen(true); }}
+                                className="border-red-300 text-red-700 hover:bg-red-50">
+                                <XCircle className="h-4 w-4" /> Ablehnen
+                              </Button>
+                            )}
                           </div>
                         </div>
                         );
