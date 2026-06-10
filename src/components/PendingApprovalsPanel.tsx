@@ -71,7 +71,7 @@ function Avatar({ u, state }: { u: RoleUser; state: 'approved' | 'rejected' | 'p
   );
 }
 
-export default function PendingApprovalsPanel({ leadId, leadStatus }: Props) {
+export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedAt, leadCreatedAt }: Props) {
   const [loading, setLoading] = useState(true);
   const [controllingUsers, setControllingUsers] = useState<RoleUser[]>([]);
   const [glUsers, setGlUsers] = useState<RoleUser[]>([]);
