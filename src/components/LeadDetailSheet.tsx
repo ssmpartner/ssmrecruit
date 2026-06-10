@@ -30,6 +30,7 @@ import LeadDocumentsTab from './LeadDocumentsTab';
 import LeadPersonnelSection from './LeadPersonnelSection';
 import LeadHiringReadiness from './LeadHiringReadiness';
 import ManagementApprovalPanel from './ManagementApprovalPanel';
+import PendingApprovalsPanel from './PendingApprovalsPanel';
 import AddressAutocomplete, { type AddressSuggestion } from './AddressAutocomplete';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
