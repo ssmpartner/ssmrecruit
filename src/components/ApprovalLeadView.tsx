@@ -96,11 +96,12 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
     if (!selectedLead) return;
     setAssessmentLoading(true);
     (async () => {
-      const [assessRes, insRes, docsRes, wizRes] = await Promise.all([
+      const [assessRes, insRes, docsRes, wizRes, persRes] = await Promise.all([
         supabase.from('assessment_results').select('*').eq('lead_id', selectedLead.id).order('completed_at', { ascending: false }).limit(1),
         supabase.from('insights_requests').select('status').eq('lead_id', selectedLead.id).order('created_at', { ascending: false }).limit(1),
-        supabase.from('document_uploads').select('*').eq('lead_id', selectedLead.id),
+        supabase.from('document_uploads').select('id, file_name, file_type, file_size, file_path, uploaded_at').eq('lead_id', selectedLead.id),
         supabase.from('status_wizard_results').select('wizard_type, answers').eq('lead_id', selectedLead.id).order('created_at', { ascending: false }),
+        supabase.from('lead_personal_data').select('data, version, updated_at').eq('lead_id', selectedLead.id).maybeSingle(),
       ]);
       setAssessment(assessRes.data?.[0] as unknown as AssessmentData ?? null);
       setAssessmentLoading(false);
@@ -109,8 +110,17 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
       setDocumentUploads(docsRes.data ?? []);
       const ctrlResult = wizRes.data?.find((w: any) => w.wizard_type === 'controlling_approval');
       setControllingDecision(ctrlResult ? 'Freigegeben' : (isGeschaeftsleitung || isHR ? 'Freigegeben (auto)' : '—'));
+      const prow = persRes.data as { data?: PersonnelData; version?: number; updated_at?: string } | null;
+      if (prow && (prow.version ?? 0) > 0) {
+        setPersonnelComplete(Object.keys(validatePersonnel(prow.data ?? {})).length === 0);
+        setPersonnelMeta({ version: prow.version ?? 0, updated_at: prow.updated_at ?? null });
+      } else {
+        setPersonnelComplete(false);
+        setPersonnelMeta(null);
+      }
     })();
   }, [selectedLead?.id]);
+
 
   useEffect(() => {
     if (!selectedLead?.position) { setCareerPlan(null); return; }
