@@ -272,7 +272,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
               controllingAction === 'selektionieren' ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
             <CheckCircle2 className={cn("h-5 w-5 mb-1", controllingAction === 'selektionieren' ? 'text-primary' : 'text-muted-foreground')} />
             <p className="text-sm font-semibold">Selektionieren</p>
-            <p className="text-[10px] text-muted-foreground">Weiter an Geschäftsleitung</p>
+            <p className="text-[10px] text-muted-foreground">Status → Controlling Approved</p>
           </button>
           <button type="button" onClick={() => setControllingAction('ablehnen')}
             className={cn("rounded-lg border-2 p-3 text-left transition-all",
