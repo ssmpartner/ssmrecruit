@@ -147,8 +147,14 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (data) setLeadSources(data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, color: r.color || '#6B7280', sortOrder: r.sort_order })));
   }, []);
 
-  // Fetch all rows from a table, paginating past the 1000-row default limit
-  const fetchAll = useCallback(async (table: 'leads' | 'activities' | 'appointments', orderCol = 'created_at', ascending = false) => {
+  // Fetch all rows from a table, paginating past the 1000-row default limit.
+  // Optional onPage callback lets callers stream pages into state for progressive rendering.
+  const fetchAll = useCallback(async (
+    table: 'leads' | 'activities' | 'appointments',
+    orderCol = 'created_at',
+    ascending = false,
+    onPage?: (pageRows: any[]) => void,
+  ) => {
     const PAGE = 1000;
     let page = 0;
     let allRows: any[] = [];
@@ -161,11 +167,13 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         .range(page * PAGE, (page + 1) * PAGE - 1);
       if (error || !data || data.length === 0) { done = true; break; }
       allRows = allRows.concat(data);
+      if (onPage) onPage(data);
       if (data.length < PAGE) done = true;
       page++;
     }
     return allRows;
   }, []);
+
 
   // Load all data from Supabase on mount — independent setters so UI can paint as soon as the
   // first/critical queries (leads, agencies, employees) resolve, without waiting on heavy
@@ -174,11 +182,22 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     // Priority: leads + agencies + employees + sources → unblocks Dashboard, Leads list, Analytics
-    fetchAll('leads', 'created_at', false).then(rows => {
-      if (!cancelled && rows) setLeads(rows.map(dbToLead));
+    // Stream leads into state page-by-page so the first 1000 rows render immediately.
+    fetchAll('leads', 'created_at', false, (pageRows) => {
+      if (cancelled) return;
+      setLeads(prev => {
+        const mapped = pageRows.map(dbToLead);
+        // De-dupe by id in case realtime already inserted something
+        const ids = new Set(prev.map(l => l.id));
+        const fresh = mapped.filter(l => !ids.has(l.id));
+        return prev.length === 0 ? mapped : [...prev, ...fresh];
+      });
+      // Flip loading off as soon as we have *any* leads – Dashboard can paint.
+      setLoading(false);
     }).catch(err => console.error('Error loading leads:', err)).finally(() => {
       if (!cancelled) setLoading(false);
     });
+
 
     supabase.from('agencies').select('*').then(({ data }) => {
       if (!cancelled && data) setAgencies(data.map(dbToAgency));
