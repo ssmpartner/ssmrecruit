@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { ExternalLink, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
-const SSM_PORTAL_URL = 'https://ssmpartner.ch/portal';
+const SSM_PORTAL_LOGIN_URL = 'https://ssmpartner.ch/login';
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -17,6 +17,14 @@ export default function Login() {
     hostname.includes('lovable.app') ||
     hostname === 'localhost' ||
     hostname === '127.0.0.1';
+
+  // In Produktion direkt zum zentralen SSM-Portal-Login weiterleiten —
+  // keine Zwischenseite mehr anzeigen.
+  useEffect(() => {
+    if (!isPreview) {
+      window.location.replace(SSM_PORTAL_LOGIN_URL);
+    }
+  }, [isPreview]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,17 +95,11 @@ export default function Login() {
               </p>
             </form>
           ) : (
-            <div className="text-center space-y-5">
+            <div className="text-center space-y-3">
+              <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
               <p className="text-sm text-muted-foreground">
-                Die Anmeldung erfolgt zentral über das SSM Partner Portal. Klicken Sie auf den Button, um sich anzumelden.
+                Weiterleitung zum SSM Partner Portal…
               </p>
-              <a
-                href={SSM_PORTAL_URL}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Zum SSM Portal
-              </a>
             </div>
           )}
         </div>
