@@ -4,9 +4,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.53.0';
+const APP_VERSION = '2.54.0';
 
 const versionHistory = [
+  { version: '2.54.0', date: '10.06.2026', changes: [
+    'HR-Rolle: Leads sind jetzt korrekt sichtbar (Cristina-Bug behoben) – HR sieht alle Leads ab «Bereit für Controlling» bis Onboarding-Abschluss in ihrer Queue',
+    'HR-Rolle «Personalien»: Volle Einsicht in alle eingereichten Angaben (Personalien, Zivilstand, Lohn, Kinder usw.) im Read-only-Modus',
+    'HR-Rolle «Personalien»: Neue Aktionen «PDF erstellen» (druckfertiges Dokument) und «CSV exportieren» (strukturierter Export aller Felder inkl. Kinder)',
+    'HR-Rolle «Dokumente»: Einzelne Dokumente herunterladen oder alle Dokumente eines Leads gebündelt als ZIP-Archiv exportieren',
+    'HR-Entscheidung: Neue direkte Aktionsbuttons im Approval-View – «Eingestellt bestätigen» (mit Bestätigungs-Dialog) und «Auf Pendent setzen» (mit schriftlicher Begründung)',
+    'Neuer Lead-Status «HR Pendent (Unterlagen)»: HR kann einen Lead bei fehlenden Unterlagen mit Begründung an den zuständigen Mitarbeiter zurückgeben – der Mitarbeiter sieht ein Banner mit dem Grund und kann nach Nachreichung mit einem Klick «Zurück an HR senden», ohne dass Controlling/GL den Prozess erneut durchlaufen müssen',
+    'Geschäftsleitung Multi-Approval: Sobald alle GL-Mitglieder freigegeben haben, springt der Lead-Status automatisch direkt auf «HR-Bearbeitung» (statt zwischenzeitlich auf «Management Approved» zu verharren)',
+    'Approval-Pipeline-Panel: Korrekte Anzeige aller Stufen inkl. neuem amber Status «Pendent (Nachreichung)» für die HR-Stufe – «Hängig»-Anzeigen verschwinden, sobald alle Freigaben vorliegen',
+    'RLS-Policies erweitert: HR darf nun Status auf «hr_pending», «hired» und «rejected» setzen; Geschäftsleitung darf «hr_processing» schreiben',
+    'Aufräumen: Test-Benutzer «Test Controlling» und «Test HR» aus dem System entfernt',
+  ]},
   { version: '2.53.0', date: '03.06.2026', changes: [
     'Bewerbungsformular: Hochgeladene Dokumente (Lebenslauf, Motivationsschreiben, Beilagen) erscheinen jetzt automatisch im Lead-Detail unter «Dokumente» mit korrektem Dokumenttyp (CV / Motivationsschreiben / Sonstiges)',
     'Application-Webhook: Spiegelt Bewerbungs-Uploads in den lead-documents-Bucket und legt automatisch document_uploads-Einträge an – kein manueller Re-Upload mehr nötig',
