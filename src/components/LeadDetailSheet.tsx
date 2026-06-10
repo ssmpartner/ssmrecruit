@@ -846,6 +846,34 @@ export default function LeadDetailSheet() {
                     {/* Personalien Tab */}
                     {rightTab === 'personnel' && selectedLead && (
                       <div className="space-y-3">
+                        {selectedLead.status === 'hr_pending' && (() => {
+                          const pendingNote = activities
+                            .filter(a => a.leadId === selectedLead.id && a.type === 'note' && a.description.startsWith('HR-Pendent:'))
+                            .sort((a,b) => (b.timestamp || '').localeCompare(a.timestamp || ''))[0];
+                          const reasonText = pendingNote?.description.replace(/^HR-Pendent:\s*Nachreichung erforderlich\s*–\s*/i, '').replace(/^HR-Pendent:\s*/i, '') || 'Bitte fehlende Unterlagen nachreichen.';
+                          return (
+                            <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-4 space-y-3">
+                              <div className="flex items-start gap-2">
+                                <div className="h-7 w-7 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">
+                                  <span className="text-amber-700 text-sm font-bold">!</span>
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm font-semibold text-amber-900">HR Pendent – Nachreichung erforderlich</p>
+                                  <p className="text-xs text-amber-800 mt-1 whitespace-pre-wrap">{reasonText}</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={async () => {
+                                  await updateLead(selectedLead.id, { status: 'hr_processing' });
+                                  await addActivity(selectedLead.id, 'status_change', 'Unterlagen nachgereicht – zurück an HR zur Prüfung.');
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-md bg-amber-600 text-white px-3 py-1.5 text-sm font-medium hover:bg-amber-700"
+                              >
+                                Zurück an HR senden
+                              </button>
+                            </div>
+                          );
+                        })()}
                         <LeadPersonnelSection leadId={selectedLead.id} />
                       </div>
                     )}
