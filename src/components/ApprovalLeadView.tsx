@@ -674,46 +674,112 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {documentUploads.map((doc: any) => (
-                      <div key={doc.id} className="flex items-center justify-between rounded-lg border p-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <FileText className="h-4 w-4 text-blue-600 shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium truncate">{doc.file_name}</p>
-                            <p className="text-xs text-muted-foreground">{doc.file_type} • {(doc.file_size / 1024).toFixed(0)} KB • {new Date(doc.uploaded_at).toLocaleDateString('de-CH')}</p>
+                    {documentUploads.map((doc: any) => {
+                      const isInsightR4 = (doc.file_type || '').toLowerCase() === 'insight_r4'
+                        || /insight.*r4/i.test(doc.file_name || '');
+                      const canPreview = !!doc.file_path && isPreviewable(doc.file_name || '');
+                      return (
+                        <div key={doc.id} className={cn(
+                          "flex items-center justify-between rounded-lg border p-3",
+                          isInsightR4 && "border-violet-300 bg-violet-50 dark:bg-violet-950/30 dark:border-violet-800",
+                        )}>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <FileText className={cn("h-4 w-4 shrink-0", isInsightR4 ? "text-violet-600" : "text-blue-600")} />
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium truncate flex items-center gap-2">
+                                {doc.file_name}
+                                {isInsightR4 && <span className="rounded-full bg-violet-100 text-violet-700 px-2 py-0.5 text-[10px] font-semibold border border-violet-200">Insight R4</span>}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{doc.file_type} • {(doc.file_size / 1024).toFixed(0)} KB • {new Date(doc.uploaded_at).toLocaleDateString('de-CH')}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {canPreview && (
+                              <button onClick={() => previewDocument(doc)}
+                                className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted">
+                                <Eye className="h-3.5 w-3.5" /> Vorschau
+                              </button>
+                            )}
+                            <span className="text-xs text-emerald-600 font-medium flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /></span>
                           </div>
                         </div>
-                        <span className="text-xs text-emerald-600 font-medium flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /> Vorhanden</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
             </TabsContent>
 
+            {/* ─── TAB: Personalien (nur Status-Anzeige) ─── */}
+            <TabsContent value="personnel" className="flex-1 overflow-y-auto p-5 mt-0">
+              <div className="max-w-3xl mx-auto space-y-4">
+                <h3 className="text-sm font-semibold flex items-center gap-2"><UserSquare2 className="h-4 w-4 text-primary" /> Personalien (Personalblatt)</h3>
+                <div className={cn(
+                  "rounded-xl border p-5 flex items-center gap-4",
+                  personnelComplete ? "border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30" : "border-amber-200 bg-amber-50 dark:bg-amber-950/30",
+                )}>
+                  {personnelComplete
+                    ? <CheckCircle2 className="h-8 w-8 text-emerald-600 shrink-0" />
+                    : <AlertTriangle className="h-8 w-8 text-amber-600 shrink-0" />}
+                  <div className="min-w-0">
+                    <p className={cn("text-base font-bold", personnelComplete ? "text-emerald-700" : "text-amber-700")}>
+                      {personnelComplete ? 'Personalien vollständig eingereicht' : 'Personalien unvollständig'}
+                    </p>
+                    {personnelMeta
+                      ? <p className="text-xs text-muted-foreground mt-0.5">Version {personnelMeta.version} • Aktualisiert {personnelMeta.updated_at ? new Date(personnelMeta.updated_at).toLocaleString('de-CH') : '—'}</p>
+                      : <p className="text-xs text-muted-foreground mt-0.5">Es wurden noch keine Personalien erfasst.</p>}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Aus Datenschutzgründen werden die detaillierten Personalien nicht in der Controlling-Ansicht angezeigt.
+                </p>
+              </div>
+            </TabsContent>
 
             {/* ─── TAB: Verlauf ─── */}
-            {approvalActivities.length > 0 && (
-              <TabsContent value="history" className="flex-1 overflow-y-auto p-5 mt-0">
-                <div className="max-w-3xl mx-auto space-y-2">
-                  <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Approval-Verlauf</h3>
-                  {approvalActivities.map(act => (
-                    <div key={act.id} className="flex items-start gap-2.5 rounded-lg bg-muted/30 p-3 border">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm">{act.description}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{act.user} • {new Date(act.timestamp).toLocaleString('de-CH')}</p>
-                      </div>
+            <TabsContent value="history" className="flex-1 overflow-y-auto p-5 mt-0">
+              <div className="max-w-3xl mx-auto space-y-2">
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Aktivitäten-Verlauf</h3>
+                {allLeadActivities.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-8 text-center">Keine Aktivitäten vorhanden</p>
+                ) : allLeadActivities.map(act => (
+                  <div key={act.id} className="flex items-start gap-2.5 rounded-lg bg-muted/30 p-3 border">
+                    <Clock className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm">{act.description}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        <span className="capitalize">{act.type.replace('_', ' ')}</span> • {act.user} • {new Date(act.timestamp).toLocaleString('de-CH')}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </TabsContent>
-            )}
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
       </div>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={!!previewDoc} onOpenChange={(o) => !o && closePreview()}>
+        <DialogContent className="max-w-5xl h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-base truncate">{previewDoc?.file_name}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 flex items-center justify-center overflow-hidden bg-muted/30 rounded">
+            {previewLoading && <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />}
+            {!previewLoading && previewUrl && previewDoc && (
+              previewDoc.file_name.toLowerCase().endsWith('.pdf') ? (
+                <iframe src={previewUrl} className="w-full h-full rounded border bg-white" title={previewDoc.file_name} />
+              ) : (
+                <img src={previewUrl} alt={previewDoc.file_name} className="max-w-full max-h-full rounded shadow-lg object-contain" />
+              )
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <ApprovalWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} wizardType={wizardType} leadId={selectedLead.id} leadName={selectedLead.name} />
     </>
   );
 }
+
