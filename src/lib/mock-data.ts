@@ -246,6 +246,7 @@ export const statusConfig: Record<LeadStatus, { label: string; color: string }> 
   management_review: { label: 'Management Review', color: 'bg-purple-50 text-purple-700 border border-purple-200' },
   management_approved: { label: 'Management Approved', color: 'bg-purple-100 text-purple-800 border border-purple-300' },
   hr_processing: { label: 'HR-Bearbeitung', color: 'bg-teal-50 text-teal-700 border border-teal-200' },
+  hr_pending: { label: 'HR Pendent (Unterlagen)', color: 'bg-amber-50 text-amber-800 border border-amber-300' },
   hired: { label: 'Eingestellt', color: 'bg-green-50 text-green-700 border border-green-200' },
   rejected: { label: 'Abgelehnt', color: 'bg-red-50 text-red-700 border border-red-200' },
 };
