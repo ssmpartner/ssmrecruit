@@ -95,17 +95,11 @@ export default function Login() {
               </p>
             </form>
           ) : (
-            <div className="text-center space-y-5">
+            <div className="text-center space-y-3">
+              <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
               <p className="text-sm text-muted-foreground">
-                Die Anmeldung erfolgt zentral über das SSM Partner Portal. Klicken Sie auf den Button, um sich anzumelden.
+                Weiterleitung zum SSM Partner Portal…
               </p>
-              <a
-                href={SSM_PORTAL_URL}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Zum SSM Portal
-              </a>
             </div>
           )}
         </div>
