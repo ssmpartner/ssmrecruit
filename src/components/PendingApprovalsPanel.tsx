@@ -332,6 +332,15 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
                     <p className="text-[10px] text-red-700 flex items-center gap-1"><Clock className="h-2.5 w-2.5" /> Ausstehend</p>
                   )}
                 </div>
+                {isSuperadmin && dec && (
+                  <button
+                    onClick={() => openReset({ kind: 'gl', userId: u.user_id, name: u.display_name || 'Unbenannt' })}
+                    className="shrink-0 rounded-md p-1 text-red-600 hover:bg-red-100"
+                    title="Entscheidung zurücksetzen"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
             );
           })}
