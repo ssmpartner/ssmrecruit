@@ -124,6 +124,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
   const hrActive = leadStatus === 'hr_processing';
   const hrPending = leadStatus === 'hr_pending';
   const hrDone = leadStatus === 'hired';
+  const glSplit = mgmtApprovals.some(a => a.decision === 'approved') && mgmtApprovals.some(a => a.decision === 'rejected');
 
   return (
     <div className="rounded-xl border bg-card p-4 space-y-4">
