@@ -84,6 +84,40 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
   const [hrUsers, setHrUsers] = useState<RoleUser[]>([]);
   const [controllingApprover, setControllingApprover] = useState<string | null>(null);
   const [mgmtApprovals, setMgmtApprovals] = useState<MgmtApproval[]>([]);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetReason, setResetReason] = useState('');
+  const [resetting, setResetting] = useState(false);
+  const { isSuperadmin, user } = useAuth();
+  const { updateLead, addActivity } = useLeads();
+  const { toast } = useToast();
+
+  async function handleResetApprovals() {
+    if (!isSuperadmin) return;
+    const reason = resetReason.trim();
+    if (reason.length < 5) return;
+    setResetting(true);
+    try {
+      const [delMgmt, delWiz] = await Promise.all([
+        supabase.from('lead_management_approvals').delete().eq('lead_id', leadId),
+        supabase.from('status_wizard_results').delete().eq('lead_id', leadId).eq('wizard_type', 'controlling_approval'),
+      ]);
+      if (delMgmt.error) throw delMgmt.error;
+      if (delWiz.error) throw delWiz.error;
+      await updateLead(leadId, { status: 'ready_for_controlling' } as any);
+      const actor = (user?.user_metadata as any)?.display_name || user?.email || 'Superadmin';
+      await addActivity(leadId, 'note', `🔄 Freigaben zurückgesetzt durch Superadmin (${actor}) – Begründung: ${reason}`);
+      await addActivity(leadId, 'status_change', `Status zurückgesetzt auf "Bereit für Controlling" (Superadmin-Reset).`);
+      toast({ title: 'Freigaben zurückgesetzt', description: 'Controlling- und Geschäftsleitungs-Freigaben wurden entfernt.' });
+      setResetOpen(false);
+      setResetReason('');
+      setReloadKey(k => k + 1);
+    } catch (e: any) {
+      toast({ title: 'Fehler', description: e?.message ?? 'Reset fehlgeschlagen.', variant: 'destructive' });
+    } finally {
+      setResetting(false);
+    }
+  }
 
   useEffect(() => {
     setLoading(true);
