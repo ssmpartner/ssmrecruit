@@ -331,6 +331,54 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
         </div>
       </div>
 
+      {isSuperadmin && (mgmtApprovals.length > 0 || controllingApprover) && (
+        <div className="rounded-lg border-2 border-dashed border-red-200 bg-red-50/30 p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2 min-w-0">
+              <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-red-800">Superadmin: Freigaben zurücksetzen</p>
+                <p className="text-[11px] text-red-700/80">
+                  Entfernt Controlling- und Geschäftsleitungs-Freigaben und setzt den Lead auf "Bereit für Controlling". Aktion wird in der Aktivität protokolliert.
+                </p>
+              </div>
+            </div>
+            <Button size="sm" variant="outline" className="border-red-300 text-red-700 hover:bg-red-100 shrink-0"
+              onClick={() => { setResetReason(''); setResetOpen(true); }}>
+              <RotateCcw className="h-3.5 w-3.5" /> Zurücksetzen
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Freigaben zurücksetzen</DialogTitle>
+            <DialogDescription>
+              Diese Aktion löscht alle Controlling- und Geschäftsleitungs-Freigaben für diesen Lead
+              und setzt den Status zurück auf <strong>"Bereit für Controlling"</strong>. Die Aktion
+              wird mit deinem Namen und der Begründung in der Aktivität protokolliert.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={resetReason}
+            onChange={(e) => setResetReason(e.target.value)}
+            placeholder="Begründung (z. B. Falsche Freigabe, neue Unterlagen, Re-Evaluation nötig...)"
+            rows={4}
+            maxLength={1000}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetOpen(false)} disabled={resetting}>Abbrechen</Button>
+            <Button className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={resetting || resetReason.trim().length < 5}
+              onClick={handleResetApprovals}>
+              {resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+              Freigaben zurücksetzen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
