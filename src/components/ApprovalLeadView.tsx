@@ -63,6 +63,7 @@ const recConfig: Record<string, { label: string; color: string; bg: string }> = 
 export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   const { selectedLead, setSelectedLead, activities, leads, employees, agencies } = useLeads();
   const { isControlling, isGeschaeftsleitung, isHR } = useAuth();
+  const { toast } = useToast();
 
   const [wizardOpen, setWizardOpen] = useState(false);
   const [assessment, setAssessment] = useState<AssessmentData | null>(null);
@@ -73,6 +74,12 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   const [careerPlan, setCareerPlan] = useState<CareerPlan | null>(null);
   const [documentUploads, setDocumentUploads] = useState<any[]>([]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [personnelComplete, setPersonnelComplete] = useState<boolean | null>(null);
+  const [personnelMeta, setPersonnelMeta] = useState<{ version: number; updated_at: string | null } | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<any | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
 
   const wizardType: ApprovalWizardType = isControlling ? 'controlling' : isGeschaeftsleitung ? 'management' : 'hr';
 
