@@ -1084,7 +1084,56 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* HR: Komplett ablehnen */}
+      <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Lead komplett ablehnen</DialogTitle>
+            <DialogDescription>
+              Diese Aktion setzt den Status final auf <strong>"Abgelehnt"</strong>. Der Mitarbeiter
+              sieht den Lead anschliessend mit dem Status "Abgelehnt". Bitte geben Sie eine
+              Begründung an (insb. nach geteilter GL-Entscheidung).
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder="z. B. Nach Rücksprache mit beiden GL-Mitgliedern keine Einstellung – Begründung..."
+            rows={5}
+            maxLength={1000}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectOpen(false)} disabled={hrActionLoading}>Abbrechen</Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={hrActionLoading || rejectReason.trim().length < 5}
+              onClick={async () => {
+                if (!selectedLead) return;
+                const reason = rejectReason.trim();
+                setHrActionLoading(true);
+                try {
+                  await updateLead(selectedLead.id, { status: 'rejected' } as any);
+                  await addActivity(selectedLead.id, 'note', `HR-Ablehnung – ${reason}`);
+                  await addActivity(selectedLead.id, 'status_change', `Status auf "Abgelehnt" gesetzt durch HR.`);
+                  toast({ title: 'Lead abgelehnt', description: 'Der Lead wurde final abgelehnt.' });
+                  setRejectOpen(false);
+                  setRejectReason('');
+                } catch (e: any) {
+                  toast({ title: 'Fehler', description: e?.message ?? 'Status konnte nicht gesetzt werden.', variant: 'destructive' });
+                } finally {
+                  setHrActionLoading(false);
+                }
+              }}
+            >
+              {hrActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+              Endgültig ablehnen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
+
   );
 }
 
