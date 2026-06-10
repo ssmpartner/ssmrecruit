@@ -28,6 +28,8 @@ export interface ActivityEntry {
 
 export interface LeadsContextType {
   leads: Lead[];
+  allLeads: Lead[];
+
   employees: Employee[];
   agencies: Agency[];
   activities: ActivityEntry[];
