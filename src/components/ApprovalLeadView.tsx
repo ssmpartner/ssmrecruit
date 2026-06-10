@@ -12,7 +12,8 @@ import ManagementApprovalPanel from './ManagementApprovalPanel';
 import PendingApprovalsPanel from './PendingApprovalsPanel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
+import PersonnelFormFields, { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
+import JSZip from 'jszip';
 import { generateAssessmentPdf, assessmentToPdfData, loadLetterhead } from '@/lib/assessment-pdf';
 import {
   User, MapPin, Mail, Phone, Briefcase, Brain, FileText, BarChart3,
