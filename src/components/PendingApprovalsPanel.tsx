@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, XCircle, Clock, Loader2, ShieldCheck, ClipboardCheck } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Loader2, ShieldCheck, ClipboardCheck, RotateCcw, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useLeads } from '@/context/useLeads';
+import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 
 interface RoleUser {
   user_id: string;
@@ -78,6 +84,40 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
   const [hrUsers, setHrUsers] = useState<RoleUser[]>([]);
   const [controllingApprover, setControllingApprover] = useState<string | null>(null);
   const [mgmtApprovals, setMgmtApprovals] = useState<MgmtApproval[]>([]);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetReason, setResetReason] = useState('');
+  const [resetting, setResetting] = useState(false);
+  const { isSuperadmin, user } = useAuth();
+  const { updateLead, addActivity } = useLeads();
+  const { toast } = useToast();
+
+  async function handleResetApprovals() {
+    if (!isSuperadmin) return;
+    const reason = resetReason.trim();
+    if (reason.length < 5) return;
+    setResetting(true);
+    try {
+      const [delMgmt, delWiz] = await Promise.all([
+        supabase.from('lead_management_approvals').delete().eq('lead_id', leadId),
+        supabase.from('status_wizard_results').delete().eq('lead_id', leadId).eq('wizard_type', 'controlling_approval'),
+      ]);
+      if (delMgmt.error) throw delMgmt.error;
+      if (delWiz.error) throw delWiz.error;
+      await updateLead(leadId, { status: 'ready_for_controlling' } as any);
+      const actor = (user?.user_metadata as any)?.display_name || user?.email || 'Superadmin';
+      await addActivity(leadId, 'note', `🔄 Freigaben zurückgesetzt durch Superadmin (${actor}) – Begründung: ${reason}`);
+      await addActivity(leadId, 'status_change', `Status zurückgesetzt auf "Bereit für Controlling" (Superadmin-Reset).`);
+      toast({ title: 'Freigaben zurückgesetzt', description: 'Controlling- und Geschäftsleitungs-Freigaben wurden entfernt.' });
+      setResetOpen(false);
+      setResetReason('');
+      setReloadKey(k => k + 1);
+    } catch (e: any) {
+      toast({ title: 'Fehler', description: e?.message ?? 'Reset fehlgeschlagen.', variant: 'destructive' });
+    } finally {
+      setResetting(false);
+    }
+  }
 
   useEffect(() => {
     setLoading(true);
@@ -98,7 +138,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
       setMgmtApprovals((mgmtRes.data as MgmtApproval[]) || []);
       setLoading(false);
     })();
-  }, [leadId]);
+  }, [leadId, reloadKey]);
 
   if (loading) {
     return (
@@ -291,6 +331,54 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
         </div>
       </div>
 
+      {isSuperadmin && (mgmtApprovals.length > 0 || controllingApprover) && (
+        <div className="rounded-lg border-2 border-dashed border-red-200 bg-red-50/30 p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2 min-w-0">
+              <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-red-800">Superadmin: Freigaben zurücksetzen</p>
+                <p className="text-[11px] text-red-700/80">
+                  Entfernt Controlling- und Geschäftsleitungs-Freigaben und setzt den Lead auf "Bereit für Controlling". Aktion wird in der Aktivität protokolliert.
+                </p>
+              </div>
+            </div>
+            <Button size="sm" variant="outline" className="border-red-300 text-red-700 hover:bg-red-100 shrink-0"
+              onClick={() => { setResetReason(''); setResetOpen(true); }}>
+              <RotateCcw className="h-3.5 w-3.5" /> Zurücksetzen
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Freigaben zurücksetzen</DialogTitle>
+            <DialogDescription>
+              Diese Aktion löscht alle Controlling- und Geschäftsleitungs-Freigaben für diesen Lead
+              und setzt den Status zurück auf <strong>"Bereit für Controlling"</strong>. Die Aktion
+              wird mit deinem Namen und der Begründung in der Aktivität protokolliert.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={resetReason}
+            onChange={(e) => setResetReason(e.target.value)}
+            placeholder="Begründung (z. B. Falsche Freigabe, neue Unterlagen, Re-Evaluation nötig...)"
+            rows={4}
+            maxLength={1000}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetOpen(false)} disabled={resetting}>Abbrechen</Button>
+            <Button className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={resetting || resetReason.trim().length < 5}
+              onClick={handleResetApprovals}>
+              {resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+              Freigaben zurücksetzen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
