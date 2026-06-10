@@ -88,29 +88,77 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
   const [resetOpen, setResetOpen] = useState(false);
   const [resetReason, setResetReason] = useState('');
   const [resetting, setResetting] = useState(false);
+  const [resetTarget, setResetTarget] = useState<
+    | { kind: 'controlling'; userId: string; name: string }
+    | { kind: 'gl'; userId: string; name: string }
+    | null
+  >(null);
   const { isSuperadmin, user } = useAuth();
   const { updateLead, addActivity } = useLeads();
   const { toast } = useToast();
 
+  function openReset(target: NonNullable<typeof resetTarget>) {
+    setResetTarget(target);
+    setResetReason('');
+    setResetOpen(true);
+  }
+
   async function handleResetApprovals() {
-    if (!isSuperadmin) return;
+    if (!isSuperadmin || !resetTarget) return;
     const reason = resetReason.trim();
     if (reason.length < 5) return;
     setResetting(true);
     try {
-      const [delMgmt, delWiz] = await Promise.all([
-        supabase.from('lead_management_approvals').delete().eq('lead_id', leadId),
-        supabase.from('status_wizard_results').delete().eq('lead_id', leadId).eq('wizard_type', 'controlling_approval'),
-      ]);
-      if (delMgmt.error) throw delMgmt.error;
-      if (delWiz.error) throw delWiz.error;
-      await updateLead(leadId, { status: 'ready_for_controlling' } as any);
       const actor = (user?.user_metadata as any)?.display_name || user?.email || 'Superadmin';
-      await addActivity(leadId, 'note', `🔄 Freigaben zurückgesetzt durch Superadmin (${actor}) – Begründung: ${reason}`);
-      await addActivity(leadId, 'status_change', `Status zurückgesetzt auf "Bereit für Controlling" (Superadmin-Reset).`);
-      toast({ title: 'Freigaben zurückgesetzt', description: 'Controlling- und Geschäftsleitungs-Freigaben wurden entfernt.' });
+
+      if (resetTarget.kind === 'controlling') {
+        const { error } = await supabase
+          .from('status_wizard_results')
+          .delete()
+          .eq('lead_id', leadId)
+          .eq('wizard_type', 'controlling_approval');
+        if (error) throw error;
+        // Controlling reset → ganzen Approval-Flow neu starten (alle GL-Entscheidungen ebenfalls weg)
+        const { error: e2 } = await supabase
+          .from('lead_management_approvals')
+          .delete()
+          .eq('lead_id', leadId);
+        if (e2) throw e2;
+        await updateLead(leadId, { status: 'ready_for_controlling' } as any);
+        await addActivity(leadId, 'note',
+          `🔄 Controlling-Freigabe von ${resetTarget.name} zurückgesetzt durch Superadmin (${actor}) – Begründung: ${reason}. Alle GL-Entscheidungen wurden ebenfalls entfernt, der Lead startet erneut bei Controlling.`);
+        await addActivity(leadId, 'status_change', `Status zurückgesetzt auf "Bereit für Controlling" (Superadmin-Reset Controlling).`);
+        toast({ title: 'Controlling-Freigabe zurückgesetzt', description: `Freigabe von ${resetTarget.name} entfernt.` });
+      } else {
+        // GL: nur diese eine Entscheidung entfernen
+        const { error } = await supabase
+          .from('lead_management_approvals')
+          .delete()
+          .eq('lead_id', leadId)
+          .eq('user_id', resetTarget.userId);
+        if (error) throw error;
+
+        // Status neu bestimmen
+        const remaining = mgmtApprovals.filter(a => a.user_id !== resetTarget.userId);
+        const stillRejected = remaining.some(a => a.decision === 'rejected');
+        const allApproved = glUsers.length > 0 && glUsers.every(u =>
+          u.user_id === resetTarget.userId ? false : remaining.find(a => a.user_id === u.user_id)?.decision === 'approved'
+        );
+        let newStatus: string;
+        if (allApproved && !stillRejected) newStatus = 'management_approved';
+        else if (remaining.length === 0) newStatus = 'controlling_approved';
+        else newStatus = 'management_review';
+
+        await updateLead(leadId, { status: newStatus } as any);
+        await addActivity(leadId, 'note',
+          `🔄 GL-Entscheidung von ${resetTarget.name} zurückgesetzt durch Superadmin (${actor}) – Begründung: ${reason}.`);
+        await addActivity(leadId, 'status_change', `GL-Freigabe für ${resetTarget.name} entfernt → Status: "${newStatus}".`);
+        toast({ title: 'GL-Entscheidung zurückgesetzt', description: `Entscheidung von ${resetTarget.name} entfernt.` });
+      }
+
       setResetOpen(false);
       setResetReason('');
+      setResetTarget(null);
       setReloadKey(k => k + 1);
     } catch (e: any) {
       toast({ title: 'Fehler', description: e?.message ?? 'Reset fehlgeschlagen.', variant: 'destructive' });
