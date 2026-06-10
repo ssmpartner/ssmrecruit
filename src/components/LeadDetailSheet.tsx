@@ -30,6 +30,7 @@ import LeadDocumentsTab from './LeadDocumentsTab';
 import LeadPersonnelSection from './LeadPersonnelSection';
 import LeadHiringReadiness from './LeadHiringReadiness';
 import ManagementApprovalPanel from './ManagementApprovalPanel';
+import PendingApprovalsPanel from './PendingApprovalsPanel';
 import AddressAutocomplete, { type AddressSuggestion } from './AddressAutocomplete';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
@@ -1064,7 +1065,15 @@ export default function LeadDetailSheet() {
 
                     {rightTab === 'status' && (
                       <div className="space-y-4">
-                        {/* Geschäftsleitung – Multi-Approval Panel (sichtbar ab Controlling Approved) */}
+                        {/* Freigabe-Pipeline (Controlling / GL / HR) – immer sichtbar sobald im Approval-Flow */}
+                        <PendingApprovalsPanel
+                          leadId={selectedLead.id}
+                          leadStatus={selectedLead.status}
+                          leadUpdatedAt={selectedLead.updatedAt}
+                          leadCreatedAt={selectedLead.createdAt}
+                        />
+
+                        {/* Geschäftsleitung – Multi-Approval Panel (Entscheidung treffen, nur in aktiver GL-Phase) */}
                         {(selectedLead.status === 'controlling_approved'
                           || selectedLead.status === 'management_review'
                           || selectedLead.status === 'management_approved') && (
