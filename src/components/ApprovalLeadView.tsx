@@ -218,6 +218,48 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
     return l.endsWith('.pdf') || l.endsWith('.jpg') || l.endsWith('.jpeg') || l.endsWith('.png') || l.endsWith('.gif') || l.endsWith('.webp') || l.endsWith('.svg');
   }
 
+  async function downloadDocument(doc: any) {
+    const { data, error } = await supabase.storage.from('lead-documents').download(doc.file_path);
+    if (error || !data) {
+      toast({ title: 'Download fehlgeschlagen', description: error?.message || 'Datei nicht verfügbar', variant: 'destructive' });
+      return;
+    }
+    const url = URL.createObjectURL(data);
+    const a = document.createElement('a');
+    a.href = url; a.download = doc.file_name || 'dokument';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function downloadAllDocuments() {
+    if (!documentUploads.length || !selectedLead) return;
+    setDownloadingAll(true);
+    try {
+      const zip = new JSZip();
+      const used = new Set<string>();
+      await Promise.all(documentUploads.map(async (doc: any) => {
+        const { data, error } = await supabase.storage.from('lead-documents').download(doc.file_path);
+        if (error || !data) return;
+        let name = doc.file_name || doc.file_path.split('/').pop() || 'datei';
+        let n = name; let i = 1;
+        while (used.has(n)) { const dot = name.lastIndexOf('.'); n = dot > 0 ? `${name.slice(0, dot)} (${i})${name.slice(dot)}` : `${name} (${i})`; i++; }
+        used.add(n);
+        zip.file(n, data);
+      }));
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Dokumente_${selectedLead.firstName || ''}_${selectedLead.lastName || selectedLead.id}.zip`.replace(/\s+/g, '_');
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      toast({ title: 'ZIP-Erstellung fehlgeschlagen', description: e?.message ?? String(e), variant: 'destructive' });
+    } finally {
+      setDownloadingAll(false);
+    }
+  }
+
 
   if (!selectedLead) return null;
 
