@@ -229,7 +229,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
                       {dec.comment && <span className="text-muted-foreground"> – {dec.comment}</span>}
                     </p>
                   ) : (
-                    <p className="text-[10px] text-amber-700 flex items-center gap-1"><Clock className="h-2.5 w-2.5" /> Ausstehend</p>
+                    <p className="text-[10px] text-red-700 flex items-center gap-1"><Clock className="h-2.5 w-2.5" /> Ausstehend</p>
                   )}
                 </div>
               </div>
