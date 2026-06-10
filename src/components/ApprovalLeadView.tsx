@@ -12,7 +12,8 @@ import ManagementApprovalPanel from './ManagementApprovalPanel';
 import PendingApprovalsPanel from './PendingApprovalsPanel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
+import PersonnelFormFields, { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
+import JSZip from 'jszip';
 import { generateAssessmentPdf, assessmentToPdfData, loadLetterhead } from '@/lib/assessment-pdf';
 import {
   User, MapPin, Mail, Phone, Briefcase, Brain, FileText, BarChart3,
@@ -78,6 +79,8 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [personnelComplete, setPersonnelComplete] = useState<boolean | null>(null);
   const [personnelMeta, setPersonnelMeta] = useState<{ version: number; updated_at: string | null } | null>(null);
+  const [personnelData, setPersonnelData] = useState<PersonnelData | null>(null);
+  const [downloadingAll, setDownloadingAll] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<any | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -143,9 +146,11 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
       if (prow && (prow.version ?? 0) > 0) {
         setPersonnelComplete(Object.keys(validatePersonnel(prow.data ?? {})).length === 0);
         setPersonnelMeta({ version: prow.version ?? 0, updated_at: prow.updated_at ?? null });
+        setPersonnelData(prow.data ?? null);
       } else {
         setPersonnelComplete(false);
         setPersonnelMeta(null);
+        setPersonnelData(null);
       }
     })();
   }, [selectedLead?.id]);
@@ -211,6 +216,48 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   function isPreviewable(fileName: string): boolean {
     const l = fileName.toLowerCase();
     return l.endsWith('.pdf') || l.endsWith('.jpg') || l.endsWith('.jpeg') || l.endsWith('.png') || l.endsWith('.gif') || l.endsWith('.webp') || l.endsWith('.svg');
+  }
+
+  async function downloadDocument(doc: any) {
+    const { data, error } = await supabase.storage.from('lead-documents').download(doc.file_path);
+    if (error || !data) {
+      toast({ title: 'Download fehlgeschlagen', description: error?.message || 'Datei nicht verfügbar', variant: 'destructive' });
+      return;
+    }
+    const url = URL.createObjectURL(data);
+    const a = document.createElement('a');
+    a.href = url; a.download = doc.file_name || 'dokument';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function downloadAllDocuments() {
+    if (!documentUploads.length || !selectedLead) return;
+    setDownloadingAll(true);
+    try {
+      const zip = new JSZip();
+      const used = new Set<string>();
+      await Promise.all(documentUploads.map(async (doc: any) => {
+        const { data, error } = await supabase.storage.from('lead-documents').download(doc.file_path);
+        if (error || !data) return;
+        let name = doc.file_name || doc.file_path.split('/').pop() || 'datei';
+        let n = name; let i = 1;
+        while (used.has(n)) { const dot = name.lastIndexOf('.'); n = dot > 0 ? `${name.slice(0, dot)} (${i})${name.slice(dot)}` : `${name} (${i})`; i++; }
+        used.add(n);
+        zip.file(n, data);
+      }));
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Dokumente_${(selectedLead.name || selectedLead.id).replace(/[^\w.-]+/g, '_')}.zip`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      toast({ title: 'ZIP-Erstellung fehlgeschlagen', description: e?.message ?? String(e), variant: 'destructive' });
+    } finally {
+      setDownloadingAll(false);
+    }
   }
 
 
@@ -730,7 +777,18 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
             {/* ─── TAB: Dokumente ─── */}
             <TabsContent value="documents" className="flex-1 overflow-y-auto p-5 mt-0">
               <div className="max-w-3xl mx-auto space-y-4">
-                <h3 className="text-sm font-semibold flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> Hochgeladene Dokumente</h3>
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-semibold flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> Hochgeladene Dokumente</h3>
+                  {isHR && documentUploads.length > 0 && (
+                    <button
+                      onClick={downloadAllDocuments}
+                      disabled={downloadingAll}
+                      className="inline-flex items-center gap-1.5 rounded-md border bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:opacity-90 disabled:opacity-50">
+                      {downloadingAll ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                      Alle als ZIP
+                    </button>
+                  )}
+                </div>
                 {documentUploads.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
@@ -764,6 +822,12 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                                 <Eye className="h-3.5 w-3.5" /> Vorschau
                               </button>
                             )}
+                            {isHR && (
+                              <button onClick={() => downloadDocument(doc)}
+                                className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted">
+                                <Download className="h-3.5 w-3.5" /> Download
+                              </button>
+                            )}
                             <span className="text-xs text-emerald-600 font-medium flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /></span>
                           </div>
                         </div>
@@ -774,7 +838,7 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
               </div>
             </TabsContent>
 
-            {/* ─── TAB: Personalien (nur Status-Anzeige) ─── */}
+            {/* ─── TAB: Personalien ─── */}
             <TabsContent value="personnel" className="flex-1 overflow-y-auto p-5 mt-0">
               <div className="max-w-3xl mx-auto space-y-4">
                 <h3 className="text-sm font-semibold flex items-center gap-2"><UserSquare2 className="h-4 w-4 text-primary" /> Personalien (Personalblatt)</h3>
@@ -794,9 +858,20 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                       : <p className="text-xs text-muted-foreground mt-0.5">Es wurden noch keine Personalien erfasst.</p>}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Aus Datenschutzgründen werden die detaillierten Personalien nicht in der Controlling-Ansicht angezeigt.
-                </p>
+
+                {isHR ? (
+                  personnelData ? (
+                    <div className="rounded-xl border bg-card p-4">
+                      <PersonnelFormFields data={personnelData} onChange={() => {}} disabled />
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Es wurden noch keine Personalien-Daten erfasst.</p>
+                  )
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Aus Datenschutzgründen werden die detaillierten Personalien nicht in dieser Ansicht angezeigt.
+                  </p>
+                )}
               </div>
             </TabsContent>
 
