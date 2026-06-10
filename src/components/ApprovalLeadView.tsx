@@ -8,6 +8,7 @@ import SourceBadge from './SourceBadge';
 import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardDialog';
 import PersonalityProfile from './PersonalityProfile';
 import LeadHiringReadiness from './LeadHiringReadiness';
+import ManagementApprovalPanel from './ManagementApprovalPanel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
