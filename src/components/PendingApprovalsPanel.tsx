@@ -245,6 +245,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
       <div className={cn(
         "rounded-lg border p-3",
         hrDone ? "bg-emerald-50/40 border-emerald-200"
+               : hrActive && glSplit ? "bg-amber-50/40 border-amber-300"
                : hrPending ? "bg-amber-50/40 border-amber-300"
                : hrActive ? "bg-red-50/40 border-red-200"
                : "bg-muted/30"
@@ -257,15 +258,25 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
           <span className={cn(
             "text-[11px] font-semibold rounded-full px-2 py-0.5 border",
             hrDone ? "bg-emerald-100 text-emerald-700 border-emerald-300"
+                   : hrActive && glSplit ? "bg-amber-100 text-amber-800 border-amber-300"
                    : hrPending ? "bg-amber-100 text-amber-800 border-amber-300"
                    : hrActive ? "bg-red-100 text-red-700 border-red-300"
                    : "bg-muted text-muted-foreground"
           )}>
-            {hrDone ? '✓ Eingestellt' : hrPending ? '⏳ Pendent (Nachreichung)' : hrActive ? '⏳ In Bearbeitung' : '— Wartet auf Geschäftsleitung'}
+            {hrDone ? '✓ Eingestellt'
+              : hrActive && glSplit ? '⚠️ GL geteilt – Klärung nötig'
+              : hrPending ? '⏳ Pendent (Nachreichung)'
+              : hrActive ? '⏳ In Bearbeitung'
+              : '— Wartet auf Geschäftsleitung'}
           </span>
         </div>
+        {hrActive && glSplit && (
+          <div className="mb-2 rounded-md bg-amber-100/70 border border-amber-300 px-2 py-1.5 text-[11px] text-amber-900">
+            <span className="font-semibold">Bitte kontaktiere beide Mitglieder der Geschäftsleitung,</span> um das weitere Vorgehen abzustimmen (Freigabe + Ablehnung liegen vor). HR kann anschliessend <em>Einstellen</em> oder <em>Ablehnen</em>.
+          </div>
+        )}
         {(hrActive || hrPending) && (
-          <p className={cn("text-[11px] mb-2 flex items-center gap-1", hrPending ? 'text-amber-800' : 'text-red-700')}>
+          <p className={cn("text-[11px] mb-2 flex items-center gap-1", (hrPending || glSplit) ? 'text-amber-800' : 'text-red-700')}>
             <Clock className="h-3 w-3" /> {hrPending ? 'Pendent seit' : 'Hängig seit'} {formatDuration(leadUpdatedAt)}
           </p>
         )}
