@@ -67,9 +67,14 @@ const recConfig: Record<string, { label: string; color: string; bg: string }> = 
 };
 
 export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
-  const { selectedLead, setSelectedLead, activities, leads, employees, agencies } = useLeads();
+  const { selectedLead, setSelectedLead, activities, leads, employees, agencies, updateLead, addActivity } = useLeads();
   const { isControlling, isGeschaeftsleitung, isHR, user } = useAuth();
   const { toast } = useToast();
+
+  const [hireConfirmOpen, setHireConfirmOpen] = useState(false);
+  const [pendingOpen, setPendingOpen] = useState(false);
+  const [pendingReason, setPendingReason] = useState('');
+  const [hrActionLoading, setHrActionLoading] = useState(false);
 
   const [wizardOpen, setWizardOpen] = useState(false);
   const [assessment, setAssessment] = useState<AssessmentData | null>(null);
