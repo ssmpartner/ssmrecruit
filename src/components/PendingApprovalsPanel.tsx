@@ -18,7 +18,22 @@ interface MgmtApproval {
 interface Props {
   leadId: string;
   leadStatus: string;
+  leadUpdatedAt?: string;
+  leadCreatedAt?: string;
 }
+
+function formatDuration(fromIso?: string): string {
+  if (!fromIso) return '';
+  const ms = Date.now() - new Date(fromIso).getTime();
+  if (Number.isNaN(ms) || ms < 0) return '';
+  const min = Math.floor(ms / 60000);
+  if (min < 60) return `${min} Min.`;
+  const hrs = Math.floor(min / 60);
+  if (hrs < 48) return `${hrs} Std.`;
+  const days = Math.floor(hrs / 24);
+  return `${days} Tag${days === 1 ? '' : 'e'}`;
+}
+
 
 const initials = (n?: string | null) =>
   (n || '?').split(/\s+/).map(s => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
@@ -56,7 +71,7 @@ function Avatar({ u, state }: { u: RoleUser; state: 'approved' | 'rejected' | 'p
   );
 }
 
-export default function PendingApprovalsPanel({ leadId, leadStatus }: Props) {
+export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedAt, leadCreatedAt }: Props) {
   const [loading, setLoading] = useState(true);
   const [controllingUsers, setControllingUsers] = useState<RoleUser[]>([]);
   const [glUsers, setGlUsers] = useState<RoleUser[]>([]);
@@ -117,7 +132,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus }: Props) {
       {/* Controlling */}
       <div className={cn(
         "rounded-lg border p-3",
-        ctrlDone ? "bg-emerald-50/40 border-emerald-200" : ctrlPending ? "bg-amber-50/40 border-amber-200" : "bg-muted/30"
+        ctrlDone ? "bg-emerald-50/40 border-emerald-200" : ctrlPending ? "bg-red-50/40 border-red-200" : "bg-muted/30"
       )}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -127,7 +142,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus }: Props) {
           <span className={cn(
             "text-[11px] font-semibold rounded-full px-2 py-0.5 border",
             ctrlDone ? "bg-emerald-100 text-emerald-700 border-emerald-300"
-                     : ctrlPending ? "bg-amber-100 text-amber-800 border-amber-300"
+                     : ctrlPending ? "bg-red-100 text-red-700 border-red-300"
                      : "bg-muted text-muted-foreground"
           )}>
             {ctrlDone ? '✓ Freigegeben' : ctrlPending ? '⏳ Hängig' : '—'}
@@ -146,6 +161,11 @@ export default function PendingApprovalsPanel({ leadId, leadStatus }: Props) {
             );
           })}
         </div>
+        {ctrlPending && (
+          <p className="text-[11px] text-red-700 mt-2 flex items-center gap-1">
+            <Clock className="h-3 w-3" /> Hängig seit {formatDuration(leadUpdatedAt || leadCreatedAt)}
+          </p>
+        )}
         {ctrlDone && controllingApprover && (
           <p className="text-[11px] text-emerald-700 mt-2">
             Freigegeben durch {controllingUsers.find(u => u.user_id === controllingApprover)?.display_name || '—'}
@@ -153,12 +173,13 @@ export default function PendingApprovalsPanel({ leadId, leadStatus }: Props) {
         )}
       </div>
 
+
       {/* Geschäftsleitung */}
       <div className={cn(
         "rounded-lg border p-3",
         glDone ? "bg-emerald-50/40 border-emerald-200"
                : anyGlRejected ? "bg-red-50/40 border-red-200"
-               : glActive ? "bg-amber-50/40 border-amber-200"
+               : glActive ? "bg-red-50/40 border-red-200"
                : "bg-muted/30"
       )}>
         <div className="flex items-center justify-between mb-2">
@@ -173,12 +194,18 @@ export default function PendingApprovalsPanel({ leadId, leadStatus }: Props) {
             "text-[11px] font-semibold rounded-full px-2 py-0.5 border",
             glDone ? "bg-emerald-100 text-emerald-700 border-emerald-300"
                    : anyGlRejected ? "bg-red-100 text-red-700 border-red-300"
-                   : glActive ? "bg-amber-100 text-amber-800 border-amber-300"
+                   : glActive ? "bg-red-100 text-red-700 border-red-300"
                    : "bg-muted text-muted-foreground"
           )}>
-            {glDone ? '✓ Alle freigegeben' : anyGlRejected ? '✗ Abgelehnt' : glActive ? '⏳ Hängig' : '—'}
+            {glDone ? '✓ Alle freigegeben' : anyGlRejected ? '✗ Abgelehnt' : glActive ? '⏳ Hängig' : '— Wartet auf Controlling'}
           </span>
         </div>
+        {glActive && (
+          <p className="text-[11px] text-red-700 mb-2 flex items-center gap-1">
+            <Clock className="h-3 w-3" /> Hängig seit {formatDuration(leadUpdatedAt)}
+          </p>
+        )}
+
         <div className="space-y-1.5">
           {glUsers.length === 0 && <p className="text-xs text-muted-foreground italic">Keine GL-User</p>}
           {glUsers.map(u => {
@@ -202,7 +229,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus }: Props) {
                       {dec.comment && <span className="text-muted-foreground"> – {dec.comment}</span>}
                     </p>
                   ) : (
-                    <p className="text-[10px] text-amber-700 flex items-center gap-1"><Clock className="h-2.5 w-2.5" /> Ausstehend</p>
+                    <p className="text-[10px] text-red-700 flex items-center gap-1"><Clock className="h-2.5 w-2.5" /> Ausstehend</p>
                   )}
                 </div>
               </div>
@@ -215,7 +242,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus }: Props) {
       <div className={cn(
         "rounded-lg border p-3",
         hrDone ? "bg-emerald-50/40 border-emerald-200"
-               : hrActive ? "bg-teal-50/40 border-teal-200"
+               : hrActive ? "bg-red-50/40 border-red-200"
                : "bg-muted/30"
       )}>
         <div className="flex items-center justify-between mb-2">
@@ -226,12 +253,17 @@ export default function PendingApprovalsPanel({ leadId, leadStatus }: Props) {
           <span className={cn(
             "text-[11px] font-semibold rounded-full px-2 py-0.5 border",
             hrDone ? "bg-emerald-100 text-emerald-700 border-emerald-300"
-                   : hrActive ? "bg-teal-100 text-teal-800 border-teal-300"
+                   : hrActive ? "bg-red-100 text-red-700 border-red-300"
                    : "bg-muted text-muted-foreground"
           )}>
-            {hrDone ? '✓ Eingestellt' : hrActive ? '⏳ In Bearbeitung' : '—'}
+            {hrDone ? '✓ Eingestellt' : hrActive ? '⏳ In Bearbeitung' : '— Wartet auf Geschäftsleitung'}
           </span>
         </div>
+        {hrActive && (
+          <p className="text-[11px] text-red-700 mb-2 flex items-center gap-1">
+            <Clock className="h-3 w-3" /> Hängig seit {formatDuration(leadUpdatedAt)}
+          </p>
+        )}
         <div className="flex flex-wrap gap-1.5">
           {hrUsers.length === 0 && <p className="text-xs text-muted-foreground italic">Keine HR-User</p>}
           {hrUsers.map(u => (
@@ -242,6 +274,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus }: Props) {
           ))}
         </div>
       </div>
+
     </div>
   );
 }

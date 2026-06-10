@@ -100,15 +100,20 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
 
   const queueLeads = useMemo(() => {
     if (isGeschaeftsleitung) {
-      // GL sees both 'controlling_approved' (untouched) and 'management_review' (in progress),
-      // minus the ones this user already decided on.
+      // GL sees the whole approval pipeline up to their stage (read-only on ready_for_controlling)
       return leads.filter(l =>
         l.lifecycle === 'active'
-        && (l.status === 'controlling_approved' || l.status === 'management_review')
+        && ['ready_for_controlling','controlling_approved','management_review'].includes(l.status)
         && !myDecidedLeadIds.has(l.id)
       );
     }
-    const sf = isControlling ? 'ready_for_controlling' : 'hr_processing';
+    if (isHR) {
+      return leads.filter(l =>
+        l.lifecycle === 'active'
+        && ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing'].includes(l.status)
+      );
+    }
+    const sf = 'ready_for_controlling';
     return leads.filter(l => l.lifecycle === 'active' && l.status === sf);
   }, [leads, isControlling, isGeschaeftsleitung, isHR, myDecidedLeadIds]);
 
@@ -359,25 +364,18 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                     return (
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                         <div className="space-y-3">
-                          {isHR ? (
-                            <PendingApprovalsPanel leadId={selectedLead.id} leadStatus={selectedLead.status} />
-                          ) : (
-                            <>
-                              <div className="rounded-xl border bg-card p-4">
-                                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-cyan-600" /> Vorherige Freigaben</h3>
-                                <div className="flex gap-3">
-                                  <div className="flex-1 flex items-center justify-between rounded-lg bg-muted/40 p-3">
-                                    <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />Controlling</span>
-                                    <span className="text-sm font-medium text-emerald-700">{controllingDecision}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <ManagementApprovalPanel
-                                leadId={selectedLead.id}
-                                leadStatus={selectedLead.status}
-                                leadName={selectedLead.name}
-                              />
-                            </>
+                          <PendingApprovalsPanel
+                            leadId={selectedLead.id}
+                            leadStatus={selectedLead.status}
+                            leadUpdatedAt={selectedLead.updatedAt}
+                            leadCreatedAt={selectedLead.createdAt}
+                          />
+                          {isGeschaeftsleitung && (
+                            <ManagementApprovalPanel
+                              leadId={selectedLead.id}
+                              leadStatus={selectedLead.status}
+                              leadName={selectedLead.name}
+                            />
                           )}
                         </div>
                         <div className="space-y-5">
@@ -431,19 +429,35 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
 
 
                 {/* Action – nicht für GL (Entscheidung erfolgt inline im Geschäftsleitung-Panel oben) */}
-                {!isGeschaeftsleitung && (
-                  <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5 text-center">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {isControlling && 'Prüfen Sie Insights, Matching und Dokumente und treffen Sie Ihre Entscheidung.'}
-                      {isHR && 'Starten Sie den Onboarding-Prozess und setzen Sie den finalen Status.'}
-                    </p>
-                    <button onClick={() => setWizardOpen(true)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90 transition-opacity shadow-sm">
-                      {isControlling && <><ClipboardCheck className="h-4 w-4" /> Controlling Prüfung starten</>}
-                      {isHR && <><UserCheck className="h-4 w-4" /> Onboarding & Einstellung</>}
-                    </button>
-                  </div>
-                )}
+                {!isGeschaeftsleitung && (() => {
+                  const canControllingAct = isControlling && selectedLead.status === 'ready_for_controlling';
+                  const canHrAct = isHR && selectedLead.status === 'hr_processing';
+                  const waitingReason =
+                    isHR && selectedLead.status !== 'hr_processing'
+                      ? (selectedLead.status === 'ready_for_controlling'
+                          ? 'Warten auf Controlling-Freigabe. Onboarding ist erst möglich, sobald Controlling und Geschäftsleitung freigegeben haben.'
+                          : 'Warten auf Geschäftsleitung-Freigabe. Onboarding wird freigeschaltet, sobald alle GL-Stimmen vorliegen.')
+                      : null;
+                  return (
+                    <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5 text-center">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {isControlling && (canControllingAct ? 'Prüfen Sie Insights, Matching und Dokumente und treffen Sie Ihre Entscheidung.' : 'Lead wurde bereits von Controlling bearbeitet.')}
+                        {isHR && (canHrAct ? 'Starten Sie den Onboarding-Prozess und setzen Sie den finalen Status.' : waitingReason)}
+                      </p>
+                      {(canControllingAct || canHrAct) ? (
+                        <button onClick={() => setWizardOpen(true)}
+                          className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90 transition-opacity shadow-sm">
+                          {isControlling && <><ClipboardCheck className="h-4 w-4" /> Controlling Prüfung starten</>}
+                          {isHR && <><UserCheck className="h-4 w-4" /> Onboarding & Einstellung</>}
+                        </button>
+                      ) : (
+                        <div className="inline-flex items-center gap-2 rounded-xl bg-muted px-6 py-3 text-sm font-semibold text-muted-foreground border">
+                          <Clock className="h-4 w-4" /> Aktion gesperrt
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </TabsContent>
 
