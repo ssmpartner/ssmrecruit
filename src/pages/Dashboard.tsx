@@ -143,7 +143,7 @@ export default function Dashboard() {
   const roleLeads = useMemo(() => {
     if (isControlling) return activeLeads.filter(l => l.status === 'ready_for_controlling');
     if (isGeschaeftsleitung) return activeLeads.filter(l => l.status === 'controlling_approved' || l.status === 'management_review');
-    if (isHR) return activeLeads.filter(l => l.status === 'hr_processing');
+    if (isHR) return activeLeads.filter(l => ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing'].includes(l.status));
     return [];
   }, [activeLeads, isControlling, isGeschaeftsleitung, isHR]);
 
