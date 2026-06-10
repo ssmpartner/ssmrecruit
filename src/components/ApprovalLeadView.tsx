@@ -260,11 +260,13 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                 <TabsTrigger value="documents" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
                   <FileText className="h-3.5 w-3.5 mr-1.5" />Dokumente ({docsCount})
                 </TabsTrigger>
-                {approvalActivities.length > 0 && (
-                  <TabsTrigger value="history" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
-                    <Clock className="h-3.5 w-3.5 mr-1.5" />Verlauf
-                  </TabsTrigger>
-                )}
+                <TabsTrigger value="personnel" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
+                  <UserSquare2 className="h-3.5 w-3.5 mr-1.5" />Personalien
+                </TabsTrigger>
+                <TabsTrigger value="history" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
+                  <Clock className="h-3.5 w-3.5 mr-1.5" />Verlauf
+                </TabsTrigger>
+
               </TabsList>
             </div>
 
