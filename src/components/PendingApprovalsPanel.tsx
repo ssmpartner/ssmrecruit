@@ -248,6 +248,15 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
               <div key={u.user_id} className="flex items-center gap-1.5 rounded-full bg-background border pr-2 pl-0.5 py-0.5">
                 <Avatar u={u} state={ctrlDone && !isApprover ? 'pending' : state} />
                 <span className="text-[11px] truncate max-w-[120px]">{u.display_name || 'Unbenannt'}</span>
+                {isSuperadmin && isApprover && (
+                  <button
+                    onClick={() => openReset({ kind: 'controlling', userId: u.user_id, name: u.display_name || 'Unbenannt' })}
+                    className="ml-0.5 rounded-full p-0.5 text-red-600 hover:bg-red-100"
+                    title="Freigabe zurücksetzen"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                  </button>
+                )}
               </div>
             );
           })}
