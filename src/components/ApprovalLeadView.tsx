@@ -10,7 +10,9 @@ import PersonalityProfile from './PersonalityProfile';
 import LeadHiringReadiness from './LeadHiringReadiness';
 import ManagementApprovalPanel from './ManagementApprovalPanel';
 import PendingApprovalsPanel from './PendingApprovalsPanel';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import PersonnelFormFields, { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
 import JSZip from 'jszip';
@@ -65,9 +67,14 @@ const recConfig: Record<string, { label: string; color: string; bg: string }> = 
 };
 
 export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
-  const { selectedLead, setSelectedLead, activities, leads, employees, agencies } = useLeads();
+  const { selectedLead, setSelectedLead, activities, leads, employees, agencies, updateLead, addActivity } = useLeads();
   const { isControlling, isGeschaeftsleitung, isHR, user } = useAuth();
   const { toast } = useToast();
+
+  const [hireConfirmOpen, setHireConfirmOpen] = useState(false);
+  const [pendingOpen, setPendingOpen] = useState(false);
+  const [pendingReason, setPendingReason] = useState('');
+  const [hrActionLoading, setHrActionLoading] = useState(false);
 
   const [wizardOpen, setWizardOpen] = useState(false);
   const [assessment, setAssessment] = useState<AssessmentData | null>(null);
@@ -114,7 +121,7 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
     if (isHR) {
       return leads.filter(l =>
         l.lifecycle === 'active'
-        && ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing'].includes(l.status)
+        && ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing','hr_pending'].includes(l.status)
       );
     }
     const sf = 'ready_for_controlling';
@@ -479,28 +486,60 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                 {/* Action – nicht für GL (Entscheidung erfolgt inline im Geschäftsleitung-Panel oben) */}
                 {!isGeschaeftsleitung && (() => {
                   const canControllingAct = isControlling && selectedLead.status === 'ready_for_controlling';
-                  const canHrAct = isHR && selectedLead.status === 'hr_processing';
+                  const canHrAct = isHR && (selectedLead.status === 'hr_processing' || selectedLead.status === 'hr_pending');
                   const waitingReason =
-                    isHR && selectedLead.status !== 'hr_processing'
+                    isHR && !canHrAct
                       ? (selectedLead.status === 'ready_for_controlling'
                           ? 'Warten auf Controlling-Freigabe. Onboarding ist erst möglich, sobald Controlling und Geschäftsleitung freigegeben haben.'
                           : 'Warten auf Geschäftsleitung-Freigabe. Onboarding wird freigeschaltet, sobald alle GL-Stimmen vorliegen.')
                       : null;
                   return (
-                    <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5 text-center">
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {isControlling && (canControllingAct ? 'Prüfen Sie Insights, Matching und Dokumente und treffen Sie Ihre Entscheidung.' : 'Lead wurde bereits von Controlling bearbeitet.')}
-                        {isHR && (canHrAct ? 'Starten Sie den Onboarding-Prozess und setzen Sie den finalen Status.' : waitingReason)}
-                      </p>
-                      {(canControllingAct || canHrAct) ? (
-                        <button onClick={() => setWizardOpen(true)}
-                          className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90 transition-opacity shadow-sm">
-                          {isControlling && <><ClipboardCheck className="h-4 w-4" /> Controlling Prüfung starten</>}
-                          {isHR && <><UserCheck className="h-4 w-4" /> Onboarding & Einstellung</>}
-                        </button>
-                      ) : (
-                        <div className="inline-flex items-center gap-2 rounded-xl bg-muted px-6 py-3 text-sm font-semibold text-muted-foreground border">
-                          <Clock className="h-4 w-4" /> Aktion gesperrt
+                    <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5">
+                      {isControlling && (
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {canControllingAct ? 'Prüfen Sie Insights, Matching und Dokumente und treffen Sie Ihre Entscheidung.' : 'Lead wurde bereits von Controlling bearbeitet.'}
+                          </p>
+                          {canControllingAct ? (
+                            <button onClick={() => setWizardOpen(true)}
+                              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90 transition-opacity shadow-sm">
+                              <ClipboardCheck className="h-4 w-4" /> Controlling Prüfung starten
+                            </button>
+                          ) : (
+                            <div className="inline-flex items-center gap-2 rounded-xl bg-muted px-6 py-3 text-sm font-semibold text-muted-foreground border">
+                              <Clock className="h-4 w-4" /> Aktion gesperrt
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {isHR && !canHrAct && (
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground mb-3">{waitingReason}</p>
+                          <div className="inline-flex items-center gap-2 rounded-xl bg-muted px-6 py-3 text-sm font-semibold text-muted-foreground border">
+                            <Clock className="h-4 w-4" /> Aktion gesperrt
+                          </div>
+                        </div>
+                      )}
+                      {isHR && canHrAct && (
+                        <div>
+                          <p className="text-sm font-semibold mb-1 flex items-center gap-2"><UserCheck className="h-4 w-4 text-primary" /> HR-Entscheidung</p>
+                          <p className="text-xs text-muted-foreground mb-3">
+                            Bestätigen Sie die Einstellung sobald alle Unterlagen vollständig sind. Fehlen noch Dokumente, senden Sie den Lead mit einer Begründung zurück an den zuständigen Mitarbeiter – der Prozess startet danach <span className="font-semibold">nicht</span> erneut über Controlling/GL.
+                          </p>
+                          {selectedLead.status === 'hr_pending' && (
+                            <div className="mb-3 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+                              ⚠️ Aktuell auf "HR Pendent" – warte auf Nachreichung durch den Mitarbeiter.
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-2">
+                            <Button onClick={() => setHireConfirmOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                              <CheckCircle2 className="h-4 w-4" /> Eingestellt bestätigen
+                            </Button>
+                            <Button variant="outline" onClick={() => { setPendingReason(''); setPendingOpen(true); }}
+                              className="border-amber-300 text-amber-800 hover:bg-amber-50">
+                              <Clock className="h-4 w-4" /> Auf Pendent setzen
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -935,6 +974,91 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
       </Dialog>
 
       <ApprovalWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} wizardType={wizardType} leadId={selectedLead.id} leadName={selectedLead.name} />
+
+      {/* HR: Einstellung bestätigen */}
+      <Dialog open={hireConfirmOpen} onOpenChange={setHireConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Einstellung bestätigen</DialogTitle>
+            <DialogDescription>
+              Bestätigen Sie, dass alle Unterlagen vollständig sind und der Kandidat
+              <strong> {selectedLead.name}</strong> definitiv eingestellt wird. Diese Aktion setzt den Status auf <strong>"Eingestellt"</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHireConfirmOpen(false)} disabled={hrActionLoading}>Abbrechen</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              disabled={hrActionLoading}
+              onClick={async () => {
+                if (!selectedLead) return;
+                setHrActionLoading(true);
+                try {
+                  await updateLead(selectedLead.id, { status: 'hired' } as any);
+                  await addActivity(selectedLead.id, 'status_change', `HR hat Einstellung bestätigt – alle Unterlagen vollständig.`);
+                  toast({ title: 'Kandidat eingestellt', description: `${selectedLead.name} wurde als eingestellt markiert.` });
+                  setHireConfirmOpen(false);
+                } catch (e: any) {
+                  toast({ title: 'Fehler', description: e?.message ?? 'Status konnte nicht gesetzt werden.', variant: 'destructive' });
+                } finally {
+                  setHrActionLoading(false);
+                }
+              }}
+            >
+              {hrActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+              Eingestellt bestätigen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* HR: Auf Pendent setzen */}
+      <Dialog open={pendingOpen} onOpenChange={setPendingOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Auf "HR Pendent" setzen</DialogTitle>
+            <DialogDescription>
+              Geben Sie eine schriftliche Begründung an, welche Unterlagen fehlen. Der Lead geht
+              zurück an den zuständigen Mitarbeiter zur Nachreichung. Der Prozess startet danach
+              <strong> nicht</strong> erneut über Controlling und Geschäftsleitung.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={pendingReason}
+            onChange={(e) => setPendingReason(e.target.value)}
+            placeholder="z. B. AHV-Ausweis, Bankverbindung und Lohnausweis fehlen noch."
+            rows={5}
+            maxLength={1000}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingOpen(false)} disabled={hrActionLoading}>Abbrechen</Button>
+            <Button
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+              disabled={hrActionLoading || pendingReason.trim().length < 5}
+              onClick={async () => {
+                if (!selectedLead) return;
+                const reason = pendingReason.trim();
+                setHrActionLoading(true);
+                try {
+                  await updateLead(selectedLead.id, { status: 'hr_pending' } as any);
+                  await addActivity(selectedLead.id, 'note', `HR-Pendent: Nachreichung erforderlich – ${reason}`);
+                  await addActivity(selectedLead.id, 'status_change', `Status auf "HR Pendent" gesetzt – zurück an Mitarbeiter zur Nachreichung.`);
+                  toast({ title: 'Auf Pendent gesetzt', description: 'Der Mitarbeiter wurde informiert und kann die Unterlagen nachreichen.' });
+                  setPendingOpen(false);
+                  setPendingReason('');
+                } catch (e: any) {
+                  toast({ title: 'Fehler', description: e?.message ?? 'Status konnte nicht gesetzt werden.', variant: 'destructive' });
+                } finally {
+                  setHrActionLoading(false);
+                }
+              }}
+            >
+              {hrActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clock className="h-4 w-4" />}
+              Auf Pendent setzen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

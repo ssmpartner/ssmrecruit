@@ -1,4 +1,4 @@
-export type LeadStatus = 'new' | 'contacted' | 'callback' | 'not_reached' | 'not_interested' | 'no_need' | 'not_suitable' | 'internal' | 'appointment' | 'follow_up' | 'hired' | 'rejected' | 'ready_for_controlling' | 'controlling_approved' | 'management_review' | 'management_approved' | 'hr_processing';
+export type LeadStatus = 'new' | 'contacted' | 'callback' | 'not_reached' | 'not_interested' | 'no_need' | 'not_suitable' | 'internal' | 'appointment' | 'follow_up' | 'hired' | 'rejected' | 'ready_for_controlling' | 'controlling_approved' | 'management_review' | 'management_approved' | 'hr_processing' | 'hr_pending';
 
 export type DiscDimension = 'D' | 'I' | 'S' | 'C';
 
@@ -203,7 +203,7 @@ export interface Employee {
 }
 
 // Ordered status flow for employees
-export const statusFlow: LeadStatus[] = ['new', 'contacted', 'callback', 'not_reached', 'not_interested', 'no_need', 'not_suitable', 'internal', 'appointment', 'follow_up', 'ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired', 'rejected'];
+export const statusFlow: LeadStatus[] = ['new', 'contacted', 'callback', 'not_reached', 'not_interested', 'no_need', 'not_suitable', 'internal', 'appointment', 'follow_up', 'ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hr_pending', 'hired', 'rejected'];
 
 export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boolean): LeadStatus[] {
   if (isAdmin) return statusFlow;
@@ -222,7 +222,8 @@ export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boole
     controlling_approved: ['management_review'],
     management_review: ['management_approved', 'rejected'],
     management_approved: ['hr_processing'],
-    hr_processing: ['hired', 'rejected'],
+    hr_processing: ['hired', 'hr_pending', 'rejected'],
+    hr_pending: ['hr_processing', 'rejected'],
     hired: [],
     rejected: [],
   };
@@ -245,6 +246,7 @@ export const statusConfig: Record<LeadStatus, { label: string; color: string }> 
   management_review: { label: 'Management Review', color: 'bg-purple-50 text-purple-700 border border-purple-200' },
   management_approved: { label: 'Management Approved', color: 'bg-purple-100 text-purple-800 border border-purple-300' },
   hr_processing: { label: 'HR-Bearbeitung', color: 'bg-teal-50 text-teal-700 border border-teal-200' },
+  hr_pending: { label: 'HR Pendent (Unterlagen)', color: 'bg-amber-50 text-amber-800 border border-amber-300' },
   hired: { label: 'Eingestellt', color: 'bg-green-50 text-green-700 border border-green-200' },
   rejected: { label: 'Abgelehnt', color: 'bg-red-50 text-red-700 border border-red-200' },
 };
