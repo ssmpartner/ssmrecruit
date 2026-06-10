@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, XCircle, Clock, Loader2, ShieldCheck, ClipboardCheck } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Loader2, ShieldCheck, ClipboardCheck, RotateCcw, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useLeads } from '@/context/useLeads';
+import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 
 interface RoleUser {
   user_id: string;
