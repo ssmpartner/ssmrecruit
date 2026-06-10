@@ -74,7 +74,10 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   const [hireConfirmOpen, setHireConfirmOpen] = useState(false);
   const [pendingOpen, setPendingOpen] = useState(false);
   const [pendingReason, setPendingReason] = useState('');
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   const [hrActionLoading, setHrActionLoading] = useState(false);
+  const [glDecisions, setGlDecisions] = useState<{ approved: number; rejected: number }>({ approved: 0, rejected: 0 });
 
   const [wizardOpen, setWizardOpen] = useState(false);
   const [assessment, setAssessment] = useState<AssessmentData | null>(null);
@@ -136,13 +139,19 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
     if (!selectedLead) return;
     setAssessmentLoading(true);
     (async () => {
-      const [assessRes, insRes, docsRes, wizRes, persRes] = await Promise.all([
+      const [assessRes, insRes, docsRes, wizRes, persRes, mgmtRes] = await Promise.all([
         supabase.from('assessment_results').select('*').eq('lead_id', selectedLead.id).order('completed_at', { ascending: false }).limit(1),
         supabase.from('insights_requests').select('status').eq('lead_id', selectedLead.id).order('created_at', { ascending: false }).limit(1),
         supabase.from('document_uploads').select('id, file_name, file_type, file_size, file_path, uploaded_at').eq('lead_id', selectedLead.id),
         supabase.from('status_wizard_results').select('wizard_type, answers').eq('lead_id', selectedLead.id).order('created_at', { ascending: false }),
         supabase.from('lead_personal_data').select('data, version, updated_at').eq('lead_id', selectedLead.id).maybeSingle(),
+        supabase.from('lead_management_approvals').select('decision').eq('lead_id', selectedLead.id),
       ]);
+      const decisions = (mgmtRes.data as { decision: string }[] | null) || [];
+      setGlDecisions({
+        approved: decisions.filter(d => d.decision === 'approved').length,
+        rejected: decisions.filter(d => d.decision === 'rejected').length,
+      });
       setAssessment(assessRes.data?.[0] as unknown as AssessmentData ?? null);
       setAssessmentLoading(false);
       setInsightsStatus(insRes.data?.[0]?.status === 'completed' ? 'Abgeschlossen' : 'Ausstehend');
@@ -520,12 +529,23 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                           </div>
                         </div>
                       )}
-                      {isHR && canHrAct && (
+                      {isHR && canHrAct && (() => {
+                        const splitGl = glDecisions.approved > 0 && glDecisions.rejected > 0;
+                        return (
                         <div>
                           <p className="text-sm font-semibold mb-1 flex items-center gap-2"><UserCheck className="h-4 w-4 text-primary" /> HR-Entscheidung</p>
                           <p className="text-xs text-muted-foreground mb-3">
                             Bestätigen Sie die Einstellung sobald alle Unterlagen vollständig sind. Fehlen noch Dokumente, senden Sie den Lead mit einer Begründung zurück an den zuständigen Mitarbeiter – der Prozess startet danach <span className="font-semibold">nicht</span> erneut über Controlling/GL.
                           </p>
+                          {splitGl && (
+                            <div className="mb-3 rounded-lg bg-amber-50 border-2 border-amber-300 px-3 py-2.5 text-xs text-amber-900 flex items-start gap-2">
+                              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-700" />
+                              <div>
+                                <p className="font-bold mb-0.5">⚠️ Geteilte Geschäftsleitungs-Entscheidung ({glDecisions.approved} Freigabe / {glDecisions.rejected} Ablehnung)</p>
+                                <p>Bitte kontaktiere <span className="font-semibold">beide Mitglieder der Geschäftsleitung</span>, um das weitere Vorgehen abzustimmen. Anschliessend kannst du den Lead <span className="font-semibold">einstellen</span> oder <span className="font-semibold">komplett ablehnen</span>.</p>
+                              </div>
+                            </div>
+                          )}
                           {selectedLead.status === 'hr_pending' && (
                             <div className="mb-3 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
                               ⚠️ Aktuell auf "HR Pendent" – warte auf Nachreichung durch den Mitarbeiter.
@@ -539,9 +559,14 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                               className="border-amber-300 text-amber-800 hover:bg-amber-50">
                               <Clock className="h-4 w-4" /> Auf Pendent setzen
                             </Button>
+                            <Button variant="outline" onClick={() => { setRejectReason(''); setRejectOpen(true); }}
+                              className="border-red-300 text-red-700 hover:bg-red-50">
+                              <XCircle className="h-4 w-4" /> Ablehnen
+                            </Button>
                           </div>
                         </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   );
                 })()}
@@ -1059,7 +1084,56 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* HR: Komplett ablehnen */}
+      <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Lead komplett ablehnen</DialogTitle>
+            <DialogDescription>
+              Diese Aktion setzt den Status final auf <strong>"Abgelehnt"</strong>. Der Mitarbeiter
+              sieht den Lead anschliessend mit dem Status "Abgelehnt". Bitte geben Sie eine
+              Begründung an (insb. nach geteilter GL-Entscheidung).
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder="z. B. Nach Rücksprache mit beiden GL-Mitgliedern keine Einstellung – Begründung..."
+            rows={5}
+            maxLength={1000}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectOpen(false)} disabled={hrActionLoading}>Abbrechen</Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={hrActionLoading || rejectReason.trim().length < 5}
+              onClick={async () => {
+                if (!selectedLead) return;
+                const reason = rejectReason.trim();
+                setHrActionLoading(true);
+                try {
+                  await updateLead(selectedLead.id, { status: 'rejected' } as any);
+                  await addActivity(selectedLead.id, 'note', `HR-Ablehnung – ${reason}`);
+                  await addActivity(selectedLead.id, 'status_change', `Status auf "Abgelehnt" gesetzt durch HR.`);
+                  toast({ title: 'Lead abgelehnt', description: 'Der Lead wurde final abgelehnt.' });
+                  setRejectOpen(false);
+                  setRejectReason('');
+                } catch (e: any) {
+                  toast({ title: 'Fehler', description: e?.message ?? 'Status konnte nicht gesetzt werden.', variant: 'destructive' });
+                } finally {
+                  setHrActionLoading(false);
+                }
+              }}
+            >
+              {hrActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+              Endgültig ablehnen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
+
   );
 }
 
