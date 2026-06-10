@@ -7,13 +7,17 @@ import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardDialog';
 import PersonalityProfile from './PersonalityProfile';
+import LeadHiringReadiness from './LeadHiringReadiness';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
 import { generateAssessmentPdf, assessmentToPdfData, loadLetterhead } from '@/lib/assessment-pdf';
 import {
   User, MapPin, Mail, Phone, Briefcase, Brain, FileText, BarChart3,
   ClipboardCheck, Shield, CheckCircle2, XCircle,
   UserCheck, Calendar, Eye, Upload, Clock, ChevronLeft, ChevronRight,
   Building2, GraduationCap, TrendingUp, Award, Download, Loader2,
-  Target, Users, BookOpen, DollarSign, ThumbsUp, AlertTriangle
+  Target, Users, BookOpen, DollarSign, ThumbsUp, AlertTriangle, Cake, UserSquare2, Sparkles
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
@@ -59,6 +63,7 @@ const recConfig: Record<string, { label: string; color: string; bg: string }> = 
 export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   const { selectedLead, setSelectedLead, activities, leads, employees, agencies } = useLeads();
   const { isControlling, isGeschaeftsleitung, isHR } = useAuth();
+  const { toast } = useToast();
 
   const [wizardOpen, setWizardOpen] = useState(false);
   const [assessment, setAssessment] = useState<AssessmentData | null>(null);
@@ -69,6 +74,12 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   const [careerPlan, setCareerPlan] = useState<CareerPlan | null>(null);
   const [documentUploads, setDocumentUploads] = useState<any[]>([]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [personnelComplete, setPersonnelComplete] = useState<boolean | null>(null);
+  const [personnelMeta, setPersonnelMeta] = useState<{ version: number; updated_at: string | null } | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<any | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
 
   const wizardType: ApprovalWizardType = isControlling ? 'controlling' : isGeschaeftsleitung ? 'management' : 'hr';
 
@@ -85,11 +96,12 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
     if (!selectedLead) return;
     setAssessmentLoading(true);
     (async () => {
-      const [assessRes, insRes, docsRes, wizRes] = await Promise.all([
+      const [assessRes, insRes, docsRes, wizRes, persRes] = await Promise.all([
         supabase.from('assessment_results').select('*').eq('lead_id', selectedLead.id).order('completed_at', { ascending: false }).limit(1),
         supabase.from('insights_requests').select('status').eq('lead_id', selectedLead.id).order('created_at', { ascending: false }).limit(1),
-        supabase.from('document_uploads').select('*').eq('lead_id', selectedLead.id),
+        supabase.from('document_uploads').select('id, file_name, file_type, file_size, file_path, uploaded_at').eq('lead_id', selectedLead.id),
         supabase.from('status_wizard_results').select('wizard_type, answers').eq('lead_id', selectedLead.id).order('created_at', { ascending: false }),
+        supabase.from('lead_personal_data').select('data, version, updated_at').eq('lead_id', selectedLead.id).maybeSingle(),
       ]);
       setAssessment(assessRes.data?.[0] as unknown as AssessmentData ?? null);
       setAssessmentLoading(false);
@@ -98,8 +110,17 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
       setDocumentUploads(docsRes.data ?? []);
       const ctrlResult = wizRes.data?.find((w: any) => w.wizard_type === 'controlling_approval');
       setControllingDecision(ctrlResult ? 'Freigegeben' : (isGeschaeftsleitung || isHR ? 'Freigegeben (auto)' : '—'));
+      const prow = persRes.data as { data?: PersonnelData; version?: number; updated_at?: string } | null;
+      if (prow && (prow.version ?? 0) > 0) {
+        setPersonnelComplete(Object.keys(validatePersonnel(prow.data ?? {})).length === 0);
+        setPersonnelMeta({ version: prow.version ?? 0, updated_at: prow.updated_at ?? null });
+      } else {
+        setPersonnelComplete(false);
+        setPersonnelMeta(null);
+      }
     })();
   }, [selectedLead?.id]);
+
 
   useEffect(() => {
     if (!selectedLead?.position) { setCareerPlan(null); return; }
@@ -118,6 +139,51 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
     return activities.filter(a => a.leadId === selectedLead.id && a.type === 'status_change' &&
       (a.description.includes('Controlling') || a.description.includes('Management') || a.description.includes('HR') || a.description.includes('Freigegeben') || a.description.includes('Abgelehnt')));
   }, [selectedLead, activities]);
+
+  const allLeadActivities = useMemo(() => {
+    if (!selectedLead) return [];
+    return activities
+      .filter(a => a.leadId === selectedLead.id)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }, [selectedLead, activities]);
+
+  function computeAge(birth?: string): number | null {
+    if (!birth) return null;
+    const d = new Date(birth);
+    if (Number.isNaN(d.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+    return age >= 0 && age < 120 ? age : null;
+  }
+
+  async function previewDocument(doc: any) {
+    setPreviewDoc(doc);
+    setPreviewLoading(true);
+    setPreviewUrl(null);
+    const { data, error } = await supabase.storage.from('lead-documents').createSignedUrl(doc.file_path, 3600);
+    if (error || !data?.signedUrl) {
+      toast({ title: 'Vorschau fehlgeschlagen', description: error?.message || 'Datei nicht verfügbar', variant: 'destructive' });
+      setPreviewDoc(null);
+      setPreviewLoading(false);
+      return;
+    }
+    setPreviewUrl(data.signedUrl);
+    setPreviewLoading(false);
+  }
+
+  function closePreview() {
+    setPreviewDoc(null);
+    setPreviewUrl(null);
+    setPreviewLoading(false);
+  }
+
+  function isPreviewable(fileName: string): boolean {
+    const l = fileName.toLowerCase();
+    return l.endsWith('.pdf') || l.endsWith('.jpg') || l.endsWith('.jpeg') || l.endsWith('.png') || l.endsWith('.gif') || l.endsWith('.webp') || l.endsWith('.svg');
+  }
+
 
   if (!selectedLead) return null;
 
@@ -194,11 +260,13 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                 <TabsTrigger value="documents" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
                   <FileText className="h-3.5 w-3.5 mr-1.5" />Dokumente ({docsCount})
                 </TabsTrigger>
-                {approvalActivities.length > 0 && (
-                  <TabsTrigger value="history" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
-                    <Clock className="h-3.5 w-3.5 mr-1.5" />Verlauf
-                  </TabsTrigger>
-                )}
+                <TabsTrigger value="personnel" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
+                  <UserSquare2 className="h-3.5 w-3.5 mr-1.5" />Personalien
+                </TabsTrigger>
+                <TabsTrigger value="history" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
+                  <Clock className="h-3.5 w-3.5 mr-1.5" />Verlauf
+                </TabsTrigger>
+
               </TabsList>
             </div>
 
@@ -210,20 +278,28 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                   <div className="lg:col-span-2 rounded-xl border bg-card p-4">
                     <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Lead-Kurzinfo</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {[
-                        { icon: Mail, label: 'E-Mail', value: selectedLead.email, hide: isControlling },
-                        { icon: Phone, label: 'Telefon', value: selectedLead.phone, hide: isControlling },
-                        { icon: Briefcase, label: 'Position', value: selectedLead.position },
-                        { icon: MapPin, label: 'Standort', value: `${selectedLead.plz} ${selectedLead.city}`.trim() },
-                        { icon: Calendar, label: 'Leaddatum', value: new Date(selectedLead.createdAt).toLocaleDateString('de-CH') },
-                        { icon: User, label: 'Betreuer', value: employee?.name || '—' },
-                        { icon: Building2, label: 'Agentur', value: agency?.name || '—' },
-                      ].filter(i => !i.hide).map(item => (
-                        <div key={item.label} className="rounded-lg bg-muted/40 p-2.5">
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><item.icon className="h-3 w-3" />{item.label}</div>
-                          <p className={cn("text-sm font-medium truncate", !item.value?.trim() && "text-muted-foreground italic")}>{item.value?.trim() || '—'}</p>
-                        </div>
-                      ))}
+                      {(() => {
+                        const age = computeAge((selectedLead as any).birthDate);
+                        const birthVal = (selectedLead as any).birthDate
+                          ? `${new Date((selectedLead as any).birthDate).toLocaleDateString('de-CH')}${age !== null ? ` (${age} J.)` : ''}`
+                          : '';
+                        return [
+                          { icon: Mail, label: 'E-Mail', value: selectedLead.email, hide: isControlling },
+                          { icon: Phone, label: 'Telefon', value: selectedLead.phone, hide: isControlling },
+                          { icon: Cake, label: 'Geburtsdatum', value: birthVal },
+                          { icon: Briefcase, label: 'Position', value: selectedLead.position },
+                          { icon: MapPin, label: 'Standort', value: `${selectedLead.plz} ${selectedLead.city}`.trim() },
+                          { icon: Calendar, label: 'Leaddatum', value: new Date(selectedLead.createdAt).toLocaleDateString('de-CH') },
+                          { icon: User, label: 'Betreuer', value: employee?.name || '—' },
+                          { icon: Building2, label: 'Agentur', value: agency?.name || '—' },
+                        ].filter(i => !i.hide).map(item => (
+                          <div key={item.label} className="rounded-lg bg-muted/40 p-2.5">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><item.icon className="h-3 w-3" />{item.label}</div>
+                            <p className={cn("text-sm font-medium truncate", !item.value?.trim() && "text-muted-foreground italic")}>{item.value?.trim() || '—'}</p>
+                          </div>
+                        ));
+                      })()}
+
                     </div>
                   </div>
                   {/* Right: Quick Stats */}
@@ -295,6 +371,14 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                     </div>
                   </div>
                 )}
+
+                {/* Einstellungs-Readiness */}
+                <div>
+                  <h3 className="text-sm font-semibold mb-2 flex items-center gap-2"><Sparkles className="h-4 w-4 text-emerald-600" /> Einstellungs-Readiness</h3>
+                  <LeadHiringReadiness leadId={selectedLead.id} />
+                </div>
+
+
 
                 {/* Action */}
                 <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5 text-center">
@@ -590,46 +674,112 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {documentUploads.map((doc: any) => (
-                      <div key={doc.id} className="flex items-center justify-between rounded-lg border p-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <FileText className="h-4 w-4 text-blue-600 shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium truncate">{doc.file_name}</p>
-                            <p className="text-xs text-muted-foreground">{doc.file_type} • {(doc.file_size / 1024).toFixed(0)} KB • {new Date(doc.uploaded_at).toLocaleDateString('de-CH')}</p>
+                    {documentUploads.map((doc: any) => {
+                      const isInsightR4 = (doc.file_type || '').toLowerCase() === 'insight_r4'
+                        || /insight.*r4/i.test(doc.file_name || '');
+                      const canPreview = !!doc.file_path && isPreviewable(doc.file_name || '');
+                      return (
+                        <div key={doc.id} className={cn(
+                          "flex items-center justify-between rounded-lg border p-3",
+                          isInsightR4 && "border-violet-300 bg-violet-50 dark:bg-violet-950/30 dark:border-violet-800",
+                        )}>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <FileText className={cn("h-4 w-4 shrink-0", isInsightR4 ? "text-violet-600" : "text-blue-600")} />
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium truncate flex items-center gap-2">
+                                {doc.file_name}
+                                {isInsightR4 && <span className="rounded-full bg-violet-100 text-violet-700 px-2 py-0.5 text-[10px] font-semibold border border-violet-200">Insight R4</span>}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{doc.file_type} • {(doc.file_size / 1024).toFixed(0)} KB • {new Date(doc.uploaded_at).toLocaleDateString('de-CH')}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {canPreview && (
+                              <button onClick={() => previewDocument(doc)}
+                                className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted">
+                                <Eye className="h-3.5 w-3.5" /> Vorschau
+                              </button>
+                            )}
+                            <span className="text-xs text-emerald-600 font-medium flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /></span>
                           </div>
                         </div>
-                        <span className="text-xs text-emerald-600 font-medium flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /> Vorhanden</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
             </TabsContent>
 
+            {/* ─── TAB: Personalien (nur Status-Anzeige) ─── */}
+            <TabsContent value="personnel" className="flex-1 overflow-y-auto p-5 mt-0">
+              <div className="max-w-3xl mx-auto space-y-4">
+                <h3 className="text-sm font-semibold flex items-center gap-2"><UserSquare2 className="h-4 w-4 text-primary" /> Personalien (Personalblatt)</h3>
+                <div className={cn(
+                  "rounded-xl border p-5 flex items-center gap-4",
+                  personnelComplete ? "border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30" : "border-amber-200 bg-amber-50 dark:bg-amber-950/30",
+                )}>
+                  {personnelComplete
+                    ? <CheckCircle2 className="h-8 w-8 text-emerald-600 shrink-0" />
+                    : <AlertTriangle className="h-8 w-8 text-amber-600 shrink-0" />}
+                  <div className="min-w-0">
+                    <p className={cn("text-base font-bold", personnelComplete ? "text-emerald-700" : "text-amber-700")}>
+                      {personnelComplete ? 'Personalien vollständig eingereicht' : 'Personalien unvollständig'}
+                    </p>
+                    {personnelMeta
+                      ? <p className="text-xs text-muted-foreground mt-0.5">Version {personnelMeta.version} • Aktualisiert {personnelMeta.updated_at ? new Date(personnelMeta.updated_at).toLocaleString('de-CH') : '—'}</p>
+                      : <p className="text-xs text-muted-foreground mt-0.5">Es wurden noch keine Personalien erfasst.</p>}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Aus Datenschutzgründen werden die detaillierten Personalien nicht in der Controlling-Ansicht angezeigt.
+                </p>
+              </div>
+            </TabsContent>
 
             {/* ─── TAB: Verlauf ─── */}
-            {approvalActivities.length > 0 && (
-              <TabsContent value="history" className="flex-1 overflow-y-auto p-5 mt-0">
-                <div className="max-w-3xl mx-auto space-y-2">
-                  <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Approval-Verlauf</h3>
-                  {approvalActivities.map(act => (
-                    <div key={act.id} className="flex items-start gap-2.5 rounded-lg bg-muted/30 p-3 border">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm">{act.description}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{act.user} • {new Date(act.timestamp).toLocaleString('de-CH')}</p>
-                      </div>
+            <TabsContent value="history" className="flex-1 overflow-y-auto p-5 mt-0">
+              <div className="max-w-3xl mx-auto space-y-2">
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Aktivitäten-Verlauf</h3>
+                {allLeadActivities.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-8 text-center">Keine Aktivitäten vorhanden</p>
+                ) : allLeadActivities.map(act => (
+                  <div key={act.id} className="flex items-start gap-2.5 rounded-lg bg-muted/30 p-3 border">
+                    <Clock className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm">{act.description}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        <span className="capitalize">{act.type.replace('_', ' ')}</span> • {act.user} • {new Date(act.timestamp).toLocaleString('de-CH')}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </TabsContent>
-            )}
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
       </div>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={!!previewDoc} onOpenChange={(o) => !o && closePreview()}>
+        <DialogContent className="max-w-5xl h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-base truncate">{previewDoc?.file_name}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 flex items-center justify-center overflow-hidden bg-muted/30 rounded">
+            {previewLoading && <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />}
+            {!previewLoading && previewUrl && previewDoc && (
+              previewDoc.file_name.toLowerCase().endsWith('.pdf') ? (
+                <iframe src={previewUrl} className="w-full h-full rounded border bg-white" title={previewDoc.file_name} />
+              ) : (
+                <img src={previewUrl} alt={previewDoc.file_name} className="max-w-full max-h-full rounded shadow-lg object-contain" />
+              )
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <ApprovalWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} wizardType={wizardType} leadId={selectedLead.id} leadName={selectedLead.name} />
     </>
   );
 }
+
