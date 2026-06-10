@@ -62,7 +62,7 @@ const recConfig: Record<string, { label: string; color: string; bg: string }> = 
 
 export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   const { selectedLead, setSelectedLead, activities, leads, employees, agencies } = useLeads();
-  const { isControlling, isGeschaeftsleitung, isHR } = useAuth();
+  const { isControlling, isGeschaeftsleitung, isHR, user } = useAuth();
   const { toast } = useToast();
 
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -79,14 +79,36 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   const [previewDoc, setPreviewDoc] = useState<any | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [myDecidedLeadIds, setMyDecidedLeadIds] = useState<Set<string>>(new Set());
 
 
   const wizardType: ApprovalWizardType = isControlling ? 'controlling' : isGeschaeftsleitung ? 'management' : 'hr';
 
+  // Load leads the current GL user has already decided (so they drop off the queue)
+  useEffect(() => {
+    if (!isGeschaeftsleitung || !user) return;
+    supabase
+      .from('lead_management_approvals')
+      .select('lead_id')
+      .eq('user_id', user.id)
+      .then(({ data }) => {
+        setMyDecidedLeadIds(new Set((data || []).map((r: any) => r.lead_id)));
+      });
+  }, [isGeschaeftsleitung, user?.id, selectedLead?.id]);
+
   const queueLeads = useMemo(() => {
-    const sf = isControlling ? 'ready_for_controlling' : isGeschaeftsleitung ? 'management_review' : 'hr_processing';
+    if (isGeschaeftsleitung) {
+      // GL sees both 'controlling_approved' (untouched) and 'management_review' (in progress),
+      // minus the ones this user already decided on.
+      return leads.filter(l =>
+        l.lifecycle === 'active'
+        && (l.status === 'controlling_approved' || l.status === 'management_review')
+        && !myDecidedLeadIds.has(l.id)
+      );
+    }
+    const sf = isControlling ? 'ready_for_controlling' : 'hr_processing';
     return leads.filter(l => l.lifecycle === 'active' && l.status === sf);
-  }, [leads, isControlling, isGeschaeftsleitung, isHR]);
+  }, [leads, isControlling, isGeschaeftsleitung, isHR, myDecidedLeadIds]);
 
   const currentIndex = useMemo(() => selectedLead ? queueLeads.findIndex(l => l.id === selectedLead.id) : -1, [selectedLead, queueLeads]);
   const hasPrev = currentIndex > 0;
