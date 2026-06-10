@@ -777,7 +777,18 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
             {/* ─── TAB: Dokumente ─── */}
             <TabsContent value="documents" className="flex-1 overflow-y-auto p-5 mt-0">
               <div className="max-w-3xl mx-auto space-y-4">
-                <h3 className="text-sm font-semibold flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> Hochgeladene Dokumente</h3>
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-semibold flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> Hochgeladene Dokumente</h3>
+                  {isHR && documentUploads.length > 0 && (
+                    <button
+                      onClick={downloadAllDocuments}
+                      disabled={downloadingAll}
+                      className="inline-flex items-center gap-1.5 rounded-md border bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:opacity-90 disabled:opacity-50">
+                      {downloadingAll ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                      Alle als ZIP
+                    </button>
+                  )}
+                </div>
                 {documentUploads.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
@@ -809,6 +820,12 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                               <button onClick={() => previewDocument(doc)}
                                 className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted">
                                 <Eye className="h-3.5 w-3.5" /> Vorschau
+                              </button>
+                            )}
+                            {isHR && (
+                              <button onClick={() => downloadDocument(doc)}
+                                className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted">
+                                <Download className="h-3.5 w-3.5" /> Download
                               </button>
                             )}
                             <span className="text-xs text-emerald-600 font-medium flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /></span>
