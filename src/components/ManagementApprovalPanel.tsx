@@ -88,10 +88,10 @@ export default function ManagementApprovalPanel({ leadId, leadStatus, leadName }
 
       if (allDecided) {
         const anyRejected = rows.some(r => r.decision === 'rejected');
-        newStatus = anyRejected ? 'rejected' : 'management_approved';
+        newStatus = anyRejected ? 'rejected' : 'hr_processing';
         activityText = anyRejected
           ? `Geschäftsleitung: Lead abgelehnt (mind. 1 Ablehnung bei ${gl.length} Stimmen) → Abgelehnt`
-          : `Geschäftsleitung: Vollständig freigegeben (${gl.length}/${gl.length}) → Management Approved`;
+          : `Geschäftsleitung: Vollständig freigegeben (${gl.length}/${gl.length}) → HR-Bearbeitung`;
       } else if (leadStatus === 'controlling_approved') {
         newStatus = 'management_review';
         activityText = `Geschäftsleitung: Erste Stimme abgegeben → Management Review`;
@@ -111,7 +111,7 @@ export default function ManagementApprovalPanel({ leadId, leadStatus, leadName }
         // Notification
         await supabase.from('notifications').insert({
           type: 'status_change',
-          title: newStatus === 'management_approved' ? '✅ Management Approved' : newStatus === 'rejected' ? '❌ Lead abgelehnt' : '👀 Management Review',
+          title: newStatus === 'hr_processing' ? '✅ Freigegeben → HR-Bearbeitung' : newStatus === 'rejected' ? '❌ Lead abgelehnt' : '👀 Management Review',
           description: `${leadName} – ${activityText}`,
           lead_id: leadId,
         });
@@ -120,7 +120,7 @@ export default function ManagementApprovalPanel({ leadId, leadStatus, leadName }
       toast({
         title: decision === 'approved' ? '✅ Freigegeben' : '❌ Abgelehnt',
         description: allDecided
-          ? (rows.some(r => r.decision === 'rejected') ? `${leadName} → Abgelehnt` : `${leadName} → Management Approved`)
+          ? (rows.some(r => r.decision === 'rejected') ? `${leadName} → Abgelehnt` : `${leadName} → HR-Bearbeitung`)
           : `Warte auf ${gl.length - rows.length} weitere Stimme(n).`,
       });
       setComment('');
