@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import PersonnelFormFields, { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
 import JSZip from 'jszip';
 import { generateAssessmentPdf, assessmentToPdfData, loadLetterhead } from '@/lib/assessment-pdf';
+import { downloadPersonnelCsv, openPersonnelPdf } from '@/lib/personnel-export';
 import {
   User, MapPin, Mail, Phone, Briefcase, Brain, FileText, BarChart3,
   ClipboardCheck, Shield, CheckCircle2, XCircle,
@@ -841,7 +842,23 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
             {/* ─── TAB: Personalien ─── */}
             <TabsContent value="personnel" className="flex-1 overflow-y-auto p-5 mt-0">
               <div className="max-w-3xl mx-auto space-y-4">
-                <h3 className="text-sm font-semibold flex items-center gap-2"><UserSquare2 className="h-4 w-4 text-primary" /> Personalien (Personalblatt)</h3>
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-semibold flex items-center gap-2"><UserSquare2 className="h-4 w-4 text-primary" /> Personalien (Personalblatt)</h3>
+                  {isHR && personnelData && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openPersonnelPdf(personnelData, selectedLead.name, { position: selectedLead.position, agency: agency?.name })}
+                        className="inline-flex items-center gap-1.5 rounded-md border bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:opacity-90">
+                        <FileText className="h-3.5 w-3.5" /> PDF erstellen
+                      </button>
+                      <button
+                        onClick={() => downloadPersonnelCsv(personnelData, selectedLead.name)}
+                        className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted">
+                        <Download className="h-3.5 w-3.5" /> CSV exportieren
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className={cn(
                   "rounded-xl border p-5 flex items-center gap-4",
                   personnelComplete ? "border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30" : "border-amber-200 bg-amber-50 dark:bg-amber-950/30",
