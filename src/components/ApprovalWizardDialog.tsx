@@ -213,7 +213,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
         : `${config.label} abgeschlossen`;
       const notifDescription = wizardType === 'controlling'
         ? (action === 'approve'
-          ? `Dein Kandidat "${leadName}" wurde vom Controlling selektioniert und an die Geschäftsleitung weitergeleitet.`
+          ? `Dein Kandidat "${leadName}" wurde vom Controlling selektioniert (Status: Controlling Approved).`
           : `Dein Kandidat "${leadName}" wurde vom Controlling abgelehnt.${rejectReason ? ` Begründung: ${rejectReason}` : ''}`)
         : `"${leadName}" – ${action === 'approve' ? 'Freigegeben' : 'Abgelehnt'} von ${currentUser}`;
 
