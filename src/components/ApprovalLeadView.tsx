@@ -974,6 +974,91 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
       </Dialog>
 
       <ApprovalWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} wizardType={wizardType} leadId={selectedLead.id} leadName={selectedLead.name} />
+
+      {/* HR: Einstellung bestätigen */}
+      <Dialog open={hireConfirmOpen} onOpenChange={setHireConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Einstellung bestätigen</DialogTitle>
+            <DialogDescription>
+              Bestätigen Sie, dass alle Unterlagen vollständig sind und der Kandidat
+              <strong> {selectedLead.name}</strong> definitiv eingestellt wird. Diese Aktion setzt den Status auf <strong>"Eingestellt"</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHireConfirmOpen(false)} disabled={hrActionLoading}>Abbrechen</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              disabled={hrActionLoading}
+              onClick={async () => {
+                if (!selectedLead) return;
+                setHrActionLoading(true);
+                try {
+                  await updateLead(selectedLead.id, { status: 'hired' } as any);
+                  await addActivity(selectedLead.id, 'status_change', `HR hat Einstellung bestätigt – alle Unterlagen vollständig.`);
+                  toast({ title: 'Kandidat eingestellt', description: `${selectedLead.name} wurde als eingestellt markiert.` });
+                  setHireConfirmOpen(false);
+                } catch (e: any) {
+                  toast({ title: 'Fehler', description: e?.message ?? 'Status konnte nicht gesetzt werden.', variant: 'destructive' });
+                } finally {
+                  setHrActionLoading(false);
+                }
+              }}
+            >
+              {hrActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+              Eingestellt bestätigen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* HR: Auf Pendent setzen */}
+      <Dialog open={pendingOpen} onOpenChange={setPendingOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Auf "HR Pendent" setzen</DialogTitle>
+            <DialogDescription>
+              Geben Sie eine schriftliche Begründung an, welche Unterlagen fehlen. Der Lead geht
+              zurück an den zuständigen Mitarbeiter zur Nachreichung. Der Prozess startet danach
+              <strong> nicht</strong> erneut über Controlling und Geschäftsleitung.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={pendingReason}
+            onChange={(e) => setPendingReason(e.target.value)}
+            placeholder="z. B. AHV-Ausweis, Bankverbindung und Lohnausweis fehlen noch."
+            rows={5}
+            maxLength={1000}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingOpen(false)} disabled={hrActionLoading}>Abbrechen</Button>
+            <Button
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+              disabled={hrActionLoading || pendingReason.trim().length < 5}
+              onClick={async () => {
+                if (!selectedLead) return;
+                const reason = pendingReason.trim();
+                setHrActionLoading(true);
+                try {
+                  await updateLead(selectedLead.id, { status: 'hr_pending' } as any);
+                  await addActivity(selectedLead.id, 'note', `HR-Pendent: Nachreichung erforderlich – ${reason}`);
+                  await addActivity(selectedLead.id, 'status_change', `Status auf "HR Pendent" gesetzt – zurück an Mitarbeiter zur Nachreichung.`);
+                  toast({ title: 'Auf Pendent gesetzt', description: 'Der Mitarbeiter wurde informiert und kann die Unterlagen nachreichen.' });
+                  setPendingOpen(false);
+                  setPendingReason('');
+                } catch (e: any) {
+                  toast({ title: 'Fehler', description: e?.message ?? 'Status konnte nicht gesetzt werden.', variant: 'destructive' });
+                } finally {
+                  setHrActionLoading(false);
+                }
+              }}
+            >
+              {hrActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clock className="h-4 w-4" />}
+              Auf Pendent setzen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
