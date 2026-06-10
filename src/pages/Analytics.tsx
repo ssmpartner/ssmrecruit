@@ -17,8 +17,11 @@ import MapTab from '@/components/analytics/MapTab';
 import ExportActions from '@/components/analytics/ExportActions';
 
 export default function Analytics() {
-  const { leads, agencies, employees, leadSources, activities } = useLeads();
-  const { isAgencyManager, isAgencyScoped, isTeamleiter, user } = useAuth();
+  const { leads: scopedLeads, allLeads, agencies, employees, leadSources, activities } = useLeads();
+  const { isAgencyManager, isAgencyScoped, isTeamleiter, isControlling, isSuperadmin, isAdmin, user } = useAuth();
+  // Controlling, Superadmin & Admin always see the full structure across all agencies.
+  const leads = (isControlling || isSuperadmin || isAdmin) ? allLeads : scopedLeads;
+
   const [cantonFilter, setCantonFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');

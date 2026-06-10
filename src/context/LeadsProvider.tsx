@@ -147,8 +147,14 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (data) setLeadSources(data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, color: r.color || '#6B7280', sortOrder: r.sort_order })));
   }, []);
 
-  // Fetch all rows from a table, paginating past the 1000-row default limit
-  const fetchAll = useCallback(async (table: 'leads' | 'activities' | 'appointments', orderCol = 'created_at', ascending = false) => {
+  // Fetch all rows from a table, paginating past the 1000-row default limit.
+  // Optional onPage callback lets callers stream pages into state for progressive rendering.
+  const fetchAll = useCallback(async (
+    table: 'leads' | 'activities' | 'appointments',
+    orderCol = 'created_at',
+    ascending = false,
+    onPage?: (pageRows: any[]) => void,
+  ) => {
     const PAGE = 1000;
     let page = 0;
     let allRows: any[] = [];
@@ -161,49 +167,70 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         .range(page * PAGE, (page + 1) * PAGE - 1);
       if (error || !data || data.length === 0) { done = true; break; }
       allRows = allRows.concat(data);
+      if (onPage) onPage(data);
       if (data.length < PAGE) done = true;
       page++;
     }
     return allRows;
   }, []);
 
-  // Load all data from Supabase on mount
+
+  // Load all data from Supabase on mount — independent setters so UI can paint as soon as the
+  // first/critical queries (leads, agencies, employees) resolve, without waiting on heavy
+  // background tables (activities, appointments).
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [leadsData, employeesRes, agenciesRes, activitiesData, appointmentsRes, discRes, settingsRes, sourcesRes] = await Promise.all([
-          fetchAll('leads', 'created_at', false),
-          supabase.from('employees').select('*'),
-          supabase.from('agencies').select('*'),
-          fetchAll('activities', 'created_at', false),
-          fetchAll('appointments', 'created_at', false),
-          supabase.from('disc_results').select('*'),
-          supabase.from('app_settings').select('*'),
-          supabase.from('lead_sources').select('*').order('sort_order'),
-        ]);
+    let cancelled = false;
 
-        if (leadsData) setLeads(leadsData.map(dbToLead));
-        if (employeesRes.data) setEmployees(employeesRes.data.map(dbToEmployee));
-        if (agenciesRes.data) setAgencies(agenciesRes.data.map(dbToAgency));
-        if (activitiesData) setActivities(activitiesData.map(dbToActivity));
-        if (appointmentsRes) setAppointments(appointmentsRes.map(dbToAppointment));
-        if (discRes.data) setDiscResults(discRes.data.map(dbToDiscResult));
-        if (sourcesRes.data) setLeadSources(sourcesRes.data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, color: r.color || '#6B7280', sortOrder: r.sort_order })));
+    // Priority: leads + agencies + employees + sources → unblocks Dashboard, Leads list, Analytics
+    // Stream leads into state page-by-page so the first 1000 rows render immediately.
+    fetchAll('leads', 'created_at', false, (pageRows) => {
+      if (cancelled) return;
+      setLeads(prev => {
+        const mapped = pageRows.map(dbToLead);
+        // De-dupe by id in case realtime already inserted something
+        const ids = new Set(prev.map(l => l.id));
+        const fresh = mapped.filter(l => !ids.has(l.id));
+        return prev.length === 0 ? mapped : [...prev, ...fresh];
+      });
+      // Flip loading off as soon as we have *any* leads – Dashboard can paint.
+      setLoading(false);
+    }).catch(err => console.error('Error loading leads:', err)).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
 
-        if (settingsRes.data) {
-          const aptSetting = settingsRes.data.find(s => s.key === 'appointment');
-          const insSetting = settingsRes.data.find(s => s.key === 'insights');
-          if (aptSetting?.value) setAppointmentSettings({ ...defaultAppointmentSettings, ...(aptSetting.value as any) });
-          if (insSetting?.value) setInsightsSettings({ ...defaultInsightsSettings, ...(insSetting.value as any) });
-        }
-      } catch (err) {
-        console.error('Error loading data:', err);
-      } finally {
-        setLoading(false);
+
+    supabase.from('agencies').select('*').then(({ data }) => {
+      if (!cancelled && data) setAgencies(data.map(dbToAgency));
+    });
+    supabase.from('employees').select('*').then(({ data }) => {
+      if (!cancelled && data) setEmployees(data.map(dbToEmployee));
+    });
+    supabase.from('lead_sources').select('*').order('sort_order').then(({ data }) => {
+      if (!cancelled && data) setLeadSources(data.map((r: any) => ({ id: r.id, label: r.label, icon: r.icon, color: r.color || '#6B7280', sortOrder: r.sort_order })));
+    });
+    supabase.from('app_settings').select('*').then(({ data }) => {
+      if (!cancelled && data) {
+        const aptSetting = data.find(s => s.key === 'appointment');
+        const insSetting = data.find(s => s.key === 'insights');
+        if (aptSetting?.value) setAppointmentSettings({ ...defaultAppointmentSettings, ...(aptSetting.value as any) });
+        if (insSetting?.value) setInsightsSettings({ ...defaultInsightsSettings, ...(insSetting.value as any) });
       }
-    }
-    loadData();
+    });
+
+    // Background (non-blocking): heavier datasets used in detail views & analytics
+    fetchAll('activities', 'created_at', false).then(rows => {
+      if (!cancelled && rows) setActivities(rows.map(dbToActivity));
+    }).catch(err => console.error('Error loading activities:', err));
+    fetchAll('appointments', 'created_at', false).then(rows => {
+      if (!cancelled && rows) setAppointments(rows.map(dbToAppointment));
+    }).catch(err => console.error('Error loading appointments:', err));
+    supabase.from('disc_results').select('*').then(({ data }) => {
+      if (!cancelled && data) setDiscResults(data.map(dbToDiscResult));
+    });
+
+    return () => { cancelled = true; };
   }, [fetchAll]);
+
 
   useEffect(() => {
     const leadsChannel = supabase
@@ -753,6 +780,8 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     <LeadsContext.Provider
       value={{
         leads: filteredLeads,
+        allLeads: leads,
+
         employees,
         agencies,
         activities,
