@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { ExternalLink, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
-const SSM_PORTAL_URL = 'https://ssmpartner.ch/portal';
+const SSM_PORTAL_LOGIN_URL = 'https://ssmpartner.ch/login';
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -17,6 +17,14 @@ export default function Login() {
     hostname.includes('lovable.app') ||
     hostname === 'localhost' ||
     hostname === '127.0.0.1';
+
+  // In Produktion direkt zum zentralen SSM-Portal-Login weiterleiten —
+  // keine Zwischenseite mehr anzeigen.
+  useEffect(() => {
+    if (!isPreview) {
+      window.location.replace(SSM_PORTAL_LOGIN_URL);
+    }
+  }, [isPreview]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
