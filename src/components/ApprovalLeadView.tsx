@@ -146,9 +146,11 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
       if (prow && (prow.version ?? 0) > 0) {
         setPersonnelComplete(Object.keys(validatePersonnel(prow.data ?? {})).length === 0);
         setPersonnelMeta({ version: prow.version ?? 0, updated_at: prow.updated_at ?? null });
+        setPersonnelData(prow.data ?? null);
       } else {
         setPersonnelComplete(false);
         setPersonnelMeta(null);
+        setPersonnelData(null);
       }
     })();
   }, [selectedLead?.id]);
