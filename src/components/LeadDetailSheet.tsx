@@ -29,6 +29,7 @@ import LeadInsightsTab from './LeadInsightsTab';
 import LeadDocumentsTab from './LeadDocumentsTab';
 import LeadPersonnelSection from './LeadPersonnelSection';
 import LeadHiringReadiness from './LeadHiringReadiness';
+import ManagementApprovalPanel from './ManagementApprovalPanel';
 import AddressAutocomplete, { type AddressSuggestion } from './AddressAutocomplete';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
@@ -1035,6 +1036,17 @@ export default function LeadDetailSheet() {
 
                     {rightTab === 'status' && (
                       <div className="space-y-4">
+                        {/* Geschäftsleitung – Multi-Approval Panel (sichtbar ab Controlling Approved) */}
+                        {(selectedLead.status === 'controlling_approved'
+                          || selectedLead.status === 'management_review'
+                          || selectedLead.status === 'management_approved') && (
+                          <ManagementApprovalPanel
+                            leadId={selectedLead.id}
+                            leadStatus={selectedLead.status}
+                            leadName={selectedLead.name}
+                          />
+                        )}
+
                         {/* Approval History */}
                         {(() => {
                           const approvalStatuses = ['ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired'];

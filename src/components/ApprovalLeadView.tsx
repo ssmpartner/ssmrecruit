@@ -8,6 +8,7 @@ import SourceBadge from './SourceBadge';
 import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardDialog';
 import PersonalityProfile from './PersonalityProfile';
 import LeadHiringReadiness from './LeadHiringReadiness';
+import ManagementApprovalPanel from './ManagementApprovalPanel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
@@ -62,7 +63,7 @@ const recConfig: Record<string, { label: string; color: string; bg: string }> = 
 
 export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   const { selectedLead, setSelectedLead, activities, leads, employees, agencies } = useLeads();
-  const { isControlling, isGeschaeftsleitung, isHR } = useAuth();
+  const { isControlling, isGeschaeftsleitung, isHR, user } = useAuth();
   const { toast } = useToast();
 
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -79,14 +80,36 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   const [previewDoc, setPreviewDoc] = useState<any | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [myDecidedLeadIds, setMyDecidedLeadIds] = useState<Set<string>>(new Set());
 
 
   const wizardType: ApprovalWizardType = isControlling ? 'controlling' : isGeschaeftsleitung ? 'management' : 'hr';
 
+  // Load leads the current GL user has already decided (so they drop off the queue)
+  useEffect(() => {
+    if (!isGeschaeftsleitung || !user) return;
+    supabase
+      .from('lead_management_approvals')
+      .select('lead_id')
+      .eq('user_id', user.id)
+      .then(({ data }) => {
+        setMyDecidedLeadIds(new Set((data || []).map((r: any) => r.lead_id)));
+      });
+  }, [isGeschaeftsleitung, user?.id, selectedLead?.id]);
+
   const queueLeads = useMemo(() => {
-    const sf = isControlling ? 'ready_for_controlling' : isGeschaeftsleitung ? 'management_review' : 'hr_processing';
+    if (isGeschaeftsleitung) {
+      // GL sees both 'controlling_approved' (untouched) and 'management_review' (in progress),
+      // minus the ones this user already decided on.
+      return leads.filter(l =>
+        l.lifecycle === 'active'
+        && (l.status === 'controlling_approved' || l.status === 'management_review')
+        && !myDecidedLeadIds.has(l.id)
+      );
+    }
+    const sf = isControlling ? 'ready_for_controlling' : 'hr_processing';
     return leads.filter(l => l.lifecycle === 'active' && l.status === sf);
-  }, [leads, isControlling, isGeschaeftsleitung, isHR]);
+  }, [leads, isControlling, isGeschaeftsleitung, isHR, myDecidedLeadIds]);
 
   const currentIndex = useMemo(() => selectedLead ? queueLeads.findIndex(l => l.id === selectedLead.id) : -1, [selectedLead, queueLeads]);
   const hasPrev = currentIndex > 0;
@@ -329,22 +352,29 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                   </div>
                 </div>
 
-                {/* GL/HR: Previous approvals */}
+                {/* GL/HR: Previous approvals + Multi-GL panel */}
                 {(isGeschaeftsleitung || isHR) && (
-                  <div className="rounded-xl border bg-card p-4">
-                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-cyan-600" /> Vorherige Freigaben</h3>
-                    <div className="flex gap-3">
-                      <div className="flex-1 flex items-center justify-between rounded-lg bg-muted/40 p-3">
-                        <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />Controlling</span>
-                        <span className="text-sm font-medium text-emerald-700">{controllingDecision}</span>
-                      </div>
-                      {isHR && (
+                  <div className="space-y-3">
+                    <div className="rounded-xl border bg-card p-4">
+                      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-cyan-600" /> Vorherige Freigaben</h3>
+                      <div className="flex gap-3">
                         <div className="flex-1 flex items-center justify-between rounded-lg bg-muted/40 p-3">
-                          <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />GL</span>
-                          <span className="text-sm font-medium text-emerald-700">Freigegeben</span>
+                          <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />Controlling</span>
+                          <span className="text-sm font-medium text-emerald-700">{controllingDecision}</span>
                         </div>
-                      )}
+                        {isHR && (
+                          <div className="flex-1 flex items-center justify-between rounded-lg bg-muted/40 p-3">
+                            <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />GL</span>
+                            <span className="text-sm font-medium text-emerald-700">Freigegeben</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    <ManagementApprovalPanel
+                      leadId={selectedLead.id}
+                      leadStatus={selectedLead.status}
+                      leadName={selectedLead.name}
+                    />
                   </div>
                 )}
 
@@ -380,20 +410,20 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
 
 
 
-                {/* Action */}
-                <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5 text-center">
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {isControlling && 'Prüfen Sie Insights, Matching und Dokumente und treffen Sie Ihre Entscheidung.'}
-                    {isGeschaeftsleitung && 'Überprüfen Sie die Zusammenfassung und geben Sie den Lead frei oder lehnen Sie ihn ab.'}
-                    {isHR && 'Starten Sie den Onboarding-Prozess und setzen Sie den finalen Status.'}
-                  </p>
-                  <button onClick={() => setWizardOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90 transition-opacity shadow-sm">
-                    {isControlling && <><ClipboardCheck className="h-4 w-4" /> Controlling Prüfung starten</>}
-                    {isGeschaeftsleitung && <><Eye className="h-4 w-4" /> Management Review starten</>}
-                    {isHR && <><UserCheck className="h-4 w-4" /> Onboarding & Einstellung</>}
-                  </button>
-                </div>
+                {/* Action – nicht für GL (Entscheidung erfolgt inline im Geschäftsleitung-Panel oben) */}
+                {!isGeschaeftsleitung && (
+                  <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5 text-center">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {isControlling && 'Prüfen Sie Insights, Matching und Dokumente und treffen Sie Ihre Entscheidung.'}
+                      {isHR && 'Starten Sie den Onboarding-Prozess und setzen Sie den finalen Status.'}
+                    </p>
+                    <button onClick={() => setWizardOpen(true)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90 transition-opacity shadow-sm">
+                      {isControlling && <><ClipboardCheck className="h-4 w-4" /> Controlling Prüfung starten</>}
+                      {isHR && <><UserCheck className="h-4 w-4" /> Onboarding & Einstellung</>}
+                    </button>
+                  </div>
+                )}
               </div>
             </TabsContent>
 

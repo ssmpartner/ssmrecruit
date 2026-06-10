@@ -2390,6 +2390,41 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_management_approvals: {
+        Row: {
+          comment: string | null
+          decided_at: string
+          decision: string
+          id: string
+          lead_id: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          decided_at?: string
+          decision: string
+          id?: string
+          lead_id: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          decided_at?: string
+          decision?: string
+          id?: string
+          lead_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_management_approvals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_personal_data: {
         Row: {
           data: Json
@@ -2946,6 +2981,14 @@ export type Database = {
       }
       get_current_employee_agency: { Args: never; Returns: string }
       get_current_employee_id: { Args: never; Returns: string }
+      get_geschaeftsleitung_users: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          display_name: string
+          user_id: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
