@@ -410,20 +410,20 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
 
 
 
-                {/* Action */}
-                <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5 text-center">
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {isControlling && 'Prüfen Sie Insights, Matching und Dokumente und treffen Sie Ihre Entscheidung.'}
-                    {isGeschaeftsleitung && 'Überprüfen Sie die Zusammenfassung und geben Sie den Lead frei oder lehnen Sie ihn ab.'}
-                    {isHR && 'Starten Sie den Onboarding-Prozess und setzen Sie den finalen Status.'}
-                  </p>
-                  <button onClick={() => setWizardOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90 transition-opacity shadow-sm">
-                    {isControlling && <><ClipboardCheck className="h-4 w-4" /> Controlling Prüfung starten</>}
-                    {isGeschaeftsleitung && <><Eye className="h-4 w-4" /> Management Review starten</>}
-                    {isHR && <><UserCheck className="h-4 w-4" /> Onboarding & Einstellung</>}
-                  </button>
-                </div>
+                {/* Action – nicht für GL (Entscheidung erfolgt inline im Geschäftsleitung-Panel oben) */}
+                {!isGeschaeftsleitung && (
+                  <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5 text-center">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {isControlling && 'Prüfen Sie Insights, Matching und Dokumente und treffen Sie Ihre Entscheidung.'}
+                      {isHR && 'Starten Sie den Onboarding-Prozess und setzen Sie den finalen Status.'}
+                    </p>
+                    <button onClick={() => setWizardOpen(true)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90 transition-opacity shadow-sm">
+                      {isControlling && <><ClipboardCheck className="h-4 w-4" /> Controlling Prüfung starten</>}
+                      {isHR && <><UserCheck className="h-4 w-4" /> Onboarding & Einstellung</>}
+                    </button>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
