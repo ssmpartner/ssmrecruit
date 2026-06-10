@@ -18,7 +18,22 @@ interface MgmtApproval {
 interface Props {
   leadId: string;
   leadStatus: string;
+  leadUpdatedAt?: string;
+  leadCreatedAt?: string;
 }
+
+function formatDuration(fromIso?: string): string {
+  if (!fromIso) return '';
+  const ms = Date.now() - new Date(fromIso).getTime();
+  if (Number.isNaN(ms) || ms < 0) return '';
+  const min = Math.floor(ms / 60000);
+  if (min < 60) return `${min} Min.`;
+  const hrs = Math.floor(min / 60);
+  if (hrs < 48) return `${hrs} Std.`;
+  const days = Math.floor(hrs / 24);
+  return `${days} Tag${days === 1 ? '' : 'e'}`;
+}
+
 
 const initials = (n?: string | null) =>
   (n || '?').split(/\s+/).map(s => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
