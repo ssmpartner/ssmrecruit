@@ -80,7 +80,7 @@ export default function LeadsTable() {
     if (isControlling) {
       filtered = filtered.filter(l => l.status === 'ready_for_controlling');
     } else if (isGeschaeftsleitung) {
-      filtered = filtered.filter(l => l.status === 'management_review' || l.status === 'management_approved');
+      filtered = filtered.filter(l => l.status === 'controlling_approved' || l.status === 'management_review');
     } else if (isHR) {
       filtered = filtered.filter(l => l.status === 'hr_processing');
     }
@@ -170,7 +170,7 @@ export default function LeadsTable() {
   const roleFilteredActive = useMemo(() => {
     let items = leads.filter(l => l.lifecycle === 'active');
     if (isControlling) items = items.filter(l => l.status === 'ready_for_controlling');
-    else if (isGeschaeftsleitung) items = items.filter(l => l.status === 'management_review' || l.status === 'management_approved');
+    else if (isGeschaeftsleitung) items = items.filter(l => l.status === 'controlling_approved' || l.status === 'management_review');
     else if (isHR) items = items.filter(l => l.status === 'hr_processing');
     return items.length;
   }, [leads, isControlling, isGeschaeftsleitung, isHR]);

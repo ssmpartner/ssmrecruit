@@ -142,7 +142,7 @@ export default function Dashboard() {
   // Role-specific leads
   const roleLeads = useMemo(() => {
     if (isControlling) return activeLeads.filter(l => l.status === 'ready_for_controlling');
-    if (isGeschaeftsleitung) return activeLeads.filter(l => l.status === 'management_review');
+    if (isGeschaeftsleitung) return activeLeads.filter(l => l.status === 'controlling_approved' || l.status === 'management_review');
     if (isHR) return activeLeads.filter(l => l.status === 'hr_processing');
     return [];
   }, [activeLeads, isControlling, isGeschaeftsleitung, isHR]);
