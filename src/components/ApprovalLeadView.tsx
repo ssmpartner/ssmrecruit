@@ -295,88 +295,107 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
 
             {/* ─── TAB: Übersicht ─── */}
             <TabsContent value="overview" className="flex-1 overflow-y-auto p-5 mt-0">
-              <div className="max-w-4xl mx-auto space-y-5">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                  {/* Left: Lead info */}
-                  <div className="lg:col-span-2 rounded-xl border bg-card p-4">
-                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Lead-Kurzinfo</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {(() => {
-                        const age = computeAge((selectedLead as any).birthDate);
-                        const birthVal = (selectedLead as any).birthDate
-                          ? `${new Date((selectedLead as any).birthDate).toLocaleDateString('de-CH')}${age !== null ? ` (${age} J.)` : ''}`
-                          : '';
-                        return [
-                          { icon: Mail, label: 'E-Mail', value: selectedLead.email, hide: isControlling },
-                          { icon: Phone, label: 'Telefon', value: selectedLead.phone, hide: isControlling },
-                          { icon: Cake, label: 'Geburtsdatum', value: birthVal },
-                          { icon: Briefcase, label: 'Position', value: selectedLead.position },
-                          { icon: MapPin, label: 'Standort', value: `${selectedLead.plz} ${selectedLead.city}`.trim() },
-                          { icon: Calendar, label: 'Leaddatum', value: new Date(selectedLead.createdAt).toLocaleDateString('de-CH') },
-                          { icon: User, label: 'Betreuer', value: employee?.name || '—' },
-                          { icon: Building2, label: 'Agentur', value: agency?.name || '—' },
-                        ].filter(i => !i.hide).map(item => (
-                          <div key={item.label} className="rounded-lg bg-muted/40 p-2.5">
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><item.icon className="h-3 w-3" />{item.label}</div>
-                            <p className={cn("text-sm font-medium truncate", !item.value?.trim() && "text-muted-foreground italic")}>{item.value?.trim() || '—'}</p>
-                          </div>
-                        ));
-                      })()}
-
-                    </div>
-                  </div>
-                  {/* Right: Quick Stats */}
-                  <div className="space-y-3">
-                    <div className="rounded-xl border p-4 text-center">
-                      <BarChart3 className="h-6 w-6 text-emerald-600 mx-auto mb-1" />
-                      <p className="text-2xl font-bold">{matchScore !== null ? `${matchScore}%` : '—'}</p>
-                      <p className="text-xs text-muted-foreground">Match Score</p>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="rounded-lg border p-2.5 text-center">
-                        <Brain className="h-4 w-4 text-violet-600 mx-auto mb-0.5" />
-                        <p className={cn("text-[11px] font-bold", insightsStatus === 'Abgeschlossen' ? 'text-emerald-700' : 'text-amber-600')}>{insightsStatus}</p>
-                        <p className="text-[9px] text-muted-foreground">Insights</p>
-                      </div>
-                      <div className="rounded-lg border p-2.5 text-center">
-                        <Brain className="h-4 w-4 text-indigo-600 mx-auto mb-0.5" />
-                        <p className="text-[11px] font-bold">{discType}</p>
-                        <p className="text-[9px] text-muted-foreground">DISC</p>
-                      </div>
-                      <div className="rounded-lg border p-2.5 text-center">
-                        <Upload className="h-4 w-4 text-blue-600 mx-auto mb-0.5" />
-                        <p className="text-[11px] font-bold">{docsCount}</p>
-                        <p className="text-[9px] text-muted-foreground">Docs</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* GL/HR: Previous approvals + Multi-GL panel */}
-                {(isGeschaeftsleitung || isHR) && (
-                  <div className="space-y-3">
+              <div className="max-w-6xl mx-auto space-y-5">
+                {(() => {
+                  const leadInfoCard = (
                     <div className="rounded-xl border bg-card p-4">
-                      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-cyan-600" /> Vorherige Freigaben</h3>
-                      <div className="flex gap-3">
-                        <div className="flex-1 flex items-center justify-between rounded-lg bg-muted/40 p-3">
-                          <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />Controlling</span>
-                          <span className="text-sm font-medium text-emerald-700">{controllingDecision}</span>
-                        </div>
-                        {isHR && (
-                          <div className="flex-1 flex items-center justify-between rounded-lg bg-muted/40 p-3">
-                            <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />GL</span>
-                            <span className="text-sm font-medium text-emerald-700">Freigegeben</span>
-                          </div>
-                        )}
+                      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Lead-Kurzinfo</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        {(() => {
+                          const age = computeAge((selectedLead as any).birthDate);
+                          const birthVal = (selectedLead as any).birthDate
+                            ? `${new Date((selectedLead as any).birthDate).toLocaleDateString('de-CH')}${age !== null ? ` (${age} J.)` : ''}`
+                            : '';
+                          return [
+                            { icon: Mail, label: 'E-Mail', value: selectedLead.email, hide: isControlling },
+                            { icon: Phone, label: 'Telefon', value: selectedLead.phone, hide: isControlling },
+                            { icon: Cake, label: 'Geburtsdatum', value: birthVal },
+                            { icon: Briefcase, label: 'Position', value: selectedLead.position },
+                            { icon: MapPin, label: 'Standort', value: `${selectedLead.plz} ${selectedLead.city}`.trim() },
+                            { icon: Calendar, label: 'Leaddatum', value: new Date(selectedLead.createdAt).toLocaleDateString('de-CH') },
+                            { icon: User, label: 'Betreuer', value: employee?.name || '—' },
+                            { icon: Building2, label: 'Agentur', value: agency?.name || '—' },
+                          ].filter(i => !i.hide).map(item => (
+                            <div key={item.label} className="rounded-lg bg-muted/40 p-2.5">
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5"><item.icon className="h-3 w-3" />{item.label}</div>
+                              <p className={cn("text-sm font-medium truncate", !item.value?.trim() && "text-muted-foreground italic")}>{item.value?.trim() || '—'}</p>
+                            </div>
+                          ));
+                        })()}
                       </div>
                     </div>
-                    <ManagementApprovalPanel
-                      leadId={selectedLead.id}
-                      leadStatus={selectedLead.status}
-                      leadName={selectedLead.name}
-                    />
-                  </div>
-                )}
+                  );
+
+                  const statsCard = (
+                    <div className="space-y-3">
+                      <div className="rounded-xl border p-4 text-center">
+                        <BarChart3 className="h-6 w-6 text-emerald-600 mx-auto mb-1" />
+                        <p className="text-2xl font-bold">{matchScore !== null ? `${matchScore}%` : '—'}</p>
+                        <p className="text-xs text-muted-foreground">Match Score</p>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="rounded-lg border p-2.5 text-center">
+                          <Brain className="h-4 w-4 text-violet-600 mx-auto mb-0.5" />
+                          <p className={cn("text-[11px] font-bold", insightsStatus === 'Abgeschlossen' ? 'text-emerald-700' : 'text-amber-600')}>{insightsStatus}</p>
+                          <p className="text-[9px] text-muted-foreground">Insights</p>
+                        </div>
+                        <div className="rounded-lg border p-2.5 text-center">
+                          <Brain className="h-4 w-4 text-indigo-600 mx-auto mb-0.5" />
+                          <p className="text-[11px] font-bold">{discType}</p>
+                          <p className="text-[9px] text-muted-foreground">DISC</p>
+                        </div>
+                        <div className="rounded-lg border p-2.5 text-center">
+                          <Upload className="h-4 w-4 text-blue-600 mx-auto mb-0.5" />
+                          <p className="text-[11px] font-bold">{docsCount}</p>
+                          <p className="text-[9px] text-muted-foreground">Docs</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+
+                  if (isGeschaeftsleitung || isHR) {
+                    // Freigaben links, Lead-Kurzinfo rechts
+                    return (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                        <div className="space-y-3">
+                          <div className="rounded-xl border bg-card p-4">
+                            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-cyan-600" /> Vorherige Freigaben</h3>
+                            <div className="flex gap-3">
+                              <div className="flex-1 flex items-center justify-between rounded-lg bg-muted/40 p-3">
+                                <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />Controlling</span>
+                                <span className="text-sm font-medium text-emerald-700">{controllingDecision}</span>
+                              </div>
+                              {isHR && (
+                                <div className="flex-1 flex items-center justify-between rounded-lg bg-muted/40 p-3">
+                                  <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />GL</span>
+                                  <span className="text-sm font-medium text-emerald-700">Freigegeben</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <ManagementApprovalPanel
+                            leadId={selectedLead.id}
+                            leadStatus={selectedLead.status}
+                            leadName={selectedLead.name}
+                          />
+                        </div>
+                        <div className="space-y-5">
+                          {leadInfoCard}
+                          {statsCard}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Default: Kurzinfo + Stats nebeneinander
+                  return (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                      <div className="lg:col-span-2">{leadInfoCard}</div>
+                      {statsCard}
+                    </div>
+                  );
+                })()}
+
 
                 {/* Karriereplan inline */}
                 {careerPlan && (
