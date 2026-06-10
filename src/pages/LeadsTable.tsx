@@ -80,7 +80,7 @@ export default function LeadsTable() {
     if (isControlling) {
       filtered = filtered.filter(l => l.status === 'ready_for_controlling');
     } else if (isGeschaeftsleitung) {
-      filtered = filtered.filter(l => l.status === 'controlling_approved' || l.status === 'management_review');
+      filtered = filtered.filter(l => ['ready_for_controlling','controlling_approved','management_review'].includes(l.status));
     } else if (isHR) {
       filtered = filtered.filter(l => ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing'].includes(l.status));
     }
