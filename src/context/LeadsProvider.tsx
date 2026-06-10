@@ -722,9 +722,15 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const filteredLeads = useMemo(() => {
     // Superadmin and Admin see all leads
     if (isSuperadmin || role === 'admin') return leads;
-    // Review roles (controlling, geschaeftsleitung, hr) see assigned leads only
-    if (role === 'controlling' || role === 'geschaeftsleitung' || role === 'hr') {
-      return leads.filter(l => l.assignedApproverUserId === user?.id);
+    // Review roles see all leads in the relevant status system-wide
+    if (role === 'controlling') {
+      return leads.filter(l => l.status === 'ready_for_controlling');
+    }
+    if (role === 'geschaeftsleitung') {
+      return leads.filter(l => l.status === 'management_review' || l.status === 'controlling_approved');
+    }
+    if (role === 'hr') {
+      return leads.filter(l => l.status === 'hr_processing' || l.status === 'management_approved' || l.status === 'hired');
     }
     const userEmail = (user?.email || '').toLowerCase();
     const myEmployee = employees.find(e => (e.email || '').toLowerCase() === userEmail);
