@@ -250,7 +250,7 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Dokumente_${selectedLead.firstName || ''}_${selectedLead.lastName || selectedLead.id}.zip`.replace(/\s+/g, '_');
+      a.download = `Dokumente_${(selectedLead.name || selectedLead.id).replace(/[^\w.-]+/g, '_')}.zip`;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
     } catch (e: any) {
