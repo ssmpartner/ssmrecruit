@@ -140,6 +140,51 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
       (a.description.includes('Controlling') || a.description.includes('Management') || a.description.includes('HR') || a.description.includes('Freigegeben') || a.description.includes('Abgelehnt')));
   }, [selectedLead, activities]);
 
+  const allLeadActivities = useMemo(() => {
+    if (!selectedLead) return [];
+    return activities
+      .filter(a => a.leadId === selectedLead.id)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }, [selectedLead, activities]);
+
+  function computeAge(birth?: string): number | null {
+    if (!birth) return null;
+    const d = new Date(birth);
+    if (Number.isNaN(d.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+    return age >= 0 && age < 120 ? age : null;
+  }
+
+  async function previewDocument(doc: any) {
+    setPreviewDoc(doc);
+    setPreviewLoading(true);
+    setPreviewUrl(null);
+    const { data, error } = await supabase.storage.from('lead-documents').createSignedUrl(doc.file_path, 3600);
+    if (error || !data?.signedUrl) {
+      toast({ title: 'Vorschau fehlgeschlagen', description: error?.message || 'Datei nicht verfügbar', variant: 'destructive' });
+      setPreviewDoc(null);
+      setPreviewLoading(false);
+      return;
+    }
+    setPreviewUrl(data.signedUrl);
+    setPreviewLoading(false);
+  }
+
+  function closePreview() {
+    setPreviewDoc(null);
+    setPreviewUrl(null);
+    setPreviewLoading(false);
+  }
+
+  function isPreviewable(fileName: string): boolean {
+    const l = fileName.toLowerCase();
+    return l.endsWith('.pdf') || l.endsWith('.jpg') || l.endsWith('.jpeg') || l.endsWith('.png') || l.endsWith('.gif') || l.endsWith('.webp') || l.endsWith('.svg');
+  }
+
+
   if (!selectedLead) return null;
 
   const employee = employees.find(e => e.id === selectedLead.employeeId);
