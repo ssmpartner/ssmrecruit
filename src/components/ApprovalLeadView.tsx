@@ -838,7 +838,7 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
               </div>
             </TabsContent>
 
-            {/* ─── TAB: Personalien (nur Status-Anzeige) ─── */}
+            {/* ─── TAB: Personalien ─── */}
             <TabsContent value="personnel" className="flex-1 overflow-y-auto p-5 mt-0">
               <div className="max-w-3xl mx-auto space-y-4">
                 <h3 className="text-sm font-semibold flex items-center gap-2"><UserSquare2 className="h-4 w-4 text-primary" /> Personalien (Personalblatt)</h3>
@@ -858,9 +858,20 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                       : <p className="text-xs text-muted-foreground mt-0.5">Es wurden noch keine Personalien erfasst.</p>}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Aus Datenschutzgründen werden die detaillierten Personalien nicht in der Controlling-Ansicht angezeigt.
-                </p>
+
+                {isHR ? (
+                  personnelData ? (
+                    <div className="rounded-xl border bg-card p-4">
+                      <PersonnelFormFields data={personnelData} onChange={() => {}} disabled />
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Es wurden noch keine Personalien-Daten erfasst.</p>
+                  )
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Aus Datenschutzgründen werden die detaillierten Personalien nicht in dieser Ansicht angezeigt.
+                  </p>
+                )}
               </div>
             </TabsContent>
 
