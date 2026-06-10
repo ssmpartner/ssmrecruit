@@ -486,28 +486,60 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                 {/* Action – nicht für GL (Entscheidung erfolgt inline im Geschäftsleitung-Panel oben) */}
                 {!isGeschaeftsleitung && (() => {
                   const canControllingAct = isControlling && selectedLead.status === 'ready_for_controlling';
-                  const canHrAct = isHR && selectedLead.status === 'hr_processing';
+                  const canHrAct = isHR && (selectedLead.status === 'hr_processing' || selectedLead.status === 'hr_pending');
                   const waitingReason =
-                    isHR && selectedLead.status !== 'hr_processing'
+                    isHR && !canHrAct
                       ? (selectedLead.status === 'ready_for_controlling'
                           ? 'Warten auf Controlling-Freigabe. Onboarding ist erst möglich, sobald Controlling und Geschäftsleitung freigegeben haben.'
                           : 'Warten auf Geschäftsleitung-Freigabe. Onboarding wird freigeschaltet, sobald alle GL-Stimmen vorliegen.')
                       : null;
                   return (
-                    <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5 text-center">
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {isControlling && (canControllingAct ? 'Prüfen Sie Insights, Matching und Dokumente und treffen Sie Ihre Entscheidung.' : 'Lead wurde bereits von Controlling bearbeitet.')}
-                        {isHR && (canHrAct ? 'Starten Sie den Onboarding-Prozess und setzen Sie den finalen Status.' : waitingReason)}
-                      </p>
-                      {(canControllingAct || canHrAct) ? (
-                        <button onClick={() => setWizardOpen(true)}
-                          className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90 transition-opacity shadow-sm">
-                          {isControlling && <><ClipboardCheck className="h-4 w-4" /> Controlling Prüfung starten</>}
-                          {isHR && <><UserCheck className="h-4 w-4" /> Onboarding & Einstellung</>}
-                        </button>
-                      ) : (
-                        <div className="inline-flex items-center gap-2 rounded-xl bg-muted px-6 py-3 text-sm font-semibold text-muted-foreground border">
-                          <Clock className="h-4 w-4" /> Aktion gesperrt
+                    <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5">
+                      {isControlling && (
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {canControllingAct ? 'Prüfen Sie Insights, Matching und Dokumente und treffen Sie Ihre Entscheidung.' : 'Lead wurde bereits von Controlling bearbeitet.'}
+                          </p>
+                          {canControllingAct ? (
+                            <button onClick={() => setWizardOpen(true)}
+                              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-90 transition-opacity shadow-sm">
+                              <ClipboardCheck className="h-4 w-4" /> Controlling Prüfung starten
+                            </button>
+                          ) : (
+                            <div className="inline-flex items-center gap-2 rounded-xl bg-muted px-6 py-3 text-sm font-semibold text-muted-foreground border">
+                              <Clock className="h-4 w-4" /> Aktion gesperrt
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {isHR && !canHrAct && (
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground mb-3">{waitingReason}</p>
+                          <div className="inline-flex items-center gap-2 rounded-xl bg-muted px-6 py-3 text-sm font-semibold text-muted-foreground border">
+                            <Clock className="h-4 w-4" /> Aktion gesperrt
+                          </div>
+                        </div>
+                      )}
+                      {isHR && canHrAct && (
+                        <div>
+                          <p className="text-sm font-semibold mb-1 flex items-center gap-2"><UserCheck className="h-4 w-4 text-primary" /> HR-Entscheidung</p>
+                          <p className="text-xs text-muted-foreground mb-3">
+                            Bestätigen Sie die Einstellung sobald alle Unterlagen vollständig sind. Fehlen noch Dokumente, senden Sie den Lead mit einer Begründung zurück an den zuständigen Mitarbeiter – der Prozess startet danach <span className="font-semibold">nicht</span> erneut über Controlling/GL.
+                          </p>
+                          {selectedLead.status === 'hr_pending' && (
+                            <div className="mb-3 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+                              ⚠️ Aktuell auf "HR Pendent" – warte auf Nachreichung durch den Mitarbeiter.
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-2">
+                            <Button onClick={() => setHireConfirmOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                              <CheckCircle2 className="h-4 w-4" /> Eingestellt bestätigen
+                            </Button>
+                            <Button variant="outline" onClick={() => { setPendingReason(''); setPendingOpen(true); }}
+                              className="border-amber-300 text-amber-800 hover:bg-amber-50">
+                              <Clock className="h-4 w-4" /> Auf Pendent setzen
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </div>
