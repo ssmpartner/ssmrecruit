@@ -229,7 +229,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
           ? `✅ Selektioniert (${SCORING_OPTIONS.find(s => s.value === scoring)?.label || ''})`
           : `❌ Abgelehnt`,
         description: action === 'approve'
-          ? `${leadName} → Geschäftsleitung`
+          ? `${leadName} → Controlling Approved`
           : `${leadName} – Lead gesperrt`,
       });
 
