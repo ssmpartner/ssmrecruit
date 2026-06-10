@@ -74,7 +74,10 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
   const [hireConfirmOpen, setHireConfirmOpen] = useState(false);
   const [pendingOpen, setPendingOpen] = useState(false);
   const [pendingReason, setPendingReason] = useState('');
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   const [hrActionLoading, setHrActionLoading] = useState(false);
+  const [glDecisions, setGlDecisions] = useState<{ approved: number; rejected: number }>({ approved: 0, rejected: 0 });
 
   const [wizardOpen, setWizardOpen] = useState(false);
   const [assessment, setAssessment] = useState<AssessmentData | null>(null);
