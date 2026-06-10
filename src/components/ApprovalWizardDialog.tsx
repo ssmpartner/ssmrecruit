@@ -153,7 +153,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
         newStatus = config.approveStatus;
         const scoringLabel = SCORING_OPTIONS.find(s => s.value === scoring)?.label || '';
         description = wizardType === 'controlling'
-          ? `Controlling: Selektioniert (${scoringLabel}) → Weiterleitung an Geschäftsleitung`
+          ? `Controlling: Selektioniert (${scoringLabel}) → Status: Controlling Approved`
           : `${config.label}: Freigegeben → ${statusConfig[newStatus]?.label || newStatus}`;
       } else if (action === 'reject' && config.rejectStatus) {
         newStatus = config.rejectStatus;
