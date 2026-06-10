@@ -153,7 +153,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
         newStatus = config.approveStatus;
         const scoringLabel = SCORING_OPTIONS.find(s => s.value === scoring)?.label || '';
         description = wizardType === 'controlling'
-          ? `Controlling: Selektioniert (${scoringLabel}) → Weiterleitung an Geschäftsleitung`
+          ? `Controlling: Selektioniert (${scoringLabel}) → Status: Controlling Approved`
           : `${config.label}: Freigegeben → ${statusConfig[newStatus]?.label || newStatus}`;
       } else if (action === 'reject' && config.rejectStatus) {
         newStatus = config.rejectStatus;
@@ -213,7 +213,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
         : `${config.label} abgeschlossen`;
       const notifDescription = wizardType === 'controlling'
         ? (action === 'approve'
-          ? `Dein Kandidat "${leadName}" wurde vom Controlling selektioniert und an die Geschäftsleitung weitergeleitet.`
+          ? `Dein Kandidat "${leadName}" wurde vom Controlling selektioniert (Status: Controlling Approved).`
           : `Dein Kandidat "${leadName}" wurde vom Controlling abgelehnt.${rejectReason ? ` Begründung: ${rejectReason}` : ''}`)
         : `"${leadName}" – ${action === 'approve' ? 'Freigegeben' : 'Abgelehnt'} von ${currentUser}`;
 
@@ -229,7 +229,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
           ? `✅ Selektioniert (${SCORING_OPTIONS.find(s => s.value === scoring)?.label || ''})`
           : `❌ Abgelehnt`,
         description: action === 'approve'
-          ? `${leadName} → Geschäftsleitung`
+          ? `${leadName} → Controlling Approved`
           : `${leadName} – Lead gesperrt`,
       });
 
@@ -272,7 +272,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
               controllingAction === 'selektionieren' ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30")}>
             <CheckCircle2 className={cn("h-5 w-5 mb-1", controllingAction === 'selektionieren' ? 'text-primary' : 'text-muted-foreground')} />
             <p className="text-sm font-semibold">Selektionieren</p>
-            <p className="text-[10px] text-muted-foreground">Weiter an Geschäftsleitung</p>
+            <p className="text-[10px] text-muted-foreground">Status → Controlling Approved</p>
           </button>
           <button type="button" onClick={() => setControllingAction('ablehnen')}
             className={cn("rounded-lg border-2 p-3 text-left transition-all",
