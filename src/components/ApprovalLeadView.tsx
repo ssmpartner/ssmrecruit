@@ -352,22 +352,29 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                   </div>
                 </div>
 
-                {/* GL/HR: Previous approvals */}
+                {/* GL/HR: Previous approvals + Multi-GL panel */}
                 {(isGeschaeftsleitung || isHR) && (
-                  <div className="rounded-xl border bg-card p-4">
-                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-cyan-600" /> Vorherige Freigaben</h3>
-                    <div className="flex gap-3">
-                      <div className="flex-1 flex items-center justify-between rounded-lg bg-muted/40 p-3">
-                        <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />Controlling</span>
-                        <span className="text-sm font-medium text-emerald-700">{controllingDecision}</span>
-                      </div>
-                      {isHR && (
+                  <div className="space-y-3">
+                    <div className="rounded-xl border bg-card p-4">
+                      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-cyan-600" /> Vorherige Freigaben</h3>
+                      <div className="flex gap-3">
                         <div className="flex-1 flex items-center justify-between rounded-lg bg-muted/40 p-3">
-                          <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />GL</span>
-                          <span className="text-sm font-medium text-emerald-700">Freigegeben</span>
+                          <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />Controlling</span>
+                          <span className="text-sm font-medium text-emerald-700">{controllingDecision}</span>
                         </div>
-                      )}
+                        {isHR && (
+                          <div className="flex-1 flex items-center justify-between rounded-lg bg-muted/40 p-3">
+                            <span className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" />GL</span>
+                            <span className="text-sm font-medium text-emerald-700">Freigegeben</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    <ManagementApprovalPanel
+                      leadId={selectedLead.id}
+                      leadStatus={selectedLead.status}
+                      leadName={selectedLead.name}
+                    />
                   </div>
                 )}
 
