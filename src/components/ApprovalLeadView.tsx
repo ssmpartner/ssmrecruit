@@ -9,6 +9,7 @@ import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardD
 import PersonalityProfile from './PersonalityProfile';
 import LeadHiringReadiness from './LeadHiringReadiness';
 import ManagementApprovalPanel from './ManagementApprovalPanel';
+import PendingApprovalsPanel from './PendingApprovalsPanel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
