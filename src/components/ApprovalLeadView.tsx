@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import PersonnelFormFields, { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
 import JSZip from 'jszip';
 import { generateAssessmentPdf, assessmentToPdfData, loadLetterhead } from '@/lib/assessment-pdf';
+import { downloadPersonnelCsv, openPersonnelPdf } from '@/lib/personnel-export';
 import {
   User, MapPin, Mail, Phone, Briefcase, Brain, FileText, BarChart3,
   ClipboardCheck, Shield, CheckCircle2, XCircle,
