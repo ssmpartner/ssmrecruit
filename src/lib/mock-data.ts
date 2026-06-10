@@ -1,4 +1,4 @@
-export type LeadStatus = 'new' | 'contacted' | 'callback' | 'not_reached' | 'not_interested' | 'no_need' | 'not_suitable' | 'internal' | 'appointment' | 'follow_up' | 'hired' | 'rejected' | 'ready_for_controlling' | 'controlling_approved' | 'management_review' | 'management_approved' | 'hr_processing';
+export type LeadStatus = 'new' | 'contacted' | 'callback' | 'not_reached' | 'not_interested' | 'no_need' | 'not_suitable' | 'internal' | 'appointment' | 'follow_up' | 'hired' | 'rejected' | 'ready_for_controlling' | 'controlling_approved' | 'management_review' | 'management_approved' | 'hr_processing' | 'hr_pending';
 
 export type DiscDimension = 'D' | 'I' | 'S' | 'C';
 
