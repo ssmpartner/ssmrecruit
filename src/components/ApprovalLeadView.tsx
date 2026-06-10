@@ -7,13 +7,17 @@ import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import ApprovalWizardDialog, { type ApprovalWizardType } from './ApprovalWizardDialog';
 import PersonalityProfile from './PersonalityProfile';
+import LeadHiringReadiness from './LeadHiringReadiness';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
 import { generateAssessmentPdf, assessmentToPdfData, loadLetterhead } from '@/lib/assessment-pdf';
 import {
   User, MapPin, Mail, Phone, Briefcase, Brain, FileText, BarChart3,
   ClipboardCheck, Shield, CheckCircle2, XCircle,
   UserCheck, Calendar, Eye, Upload, Clock, ChevronLeft, ChevronRight,
   Building2, GraduationCap, TrendingUp, Award, Download, Loader2,
-  Target, Users, BookOpen, DollarSign, ThumbsUp, AlertTriangle
+  Target, Users, BookOpen, DollarSign, ThumbsUp, AlertTriangle, Cake, UserSquare2, Sparkles
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
