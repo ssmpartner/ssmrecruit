@@ -116,8 +116,9 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
   const glDecisionByUser = new Map(mgmtApprovals.map(a => [a.user_id, a]));
   const allGlDecided = glUsers.length > 0 && glUsers.every(u => glDecisionByUser.has(u.user_id));
   const anyGlRejected = mgmtApprovals.some(a => a.decision === 'rejected');
-  const glDone = idxOf(leadStatus) >= idxOf('management_approved') && !anyGlRejected;
-  const glActive = leadStatus === 'controlling_approved' || leadStatus === 'management_review';
+  const glFullyApproved = allGlDecided && !anyGlRejected && mgmtApprovals.length > 0;
+  const glDone = (idxOf(leadStatus) >= idxOf('management_approved') || glFullyApproved) && !anyGlRejected;
+  const glActive = !glDone && (leadStatus === 'controlling_approved' || leadStatus === 'management_review');
 
   // === HR stage ===
   const hrActive = leadStatus === 'hr_processing';
