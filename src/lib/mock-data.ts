@@ -222,7 +222,8 @@ export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boole
     controlling_approved: ['management_review'],
     management_review: ['management_approved', 'rejected'],
     management_approved: ['hr_processing'],
-    hr_processing: ['hired', 'rejected'],
+    hr_processing: ['hired', 'hr_pending', 'rejected'],
+    hr_pending: ['hr_processing', 'rejected'],
     hired: [],
     rejected: [],
   };
