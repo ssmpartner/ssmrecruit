@@ -529,12 +529,23 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                           </div>
                         </div>
                       )}
-                      {isHR && canHrAct && (
+                      {isHR && canHrAct && (() => {
+                        const splitGl = glDecisions.approved > 0 && glDecisions.rejected > 0;
+                        return (
                         <div>
                           <p className="text-sm font-semibold mb-1 flex items-center gap-2"><UserCheck className="h-4 w-4 text-primary" /> HR-Entscheidung</p>
                           <p className="text-xs text-muted-foreground mb-3">
                             Bestätigen Sie die Einstellung sobald alle Unterlagen vollständig sind. Fehlen noch Dokumente, senden Sie den Lead mit einer Begründung zurück an den zuständigen Mitarbeiter – der Prozess startet danach <span className="font-semibold">nicht</span> erneut über Controlling/GL.
                           </p>
+                          {splitGl && (
+                            <div className="mb-3 rounded-lg bg-amber-50 border-2 border-amber-300 px-3 py-2.5 text-xs text-amber-900 flex items-start gap-2">
+                              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-700" />
+                              <div>
+                                <p className="font-bold mb-0.5">⚠️ Geteilte Geschäftsleitungs-Entscheidung ({glDecisions.approved} Freigabe / {glDecisions.rejected} Ablehnung)</p>
+                                <p>Bitte kontaktiere <span className="font-semibold">beide Mitglieder der Geschäftsleitung</span>, um das weitere Vorgehen abzustimmen. Anschliessend kannst du den Lead <span className="font-semibold">einstellen</span> oder <span className="font-semibold">komplett ablehnen</span>.</p>
+                              </div>
+                            </div>
+                          )}
                           {selectedLead.status === 'hr_pending' && (
                             <div className="mb-3 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
                               ⚠️ Aktuell auf "HR Pendent" – warte auf Nachreichung durch den Mitarbeiter.
@@ -548,9 +559,14 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                               className="border-amber-300 text-amber-800 hover:bg-amber-50">
                               <Clock className="h-4 w-4" /> Auf Pendent setzen
                             </Button>
+                            <Button variant="outline" onClick={() => { setRejectReason(''); setRejectOpen(true); }}
+                              className="border-red-300 text-red-700 hover:bg-red-50">
+                              <XCircle className="h-4 w-4" /> Ablehnen
+                            </Button>
                           </div>
                         </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   );
                 })()}
