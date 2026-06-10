@@ -398,33 +398,36 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
       </div>
 
       {isSuperadmin && (mgmtApprovals.length > 0 || controllingApprover) && (
-        <div className="rounded-lg border-2 border-dashed border-red-200 bg-red-50/30 p-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-start gap-2 min-w-0">
-              <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-red-800">Superadmin: Freigaben zurücksetzen</p>
-                <p className="text-[11px] text-red-700/80">
-                  Entfernt Controlling- und Geschäftsleitungs-Freigaben und setzt den Lead auf "Bereit für Controlling". Aktion wird in der Aktivität protokolliert.
-                </p>
-              </div>
-            </div>
-            <Button size="sm" variant="outline" className="border-red-300 text-red-700 hover:bg-red-100 shrink-0"
-              onClick={() => { setResetReason(''); setResetOpen(true); }}>
-              <RotateCcw className="h-3.5 w-3.5" /> Zurücksetzen
-            </Button>
-          </div>
+        <div className="rounded-lg border border-dashed border-red-200 bg-red-50/30 p-2.5 text-[11px] text-red-700/90 flex items-start gap-2">
+          <AlertTriangle className="h-3.5 w-3.5 text-red-600 shrink-0 mt-0.5" />
+          <p>
+            <span className="font-semibold">Superadmin:</span> Klicke das{' '}
+            <RotateCcw className="inline h-3 w-3 align-[-2px]" />-Symbol neben einer Person, um genau diese eine
+            Freigabe / Entscheidung zurückzusetzen. Jede Aktion wird protokolliert.
+          </p>
         </div>
       )}
 
-      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+      <Dialog open={resetOpen} onOpenChange={(o) => { if (!o) { setResetOpen(false); setResetTarget(null); } }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Freigaben zurücksetzen</DialogTitle>
+            <DialogTitle>
+              {resetTarget?.kind === 'controlling'
+                ? `Controlling-Freigabe von ${resetTarget.name} zurücksetzen`
+                : resetTarget?.kind === 'gl'
+                  ? `GL-Entscheidung von ${resetTarget.name} zurücksetzen`
+                  : 'Freigabe zurücksetzen'}
+            </DialogTitle>
             <DialogDescription>
-              Diese Aktion löscht alle Controlling- und Geschäftsleitungs-Freigaben für diesen Lead
-              und setzt den Status zurück auf <strong>"Bereit für Controlling"</strong>. Die Aktion
-              wird mit deinem Namen und der Begründung in der Aktivität protokolliert.
+              {resetTarget?.kind === 'controlling' ? (
+                <>Setzt die Controlling-Freigabe von <strong>{resetTarget.name}</strong> zurück. Da Controlling der
+                  erste Schritt ist, werden auch alle bestehenden GL-Entscheidungen entfernt und der Lead wechselt
+                  zurück auf <strong>"Bereit für Controlling"</strong>.</>
+              ) : resetTarget?.kind === 'gl' ? (
+                <>Entfernt nur die Entscheidung von <strong>{resetTarget.name}</strong>. Andere GL-Stimmen
+                  bleiben erhalten. Der Lead-Status wird automatisch neu berechnet.</>
+              ) : null}
+              <br /><br />Die Aktion wird mit deinem Namen und der Begründung in der Aktivität protokolliert.
             </DialogDescription>
           </DialogHeader>
           <Textarea
@@ -435,12 +438,12 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
             maxLength={1000}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setResetOpen(false)} disabled={resetting}>Abbrechen</Button>
+            <Button variant="outline" onClick={() => { setResetOpen(false); setResetTarget(null); }} disabled={resetting}>Abbrechen</Button>
             <Button className="bg-red-600 hover:bg-red-700 text-white"
               disabled={resetting || resetReason.trim().length < 5}
               onClick={handleResetApprovals}>
               {resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-              Freigaben zurücksetzen
+              Zurücksetzen
             </Button>
           </DialogFooter>
         </DialogContent>
