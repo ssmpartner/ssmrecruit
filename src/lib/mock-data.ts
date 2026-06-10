@@ -203,7 +203,7 @@ export interface Employee {
 }
 
 // Ordered status flow for employees
-export const statusFlow: LeadStatus[] = ['new', 'contacted', 'callback', 'not_reached', 'not_interested', 'no_need', 'not_suitable', 'internal', 'appointment', 'follow_up', 'ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired', 'rejected'];
+export const statusFlow: LeadStatus[] = ['new', 'contacted', 'callback', 'not_reached', 'not_interested', 'no_need', 'not_suitable', 'internal', 'appointment', 'follow_up', 'ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hr_pending', 'hired', 'rejected'];
 
 export function getAllowedNextStatuses(currentStatus: LeadStatus, isAdmin: boolean): LeadStatus[] {
   if (isAdmin) return statusFlow;
