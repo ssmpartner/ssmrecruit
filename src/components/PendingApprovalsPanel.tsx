@@ -138,7 +138,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
       setMgmtApprovals((mgmtRes.data as MgmtApproval[]) || []);
       setLoading(false);
     })();
-  }, [leadId]);
+  }, [leadId, reloadKey]);
 
   if (loading) {
     return (
