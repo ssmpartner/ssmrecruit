@@ -100,15 +100,20 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
 
   const queueLeads = useMemo(() => {
     if (isGeschaeftsleitung) {
-      // GL sees both 'controlling_approved' (untouched) and 'management_review' (in progress),
-      // minus the ones this user already decided on.
+      // GL sees the whole approval pipeline up to their stage (read-only on ready_for_controlling)
       return leads.filter(l =>
         l.lifecycle === 'active'
-        && (l.status === 'controlling_approved' || l.status === 'management_review')
+        && ['ready_for_controlling','controlling_approved','management_review'].includes(l.status)
         && !myDecidedLeadIds.has(l.id)
       );
     }
-    const sf = isControlling ? 'ready_for_controlling' : 'hr_processing';
+    if (isHR) {
+      return leads.filter(l =>
+        l.lifecycle === 'active'
+        && ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing'].includes(l.status)
+      );
+    }
+    const sf = 'ready_for_controlling';
     return leads.filter(l => l.lifecycle === 'active' && l.status === sf);
   }, [leads, isControlling, isGeschaeftsleitung, isHR, myDecidedLeadIds]);
 
