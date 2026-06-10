@@ -139,13 +139,19 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
     if (!selectedLead) return;
     setAssessmentLoading(true);
     (async () => {
-      const [assessRes, insRes, docsRes, wizRes, persRes] = await Promise.all([
+      const [assessRes, insRes, docsRes, wizRes, persRes, mgmtRes] = await Promise.all([
         supabase.from('assessment_results').select('*').eq('lead_id', selectedLead.id).order('completed_at', { ascending: false }).limit(1),
         supabase.from('insights_requests').select('status').eq('lead_id', selectedLead.id).order('created_at', { ascending: false }).limit(1),
         supabase.from('document_uploads').select('id, file_name, file_type, file_size, file_path, uploaded_at').eq('lead_id', selectedLead.id),
         supabase.from('status_wizard_results').select('wizard_type, answers').eq('lead_id', selectedLead.id).order('created_at', { ascending: false }),
         supabase.from('lead_personal_data').select('data, version, updated_at').eq('lead_id', selectedLead.id).maybeSingle(),
+        supabase.from('lead_management_approvals').select('decision').eq('lead_id', selectedLead.id),
       ]);
+      const decisions = (mgmtRes.data as { decision: string }[] | null) || [];
+      setGlDecisions({
+        approved: decisions.filter(d => d.decision === 'approved').length,
+        rejected: decisions.filter(d => d.decision === 'rejected').length,
+      });
       setAssessment(assessRes.data?.[0] as unknown as AssessmentData ?? null);
       setAssessmentLoading(false);
       setInsightsStatus(insRes.data?.[0]?.status === 'completed' ? 'Abgeschlossen' : 'Ausstehend');
