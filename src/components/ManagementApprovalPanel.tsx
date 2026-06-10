@@ -87,11 +87,20 @@ export default function ManagementApprovalPanel({ leadId, leadStatus, leadName }
       let activityText = '';
 
       if (allDecided) {
+        const anyApproved = rows.some(r => r.decision === 'approved');
         const anyRejected = rows.some(r => r.decision === 'rejected');
-        newStatus = anyRejected ? 'rejected' : 'hr_processing';
-        activityText = anyRejected
-          ? `Geschäftsleitung: Lead abgelehnt (mind. 1 Ablehnung bei ${gl.length} Stimmen) → Abgelehnt`
-          : `Geschäftsleitung: Vollständig freigegeben (${gl.length}/${gl.length}) → HR-Bearbeitung`;
+        const allRejected = !anyApproved && anyRejected;
+        if (allRejected) {
+          newStatus = 'rejected';
+          activityText = `Geschäftsleitung: Alle Stimmen abgelehnt (${gl.length}/${gl.length}) → Abgelehnt`;
+        } else if (anyApproved && anyRejected) {
+          // Split decision → forward to HR with warning, HR decides final outcome
+          newStatus = 'hr_processing';
+          activityText = `Geschäftsleitung: Geteilte Entscheidung (Freigabe + Ablehnung) → HR zur Klärung mit beiden GL-Mitgliedern`;
+        } else {
+          newStatus = 'hr_processing';
+          activityText = `Geschäftsleitung: Vollständig freigegeben (${gl.length}/${gl.length}) → HR-Bearbeitung`;
+        }
       } else if (leadStatus === 'controlling_approved') {
         newStatus = 'management_review';
         activityText = `Geschäftsleitung: Erste Stimme abgegeben → Management Review`;
