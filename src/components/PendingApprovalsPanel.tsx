@@ -132,7 +132,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
       {/* Controlling */}
       <div className={cn(
         "rounded-lg border p-3",
-        ctrlDone ? "bg-emerald-50/40 border-emerald-200" : ctrlPending ? "bg-amber-50/40 border-amber-200" : "bg-muted/30"
+        ctrlDone ? "bg-emerald-50/40 border-emerald-200" : ctrlPending ? "bg-red-50/40 border-red-200" : "bg-muted/30"
       )}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
           <span className={cn(
             "text-[11px] font-semibold rounded-full px-2 py-0.5 border",
             ctrlDone ? "bg-emerald-100 text-emerald-700 border-emerald-300"
-                     : ctrlPending ? "bg-amber-100 text-amber-800 border-amber-300"
+                     : ctrlPending ? "bg-red-100 text-red-700 border-red-300"
                      : "bg-muted text-muted-foreground"
           )}>
             {ctrlDone ? '✓ Freigegeben' : ctrlPending ? '⏳ Hängig' : '—'}
@@ -161,12 +161,18 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
             );
           })}
         </div>
+        {ctrlPending && (
+          <p className="text-[11px] text-red-700 mt-2 flex items-center gap-1">
+            <Clock className="h-3 w-3" /> Hängig seit {formatDuration(leadUpdatedAt || leadCreatedAt)}
+          </p>
+        )}
         {ctrlDone && controllingApprover && (
           <p className="text-[11px] text-emerald-700 mt-2">
             Freigegeben durch {controllingUsers.find(u => u.user_id === controllingApprover)?.display_name || '—'}
           </p>
         )}
       </div>
+
 
       {/* Geschäftsleitung */}
       <div className={cn(
