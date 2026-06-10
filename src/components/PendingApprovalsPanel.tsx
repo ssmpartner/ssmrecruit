@@ -242,7 +242,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
       <div className={cn(
         "rounded-lg border p-3",
         hrDone ? "bg-emerald-50/40 border-emerald-200"
-               : hrActive ? "bg-teal-50/40 border-teal-200"
+               : hrActive ? "bg-red-50/40 border-red-200"
                : "bg-muted/30"
       )}>
         <div className="flex items-center justify-between mb-2">
@@ -253,12 +253,17 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
           <span className={cn(
             "text-[11px] font-semibold rounded-full px-2 py-0.5 border",
             hrDone ? "bg-emerald-100 text-emerald-700 border-emerald-300"
-                   : hrActive ? "bg-teal-100 text-teal-800 border-teal-300"
+                   : hrActive ? "bg-red-100 text-red-700 border-red-300"
                    : "bg-muted text-muted-foreground"
           )}>
-            {hrDone ? '✓ Eingestellt' : hrActive ? '⏳ In Bearbeitung' : '—'}
+            {hrDone ? '✓ Eingestellt' : hrActive ? '⏳ In Bearbeitung' : '— Wartet auf Geschäftsleitung'}
           </span>
         </div>
+        {hrActive && (
+          <p className="text-[11px] text-red-700 mb-2 flex items-center gap-1">
+            <Clock className="h-3 w-3" /> Hängig seit {formatDuration(leadUpdatedAt)}
+          </p>
+        )}
         <div className="flex flex-wrap gap-1.5">
           {hrUsers.length === 0 && <p className="text-xs text-muted-foreground italic">Keine HR-User</p>}
           {hrUsers.map(u => (
@@ -269,6 +274,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
           ))}
         </div>
       </div>
+
     </div>
   );
 }
