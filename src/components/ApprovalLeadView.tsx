@@ -372,6 +372,14 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                   </div>
                 )}
 
+                {/* Einstellungs-Readiness */}
+                <div>
+                  <h3 className="text-sm font-semibold mb-2 flex items-center gap-2"><Sparkles className="h-4 w-4 text-emerald-600" /> Einstellungs-Readiness</h3>
+                  <LeadHiringReadiness leadId={selectedLead.id} />
+                </div>
+
+
+
                 {/* Action */}
                 <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-5 text-center">
                   <p className="text-sm text-muted-foreground mb-3">
