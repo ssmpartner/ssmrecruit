@@ -122,6 +122,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
 
   // === HR stage ===
   const hrActive = leadStatus === 'hr_processing';
+  const hrPending = leadStatus === 'hr_pending';
   const hrDone = leadStatus === 'hired';
 
   return (
