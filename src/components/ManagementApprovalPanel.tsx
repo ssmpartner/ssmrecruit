@@ -118,18 +118,25 @@ export default function ManagementApprovalPanel({ leadId, leadStatus, leadName }
         addActivity(leadId, 'status_change', activityText);
 
         // Notification
+        const splitDecision = rows.some(r => r.decision === 'approved') && rows.some(r => r.decision === 'rejected');
         await supabase.from('notifications').insert({
           type: 'status_change',
-          title: newStatus === 'hr_processing' ? '✅ Freigegeben → HR-Bearbeitung' : newStatus === 'rejected' ? '❌ Lead abgelehnt' : '👀 Management Review',
+          title: newStatus === 'hr_processing'
+            ? (splitDecision ? '⚠️ Geteilte GL-Entscheidung → HR' : '✅ Freigegeben → HR-Bearbeitung')
+            : newStatus === 'rejected' ? '❌ Lead abgelehnt' : '👀 Management Review',
           description: `${leadName} – ${activityText}`,
           lead_id: leadId,
         });
       }
 
+      const anyApprovedFinal = (await supabase.from('lead_management_approvals').select('decision').eq('lead_id', leadId)).data?.some((r: any) => r.decision === 'approved') ?? false;
+      const anyRejectedFinal = (await supabase.from('lead_management_approvals').select('decision').eq('lead_id', leadId)).data?.some((r: any) => r.decision === 'rejected') ?? false;
       toast({
         title: decision === 'approved' ? '✅ Freigegeben' : '❌ Abgelehnt',
         description: allDecided
-          ? (rows.some(r => r.decision === 'rejected') ? `${leadName} → Abgelehnt` : `${leadName} → HR-Bearbeitung`)
+          ? (anyApprovedFinal && anyRejectedFinal
+              ? `${leadName} → HR (geteilte Entscheidung – bitte klären)`
+              : anyRejectedFinal ? `${leadName} → Abgelehnt` : `${leadName} → HR-Bearbeitung`)
           : `Warte auf ${gl.length - rows.length} weitere Stimme(n).`,
       });
       setComment('');
