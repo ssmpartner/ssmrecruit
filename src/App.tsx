@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import AppLayout from "./components/AppLayout";
 import { SidebarProvider } from "./context/SidebarContext";
 import { Loader2 } from "lucide-react";
+import Login from "./pages/Login";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Pipeline = lazy(() => import("./pages/Pipeline"));
@@ -26,7 +27,6 @@ const Documentation = lazy(() => import("./pages/Documentation"));
 const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const Feedback = lazy(() => import("./pages/Feedback"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const Login = lazy(() => import("./pages/Login"));
 const InsightsFormPage = lazy(() => import("./pages/InsightsFormPage"));
 const DocumentUploadPage = lazy(() => import("./pages/DocumentUploadPage"));
 const PersonnelFormPage = lazy(() => import("./pages/PersonnelFormPage"));
