@@ -165,7 +165,23 @@ function computeMotivatorScores(answers: number[], questions: MotivatorQuestion[
   for (const [dim, vals] of Object.entries(dims)) {
     const avg = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
     scores[dim] = Math.round((avg / 5) * 100);
-  }
+}
+
+function computeDrivingForces(answers: number[], questions: DrivingForceQuestion[]) {
+  const scores: Record<string, number> = {};
+  questions.forEach((q, i) => {
+    const v = answers[i] || 0;
+    scores[q.force] = Math.round((v / 5) * 100);
+  });
+  // Gruppierung primär / situativ / indifferent (Top 4 = primär, Bottom 4 = indifferent, Rest = situativ)
+  const sorted = Object.entries(scores).sort(([, a], [, b]) => b - a);
+  const groups = {
+    primaer: sorted.slice(0, 4).map(([k, v]) => ({ force: k, score: v })),
+    situativ: sorted.slice(4, 8).map(([k, v]) => ({ force: k, score: v })),
+    indifferent: sorted.slice(8).map(([k, v]) => ({ force: k, score: v })),
+  };
+  return { scores, groups };
+}
   return scores;
 }
 
