@@ -50,6 +50,60 @@ const defaultMotivatorQuestions: MotivatorQuestion[] = [
   { text: 'Klare Regeln und Strukturen helfen mir, effektiv zu arbeiten.', dimension: 'traditionell' },
   { text: 'Ich orientiere mich gerne an bewährten Vorgehensweisen.', dimension: 'traditionell' },
 ];
+
+/* ── DISC adaptiert: gleiche Dimensionen D/I/S/C, aber im beruflichen Kontext ── */
+const defaultDiscAdaptedQuestions: DiscQuestionItem[] = [
+  { text: 'Bei der Arbeit treffe ich Entscheidungen schnell, auch unter Druck.', dimension: 'D' },
+  { text: 'Im beruflichen Umfeld suche ich aktiv den Kontakt zu Kolleg:innen.', dimension: 'I' },
+  { text: 'Im Job bevorzuge ich klare Abläufe und stabile Verhältnisse.', dimension: 'S' },
+  { text: 'Bei der Arbeit prüfe ich Details, bevor ich etwas abschliesse.', dimension: 'C' },
+  { text: 'Ich übernehme in Projekten die Führung, wenn niemand sonst es tut.', dimension: 'D' },
+  { text: 'Ich präsentiere meine Ideen vor Kolleg:innen oder Kund:innen mit Begeisterung.', dimension: 'I' },
+  { text: 'Im Team höre ich erst zu, bevor ich mich äussere.', dimension: 'S' },
+  { text: 'Vor wichtigen Aufgaben erstelle ich einen schriftlichen Plan.', dimension: 'C' },
+  { text: 'Ich gehe berufliche Herausforderungen direkt an, ohne lange zu zögern.', dimension: 'D' },
+  { text: 'Im Kundenkontakt setze ich bewusst auf Charme und Begeisterung.', dimension: 'I' },
+  { text: 'Bei Meinungsverschiedenheiten im Team suche ich nach einem Kompromiss.', dimension: 'S' },
+  { text: 'Ich überprüfe Ergebnisse mehrfach, bevor ich sie freigebe.', dimension: 'C' },
+];
+
+/* ── 12 Driving Forces: 6 Dimensionen × primär/situativ ── */
+interface DrivingForceQuestion { text: string; force: string }
+const defaultDrivingForcesQuestions: DrivingForceQuestion[] = [
+  // Theoretisch
+  { text: 'Ich investiere bewusst Zeit, um Sachverhalte tief zu verstehen.', force: 'intellectual' },        // primär
+  { text: 'Ich verlasse mich oft auf mein Bauchgefühl statt auf lange Analysen.', force: 'instinctive' },    // situativ
+  // Ökonomisch
+  { text: 'Ich bewerte meine Arbeit am Verhältnis von Aufwand und Ertrag.', force: 'resourceful' },           // primär
+  { text: 'Ich helfe gerne ohne Hintergedanken an Gegenleistung.', force: 'selfless' },                       // situativ
+  // Ästhetisch
+  { text: 'Ein harmonisches Umfeld und gute Atmosphäre sind mir sehr wichtig.', force: 'harmonious' },        // primär
+  { text: 'Funktionalität ist mir wichtiger als die äussere Form.', force: 'objective' },                     // situativ
+  // Sozial
+  { text: 'Ich engagiere mich für andere, auch wenn es Energie kostet.', force: 'altruistic' },               // primär
+  { text: 'Ich helfe gezielt dort, wo ich den grössten Effekt erwarte.', force: 'intentional' },              // situativ
+  // Individualistisch
+  { text: 'Ich übernehme gerne eine sichtbare Führungsrolle.', force: 'commanding' },                          // primär
+  { text: 'Im Team ordne ich meine eigenen Ziele dem Gruppenerfolg unter.', force: 'collaborative' },          // situativ
+  // Traditionell
+  { text: 'Ich orientiere mich an klaren Regeln, Werten und bewährten Strukturen.', force: 'structured' },     // primär
+  { text: 'Ich bin offen, etablierte Systeme zu hinterfragen und neu zu denken.', force: 'receptive' },        // situativ
+];
+
+const drivingForceMeta: Record<string, { label: string; group: 'theoretisch'|'oekonomisch'|'aesthetisch'|'sozial'|'individualistisch'|'traditionell'; orientation: 'primaer'|'situativ' }> = {
+  intellectual:   { label: 'Intellektuell',   group: 'theoretisch',       orientation: 'primaer' },
+  instinctive:    { label: 'Instinktiv',      group: 'theoretisch',       orientation: 'situativ' },
+  resourceful:    { label: 'Ressourcen-bewusst', group: 'oekonomisch',    orientation: 'primaer' },
+  selfless:       { label: 'Selbstlos',       group: 'oekonomisch',       orientation: 'situativ' },
+  harmonious:     { label: 'Harmoniesuchend', group: 'aesthetisch',       orientation: 'primaer' },
+  objective:      { label: 'Sachlich',        group: 'aesthetisch',       orientation: 'situativ' },
+  altruistic:     { label: 'Altruistisch',    group: 'sozial',            orientation: 'primaer' },
+  intentional:    { label: 'Zielgerichtet',   group: 'sozial',            orientation: 'situativ' },
+  commanding:     { label: 'Führend',         group: 'individualistisch', orientation: 'primaer' },
+  collaborative:  { label: 'Kollaborativ',    group: 'individualistisch', orientation: 'situativ' },
+  structured:     { label: 'Strukturiert',    group: 'traditionell',      orientation: 'primaer' },
+  receptive:      { label: 'Aufgeschlossen',  group: 'traditionell',      orientation: 'situativ' },
+};
 const workstyleQuestions = [
   { key: 'work_experience', label: 'Berufserfahrung', question: 'Wie viele Jahre Berufserfahrung haben Sie in Ihrem Fachgebiet?', type: 'select' as const, options: ['< 1 Jahr', '1-3 Jahre', '3-5 Jahre', '5-10 Jahre', '10+ Jahre'] },
   { key: 'career_goal', label: 'Karriereziel', question: 'Was ist Ihr wichtigstes berufliches Ziel?', type: 'select' as const, options: ['Karriereaufstieg', 'Finanzielle Sicherheit', 'Work-Life-Balance', 'Fachliche Expertise', 'Eigenes Unternehmen'] },
