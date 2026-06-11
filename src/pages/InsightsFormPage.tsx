@@ -967,6 +967,34 @@ export default function InsightsFormPage() {
               );
             })()}
 
+            {/* ── STEP 3b: Driving Forces (12 Antriebe) ── */}
+            {step === 'driving_forces' && (
+              <>
+                <div className="text-center space-y-1">
+                  <h2 className="text-lg font-bold text-foreground">Was treibt Sie wirklich an?</h2>
+                  <p className="text-sm text-muted-foreground">12 Aussagen zu Ihren tieferen Antrieben — sie ergänzen die Motivatoren um die Ausrichtung (primär oder situativ).</p>
+                </div>
+                {drivingForcesQuestions.map((q, i) => {
+                  const meta = drivingForceMeta[q.force];
+                  const groupColor = motivatorMeta[meta?.group]?.color || '#6B7280';
+                  return (
+                    <div key={i} className={`rounded-xl border-2 p-4 transition-all ${drivingForcesAnswers[i] > 0 ? 'bg-muted' : 'bg-card'}`}
+                      style={drivingForcesAnswers[i] > 0 ? { borderColor: groupColor + '60' } : { borderColor: 'transparent' }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: groupColor }}>
+                          {meta?.label || q.force}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{meta?.orientation === 'primaer' ? 'primär' : 'situativ'}</span>
+                        <span className="ml-auto text-xs text-muted-foreground">{i + 1}/{drivingForcesQuestions.length}</span>
+                      </div>
+                      <p className="text-sm font-medium text-foreground mb-3">{q.text}</p>
+                      <ScaleRow value={drivingForcesAnswers[i]} onChange={v => { const n = [...drivingForcesAnswers]; n[i] = v; setDrivingForcesAnswers(n); }} />
+                    </div>
+                  );
+                })}
+              </>
+            )}
+
             {/* ── STEP 4: Arbeitsstil & Ziele ── */}
             {step === 'workstyle' && (
               <>
