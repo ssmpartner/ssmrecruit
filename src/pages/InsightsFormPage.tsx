@@ -577,11 +577,19 @@ export default function InsightsFormPage() {
     }
     if (s === 'disc') {
       const missing = discAnswers.filter(a => a === 0).length;
-      return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden DISC-Fragen.` : null;
+      return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden DISC-Fragen (natürlicher Stil).` : null;
+    }
+    if (s === 'disc_adapted') {
+      const missing = discAdaptedAnswers.filter(a => a === 0).length;
+      return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden DISC-Fragen (adaptierter Stil).` : null;
     }
     if (s === 'motivators') {
       const missing = motivatorAnswers.filter(a => a === 0).length;
       return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden Motivator-Fragen.` : null;
+    }
+    if (s === 'driving_forces') {
+      const missing = drivingForcesAnswers.filter(a => a === 0).length;
+      return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden Driving-Forces-Fragen.` : null;
     }
     if (s === 'workstyle') {
       const missing = workstyleQuestions.filter(q => !workstyleAnswers[q.key]);
