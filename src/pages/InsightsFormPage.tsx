@@ -838,9 +838,12 @@ export default function InsightsFormPage() {
               </>
             )}
 
-            {/* ── STEP 2: DISC ── */}
+            {/* ── STEP 2: DISC Natürlicher Stil ── */}
             {step === 'disc' && (
               <>
+                <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs text-foreground">
+                  <strong>Natürlicher Stil:</strong> Wie verhalten Sie sich, wenn Sie ganz Sie selbst sein können — ohne Anpassung an Erwartungen?
+                </div>
                 <p className="text-sm text-muted-foreground">Bewerten Sie die folgenden Aussagen zu Ihrem Verhalten. 1 = trifft nicht zu, 5 = trifft voll zu.</p>
                 {discQuestions.map((q, i) => (
                   <div key={i} className={`rounded-xl border p-4 transition-colors ${discAnswers[i] > 0 ? 'bg-muted border-border' : 'bg-card'}`}>
@@ -852,6 +855,26 @@ export default function InsightsFormPage() {
                 ))}
               </>
             )}
+
+            {/* ── STEP 2b: DISC Adaptierter Stil ── */}
+            {step === 'disc_adapted' && (
+              <>
+                <div className="rounded-lg bg-accent/10 border border-accent/30 p-3 text-xs text-foreground">
+                  <strong>Adaptierter Stil:</strong> Wie verhalten Sie sich tatsächlich <em>am Arbeitsplatz</em> — also angepasst an Job-Anforderungen, Vorgesetzte und Kolleg:innen?
+                </div>
+                <p className="text-sm text-muted-foreground">Gleiches Prinzip wie zuvor — diesmal aus beruflicher Perspektive.</p>
+                {discAdaptedQuestions.map((q, i) => (
+                  <div key={i} className={`rounded-xl border p-4 transition-colors ${discAdaptedAnswers[i] > 0 ? 'bg-muted border-border' : 'bg-card'}`}>
+                    <p className="text-sm font-medium text-foreground mb-3">
+                      <span className="text-muted-foreground mr-1.5">{i + 1}.</span>{q.text}
+                    </p>
+                    <ScaleRow value={discAdaptedAnswers[i]} onChange={v => { const n = [...discAdaptedAnswers]; n[i] = v; setDiscAdaptedAnswers(n); }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+
 
             {/* ── STEP 3: Motivatoren (paginated, color-coded) ── */}
             {step === 'motivators' && (() => {
