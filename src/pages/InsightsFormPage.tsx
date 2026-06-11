@@ -636,7 +636,9 @@ export default function InsightsFormPage() {
     setError('');
 
     const discResult = computeDiscScores(discAnswers, discQuestions);
+    const discAdaptedResult = computeDiscScores(discAdaptedAnswers, discAdaptedQuestions);
     const motivatorScores = computeMotivatorScores(motivatorAnswers, motivatorQuestions);
+    const drivingForcesResult = computeDrivingForces(drivingForcesAnswers, drivingForcesQuestions);
 
     // Save insights responses via secure edge function (token-validated)
     await supabase.functions.invoke('complete-public-form', {
