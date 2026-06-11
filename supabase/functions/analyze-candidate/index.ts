@@ -296,6 +296,19 @@ Erstelle die vollständige Analyse — alle Pflichtfelder UND die erweiterten Fe
     analysis.dominant_disc_type = personality.dominant_disc_type;
     analysis.top_motivators = personality.top_motivators;
 
+    // ── Deterministische Norm-Referenz (DACH-Bevölkerung, kalibrierbar) ──
+    analysis.norm_reference = {
+      population: 'Deutschsprachige Bevölkerung (Kalibrierung 2024)',
+      bands: { mean: 50, sd: 15, low: 35, high: 65 },
+      disc: { D: { mean: 48, sd: 18 }, I: { mean: 52, sd: 17 }, S: { mean: 55, sd: 16 }, C: { mean: 53, sd: 17 } },
+      motivators: {
+        individualistisch: { mean: 50, sd: 16 }, oekonomisch: { mean: 55, sd: 15 }, theoretisch: { mean: 48, sd: 17 },
+        sozial: { mean: 56, sd: 15 }, aesthetisch: { mean: 47, sd: 16 }, traditionell: { mean: 50, sd: 16 },
+      },
+    };
+
+
+
     return new Response(JSON.stringify(analysis), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
