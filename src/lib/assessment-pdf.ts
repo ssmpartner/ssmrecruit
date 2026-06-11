@@ -118,9 +118,7 @@ function buildHeaderHtml(lh: LetterheadConfig): string {
   `;
 }
 
-export function generateAssessmentPdf(data: AssessmentPdfData, letterhead: LetterheadConfig): void {
-  const pw = window.open('', '_blank');
-  if (!pw) return;
+export async function generateAssessmentPdf(data: AssessmentPdfData, letterhead: LetterheadConfig): Promise<void> {
 
   const pc = letterhead.primaryColor || '#2563eb';
   const ml = matchLevelLabels[data.matchResult.level] || matchLevelLabels.conditional;
@@ -363,9 +361,20 @@ ${data.reportSections.company_value ? `
 
 </div></body></html>`;
 
-  pw.document.write(html);
-  pw.document.close();
-  setTimeout(() => pw.print(), 600);
+  const html2pdf = (await import('html2pdf.js')).default;
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  const safeName = (data.candidateName || 'Assessment').replace(/[^\w.-]+/g, '_');
+  await html2pdf()
+    .set({
+      margin: 0,
+      filename: `Assessment_${safeName}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    } as Record<string, unknown>)
+    .from(container)
+    .save();
 }
 
 /** Helper to map DB assessment row to PdfData */
