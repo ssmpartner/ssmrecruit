@@ -497,12 +497,16 @@ export default function InsightsFormPage() {
   // questions from DB or defaults
   const [insightsQuestions, setInsightsQuestions] = useState<InsightsQuestion[]>(defaultInsightsQuestions);
   const [discQuestions, setDiscQuestions] = useState<DiscQuestionItem[]>(defaultDiscQuestions);
+  const [discAdaptedQuestions, setDiscAdaptedQuestions] = useState<DiscQuestionItem[]>(defaultDiscAdaptedQuestions);
   const [motivatorQuestions, setMotivatorQuestions] = useState<MotivatorQuestion[]>(defaultMotivatorQuestions);
+  const [drivingForcesQuestions, setDrivingForcesQuestions] = useState<DrivingForceQuestion[]>(defaultDrivingForcesQuestions);
 
   // answers
   const [insightsAnswers, setInsightsAnswers] = useState<Record<string, string>>({});
   const [discAnswers, setDiscAnswers] = useState<number[]>([]);
+  const [discAdaptedAnswers, setDiscAdaptedAnswers] = useState<number[]>([]);
   const [motivatorAnswers, setMotivatorAnswers] = useState<number[]>([]);
+  const [drivingForcesAnswers, setDrivingForcesAnswers] = useState<number[]>([]);
   const [workstyleAnswers, setWorkstyleAnswers] = useState<Record<string, string>>({});
   const [selfAssessmentAnswers, setSelfAssessmentAnswers] = useState<Record<string, string>>({});
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([{ date: '', time: '' }]);
@@ -517,10 +521,12 @@ export default function InsightsFormPage() {
   async function loadRequest() {
     const { data: settingsData } = await supabase
       .from('app_settings').select('key,value')
-      .in('key', ['insights_questions', 'disc_questions', 'motivator_questions']);
+      .in('key', ['insights_questions', 'disc_questions', 'disc_adapted_questions', 'motivator_questions', 'driving_forces_questions']);
 
     let loadedDisc = defaultDiscQuestions;
+    let loadedDiscAdapted = defaultDiscAdaptedQuestions;
     let loadedMotivators = defaultMotivatorQuestions;
+    let loadedDrivingForces = defaultDrivingForcesQuestions;
     if (settingsData) {
       for (const row of settingsData) {
         if (row.key === 'insights_questions' && Array.isArray(row.value) && row.value.length > 0)
@@ -529,14 +535,24 @@ export default function InsightsFormPage() {
           loadedDisc = row.value as unknown as DiscQuestionItem[];
           setDiscQuestions(loadedDisc);
         }
+        if (row.key === 'disc_adapted_questions' && Array.isArray(row.value) && row.value.length > 0) {
+          loadedDiscAdapted = row.value as unknown as DiscQuestionItem[];
+          setDiscAdaptedQuestions(loadedDiscAdapted);
+        }
         if (row.key === 'motivator_questions' && Array.isArray(row.value) && row.value.length > 0) {
           loadedMotivators = row.value as unknown as MotivatorQuestion[];
           setMotivatorQuestions(loadedMotivators);
         }
+        if (row.key === 'driving_forces_questions' && Array.isArray(row.value) && row.value.length > 0) {
+          loadedDrivingForces = row.value as unknown as DrivingForceQuestion[];
+          setDrivingForcesQuestions(loadedDrivingForces);
+        }
       }
     }
     setDiscAnswers(new Array(loadedDisc.length).fill(0));
+    setDiscAdaptedAnswers(new Array(loadedDiscAdapted.length).fill(0));
     setMotivatorAnswers(new Array(loadedMotivators.length).fill(0));
+    setDrivingForcesAnswers(new Array(loadedDrivingForces.length).fill(0));
 
     const { data, error: err } = await supabase.functions.invoke('lookup-public-form', {
       body: { kind: 'insights_request', token },
