@@ -372,7 +372,7 @@ ${data.reportSections.company_value ? `
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    } as Parameters<ReturnType<typeof html2pdf>['set']>[0])
+    } as Record<string, unknown>)
     .from(container)
     .save();
 }
