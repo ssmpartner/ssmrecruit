@@ -760,12 +760,14 @@ export default function InsightsFormPage() {
   /* ── progress calculation ── */
   const answeredBasics = insightsQuestions.filter(q => insightsAnswers[q.key]?.trim()).length;
   const answeredDisc = discAnswers.filter(a => a > 0).length;
+  const answeredDiscAdapted = discAdaptedAnswers.filter(a => a > 0).length;
   const answeredMotivators = motivatorAnswers.filter(a => a > 0).length;
+  const answeredDrivingForces = drivingForcesAnswers.filter(a => a > 0).length;
   const answeredWorkstyle = workstyleQuestions.filter(q => workstyleAnswers[q.key]).length;
   const answeredSelf = selfAssessmentQuestions.filter(q => selfAssessmentAnswers[q.key]?.trim()).length;
   const answeredAppointments = timeSlots.filter(s => s.date && s.time).length;
-  const totalAnswered = answeredBasics + answeredDisc + answeredMotivators + answeredWorkstyle + answeredSelf + Math.min(answeredAppointments, 1);
-  const totalQuestions = insightsQuestions.length + discQuestions.length + motivatorQuestions.length + workstyleQuestions.length + selfAssessmentQuestions.length + 1;
+  const totalAnswered = answeredBasics + answeredDisc + answeredDiscAdapted + answeredMotivators + answeredDrivingForces + answeredWorkstyle + answeredSelf + Math.min(answeredAppointments, 1);
+  const totalQuestions = insightsQuestions.length + discQuestions.length + discAdaptedQuestions.length + motivatorQuestions.length + drivingForcesQuestions.length + workstyleQuestions.length + selfAssessmentQuestions.length + 1;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted py-8 px-4">
