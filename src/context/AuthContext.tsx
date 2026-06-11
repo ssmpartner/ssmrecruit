@@ -51,12 +51,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const loadUserData = async (userId: string) => {
+    const ROLE_PRIORITY: AppRole[] = ['superadmin', 'admin', 'geschaeftsleitung', 'controlling', 'hr', 'teamleiter', 'agency_manager', 'backoffice'] as AppRole[];
     const [profileRes, roleRes] = await Promise.all([
-      supabase.from('profiles').select('*').eq('id', userId).single(),
-      supabase.from('user_roles').select('role').eq('user_id', userId).single(),
+      supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+      supabase.from('user_roles').select('role').eq('user_id', userId),
     ]);
     setProfile(profileRes.data as Profile | null);
-    setRole((roleRes.data?.role as AppRole) ?? null);
+    const roles = (roleRes.data ?? []).map(r => r.role as AppRole);
+    const best = ROLE_PRIORITY.find(r => roles.includes(r)) ?? roles[0] ?? null;
+    setRole(best);
   };
 
 

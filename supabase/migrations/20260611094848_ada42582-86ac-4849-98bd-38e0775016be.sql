@@ -1,0 +1,1 @@
+DELETE FROM public.user_roles WHERE user_id = 'af75f0b9-febf-4beb-961d-54a689605862' AND role = 'backoffice';
