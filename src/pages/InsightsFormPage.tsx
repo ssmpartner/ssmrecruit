@@ -677,7 +677,10 @@ export default function InsightsFormPage() {
       const { data: analysisData, error: analysisErr } = await supabase.functions.invoke('analyze-candidate', {
         body: {
           disc_scores: discResult.scores,
+          disc_scores_adapted: discAdaptedResult.scores,
           motivator_scores: motivatorScores,
+          driving_forces_scores: drivingForcesResult.scores,
+          driving_forces_groups: drivingForcesResult.groups,
           wizard_answers: allWizardAnswers,
           ssm_criteria: ssmCriteria,
           lead_name: leadName,
@@ -689,13 +692,17 @@ export default function InsightsFormPage() {
         await supabase.from('assessment_results').insert({
           lead_id: leadId,
           disc_scores: discResult.scores,
+          disc_scores_adapted: discAdaptedResult.scores,
           motivator_scores: motivatorScores,
+          driving_forces_scores: { scores: drivingForcesResult.scores, groups: drivingForcesResult.groups },
           wizard_answers: allWizardAnswers,
           scores: analysisData.scores || {},
           match_result: analysisData.match_result || {},
           recommendation: analysisData.recommendation || '',
           report_sections: analysisData.report_sections || {},
           summary: analysisData.summary || {},
+          behavioral_hierarchy: analysisData.behavioral_hierarchy || null,
+          norm_reference: analysisData.norm_reference || null,
           raw_ai_response: analysisData,
         });
       }
