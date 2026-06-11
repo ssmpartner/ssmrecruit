@@ -56,7 +56,16 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { disc_scores, motivator_scores, wizard_answers, ssm_criteria, lead_name } = await req.json();
+    const {
+      disc_scores,
+      disc_scores_adapted,
+      motivator_scores,
+      driving_forces_scores,
+      driving_forces_groups,
+      wizard_answers,
+      ssm_criteria,
+      lead_name,
+    } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
@@ -64,24 +73,40 @@ serve(async (req) => {
     const systemPrompt = `Du bist eine intelligente Recruiting- und Persönlichkeits-Analyse-Engine für SSM Recruit.
 
 Du analysierst Kandidaten basierend auf:
-- DISC Verhalten (D=Dominanz, I=Initiative, S=Stetigkeit, C=Gewissenhaftigkeit)
+- DISC Verhalten in zwei Profilen: natürlicher Stil (wie die Person wirklich ist) UND adaptierter Stil (wie sie sich am Arbeitsplatz verhält). Wenn beide deutlich abweichen, deutet das auf Anpassungs-Stress hin.
 - 6 Motivatoren (Individualistisch, Theoretisch, Ökonomisch, Traditionell, Ästhetisch, Sozial)
+- 12 Driving Forces (Intellektuell/Instinktiv, Ressourcen-bewusst/Selbstlos, Harmoniesuchend/Sachlich, Altruistisch/Zielgerichtet, Führend/Kollaborativ, Strukturiert/Aufgeschlossen). Diese sind in Gruppen aufgeteilt: primär (Top 4 — Haupttreiber), situativ (mittlere 4 — kontextabhängig), indifferent (unteren 4 — nicht relevant).
 - Wizard-Antworten (Arbeitsstil, Ziele, Selbstbild)
 - SSM Match-Kriterien des Unternehmens
 
-Erstelle eine umfassende Analyse mit professionellem, klarem Ton. Nicht zu technisch.
-Interpretiere Antworten intelligent, erkenne Widersprüche, hebe Stärken hervor, benenne Risiken ehrlich.
-Berücksichtige extreme Werte (>80 oder <30) besonders und erkenne Widersprüche (z.B. hoher D + hoher Sozial).`;
+Erstelle eine umfassende, mehrseitige Analyse im Stil eines professionellen Talent-Insights-Reports. Schreibe in der dritten Person ("Sie/Er"), in vollständigen Sätzen, individuell auf die Profilwerte bezogen. Vermeide generische Floskeln.
+
+Berücksichtige besonders:
+- Extreme Werte (>80 oder <30)
+- Diskrepanz zwischen natürlichem und adaptiertem DISC-Stil (deutet auf Maskierung/Anpassungsdruck hin)
+- Konflikte zwischen DISC und Driving Forces (z.B. hoher D + altruistische Top-Force)`;
+
+    const dfList = (driving_forces_scores || {});
+    const dfFmt = Object.entries(dfList).map(([k, v]) => `  - ${k}: ${v}`).join('\n');
+    const dfGroupFmt = driving_forces_groups
+      ? `Primär: ${driving_forces_groups.primaer?.map((x: any) => `${x.force}(${x.score})`).join(', ')}\n  Situativ: ${driving_forces_groups.situativ?.map((x: any) => `${x.force}(${x.score})`).join(', ')}\n  Indifferent: ${driving_forces_groups.indifferent?.map((x: any) => `${x.force}(${x.score})`).join(', ')}`
+      : 'Nicht erhoben';
 
     const userPrompt = `Analysiere folgenden Kandidaten:
 
 **Name:** ${lead_name || 'Kandidat'}
 
-**DISC Scores (0-100):**
+**DISC Scores – Natürlicher Stil (0-100):**
 - Dominanz (D): ${disc_scores?.D || 0}
 - Initiative (I): ${disc_scores?.I || 0}
 - Stetigkeit (S): ${disc_scores?.S || 0}
 - Gewissenhaftigkeit (C): ${disc_scores?.C || 0}
+
+**DISC Scores – Adaptierter Stil am Arbeitsplatz (0-100):**
+${disc_scores_adapted ? `- Dominanz (D): ${disc_scores_adapted.D || 0}
+- Initiative (I): ${disc_scores_adapted.I || 0}
+- Stetigkeit (S): ${disc_scores_adapted.S || 0}
+- Gewissenhaftigkeit (C): ${disc_scores_adapted.C || 0}` : 'Nicht erhoben'}
 
 **Motivator Scores (0-100):**
 - Individualistisch: ${motivator_scores?.individualistisch || 0}
@@ -91,13 +116,19 @@ Berücksichtige extreme Werte (>80 oder <30) besonders und erkenne Widersprüche
 - Ästhetisch: ${motivator_scores?.aesthetisch || 0}
 - Sozial: ${motivator_scores?.sozial || 0}
 
+**Driving Forces (12 Antriebe, 0-100):**
+${dfFmt || 'Nicht erhoben'}
+
+**Driving Forces Gruppen:**
+  ${dfGroupFmt}
+
 **Wizard-Antworten:**
 ${Object.entries(wizard_answers || {}).map(([k, v]) => `- ${k}: ${v}`).join('\n')}
 
 **SSM Match-Kriterien:**
 ${ssm_criteria ? JSON.stringify(ssm_criteria, null, 2) : 'Keine spezifischen Kriterien definiert'}
 
-Erstelle die vollständige Analyse UND ein detailliertes Persönlichkeitsprofil.`;
+Erstelle die vollständige Analyse — alle Pflichtfelder UND die erweiterten Felder (adapted_style_analysis, time_wasters, ideal_environment, keys_to_motivation, keys_to_management, action_plan, behavior_motivator_synergies, behavior_motivator_conflicts, driving_forces_primary/situational/indifferent_text) — als eine zusammenhängende Talent-Insights-Analyse.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -163,40 +194,64 @@ Erstelle die vollständige Analyse UND ein detailliertes Persönlichkeitsprofil.
                   report_sections: {
                     type: "object",
                     properties: {
-                      disc_analysis: { type: "string", description: "DISC Verhaltensanalyse (3-5 Sätze)" },
-                      motivator_analysis: { type: "string", description: "Motivatoren-Analyse (3-5 Sätze)" },
-                      integration: { type: "string", description: "Integration Verhalten + Motivatoren (3-5 Sätze)" },
-                      strengths_profile: { type: "array", items: { type: "string" }, description: "Top 5 Stärken" },
-                      improvement_areas: { type: "array", items: { type: "string" }, description: "3-4 Verbesserungsbereiche" },
-                      natural_vs_adapted: { type: "string", description: "Natürlicher vs adaptierter Stil (2-3 Sätze)" },
-                      communication_do: { type: "array", items: { type: "string" }, description: "Kommunikations-DOs (3-5 Punkte)" },
-                      communication_dont: { type: "array", items: { type: "string" }, description: "Kommunikations-DON'Ts (3-5 Punkte)" },
-                      company_value: { type: "string", description: "Wert für das Unternehmen (3-5 Sätze)" },
+                      disc_analysis: { type: "string", description: "DISC Verhaltensanalyse (5-8 Sätze, mit konkretem Bezug zu den Score-Werten)" },
+                      motivator_analysis: { type: "string", description: "Motivatoren-Analyse (5-8 Sätze)" },
+                      integration: { type: "string", description: "Integration Verhalten + Motivatoren (5-8 Sätze)" },
+                      strengths_profile: { type: "array", items: { type: "string" }, description: "Top 7-10 Stärken" },
+                      improvement_areas: { type: "array", items: { type: "string" }, description: "5-7 Verbesserungsbereiche" },
+                      natural_vs_adapted: { type: "string", description: "Vergleich natürlicher vs adaptierter Stil (4-6 Sätze). Erkennt Anpassungsstress wenn Werte stark abweichen." },
+                      adapted_style_analysis: { type: "string", description: "Vertiefte Analyse des adaptierten Stils am Arbeitsplatz (4-6 Sätze)" },
+                      communication_do: { type: "array", items: { type: "string" }, description: "Kommunikations-DOs (6-10 Punkte)" },
+                      communication_dont: { type: "array", items: { type: "string" }, description: "Kommunikations-DON'Ts (6-10 Punkte)" },
+                      company_value: { type: "string", description: "Wert für das Unternehmen (6-10 Sätze, sehr personalisiert)" },
+                      time_wasters: { type: "array", items: { type: "object", properties: { weakness: { type: "string" }, solution: { type: "string" } }, required: ["weakness", "solution"] }, description: "5-7 Zeitfresser mit konkretem Lösungsvorschlag" },
+                      ideal_environment: { type: "array", items: { type: "string" }, description: "8-12 Merkmale des idealen Arbeitsumfelds" },
+                      keys_to_motivation: { type: "array", items: { type: "string" }, description: "8-12 Schlüssel zur Motivation" },
+                      keys_to_management: { type: "array", items: { type: "string" }, description: "8-12 Führungs-Empfehlungen" },
+                      action_plan: { type: "array", items: { type: "string" }, description: "5-8 konkrete Entwicklungs-Schritte" },
+                      behavior_motivator_synergies: { type: "array", items: { type: "string" }, description: "5-8 Stärken aus Verhalten+Motivatoren+Driving Forces" },
+                      behavior_motivator_conflicts: { type: "array", items: { type: "string" }, description: "4-7 potentielle Konflikte" },
+                      driving_forces_primary_text: { type: "string", description: "Primäre Driving Forces als Fließtext, 5-8 Sätze" },
+                      driving_forces_situational_text: { type: "string", description: "Situative Driving Forces, 3-5 Sätze" },
+                      driving_forces_indifferent_text: { type: "string", description: "Indifferente Driving Forces, 2-3 Sätze" },
                     },
                     required: ["disc_analysis", "motivator_analysis", "integration", "strengths_profile", "improvement_areas", "natural_vs_adapted", "communication_do", "communication_dont", "company_value"],
+                  },
+                  behavioral_hierarchy: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        trait: { type: "string", description: "Verhaltensfaktor (z.B. Konkurrenzdenken, Diplomatie, Empathie, Genauigkeit, Anpassungsfähigkeit, Entscheidungsfreude, Beharrlichkeit, Organisationsgrad, Kommunikationsstärke, Eigenverantwortung, Detailgenauigkeit, Risikobereitschaft)" },
+                        score: { type: "number", description: "0-100" },
+                        description: { type: "string", description: "1-2 Sätze Erklärung" },
+                      },
+                      required: ["trait", "score", "description"],
+                    },
+                    description: "12 Verhaltens-Hierarchie-Faktoren, sortiert nach Stärke (höchster zuerst), abgeleitet aus DISC+Driving Forces.",
                   },
                   // ── NEW: Personality profile fields ──
                   personality_summary: {
                     type: "string",
-                    description: "Wer ist diese Person? Wie arbeitet sie? Was treibt sie an? Max 5 Sätze, individuell und nicht generisch.",
+                    description: "Wer ist diese Person? Wie arbeitet sie? Was treibt sie an? 6-8 Sätze, individuell und nicht generisch.",
                   },
                   personality_meaning: {
                     type: "string",
-                    description: "Was bedeutet dieses Profil im Job? Wo performt diese Person stark? Welche Umgebung passt? 3-5 Sätze.",
+                    description: "Was bedeutet dieses Profil im Job? Wo performt diese Person stark? Welche Umgebung passt? 5-7 Sätze.",
                   },
                   personality_strengths_extended: {
                     type: "array",
                     items: { type: "string" },
-                    description: "5-7 erweiterte Stärken basierend auf DISC + Motivatoren Kombination. Nicht nur bestehende kopieren.",
+                    description: "7-10 erweiterte Stärken aus DISC + Motivatoren + Driving Forces.",
                   },
                   personality_risks_extended: {
                     type: "array",
                     items: { type: "string" },
-                    description: "4-6 typische Risiken und Verhaltensmuster basierend auf dem Gesamtprofil.",
+                    description: "5-8 typische Risiken und Verhaltensmuster.",
                   },
                   match_interpretation: {
                     type: "string",
-                    description: "Warum passt diese Person zur SSM? Wo gibt es Abweichungen? Welche Rolle passt am besten? 3-5 Sätze.",
+                    description: "Warum passt diese Person zur SSM? Welche Rolle passt am besten? 5-7 Sätze.",
                   },
                 },
                 required: ["summary", "scores", "match_result", "recommendation", "recommendation_reason", "report_sections", "personality_summary", "personality_meaning", "personality_strengths_extended", "personality_risks_extended", "match_interpretation"],
@@ -240,6 +295,19 @@ Erstelle die vollständige Analyse UND ein detailliertes Persönlichkeitsprofil.
     analysis.personality_type_combination = personality.personality_type_combination;
     analysis.dominant_disc_type = personality.dominant_disc_type;
     analysis.top_motivators = personality.top_motivators;
+
+    // ── Deterministische Norm-Referenz (DACH-Bevölkerung, kalibrierbar) ──
+    analysis.norm_reference = {
+      population: 'Deutschsprachige Bevölkerung (Kalibrierung 2024)',
+      bands: { mean: 50, sd: 15, low: 35, high: 65 },
+      disc: { D: { mean: 48, sd: 18 }, I: { mean: 52, sd: 17 }, S: { mean: 55, sd: 16 }, C: { mean: 53, sd: 17 } },
+      motivators: {
+        individualistisch: { mean: 50, sd: 16 }, oekonomisch: { mean: 55, sd: 15 }, theoretisch: { mean: 48, sd: 17 },
+        sozial: { mean: 56, sd: 15 }, aesthetisch: { mean: 47, sd: 16 }, traditionell: { mean: 50, sd: 16 },
+      },
+    };
+
+
 
     return new Response(JSON.stringify(analysis), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

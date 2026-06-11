@@ -50,6 +50,60 @@ const defaultMotivatorQuestions: MotivatorQuestion[] = [
   { text: 'Klare Regeln und Strukturen helfen mir, effektiv zu arbeiten.', dimension: 'traditionell' },
   { text: 'Ich orientiere mich gerne an bewährten Vorgehensweisen.', dimension: 'traditionell' },
 ];
+
+/* ── DISC adaptiert: gleiche Dimensionen D/I/S/C, aber im beruflichen Kontext ── */
+const defaultDiscAdaptedQuestions: DiscQuestionItem[] = [
+  { text: 'Bei der Arbeit treffe ich Entscheidungen schnell, auch unter Druck.', dimension: 'D' },
+  { text: 'Im beruflichen Umfeld suche ich aktiv den Kontakt zu Kolleg:innen.', dimension: 'I' },
+  { text: 'Im Job bevorzuge ich klare Abläufe und stabile Verhältnisse.', dimension: 'S' },
+  { text: 'Bei der Arbeit prüfe ich Details, bevor ich etwas abschliesse.', dimension: 'C' },
+  { text: 'Ich übernehme in Projekten die Führung, wenn niemand sonst es tut.', dimension: 'D' },
+  { text: 'Ich präsentiere meine Ideen vor Kolleg:innen oder Kund:innen mit Begeisterung.', dimension: 'I' },
+  { text: 'Im Team höre ich erst zu, bevor ich mich äussere.', dimension: 'S' },
+  { text: 'Vor wichtigen Aufgaben erstelle ich einen schriftlichen Plan.', dimension: 'C' },
+  { text: 'Ich gehe berufliche Herausforderungen direkt an, ohne lange zu zögern.', dimension: 'D' },
+  { text: 'Im Kundenkontakt setze ich bewusst auf Charme und Begeisterung.', dimension: 'I' },
+  { text: 'Bei Meinungsverschiedenheiten im Team suche ich nach einem Kompromiss.', dimension: 'S' },
+  { text: 'Ich überprüfe Ergebnisse mehrfach, bevor ich sie freigebe.', dimension: 'C' },
+];
+
+/* ── 12 Driving Forces: 6 Dimensionen × primär/situativ ── */
+interface DrivingForceQuestion { text: string; force: string }
+const defaultDrivingForcesQuestions: DrivingForceQuestion[] = [
+  // Theoretisch
+  { text: 'Ich investiere bewusst Zeit, um Sachverhalte tief zu verstehen.', force: 'intellectual' },        // primär
+  { text: 'Ich verlasse mich oft auf mein Bauchgefühl statt auf lange Analysen.', force: 'instinctive' },    // situativ
+  // Ökonomisch
+  { text: 'Ich bewerte meine Arbeit am Verhältnis von Aufwand und Ertrag.', force: 'resourceful' },           // primär
+  { text: 'Ich helfe gerne ohne Hintergedanken an Gegenleistung.', force: 'selfless' },                       // situativ
+  // Ästhetisch
+  { text: 'Ein harmonisches Umfeld und gute Atmosphäre sind mir sehr wichtig.', force: 'harmonious' },        // primär
+  { text: 'Funktionalität ist mir wichtiger als die äussere Form.', force: 'objective' },                     // situativ
+  // Sozial
+  { text: 'Ich engagiere mich für andere, auch wenn es Energie kostet.', force: 'altruistic' },               // primär
+  { text: 'Ich helfe gezielt dort, wo ich den grössten Effekt erwarte.', force: 'intentional' },              // situativ
+  // Individualistisch
+  { text: 'Ich übernehme gerne eine sichtbare Führungsrolle.', force: 'commanding' },                          // primär
+  { text: 'Im Team ordne ich meine eigenen Ziele dem Gruppenerfolg unter.', force: 'collaborative' },          // situativ
+  // Traditionell
+  { text: 'Ich orientiere mich an klaren Regeln, Werten und bewährten Strukturen.', force: 'structured' },     // primär
+  { text: 'Ich bin offen, etablierte Systeme zu hinterfragen und neu zu denken.', force: 'receptive' },        // situativ
+];
+
+const drivingForceMeta: Record<string, { label: string; group: 'theoretisch'|'oekonomisch'|'aesthetisch'|'sozial'|'individualistisch'|'traditionell'; orientation: 'primaer'|'situativ' }> = {
+  intellectual:   { label: 'Intellektuell',   group: 'theoretisch',       orientation: 'primaer' },
+  instinctive:    { label: 'Instinktiv',      group: 'theoretisch',       orientation: 'situativ' },
+  resourceful:    { label: 'Ressourcen-bewusst', group: 'oekonomisch',    orientation: 'primaer' },
+  selfless:       { label: 'Selbstlos',       group: 'oekonomisch',       orientation: 'situativ' },
+  harmonious:     { label: 'Harmoniesuchend', group: 'aesthetisch',       orientation: 'primaer' },
+  objective:      { label: 'Sachlich',        group: 'aesthetisch',       orientation: 'situativ' },
+  altruistic:     { label: 'Altruistisch',    group: 'sozial',            orientation: 'primaer' },
+  intentional:    { label: 'Zielgerichtet',   group: 'sozial',            orientation: 'situativ' },
+  commanding:     { label: 'Führend',         group: 'individualistisch', orientation: 'primaer' },
+  collaborative:  { label: 'Kollaborativ',    group: 'individualistisch', orientation: 'situativ' },
+  structured:     { label: 'Strukturiert',    group: 'traditionell',      orientation: 'primaer' },
+  receptive:      { label: 'Aufgeschlossen',  group: 'traditionell',      orientation: 'situativ' },
+};
 const workstyleQuestions = [
   { key: 'work_experience', label: 'Berufserfahrung', question: 'Wie viele Jahre Berufserfahrung haben Sie in Ihrem Fachgebiet?', type: 'select' as const, options: ['< 1 Jahr', '1-3 Jahre', '3-5 Jahre', '5-10 Jahre', '10+ Jahre'] },
   { key: 'career_goal', label: 'Karriereziel', question: 'Was ist Ihr wichtigstes berufliches Ziel?', type: 'select' as const, options: ['Karriereaufstieg', 'Finanzielle Sicherheit', 'Work-Life-Balance', 'Fachliche Expertise', 'Eigenes Unternehmen'] },
@@ -76,15 +130,17 @@ const motivatorMeta: Record<string, { label: string; color: string; bg: string; 
   traditionell: { label: 'Traditionell', color: '#6B7280', bg: 'bg-gray-50', border: 'border-gray-300', text: 'text-gray-700' },
 };
 
-type WizardStep = 'basics' | 'disc' | 'motivators' | 'workstyle' | 'selfassessment' | 'appointments';
+type WizardStep = 'basics' | 'disc' | 'disc_adapted' | 'motivators' | 'driving_forces' | 'workstyle' | 'selfassessment' | 'appointments';
 
 const stepConfig: { key: WizardStep; label: string; shortLabel: string; icon: any }[] = [
   { key: 'basics', label: 'Basisdaten', shortLabel: '1', icon: ClipboardList },
-  { key: 'disc', label: 'DISC Verhalten', shortLabel: '2', icon: Brain },
-  { key: 'motivators', label: 'Motivatoren', shortLabel: '3', icon: Target },
-  { key: 'workstyle', label: 'Arbeitsstil & Ziele', shortLabel: '4', icon: Sparkles },
-  { key: 'selfassessment', label: 'Selbstbild', shortLabel: '5', icon: User },
-  { key: 'appointments', label: 'Abschluss', shortLabel: '6', icon: CalendarPlus },
+  { key: 'disc', label: 'DISC Natürlich', shortLabel: '2', icon: Brain },
+  { key: 'disc_adapted', label: 'DISC Adaptiert', shortLabel: '3', icon: Brain },
+  { key: 'motivators', label: 'Motivatoren', shortLabel: '4', icon: Target },
+  { key: 'driving_forces', label: 'Driving Forces', shortLabel: '5', icon: Zap },
+  { key: 'workstyle', label: 'Arbeitsstil & Ziele', shortLabel: '6', icon: Sparkles },
+  { key: 'selfassessment', label: 'Selbstbild', shortLabel: '7', icon: User },
+  { key: 'appointments', label: 'Abschluss', shortLabel: '8', icon: CalendarPlus },
 ];
 
 function computeDiscScores(answers: number[], questions: DiscQuestionItem[]) {
@@ -111,6 +167,21 @@ function computeMotivatorScores(answers: number[], questions: MotivatorQuestion[
     scores[dim] = Math.round((avg / 5) * 100);
   }
   return scores;
+}
+
+function computeDrivingForces(answers: number[], questions: DrivingForceQuestion[]) {
+  const scores: Record<string, number> = {};
+  questions.forEach((q, i) => {
+    const v = answers[i] || 0;
+    scores[q.force] = Math.round((v / 5) * 100);
+  });
+  const sorted = Object.entries(scores).sort(([, a], [, b]) => b - a);
+  const groups = {
+    primaer: sorted.slice(0, 4).map(([k, v]) => ({ force: k, score: v })),
+    situativ: sorted.slice(4, 8).map(([k, v]) => ({ force: k, score: v })),
+    indifferent: sorted.slice(8).map(([k, v]) => ({ force: k, score: v })),
+  };
+  return { scores, groups };
 }
 
 function getMinDate() {
@@ -426,12 +497,16 @@ export default function InsightsFormPage() {
   // questions from DB or defaults
   const [insightsQuestions, setInsightsQuestions] = useState<InsightsQuestion[]>(defaultInsightsQuestions);
   const [discQuestions, setDiscQuestions] = useState<DiscQuestionItem[]>(defaultDiscQuestions);
+  const [discAdaptedQuestions, setDiscAdaptedQuestions] = useState<DiscQuestionItem[]>(defaultDiscAdaptedQuestions);
   const [motivatorQuestions, setMotivatorQuestions] = useState<MotivatorQuestion[]>(defaultMotivatorQuestions);
+  const [drivingForcesQuestions, setDrivingForcesQuestions] = useState<DrivingForceQuestion[]>(defaultDrivingForcesQuestions);
 
   // answers
   const [insightsAnswers, setInsightsAnswers] = useState<Record<string, string>>({});
   const [discAnswers, setDiscAnswers] = useState<number[]>([]);
+  const [discAdaptedAnswers, setDiscAdaptedAnswers] = useState<number[]>([]);
   const [motivatorAnswers, setMotivatorAnswers] = useState<number[]>([]);
+  const [drivingForcesAnswers, setDrivingForcesAnswers] = useState<number[]>([]);
   const [workstyleAnswers, setWorkstyleAnswers] = useState<Record<string, string>>({});
   const [selfAssessmentAnswers, setSelfAssessmentAnswers] = useState<Record<string, string>>({});
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([{ date: '', time: '' }]);
@@ -446,10 +521,12 @@ export default function InsightsFormPage() {
   async function loadRequest() {
     const { data: settingsData } = await supabase
       .from('app_settings').select('key,value')
-      .in('key', ['insights_questions', 'disc_questions', 'motivator_questions']);
+      .in('key', ['insights_questions', 'disc_questions', 'disc_adapted_questions', 'motivator_questions', 'driving_forces_questions']);
 
     let loadedDisc = defaultDiscQuestions;
+    let loadedDiscAdapted = defaultDiscAdaptedQuestions;
     let loadedMotivators = defaultMotivatorQuestions;
+    let loadedDrivingForces = defaultDrivingForcesQuestions;
     if (settingsData) {
       for (const row of settingsData) {
         if (row.key === 'insights_questions' && Array.isArray(row.value) && row.value.length > 0)
@@ -458,14 +535,24 @@ export default function InsightsFormPage() {
           loadedDisc = row.value as unknown as DiscQuestionItem[];
           setDiscQuestions(loadedDisc);
         }
+        if (row.key === 'disc_adapted_questions' && Array.isArray(row.value) && row.value.length > 0) {
+          loadedDiscAdapted = row.value as unknown as DiscQuestionItem[];
+          setDiscAdaptedQuestions(loadedDiscAdapted);
+        }
         if (row.key === 'motivator_questions' && Array.isArray(row.value) && row.value.length > 0) {
           loadedMotivators = row.value as unknown as MotivatorQuestion[];
           setMotivatorQuestions(loadedMotivators);
         }
+        if (row.key === 'driving_forces_questions' && Array.isArray(row.value) && row.value.length > 0) {
+          loadedDrivingForces = row.value as unknown as DrivingForceQuestion[];
+          setDrivingForcesQuestions(loadedDrivingForces);
+        }
       }
     }
     setDiscAnswers(new Array(loadedDisc.length).fill(0));
+    setDiscAdaptedAnswers(new Array(loadedDiscAdapted.length).fill(0));
     setMotivatorAnswers(new Array(loadedMotivators.length).fill(0));
+    setDrivingForcesAnswers(new Array(loadedDrivingForces.length).fill(0));
 
     const { data, error: err } = await supabase.functions.invoke('lookup-public-form', {
       body: { kind: 'insights_request', token },
@@ -490,11 +577,19 @@ export default function InsightsFormPage() {
     }
     if (s === 'disc') {
       const missing = discAnswers.filter(a => a === 0).length;
-      return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden DISC-Fragen.` : null;
+      return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden DISC-Fragen (natürlicher Stil).` : null;
+    }
+    if (s === 'disc_adapted') {
+      const missing = discAdaptedAnswers.filter(a => a === 0).length;
+      return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden DISC-Fragen (adaptierter Stil).` : null;
     }
     if (s === 'motivators') {
       const missing = motivatorAnswers.filter(a => a === 0).length;
       return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden Motivator-Fragen.` : null;
+    }
+    if (s === 'driving_forces') {
+      const missing = drivingForcesAnswers.filter(a => a === 0).length;
+      return missing > 0 ? `Bitte beantworten Sie alle ${missing} verbleibenden Driving-Forces-Fragen.` : null;
     }
     if (s === 'workstyle') {
       const missing = workstyleQuestions.filter(q => !workstyleAnswers[q.key]);
@@ -541,7 +636,9 @@ export default function InsightsFormPage() {
     setError('');
 
     const discResult = computeDiscScores(discAnswers, discQuestions);
+    const discAdaptedResult = computeDiscScores(discAdaptedAnswers, discAdaptedQuestions);
     const motivatorScores = computeMotivatorScores(motivatorAnswers, motivatorQuestions);
+    const drivingForcesResult = computeDrivingForces(drivingForcesAnswers, drivingForcesQuestions);
 
     // Save insights responses via secure edge function (token-validated)
     await supabase.functions.invoke('complete-public-form', {
@@ -580,7 +677,10 @@ export default function InsightsFormPage() {
       const { data: analysisData, error: analysisErr } = await supabase.functions.invoke('analyze-candidate', {
         body: {
           disc_scores: discResult.scores,
+          disc_scores_adapted: discAdaptedResult.scores,
           motivator_scores: motivatorScores,
+          driving_forces_scores: drivingForcesResult.scores,
+          driving_forces_groups: drivingForcesResult.groups,
           wizard_answers: allWizardAnswers,
           ssm_criteria: ssmCriteria,
           lead_name: leadName,
@@ -592,13 +692,17 @@ export default function InsightsFormPage() {
         await supabase.from('assessment_results').insert({
           lead_id: leadId,
           disc_scores: discResult.scores,
+          disc_scores_adapted: discAdaptedResult.scores,
           motivator_scores: motivatorScores,
+          driving_forces_scores: { scores: drivingForcesResult.scores, groups: drivingForcesResult.groups },
           wizard_answers: allWizardAnswers,
           scores: analysisData.scores || {},
           match_result: analysisData.match_result || {},
           recommendation: analysisData.recommendation || '',
           report_sections: analysisData.report_sections || {},
           summary: analysisData.summary || {},
+          behavioral_hierarchy: analysisData.behavioral_hierarchy || null,
+          norm_reference: analysisData.norm_reference || null,
           raw_ai_response: analysisData,
         });
       }
@@ -656,12 +760,14 @@ export default function InsightsFormPage() {
   /* ── progress calculation ── */
   const answeredBasics = insightsQuestions.filter(q => insightsAnswers[q.key]?.trim()).length;
   const answeredDisc = discAnswers.filter(a => a > 0).length;
+  const answeredDiscAdapted = discAdaptedAnswers.filter(a => a > 0).length;
   const answeredMotivators = motivatorAnswers.filter(a => a > 0).length;
+  const answeredDrivingForces = drivingForcesAnswers.filter(a => a > 0).length;
   const answeredWorkstyle = workstyleQuestions.filter(q => workstyleAnswers[q.key]).length;
   const answeredSelf = selfAssessmentQuestions.filter(q => selfAssessmentAnswers[q.key]?.trim()).length;
   const answeredAppointments = timeSlots.filter(s => s.date && s.time).length;
-  const totalAnswered = answeredBasics + answeredDisc + answeredMotivators + answeredWorkstyle + answeredSelf + Math.min(answeredAppointments, 1);
-  const totalQuestions = insightsQuestions.length + discQuestions.length + motivatorQuestions.length + workstyleQuestions.length + selfAssessmentQuestions.length + 1;
+  const totalAnswered = answeredBasics + answeredDisc + answeredDiscAdapted + answeredMotivators + answeredDrivingForces + answeredWorkstyle + answeredSelf + Math.min(answeredAppointments, 1);
+  const totalQuestions = insightsQuestions.length + discQuestions.length + discAdaptedQuestions.length + motivatorQuestions.length + drivingForcesQuestions.length + workstyleQuestions.length + selfAssessmentQuestions.length + 1;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted py-8 px-4">
@@ -734,9 +840,12 @@ export default function InsightsFormPage() {
               </>
             )}
 
-            {/* ── STEP 2: DISC ── */}
+            {/* ── STEP 2: DISC Natürlicher Stil ── */}
             {step === 'disc' && (
               <>
+                <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs text-foreground">
+                  <strong>Natürlicher Stil:</strong> Wie verhalten Sie sich, wenn Sie ganz Sie selbst sein können — ohne Anpassung an Erwartungen?
+                </div>
                 <p className="text-sm text-muted-foreground">Bewerten Sie die folgenden Aussagen zu Ihrem Verhalten. 1 = trifft nicht zu, 5 = trifft voll zu.</p>
                 {discQuestions.map((q, i) => (
                   <div key={i} className={`rounded-xl border p-4 transition-colors ${discAnswers[i] > 0 ? 'bg-muted border-border' : 'bg-card'}`}>
@@ -748,6 +857,26 @@ export default function InsightsFormPage() {
                 ))}
               </>
             )}
+
+            {/* ── STEP 2b: DISC Adaptierter Stil ── */}
+            {step === 'disc_adapted' && (
+              <>
+                <div className="rounded-lg bg-accent/10 border border-accent/30 p-3 text-xs text-foreground">
+                  <strong>Adaptierter Stil:</strong> Wie verhalten Sie sich tatsächlich <em>am Arbeitsplatz</em> — also angepasst an Job-Anforderungen, Vorgesetzte und Kolleg:innen?
+                </div>
+                <p className="text-sm text-muted-foreground">Gleiches Prinzip wie zuvor — diesmal aus beruflicher Perspektive.</p>
+                {discAdaptedQuestions.map((q, i) => (
+                  <div key={i} className={`rounded-xl border p-4 transition-colors ${discAdaptedAnswers[i] > 0 ? 'bg-muted border-border' : 'bg-card'}`}>
+                    <p className="text-sm font-medium text-foreground mb-3">
+                      <span className="text-muted-foreground mr-1.5">{i + 1}.</span>{q.text}
+                    </p>
+                    <ScaleRow value={discAdaptedAnswers[i]} onChange={v => { const n = [...discAdaptedAnswers]; n[i] = v; setDiscAdaptedAnswers(n); }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+
 
             {/* ── STEP 3: Motivatoren (paginated, color-coded) ── */}
             {step === 'motivators' && (() => {
@@ -839,6 +968,34 @@ export default function InsightsFormPage() {
                 </>
               );
             })()}
+
+            {/* ── STEP 3b: Driving Forces (12 Antriebe) ── */}
+            {step === 'driving_forces' && (
+              <>
+                <div className="text-center space-y-1">
+                  <h2 className="text-lg font-bold text-foreground">Was treibt Sie wirklich an?</h2>
+                  <p className="text-sm text-muted-foreground">12 Aussagen zu Ihren tieferen Antrieben — sie ergänzen die Motivatoren um die Ausrichtung (primär oder situativ).</p>
+                </div>
+                {drivingForcesQuestions.map((q, i) => {
+                  const meta = drivingForceMeta[q.force];
+                  const groupColor = motivatorMeta[meta?.group]?.color || '#6B7280';
+                  return (
+                    <div key={i} className={`rounded-xl border-2 p-4 transition-all ${drivingForcesAnswers[i] > 0 ? 'bg-muted' : 'bg-card'}`}
+                      style={drivingForcesAnswers[i] > 0 ? { borderColor: groupColor + '60' } : { borderColor: 'transparent' }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: groupColor }}>
+                          {meta?.label || q.force}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{meta?.orientation === 'primaer' ? 'primär' : 'situativ'}</span>
+                        <span className="ml-auto text-xs text-muted-foreground">{i + 1}/{drivingForcesQuestions.length}</span>
+                      </div>
+                      <p className="text-sm font-medium text-foreground mb-3">{q.text}</p>
+                      <ScaleRow value={drivingForcesAnswers[i]} onChange={v => { const n = [...drivingForcesAnswers]; n[i] = v; setDrivingForcesAnswers(n); }} />
+                    </div>
+                  );
+                })}
+              </>
+            )}
 
             {/* ── STEP 4: Arbeitsstil & Ziele ── */}
             {step === 'workstyle' && (
