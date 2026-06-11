@@ -1520,14 +1520,18 @@ export type Database = {
       }
       assessment_results: {
         Row: {
+          behavioral_hierarchy: Json | null
           completed_at: string
           created_at: string
           disc_scores: Json
+          disc_scores_adapted: Json | null
           dominant_disc_type: string
+          driving_forces_scores: Json | null
           id: string
           lead_id: string
           match_result: Json
           motivator_scores: Json
+          norm_reference: Json | null
           personality_avatar: string
           personality_meaning: string
           personality_risks_extended: Json
@@ -1544,14 +1548,18 @@ export type Database = {
           wizard_answers: Json
         }
         Insert: {
+          behavioral_hierarchy?: Json | null
           completed_at?: string
           created_at?: string
           disc_scores?: Json
+          disc_scores_adapted?: Json | null
           dominant_disc_type?: string
+          driving_forces_scores?: Json | null
           id?: string
           lead_id: string
           match_result?: Json
           motivator_scores?: Json
+          norm_reference?: Json | null
           personality_avatar?: string
           personality_meaning?: string
           personality_risks_extended?: Json
@@ -1568,14 +1576,18 @@ export type Database = {
           wizard_answers?: Json
         }
         Update: {
+          behavioral_hierarchy?: Json | null
           completed_at?: string
           created_at?: string
           disc_scores?: Json
+          disc_scores_adapted?: Json | null
           dominant_disc_type?: string
+          driving_forces_scores?: Json | null
           id?: string
           lead_id?: string
           match_result?: Json
           motivator_scores?: Json
+          norm_reference?: Json | null
           personality_avatar?: string
           personality_meaning?: string
           personality_risks_extended?: Json
