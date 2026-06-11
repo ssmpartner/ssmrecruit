@@ -130,15 +130,17 @@ const motivatorMeta: Record<string, { label: string; color: string; bg: string; 
   traditionell: { label: 'Traditionell', color: '#6B7280', bg: 'bg-gray-50', border: 'border-gray-300', text: 'text-gray-700' },
 };
 
-type WizardStep = 'basics' | 'disc' | 'motivators' | 'workstyle' | 'selfassessment' | 'appointments';
+type WizardStep = 'basics' | 'disc' | 'disc_adapted' | 'motivators' | 'driving_forces' | 'workstyle' | 'selfassessment' | 'appointments';
 
 const stepConfig: { key: WizardStep; label: string; shortLabel: string; icon: any }[] = [
   { key: 'basics', label: 'Basisdaten', shortLabel: '1', icon: ClipboardList },
-  { key: 'disc', label: 'DISC Verhalten', shortLabel: '2', icon: Brain },
-  { key: 'motivators', label: 'Motivatoren', shortLabel: '3', icon: Target },
-  { key: 'workstyle', label: 'Arbeitsstil & Ziele', shortLabel: '4', icon: Sparkles },
-  { key: 'selfassessment', label: 'Selbstbild', shortLabel: '5', icon: User },
-  { key: 'appointments', label: 'Abschluss', shortLabel: '6', icon: CalendarPlus },
+  { key: 'disc', label: 'DISC Natürlich', shortLabel: '2', icon: Brain },
+  { key: 'disc_adapted', label: 'DISC Adaptiert', shortLabel: '3', icon: Brain },
+  { key: 'motivators', label: 'Motivatoren', shortLabel: '4', icon: Target },
+  { key: 'driving_forces', label: 'Driving Forces', shortLabel: '5', icon: Zap },
+  { key: 'workstyle', label: 'Arbeitsstil & Ziele', shortLabel: '6', icon: Sparkles },
+  { key: 'selfassessment', label: 'Selbstbild', shortLabel: '7', icon: User },
+  { key: 'appointments', label: 'Abschluss', shortLabel: '8', icon: CalendarPlus },
 ];
 
 function computeDiscScores(answers: number[], questions: DiscQuestionItem[]) {
