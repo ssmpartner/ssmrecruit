@@ -361,9 +361,21 @@ ${data.reportSections.company_value ? `
 
 </div></body></html>`;
 
-  pw.document.write(html);
-  pw.document.close();
-  setTimeout(() => pw.print(), 600);
+  const html2pdf = (await import('html2pdf.js')).default;
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  const safeName = (data.candidateName || 'Assessment').replace(/[^\w.-]+/g, '_');
+  await html2pdf()
+    .set({
+      margin: 0,
+      filename: `Assessment_${safeName}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] },
+    })
+    .from(container)
+    .save();
 }
 
 /** Helper to map DB assessment row to PdfData */
