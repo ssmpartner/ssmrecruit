@@ -118,9 +118,7 @@ function buildHeaderHtml(lh: LetterheadConfig): string {
   `;
 }
 
-export function generateAssessmentPdf(data: AssessmentPdfData, letterhead: LetterheadConfig): void {
-  const pw = window.open('', '_blank');
-  if (!pw) return;
+export async function generateAssessmentPdf(data: AssessmentPdfData, letterhead: LetterheadConfig): Promise<void> {
 
   const pc = letterhead.primaryColor || '#2563eb';
   const ml = matchLevelLabels[data.matchResult.level] || matchLevelLabels.conditional;
