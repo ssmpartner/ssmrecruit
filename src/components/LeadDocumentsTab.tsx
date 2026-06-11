@@ -254,16 +254,19 @@ export default function LeadDocumentsTab({ leadId }: Props) {
   async function downloadFile(filePath: string, fileName: string) {
     const { data, error } = await supabase.storage
       .from('lead-documents')
-      .createSignedUrl(filePath, 3600);
-    if (error || !data?.signedUrl) {
+      .download(filePath);
+    if (error || !data) {
       toast({ title: 'Download fehlgeschlagen', description: error?.message || 'Datei nicht verfügbar', variant: 'destructive' });
       return;
     }
+    const url = URL.createObjectURL(data);
     const a = document.createElement('a');
-    a.href = data.signedUrl;
+    a.href = url;
     a.download = fileName;
-    a.target = '_blank';
+    document.body.appendChild(a);
     a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   async function previewFile(doc: DocumentUpload) {
