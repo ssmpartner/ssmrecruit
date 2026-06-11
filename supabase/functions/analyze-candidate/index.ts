@@ -56,7 +56,16 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { disc_scores, motivator_scores, wizard_answers, ssm_criteria, lead_name } = await req.json();
+    const {
+      disc_scores,
+      disc_scores_adapted,
+      motivator_scores,
+      driving_forces_scores,
+      driving_forces_groups,
+      wizard_answers,
+      ssm_criteria,
+      lead_name,
+    } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
@@ -64,24 +73,40 @@ serve(async (req) => {
     const systemPrompt = `Du bist eine intelligente Recruiting- und Persönlichkeits-Analyse-Engine für SSM Recruit.
 
 Du analysierst Kandidaten basierend auf:
-- DISC Verhalten (D=Dominanz, I=Initiative, S=Stetigkeit, C=Gewissenhaftigkeit)
+- DISC Verhalten in zwei Profilen: natürlicher Stil (wie die Person wirklich ist) UND adaptierter Stil (wie sie sich am Arbeitsplatz verhält). Wenn beide deutlich abweichen, deutet das auf Anpassungs-Stress hin.
 - 6 Motivatoren (Individualistisch, Theoretisch, Ökonomisch, Traditionell, Ästhetisch, Sozial)
+- 12 Driving Forces (Intellektuell/Instinktiv, Ressourcen-bewusst/Selbstlos, Harmoniesuchend/Sachlich, Altruistisch/Zielgerichtet, Führend/Kollaborativ, Strukturiert/Aufgeschlossen). Diese sind in Gruppen aufgeteilt: primär (Top 4 — Haupttreiber), situativ (mittlere 4 — kontextabhängig), indifferent (unteren 4 — nicht relevant).
 - Wizard-Antworten (Arbeitsstil, Ziele, Selbstbild)
 - SSM Match-Kriterien des Unternehmens
 
-Erstelle eine umfassende Analyse mit professionellem, klarem Ton. Nicht zu technisch.
-Interpretiere Antworten intelligent, erkenne Widersprüche, hebe Stärken hervor, benenne Risiken ehrlich.
-Berücksichtige extreme Werte (>80 oder <30) besonders und erkenne Widersprüche (z.B. hoher D + hoher Sozial).`;
+Erstelle eine umfassende, mehrseitige Analyse im Stil eines professionellen Talent-Insights-Reports. Schreibe in der dritten Person ("Sie/Er"), in vollständigen Sätzen, individuell auf die Profilwerte bezogen. Vermeide generische Floskeln.
+
+Berücksichtige besonders:
+- Extreme Werte (>80 oder <30)
+- Diskrepanz zwischen natürlichem und adaptiertem DISC-Stil (deutet auf Maskierung/Anpassungsdruck hin)
+- Konflikte zwischen DISC und Driving Forces (z.B. hoher D + altruistische Top-Force)`;
+
+    const dfList = (driving_forces_scores || {});
+    const dfFmt = Object.entries(dfList).map(([k, v]) => `  - ${k}: ${v}`).join('\n');
+    const dfGroupFmt = driving_forces_groups
+      ? `Primär: ${driving_forces_groups.primaer?.map((x: any) => `${x.force}(${x.score})`).join(', ')}\n  Situativ: ${driving_forces_groups.situativ?.map((x: any) => `${x.force}(${x.score})`).join(', ')}\n  Indifferent: ${driving_forces_groups.indifferent?.map((x: any) => `${x.force}(${x.score})`).join(', ')}`
+      : 'Nicht erhoben';
 
     const userPrompt = `Analysiere folgenden Kandidaten:
 
 **Name:** ${lead_name || 'Kandidat'}
 
-**DISC Scores (0-100):**
+**DISC Scores – Natürlicher Stil (0-100):**
 - Dominanz (D): ${disc_scores?.D || 0}
 - Initiative (I): ${disc_scores?.I || 0}
 - Stetigkeit (S): ${disc_scores?.S || 0}
 - Gewissenhaftigkeit (C): ${disc_scores?.C || 0}
+
+**DISC Scores – Adaptierter Stil am Arbeitsplatz (0-100):**
+${disc_scores_adapted ? `- Dominanz (D): ${disc_scores_adapted.D || 0}
+- Initiative (I): ${disc_scores_adapted.I || 0}
+- Stetigkeit (S): ${disc_scores_adapted.S || 0}
+- Gewissenhaftigkeit (C): ${disc_scores_adapted.C || 0}` : 'Nicht erhoben'}
 
 **Motivator Scores (0-100):**
 - Individualistisch: ${motivator_scores?.individualistisch || 0}
@@ -91,13 +116,19 @@ Berücksichtige extreme Werte (>80 oder <30) besonders und erkenne Widersprüche
 - Ästhetisch: ${motivator_scores?.aesthetisch || 0}
 - Sozial: ${motivator_scores?.sozial || 0}
 
+**Driving Forces (12 Antriebe, 0-100):**
+${dfFmt || 'Nicht erhoben'}
+
+**Driving Forces Gruppen:**
+  ${dfGroupFmt}
+
 **Wizard-Antworten:**
 ${Object.entries(wizard_answers || {}).map(([k, v]) => `- ${k}: ${v}`).join('\n')}
 
 **SSM Match-Kriterien:**
 ${ssm_criteria ? JSON.stringify(ssm_criteria, null, 2) : 'Keine spezifischen Kriterien definiert'}
 
-Erstelle die vollständige Analyse UND ein detailliertes Persönlichkeitsprofil.`;
+Erstelle die vollständige Analyse — alle Pflichtfelder UND die erweiterten Felder (adapted_style_analysis, time_wasters, ideal_environment, keys_to_motivation, keys_to_management, action_plan, behavior_motivator_synergies, behavior_motivator_conflicts, driving_forces_primary/situational/indifferent_text) — als eine zusammenhängende Talent-Insights-Analyse.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
