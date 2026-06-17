@@ -97,9 +97,10 @@ function pickEmployee(
   fallbackEmployeeId: string,
   employeeLeadCounts?: Record<string, number>,
 ): { agencyId: string; employeeId: string } {
-  // Backoffice-Mitarbeiter erhalten KEINE automatischen Lead-Zuweisungen
+  // Backoffice, Geschäftsleitung, Controlling und HR erhalten KEINE automatischen Lead-Zuweisungen
+  const EXCLUDED_ROLES = ['backoffice', 'geschaeftsleitung', 'controlling', 'hr'];
   const agencyEmployees = employees.filter(
-    e => e.agencyId === agencyId && (e as any).role !== 'backoffice'
+    e => e.agencyId === agencyId && !EXCLUDED_ROLES.includes((e as any).role)
   );
   if (agencyEmployees.length === 0) {
     return { agencyId, employeeId: fallbackEmployeeId };
