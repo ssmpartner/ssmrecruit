@@ -11,6 +11,7 @@ import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
 import { resolveFirstName } from '@/lib/display-name';
 import { statusConfig } from '@/lib/mock-data';
+import NewsBanner from '@/components/NewsBanner';
 import { supabase } from '@/integrations/supabase/client';
 
 const PIE_COLORS = ['hsl(168, 17%, 23%)', 'hsl(162, 17%, 50%)', 'hsl(67, 16%, 66%)', 'hsl(38, 80%, 50%)', 'hsl(200, 70%, 50%)', 'hsl(162, 40%, 42%)', 'hsl(0, 65%, 51%)'];
