@@ -229,6 +229,7 @@ export default function Settings() {
             <div className="space-y-8">
               <PersonalNotificationSettings />
               {isSuperadmin && <NotificationRoleMatrix />}
+              {isSuperadmin && <NotificationActivityLog />}
             </div>
           )}
           
