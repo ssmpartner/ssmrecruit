@@ -216,6 +216,9 @@ export default function EmailSettingsTab() {
         <p className="text-sm text-muted-foreground">Templates erstellen und Automatisierungsregeln verwalten</p>
       </div>
 
+      <ExternalEmailMasterSwitch />
+
+
       {/* Sub-tabs */}
       <div className="flex gap-2 border-b pb-0">
         {[
