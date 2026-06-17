@@ -2674,6 +2674,63 @@ export type Database = {
           },
         ]
       }
+      notification_activity_log: {
+        Row: {
+          channel: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          error: string | null
+          id: string
+          metadata: Json | null
+          notification_type: string
+          recipient_email: string | null
+          recipient_name: string | null
+          recipient_user_id: string | null
+          status: string
+          subject: string | null
+          trigger_label: string | null
+          trigger_source: string
+          triggered_by_user_id: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          error?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type: string
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_user_id?: string | null
+          status?: string
+          subject?: string | null
+          trigger_label?: string | null
+          trigger_source?: string
+          triggered_by_user_id?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          error?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type?: string
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_user_id?: string | null
+          status?: string
+          subject?: string | null
+          trigger_label?: string | null
+          trigger_source?: string
+          triggered_by_user_id?: string | null
+        }
+        Relationships: []
+      }
       notification_role_settings: {
         Row: {
           email_enabled: boolean
