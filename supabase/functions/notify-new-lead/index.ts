@@ -112,17 +112,38 @@ Deno.serve(async (req) => {
     console.error('notify-new-lead: recipient lookup failed', recErr)
   }
 
-  const recipients = Array.from(
-    new Set(((recRows as { email: string }[] | null) ?? []).map((r) => r.email).filter(Boolean))
-  )
+  type Recipient = { user_id: string | null; email: string; employee_name: string | null }
+  const allRecs = ((recRows as Recipient[] | null) ?? []).filter((r) => r.email)
+  const seen = new Set<string>()
+  const uniqueRecs = allRecs.filter((r) => {
+    if (seen.has(r.email)) return false
+    seen.add(r.email)
+    return true
+  })
+  const recipients = uniqueRecs.map((r) => r.email)
+  const subject = `Neuer Lead: ${lead.name ?? lead.id}`
+  const triggerLabel = `lead_new:${lead.source ?? 'manual'}`
+
+  const logEntry = (extra: Record<string, unknown>) => ({
+    notification_type: 'lead_new',
+    channel: 'email',
+    trigger_source: 'system_trigger',
+    trigger_label: triggerLabel,
+    entity_type: 'lead',
+    entity_id: lead.id,
+    subject,
+    ...extra,
+  })
 
   if (recipients.length === 0) {
     console.log('notify-new-lead: keine Empfänger – nichts gesendet', { leadId })
+    await supabase.from('notification_activity_log').insert([
+      logEntry({ status: 'skipped', error: 'no_recipients' }),
+    ])
     return new Response(JSON.stringify({ success: true, skipped: 'no_recipients', lead_id: lead.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
-
 
   // Über zentrale send-email Function senden
   const sendResp = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
@@ -133,13 +154,29 @@ Deno.serve(async (req) => {
     },
     body: JSON.stringify({
       to: recipients,
-      subject: `Neuer Lead: ${lead.name ?? lead.id}`,
+      subject,
       html,
       tags: [{ name: 'type', value: 'new-lead-notification' }],
     }),
   })
 
   const sendData = await sendResp.json().catch(() => ({}))
+
+  // Pro Empfänger einen Log-Eintrag
+  const status = sendResp.ok ? 'sent' : 'failed'
+  const errText = sendResp.ok ? null : JSON.stringify(sendData).slice(0, 500)
+  await supabase.from('notification_activity_log').insert(
+    uniqueRecs.map((r) =>
+      logEntry({
+        recipient_user_id: r.user_id,
+        recipient_email: r.email,
+        recipient_name: r.employee_name,
+        status,
+        error: errText,
+        metadata: sendResp.ok ? { email_id: sendData?.id ?? null } : null,
+      })
+    )
+  )
 
   if (!sendResp.ok) {
     console.error('notify-new-lead send failed', { sendData })
@@ -148,6 +185,11 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
+
+  return new Response(JSON.stringify({ success: true, lead_id: lead.id, email_id: sendData?.id }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+})
 
   return new Response(JSON.stringify({ success: true, lead_id: lead.id, email_id: sendData?.id }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
