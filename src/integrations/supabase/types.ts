@@ -1922,17 +1922,23 @@ export type Database = {
       }
       employee_notification_prefs: {
         Row: {
-          notify_new_lead_email: boolean
+          email_enabled: boolean | null
+          in_app_enabled: boolean | null
+          notification_type: string
           updated_at: string
           user_id: string
         }
         Insert: {
-          notify_new_lead_email?: boolean
+          email_enabled?: boolean | null
+          in_app_enabled?: boolean | null
+          notification_type: string
           updated_at?: string
           user_id: string
         }
         Update: {
-          notify_new_lead_email?: boolean
+          email_enabled?: boolean | null
+          in_app_enabled?: boolean | null
+          notification_type?: string
           updated_at?: string
           user_id?: string
         }
@@ -3016,6 +3022,14 @@ export type Database = {
         Returns: {
           avatar_url: string
           display_name: string
+          user_id: string
+        }[]
+      }
+      get_notification_recipients: {
+        Args: { _channel: string; _notification_type: string }
+        Returns: {
+          email: string
+          employee_name: string
           user_id: string
         }[]
       }
