@@ -3,6 +3,7 @@ import { Mail, Plus, Pencil, Trash2, Zap, Clock, ArrowRightLeft, FileText, Users
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ExternalEmailMasterSwitch from '@/components/ExternalEmailMasterSwitch';
 
 interface EmailTemplate {
   id: string;
