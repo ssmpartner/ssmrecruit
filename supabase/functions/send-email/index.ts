@@ -8,7 +8,7 @@ const corsHeaders = {
 }
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
-const DEFAULT_FROM = 'ssmrecruit <noreply@send.ssmpartner.ch>'
+const DEFAULT_FROM = 'SSM Recruit <noreply@send.ssmpartner.ch>'
 
 interface SendEmailBody {
   to: string | string[]
