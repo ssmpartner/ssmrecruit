@@ -3095,14 +3095,27 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_notification_recipients: {
-        Args: { _channel: string; _notification_type: string }
-        Returns: {
-          email: string
-          employee_name: string
-          user_id: string
-        }[]
-      }
+      get_notification_recipients:
+        | {
+            Args: { _channel: string; _notification_type: string }
+            Returns: {
+              email: string
+              employee_name: string
+              user_id: string
+            }[]
+          }
+        | {
+            Args: {
+              _channel: string
+              _lead_id?: string
+              _notification_type: string
+            }
+            Returns: {
+              email: string
+              employee_name: string
+              user_id: string
+            }[]
+          }
       get_role_users: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: {
