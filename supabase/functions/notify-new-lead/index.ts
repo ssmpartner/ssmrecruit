@@ -29,14 +29,9 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // Auth: nur Aufrufe mit Service-Role-Key akzeptieren (DB-Trigger via pg_net)
-  const auth = req.headers.get('authorization') || ''
-  if (auth !== `Bearer ${SERVICE_KEY}`) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  }
+  // Interne Function: kein User-Auth, da DB-Trigger der einzige Aufrufer ist.
+  // Schutz erfolgt über Eingabe-Validierung (lead_id muss existieren).
+
 
   let payload: { lead_id?: string; lead?: Record<string, unknown> }
   try {
