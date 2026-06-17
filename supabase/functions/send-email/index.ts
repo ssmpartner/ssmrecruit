@@ -1,5 +1,12 @@
 // Zentrale Email-Sende-Funktion via Resend Connector Gateway
-// Aufruf: supabase.functions.invoke('send-email', { body: { to, subject, html, text?, from? } })
+// Aufruf: supabase.functions.invoke('send-email', { body: { to, subject, html, text?, from?, audience? } })
+//
+// audience:
+//   'internal' (Default) → Mitarbeiter, läuft immer
+//   'external'           → Lead/Kandidat/extern → benötigt Master-Schalter
+//                          app_settings.email_delivery.external_emails_enabled = true
+
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +16,9 @@ const corsHeaders = {
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
 const DEFAULT_FROM = 'SSM Recruit <noreply@send.ssmpartner.ch>'
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
+const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 interface SendEmailBody {
   to: string | string[]
@@ -20,6 +30,7 @@ interface SendEmailBody {
   cc?: string | string[]
   bcc?: string | string[]
   tags?: Array<{ name: string; value: string }>
+  audience?: 'internal' | 'external'
 }
 
 Deno.serve(async (req) => {
