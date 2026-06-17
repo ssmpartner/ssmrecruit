@@ -95,6 +95,7 @@ Deno.serve(async (req) => {
   const { data: inAppRows } = await supabase.rpc('get_notification_recipients', {
     _notification_type: type,
     _channel: 'in_app',
+    _lead_id: payload.lead_id ?? null,
   })
   const inApp = (inAppRows as Recipient[] | null) ?? []
   if (inApp.length > 0) {
