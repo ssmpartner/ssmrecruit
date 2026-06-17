@@ -9,9 +9,7 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 }
 
-// TEST-Phase: feste Empfänger. Später ersetzen durch dynamisches Lookup
-// (notification_role_settings + employees.email Opt-in pro Mitarbeiter).
-const TEST_RECIPIENTS = ['bilel.chagra@ssmpartner.ch']
+// Empfängerliste wird dynamisch aus employee_notification_prefs (Opt-in) ermittelt.
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
