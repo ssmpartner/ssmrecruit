@@ -3,6 +3,7 @@ import { Mail, Plus, Pencil, Trash2, Zap, Clock, ArrowRightLeft, FileText, Users
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ExternalEmailMasterSwitch from '@/components/ExternalEmailMasterSwitch';
 
 interface EmailTemplate {
   id: string;
@@ -214,6 +215,9 @@ export default function EmailSettingsTab() {
         <h2 className="text-lg font-semibold flex items-center gap-2"><Mail className="h-5 w-5" /> E-Mail Automationen</h2>
         <p className="text-sm text-muted-foreground">Templates erstellen und Automatisierungsregeln verwalten</p>
       </div>
+
+      <ExternalEmailMasterSwitch />
+
 
       {/* Sub-tabs */}
       <div className="flex gap-2 border-b pb-0">

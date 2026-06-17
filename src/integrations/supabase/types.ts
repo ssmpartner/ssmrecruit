@@ -3068,6 +3068,19 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      dispatch_notification: {
+        Args: {
+          _description: string
+          _entity_id: string
+          _entity_type: string
+          _lead_id: string
+          _title: string
+          _trigger_label: string
+          _triggered_by?: string
+          _type: string
+        }
+        Returns: undefined
+      }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number

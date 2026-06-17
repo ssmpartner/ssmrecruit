@@ -1,5 +1,12 @@
 // Zentrale Email-Sende-Funktion via Resend Connector Gateway
-// Aufruf: supabase.functions.invoke('send-email', { body: { to, subject, html, text?, from? } })
+// Aufruf: supabase.functions.invoke('send-email', { body: { to, subject, html, text?, from?, audience? } })
+//
+// audience:
+//   'internal' (Default) → Mitarbeiter, läuft immer
+//   'external'           → Lead/Kandidat/extern → benötigt Master-Schalter
+//                          app_settings.email_delivery.external_emails_enabled = true
+
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +16,9 @@ const corsHeaders = {
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
 const DEFAULT_FROM = 'SSM Recruit <noreply@send.ssmpartner.ch>'
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
+const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 interface SendEmailBody {
   to: string | string[]
@@ -20,6 +30,7 @@ interface SendEmailBody {
   cc?: string | string[]
   bcc?: string | string[]
   tags?: Array<{ name: string; value: string }>
+  audience?: 'internal' | 'external'
 }
 
 Deno.serve(async (req) => {
@@ -56,6 +67,33 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: 'Missing required fields: to, subject, html|text' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
+  }
+
+  // Master-Schalter für externe E-Mails prüfen
+  const audience = body.audience ?? 'external'
+  if (audience === 'external') {
+    try {
+      const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
+      const { data: setting } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'email_delivery')
+        .maybeSingle()
+      const enabled = (setting?.value as { external_emails_enabled?: boolean } | null)?.external_emails_enabled === true
+      if (!enabled) {
+        console.log('send-email: external_emails_disabled, blocking send', { to: body.to, subject: body.subject })
+        return new Response(
+          JSON.stringify({ error: 'external_emails_disabled', message: 'Externe E-Mails sind deaktiviert. Superadmin kann sie in den Einstellungen aktivieren.' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    } catch (err) {
+      console.error('send-email: failed to check master switch', err)
+      return new Response(
+        JSON.stringify({ error: 'config_check_failed' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
   }
 
   const payload = {
