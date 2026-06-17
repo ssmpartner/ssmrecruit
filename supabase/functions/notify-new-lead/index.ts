@@ -190,8 +190,3 @@ Deno.serve(async (req) => {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
 })
-
-  return new Response(JSON.stringify({ success: true, lead_id: lead.id, email_id: sendData?.id }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  })
-})
