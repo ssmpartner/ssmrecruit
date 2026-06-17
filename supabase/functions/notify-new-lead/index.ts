@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
   // Vollen Lead inkl. Agency + Mitarbeiter laden
   const { data: lead, error } = await supabase
     .from('leads')
-    .select('id, name, email, phone, source, canton, status, created_at, agency_id, employee_id')
+    .select('id, name, source, canton, status, created_at, agency_id, employee_id')
     .eq('id', leadId)
     .maybeSingle()
 
