@@ -156,6 +156,7 @@ Deno.serve(async (req) => {
       to: recipients,
       subject,
       html,
+      audience: 'internal',
       tags: [{ name: 'type', value: 'new-lead-notification' }],
     }),
   })
