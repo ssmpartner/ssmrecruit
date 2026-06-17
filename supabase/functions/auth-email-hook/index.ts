@@ -42,9 +42,9 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 
 // Configuration
 const SITE_NAME = "ssmrecruit"
-const SENDER_DOMAIN = "notify.recruit.ssmpartner.ch"
+const SENDER_DOMAIN = "send.ssmpartner.ch"
 const ROOT_DOMAIN = "recruit.ssmpartner.ch"
-const FROM_DOMAIN = "recruit.ssmpartner.ch" // Domain shown in From address (may be root or sender subdomain)
+const FROM_DOMAIN = "send.ssmpartner.ch" // Resend-verifizierte Sender-Domain
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
