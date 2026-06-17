@@ -4,6 +4,7 @@ import { generateAssessmentPdf, getSampleAssessmentData, loadLetterhead, assessm
 import EmailSettingsTab from '@/components/EmailSettingsTab';
 import NotificationRoleMatrix from '@/components/NotificationRoleMatrix';
 import PersonalNotificationSettings from '@/components/PersonalNotificationSettings';
+import NotificationActivityLog from '@/components/NotificationActivityLog';
 import { BRAND_ICONS } from '@/components/BrandIcons';
 import ProfileSettings from '@/components/ProfileSettings';
 import WizardsTab from '@/components/WizardsTab';
