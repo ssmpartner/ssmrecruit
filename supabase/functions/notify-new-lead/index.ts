@@ -104,28 +104,25 @@ Deno.serve(async (req) => {
 
 
 
-  // Opt-in-Empfänger ermitteln
-  const { data: prefs } = await supabase
-    .from('employee_notification_prefs')
-    .select('user_id')
-    .eq('notify_new_lead_email', true)
+  // Effektive Empfänger ermitteln (Rollen-Default + persönlicher Override)
+  const { data: recRows, error: recErr } = await supabase
+    .rpc('get_notification_recipients', { _notification_type: 'lead_new', _channel: 'email' })
 
-  const userIds = (prefs ?? []).map((p) => p.user_id).filter(Boolean)
-  let recipients: string[] = []
-  if (userIds.length > 0) {
-    const { data: emps } = await supabase
-      .from('employees')
-      .select('email')
-      .in('user_id', userIds)
-    recipients = Array.from(new Set((emps ?? []).map((e) => e.email).filter(Boolean)))
+  if (recErr) {
+    console.error('notify-new-lead: recipient lookup failed', recErr)
   }
 
+  const recipients = Array.from(
+    new Set(((recRows as { email: string }[] | null) ?? []).map((r) => r.email).filter(Boolean))
+  )
+
   if (recipients.length === 0) {
-    console.log('notify-new-lead: keine Opt-in-Empfänger – nichts gesendet', { leadId })
+    console.log('notify-new-lead: keine Empfänger – nichts gesendet', { leadId })
     return new Response(JSON.stringify({ success: true, skipped: 'no_recipients', lead_id: lead.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
+
 
   // Über zentrale send-email Function senden
   const sendResp = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
