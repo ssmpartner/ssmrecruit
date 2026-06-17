@@ -231,6 +231,9 @@ function buildDefaultEdges(): Edge[] {
     e('r6', 'appointment', 'rejected', { sourceHandle: 'bottom', ...red }),
     e('r7', 'follow_up', 'rejected', { sourceHandle: 'bottom', ...red }),
     e('back1', 'dec_approval', 'follow_up', { sourceHandle: 'no', animated: false, style: { strokeWidth: 1.5, stroke: '#94A3B8', strokeDasharray: '4 4' }, markerEnd: { type: MarkerType.ArrowClosed, color: '#94A3B8' } }),
+    // HR-Pendent Loop (Unterlagen-Nachreichung ohne erneutes Controlling/GL)
+    e('hr_p1', 'role_hr', 'hr_pending', { animated: false, style: { strokeWidth: 1.5, stroke: '#F59E0B', strokeDasharray: '4 4' }, markerEnd: { type: MarkerType.ArrowClosed, color: '#F59E0B' }, label: 'Pendent setzen' }),
+    e('hr_p2', 'hr_pending', 'role_hr', { animated: false, style: { strokeWidth: 1.5, stroke: '#F59E0B', strokeDasharray: '4 4' }, markerEnd: { type: MarkerType.ArrowClosed, color: '#F59E0B' }, label: 'Zurück an HR' }),
   ];
 }
 
