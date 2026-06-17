@@ -4,9 +4,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.54.0';
+const APP_VERSION = '2.55.0';
 
 const versionHistory = [
+  { version: '2.55.0', date: '17.06.2026', changes: [
+    'Benachrichtigungs-System komplett neu skopiert: KEINE Broadcast-Benachrichtigungen mehr – weder per E-Mail noch in der Glocke',
+    'Lead-bezogene Events (neuer Lead, Statuswechsel, Zuweisung, Task, Termin, Dokumente, DISC, Duplikate …): Nur zugewiesener Mitarbeiter + Agency-Manager/Backoffice der Lead-Agentur + Superadmin/Admin werden benachrichtigt',
+    'Nicht-lead-bezogene Events (AI-Voice-Budget, System-Alerts …): Nur Superadmin/Admin – nie an alle Mitarbeiter',
+    'Persönliche Opt-out-Einstellungen pro Mitarbeiter bleiben aktiv (jeder kann sich selbst aus einem Typ abmelden)',
+    'Externe E-Mails an Leads/Kandidaten standardmässig deaktiviert – Superadmin steuert den Master-Schalter in den Einstellungen → E-Mail Automationen',
+    'Neuer zentraler Dispatcher `notify-event` + DB-Trigger für Status, Zuweisung, Task, Termin – konsistente Logik, ein einziger Ort für Empfänger-Auflösung',
+    'Notification-Activity-Log (Superadmin): Pro Empfänger, Kanal, Auslöser und Status (sent/failed/skipped) wird jede Benachrichtigung protokolliert',
+    'DB-Funktion `get_notification_recipients` akzeptiert jetzt `_lead_id` und filtert Empfänger anhand der Lead-Sichtbarkeit (zugewiesene Person + Agentur-Team + Admin/Superadmin)',
+  ]},
   { version: '2.54.0', date: '10.06.2026', changes: [
     'HR-Rolle: Leads sind jetzt korrekt sichtbar (Cristina-Bug behoben) – HR sieht alle Leads ab «Bereit für Controlling» bis Onboarding-Abschluss in ihrer Queue',
     'HR-Rolle «Personalien»: Volle Einsicht in alle eingereichten Angaben (Personalien, Zivilstand, Lohn, Kinder usw.) im Read-only-Modus',
