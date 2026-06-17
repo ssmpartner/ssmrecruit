@@ -193,12 +193,13 @@ function buildDefaultNodes(countByStatus: Record<string, number>, total: number)
     mk('appointment', 'Terminiert', '📅', COL * 2, ROW_MAIN, 'Teamleiter / Backoffice', [{ label: 'Gespräch führen', emoji: '🎥' }, { label: 'Dokumente', emoji: '📄' }, { label: 'Status-Wizard', emoji: '🧙' }], ['Nicht passend', 'Kein Bedarf']),
     mk('follow_up', 'Follow-up', '🔄', COL * 3, ROW_MAIN, 'Teamleiter', [{ label: 'DISC-Profil', emoji: '🧠' }, { label: 'Dokumente prüfen', emoji: '📋' }, { label: 'Freigabe beantragen', emoji: '📤' }], ['Nicht passend', 'Nicht interessiert']),
     mkD('dec_approval', COL * 4 + 30, ROW_MAIN + 20, 'Freigabe?', 'Alle Unterlagen\nvollständig?', 'Ja', 'Zurück'),
-    mkR('role_controlling', COL * 5 + 40, ROW_APPROVAL - 30, '💰', 'Controlling', 'Budget & Kosten prüfen', 'controlling'),
-    mkD('dec_controlling', COL * 6 + 20, ROW_APPROVAL - 10, 'Freigabe?', 'Controlling\ngenehmigt?', 'Weiter', 'Ablehnen'),
-    mkR('role_gl', COL * 7, ROW_APPROVAL - 30, '🏢', 'Geschäftsleitung', 'Strategische Prüfung', 'management'),
-    mkD('dec_gl', COL * 8 - 20, ROW_APPROVAL - 10, 'Freigabe?', 'GL\ngenehmigt?', 'Weiter', 'Ablehnen'),
-    mkR('role_hr', COL * 9 - 40, ROW_APPROVAL - 30, '👥', 'HR', 'Vertrag & Onboarding', 'hr'),
-    mkD('dec_hr', COL * 10 - 60, ROW_APPROVAL - 10, 'Abschluss?', 'HR\nabgeschlossen?', 'Einstellen', 'Ablehnen'),
+    mkR('role_controlling', COL * 5 + 40, ROW_APPROVAL - 30, '💰', 'Controlling', 'Budget, Score & Begründung', 'controlling'),
+    mkD('dec_controlling', COL * 6 + 20, ROW_APPROVAL - 10, 'Freigabe?', 'Controlling\nselektioniert?', 'Weiter', 'Ablehnen'),
+    mkR('role_gl', COL * 7, ROW_APPROVAL - 30, '🏢', 'Geschäftsleitung', 'Multi-Approval: ALLE GL-Mitglieder müssen freigeben', 'management'),
+    mkD('dec_gl', COL * 8 - 20, ROW_APPROVAL - 10, 'Freigabe?', 'Alle GL\ngenehmigt?', 'Weiter', 'Ablehnen'),
+    mkR('role_hr', COL * 9 - 40, ROW_APPROVAL - 30, '👥', 'HR', 'Unterlagen-Prüfung & Onboarding', 'hr'),
+    mkD('dec_hr', COL * 10 - 60, ROW_APPROVAL - 10, 'Entscheid?', 'HR-Unterlagen\nvollständig?', 'Einstellen', 'Ablehnen'),
+    mk('hr_pending', 'HR Pendent (Unterlagen)', '⏳', COL * 9 - 40, ROW_APPROVAL + 200, 'Mitarbeiter', [{ label: 'Banner mit Begründung', emoji: '📝' }, { label: 'Unterlagen nachreichen', emoji: '📎' }, { label: 'Zurück an HR', emoji: '↩️' }], []),
     mk('hired', 'Eingestellt', '✅', COL * 11 - 80, ROW_APPROVAL - 50, 'HR', [{ label: 'Willkommen', emoji: '✉️' }, { label: 'Archivierung', emoji: '📁' }], []),
     { id: 'rejected', type: 'rejectedNode', position: { x: COL * 6 + 80, y: ROW_APPROVAL + 200 }, data: { status: 'rejected', label: 'Abgelehnt', count: countByStatus['rejected'] || 0, emoji: '❌', actions: [], escalations: [], total } as StatusNodeData, draggable: true },
   ];
@@ -230,6 +231,9 @@ function buildDefaultEdges(): Edge[] {
     e('r6', 'appointment', 'rejected', { sourceHandle: 'bottom', ...red }),
     e('r7', 'follow_up', 'rejected', { sourceHandle: 'bottom', ...red }),
     e('back1', 'dec_approval', 'follow_up', { sourceHandle: 'no', animated: false, style: { strokeWidth: 1.5, stroke: '#94A3B8', strokeDasharray: '4 4' }, markerEnd: { type: MarkerType.ArrowClosed, color: '#94A3B8' } }),
+    // HR-Pendent Loop (Unterlagen-Nachreichung ohne erneutes Controlling/GL)
+    e('hr_p1', 'role_hr', 'hr_pending', { animated: false, style: { strokeWidth: 1.5, stroke: '#F59E0B', strokeDasharray: '4 4' }, markerEnd: { type: MarkerType.ArrowClosed, color: '#F59E0B' }, label: 'Pendent setzen' }),
+    e('hr_p2', 'hr_pending', 'role_hr', { animated: false, style: { strokeWidth: 1.5, stroke: '#F59E0B', strokeDasharray: '4 4' }, markerEnd: { type: MarkerType.ArrowClosed, color: '#F59E0B' }, label: 'Zurück an HR' }),
   ];
 }
 
