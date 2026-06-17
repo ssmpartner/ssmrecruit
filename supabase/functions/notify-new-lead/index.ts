@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
 
   // Effektive Empfänger ermitteln (Rollen-Default + persönlicher Override)
   const { data: recRows, error: recErr } = await supabase
-    .rpc('get_notification_recipients', { _notification_type: 'lead_new', _channel: 'email' })
+    .rpc('get_notification_recipients', { _notification_type: 'lead_new', _channel: 'email', _lead_id: lead.id })
 
   if (recErr) {
     console.error('notify-new-lead: recipient lookup failed', recErr)
