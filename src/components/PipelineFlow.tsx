@@ -138,6 +138,7 @@ const PROCESS_STEP_INFO: Record<string, ProcessStepInfo> = {
       'Scoring-System: Perfekt / Sehr gut / Gut',
       'Freeze-Mechanik: Nach Entscheid kein Zugriff auf Kontaktdaten',
       'Eskalation: Erinnerung nach 2 Tagen, Eskalation an Admin nach 5 Tagen',
+      'Benachrichtigungen ausschliesslich an Lead-Zuständige (Mitarbeiter + Agency-Team + Admin) – keine Broadcasts',
     ],
     escalationStatuses: ['Controlling Prüfung', 'Selektioniert (Controlling)', 'Abgelehnt', 'Nicht passend', 'Kein Bedarf'],
     actions: [
