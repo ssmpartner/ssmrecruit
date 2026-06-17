@@ -428,8 +428,10 @@ const appFeatures = [
   ]},
   { category: 'Kommunikation', icon: '📞', features: [
     { name: 'Video-Calls', desc: 'Integrierte Video-Anrufe direkt aus der Anwendung starten.' },
-    { name: 'Benachrichtigungen', desc: 'Echtzeit In-App-Benachrichtigungen für Leads, Termine, Tasks, Prozess-Schritte, DISC, Insights, Dokument-Uploads, Duplikate und Automatisierungen – individuell konfigurierbar.' },
-    { name: 'Benachrichtigungs-Rollen-Matrix', desc: 'Superadmins steuern pro Benachrichtigungstyp und Rolle (Superadmin, Admin, Backoffice, Teamleiter, Analyst), ob In-App- und/oder E-Mail-Benachrichtigungen aktiviert sind.' },
+    { name: 'Benachrichtigungen (skopiert)', desc: 'Echtzeit-Benachrichtigungen (Glocke + E-Mail) werden ausschliesslich an die zuständige Person verschickt: zugewiesener Mitarbeiter + Agency-Manager/Backoffice der Lead-Agentur + Superadmin/Admin. Keine Broadcasts an alle.' },
+    { name: 'Benachrichtigungs-Rollen-Matrix', desc: 'Superadmins definieren pro Typ und Rolle die Standardvorgabe (Glocke / E-Mail). Mitarbeiter können sich individuell aus jedem Typ abmelden. Versand erfolgt immer nur an die für den jeweiligen Lead zuständigen Personen.' },
+    { name: 'Notification Activity Log', desc: 'Superadmin sieht pro Benachrichtigung Empfänger, Kanal, Auslöser und Status (sent / failed / skipped) – vollständige Audit-Spur.' },
+    { name: 'Externe E-Mail-Schutz', desc: 'E-Mails an Leads/Kandidaten sind standardmässig blockiert. Superadmin aktiviert den Master-Schalter in Einstellungen → E-Mail Automationen.' },
     { name: 'Termin-Erinnerungen', desc: 'Automatische Erinnerungen vor anstehenden Terminen.' },
     { name: 'E-Mail-Benachrichtigungen', desc: '14 vorbereitete E-Mail-Templates für alle wichtigen Events (Neuer Lead, Statuswechsel, Termine, Aufgaben, DISC, Insights, Dokumente, Duplikate). Standardmässig inaktiv, individuell aktivierbar.' },
   ]},
