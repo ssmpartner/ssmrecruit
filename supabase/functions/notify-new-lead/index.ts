@@ -98,6 +98,12 @@ Deno.serve(async (req) => {
       <a href="${leadUrl}" style="background:#324642;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block;">Lead öffnen</a>
     </div>
 
+    <p style="margin-top:32px;color:#999;font-size:12px;">SSM Recruit · automatische Benachrichtigung</p>
+  </div>
+  `
+
+
+
   // Opt-in-Empfänger ermitteln
   const { data: prefs } = await supabase
     .from('employee_notification_prefs')
