@@ -31,3 +31,5 @@ project_id = "adettewqzanmkgnnjlop"
     verify_jwt = false
   [functions.lookup-public-form]
     verify_jwt = false
+  [functions.notify-new-lead]
+    verify_jwt = false
