@@ -226,8 +226,8 @@ export default function Settings() {
           {activeTab === 'profile' && <ProfileSettings />}
           {activeTab === 'notifications' && (
             <div className="space-y-8">
-              <LeadEmailOptInSettings />
-              <NotificationRoleMatrix />
+              <PersonalNotificationSettings />
+              {isSuperadmin && <NotificationRoleMatrix />}
             </div>
           )}
           
