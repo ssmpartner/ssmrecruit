@@ -3,7 +3,10 @@ import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
-const SSM_PORTAL_LOGIN_URL = 'https://ssmpartner.ch/login';
+const SSM_PORTAL_BASE = 'https://ssmpartner.ch/login';
+// Erzwingt Rückleitung zur Recruit-Domain (nicht zur Lovable-Preview-URL)
+const RECRUIT_RETURN_URL = 'https://recruit.ssmpartner.ch/sso/callback';
+const SSM_PORTAL_LOGIN_URL = `${SSM_PORTAL_BASE}?project_key=ssm-recruit&return_url=${encodeURIComponent(RECRUIT_RETURN_URL)}&redirect_uri=${encodeURIComponent(RECRUIT_RETURN_URL)}`;
 
 export default function Login() {
   const { signIn } = useAuth();
