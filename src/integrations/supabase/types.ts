@@ -1920,6 +1920,24 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_notification_prefs: {
+        Row: {
+          notify_new_lead_email: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          notify_new_lead_email?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          notify_new_lead_email?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           agency_id: string
