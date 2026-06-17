@@ -259,11 +259,12 @@ export default function LeadDetailSheet() {
     if (!isSuperadmin) {
       delete updates.source;
       delete updates.createdAt;
-      // Non-superadmins cannot change original email/phone/name
+      // Non-superadmins cannot change original email/phone (use alt_* fields)
       delete updates.email;
       delete updates.phone;
-      delete updates.name;
+      // Name darf angepasst werden — Änderung wird in der Historie protokolliert
     }
+
     updateLead(selectedLead.id, updates);
     if (changes.length > 0) addActivity(selectedLead.id, 'edit', changes.join(', '));
     setEditing(false);
