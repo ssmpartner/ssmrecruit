@@ -36,7 +36,7 @@ export default function ExternalEmailMasterSwitch() {
     const { error } = await supabase
       .from('app_settings')
       .upsert(
-        { key: 'email_delivery', value: { external_emails_enabled: next } as EmailDelivery, updated_at: new Date().toISOString() },
+        [{ key: 'email_delivery', value: { external_emails_enabled: next } as unknown as Record<string, unknown>, updated_at: new Date().toISOString() }],
         { onConflict: 'key' },
       );
     setSaving(false);
