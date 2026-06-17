@@ -3,6 +3,7 @@ import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, S
 import { generateAssessmentPdf, getSampleAssessmentData, loadLetterhead, assessmentToPdfData } from '@/lib/assessment-pdf';
 import EmailSettingsTab from '@/components/EmailSettingsTab';
 import NotificationRoleMatrix from '@/components/NotificationRoleMatrix';
+import LeadEmailOptInSettings from '@/components/LeadEmailOptInSettings';
 import { BRAND_ICONS } from '@/components/BrandIcons';
 import ProfileSettings from '@/components/ProfileSettings';
 import WizardsTab from '@/components/WizardsTab';
