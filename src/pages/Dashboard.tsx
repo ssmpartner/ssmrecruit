@@ -154,6 +154,7 @@ export default function Dashboard() {
   if (isControlling) {
     return (
       <div className="space-y-6">
+        <NewsBanner />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
@@ -228,6 +229,7 @@ export default function Dashboard() {
   if (isReviewRole) {
     return (
       <div className="space-y-6">
+        <NewsBanner />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
@@ -286,6 +288,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      <NewsBanner />
       {/* Welcome Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
