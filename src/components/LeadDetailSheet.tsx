@@ -259,11 +259,12 @@ export default function LeadDetailSheet() {
     if (!isSuperadmin) {
       delete updates.source;
       delete updates.createdAt;
-      // Non-superadmins cannot change original email/phone/name
+      // Non-superadmins cannot change original email/phone (use alt_* fields)
       delete updates.email;
       delete updates.phone;
-      delete updates.name;
+      // Name darf angepasst werden — Änderung wird in der Historie protokolliert
     }
+
     updateLead(selectedLead.id, updates);
     if (changes.length > 0) addActivity(selectedLead.id, 'edit', changes.join(', '));
     setEditing(false);
@@ -651,11 +652,14 @@ export default function LeadDetailSheet() {
                               </div>
                               <div>
                                 <label className={`text-sm ${fieldErrors.name ? 'text-destructive' : 'text-muted-foreground'}`}>Name *</label>
-                                {isSuperadmin ? (
-                                  <input value={form.name} onChange={e => { setForm(prev => ({ ...prev, name: e.target.value })); setFieldErrors(prev => { const n = {...prev}; delete n.name; return n; }); }} className={inputErr('name')} />
-                                ) : (
-                                  <input value={form.name} readOnly className="h-10 w-full rounded-md border bg-muted px-3 text-sm cursor-not-allowed" />
-                                )}
+                                <input
+                                  value={form.name}
+                                  onChange={e => {
+                                    setForm(prev => ({ ...prev, name: e.target.value }));
+                                    setFieldErrors(prev => { const n = {...prev}; delete n.name; return n; });
+                                  }}
+                                  className={inputErr('name')}
+                                />
                                 {fieldErrors.name && <p className="text-sm text-destructive mt-0.5">{fieldErrors.name}</p>}
                               </div>
                               <div>
