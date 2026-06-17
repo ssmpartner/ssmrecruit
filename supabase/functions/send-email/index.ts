@@ -69,6 +69,33 @@ Deno.serve(async (req) => {
     )
   }
 
+  // Master-Schalter für externe E-Mails prüfen
+  const audience = body.audience ?? 'external'
+  if (audience === 'external') {
+    try {
+      const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
+      const { data: setting } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'email_delivery')
+        .maybeSingle()
+      const enabled = (setting?.value as { external_emails_enabled?: boolean } | null)?.external_emails_enabled === true
+      if (!enabled) {
+        console.log('send-email: external_emails_disabled, blocking send', { to: body.to, subject: body.subject })
+        return new Response(
+          JSON.stringify({ error: 'external_emails_disabled', message: 'Externe E-Mails sind deaktiviert. Superadmin kann sie in den Einstellungen aktivieren.' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    } catch (err) {
+      console.error('send-email: failed to check master switch', err)
+      return new Response(
+        JSON.stringify({ error: 'config_check_failed' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+  }
+
   const payload = {
     from: body.from || DEFAULT_FROM,
     to: Array.isArray(body.to) ? body.to : [body.to],
