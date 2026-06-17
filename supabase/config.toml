@@ -21,6 +21,8 @@ project_id = "adettewqzanmkgnnjlop"
     verify_jwt = false
   [functions.process-email-queue]
     verify_jwt = true
+  [functions.send-email]
+    verify_jwt = false
   [functions.tiktok-webhook]
     verify_jwt = false
   [functions.ai-voice-gateway]
