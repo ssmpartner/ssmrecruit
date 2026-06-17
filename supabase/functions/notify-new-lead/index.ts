@@ -89,8 +89,7 @@ Deno.serve(async (req) => {
 
     <table style="width:100%;border-collapse:collapse;font-size:14px;">
       <tr><td style="padding:6px 0;color:#666;width:130px;">Name</td><td style="padding:6px 0;font-weight:600;">${esc(lead.name)}</td></tr>
-      <tr><td style="padding:6px 0;color:#666;">E-Mail</td><td style="padding:6px 0;">${esc(lead.email)}</td></tr>
-      <tr><td style="padding:6px 0;color:#666;">Telefon</td><td style="padding:6px 0;">${esc(lead.phone)}</td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Kanton</td><td style="padding:6px 0;">${esc(lead.canton)}</td></tr>
       <tr><td style="padding:6px 0;color:#666;">Kanton</td><td style="padding:6px 0;">${esc(lead.canton)}</td></tr>
       <tr><td style="padding:6px 0;color:#666;">Quelle</td><td style="padding:6px 0;">${esc(lead.source)}</td></tr>
       <tr><td style="padding:6px 0;color:#666;">Status</td><td style="padding:6px 0;">${esc(lead.status)}</td></tr>
