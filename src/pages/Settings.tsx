@@ -9,6 +9,7 @@ import { BRAND_ICONS } from '@/components/BrandIcons';
 import ProfileSettings from '@/components/ProfileSettings';
 import WizardsTab from '@/components/WizardsTab';
 import CareerPlansTab from '@/components/CareerPlansTab';
+import NewsBannerTab from '@/components/NewsBannerTab';
 import { useToast } from '@/hooks/use-toast';
 import { useLeads } from '@/context/useLeads';
 import { useNotifications } from '@/context/useNotifications';
@@ -61,11 +62,12 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'profile' | 'notifications' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'career' | 'email' | 'integrations' | 'api';
+type SettingsTab = 'profile' | 'notifications' | 'news' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'career' | 'email' | 'integrations' | 'api';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
   { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name & Profildaten' },
   { id: 'notifications', label: 'Benachrichtigungen', icon: Bell, desc: 'In-App Alerts konfigurieren' },
+  { id: 'news', label: 'News Banner', icon: Send, desc: 'Ankündigungen für alle Mitarbeiter' },
   { id: 'sources', label: 'Lead-Quellen', icon: Tag, desc: 'Quellen verwalten & anpassen' },
   { id: 'appointments', label: 'Termine & Video', icon: CalendarDays, desc: 'Terminplanung & Video-Calls' },
   { id: 'insights', label: 'Insights / DISC', icon: Brain, desc: 'Persönlichkeitstest-Einstellungen' },
@@ -238,6 +240,7 @@ export default function Settings() {
           {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}
           {activeTab === 'wizards' && <WizardsTab />}
           {activeTab === 'career' && <CareerPlansTab />}
+          {activeTab === 'news' && <NewsBannerTab />}
           {activeTab === 'email' && <EmailSettingsTab />}
           {activeTab === 'integrations' && (
             <IntegrationsTab

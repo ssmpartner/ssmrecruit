@@ -11,6 +11,7 @@ import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
 import { resolveFirstName } from '@/lib/display-name';
 import { statusConfig } from '@/lib/mock-data';
+import NewsBanner from '@/components/NewsBanner';
 import { supabase } from '@/integrations/supabase/client';
 
 const PIE_COLORS = ['hsl(168, 17%, 23%)', 'hsl(162, 17%, 50%)', 'hsl(67, 16%, 66%)', 'hsl(38, 80%, 50%)', 'hsl(200, 70%, 50%)', 'hsl(162, 40%, 42%)', 'hsl(0, 65%, 51%)'];
@@ -153,6 +154,7 @@ export default function Dashboard() {
   if (isControlling) {
     return (
       <div className="space-y-6">
+        <NewsBanner />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
@@ -227,6 +229,7 @@ export default function Dashboard() {
   if (isReviewRole) {
     return (
       <div className="space-y-6">
+        <NewsBanner />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
@@ -285,6 +288,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      <NewsBanner />
       {/* Welcome Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>

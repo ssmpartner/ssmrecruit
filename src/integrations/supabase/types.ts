@@ -2674,6 +2674,39 @@ export type Database = {
           },
         ]
       }
+      news_banners: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          message: string
+          updated_at: string
+          variant: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          message: string
+          updated_at?: string
+          variant?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          message?: string
+          updated_at?: string
+          variant?: string
+        }
+        Relationships: []
+      }
       notification_activity_log: {
         Row: {
           channel: string
