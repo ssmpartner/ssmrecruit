@@ -3,6 +3,7 @@ import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, S
 import { generateAssessmentPdf, getSampleAssessmentData, loadLetterhead, assessmentToPdfData } from '@/lib/assessment-pdf';
 import EmailSettingsTab from '@/components/EmailSettingsTab';
 import NotificationRoleMatrix from '@/components/NotificationRoleMatrix';
+import LeadEmailOptInSettings from '@/components/LeadEmailOptInSettings';
 import { BRAND_ICONS } from '@/components/BrandIcons';
 import ProfileSettings from '@/components/ProfileSettings';
 import WizardsTab from '@/components/WizardsTab';
@@ -223,7 +224,12 @@ export default function Settings() {
         {/* Content */}
         <div className="flex-1 max-w-2xl space-y-6">
           {activeTab === 'profile' && <ProfileSettings />}
-          {activeTab === 'notifications' && <NotificationRoleMatrix />}
+          {activeTab === 'notifications' && (
+            <div className="space-y-8">
+              <LeadEmailOptInSettings />
+              <NotificationRoleMatrix />
+            </div>
+          )}
           
           {activeTab === 'sources' && <LeadSourcesTab isSuperadmin={isSuperadmin} />}
           {activeTab === 'appointments' && <AppointmentsTab appointmentSettings={appointmentSettings} updateAppointmentSettings={updateAppointmentSettings} toast={toast} />}

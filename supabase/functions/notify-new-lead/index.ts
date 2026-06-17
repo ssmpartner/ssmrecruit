@@ -9,9 +9,7 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 }
 
-// TEST-Phase: feste Empfänger. Später ersetzen durch dynamisches Lookup
-// (notification_role_settings + employees.email Opt-in pro Mitarbeiter).
-const TEST_RECIPIENTS = ['bilel.chagra@ssmpartner.ch']
+// Empfängerliste wird dynamisch aus employee_notification_prefs (Opt-in) ermittelt.
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -104,6 +102,31 @@ Deno.serve(async (req) => {
   </div>
   `
 
+
+
+  // Opt-in-Empfänger ermitteln
+  const { data: prefs } = await supabase
+    .from('employee_notification_prefs')
+    .select('user_id')
+    .eq('notify_new_lead_email', true)
+
+  const userIds = (prefs ?? []).map((p) => p.user_id).filter(Boolean)
+  let recipients: string[] = []
+  if (userIds.length > 0) {
+    const { data: emps } = await supabase
+      .from('employees')
+      .select('email')
+      .in('user_id', userIds)
+    recipients = Array.from(new Set((emps ?? []).map((e) => e.email).filter(Boolean)))
+  }
+
+  if (recipients.length === 0) {
+    console.log('notify-new-lead: keine Opt-in-Empfänger – nichts gesendet', { leadId })
+    return new Response(JSON.stringify({ success: true, skipped: 'no_recipients', lead_id: lead.id }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   // Über zentrale send-email Function senden
   const sendResp = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
     method: 'POST',
@@ -112,7 +135,7 @@ Deno.serve(async (req) => {
       'Authorization': `Bearer ${SERVICE_KEY}`,
     },
     body: JSON.stringify({
-      to: TEST_RECIPIENTS,
+      to: recipients,
       subject: `Neuer Lead: ${lead.name ?? lead.id}`,
       html,
       tags: [{ name: 'type', value: 'new-lead-notification' }],
