@@ -8,7 +8,7 @@ import { User } from 'lucide-react';
 
 // Pipeline shows only: Neue Leads, Kontaktiert, Rückruf (callback mapped to "new" with callback_count > 0)
 // All other statuses (rejected, hired etc.) are auto-removed from pipeline view
-const pipelineStatuses: LeadStatus[] = ['new', 'contacted', 'appointment'];
+const pipelineStatuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired'];
 
 export default function Pipeline() {
   const { leads, employees, agencies, updateLead, addActivity, setSelectedLead } = useLeads();
@@ -35,7 +35,7 @@ export default function Pipeline() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Pipeline</h1>
-        <p className="text-muted-foreground">Nur aktive Leads: Neu, Kontaktiert, Terminiert. Alle anderen werden automatisch entfernt.</p>
+        <p className="text-muted-foreground">Aktive Leads im gesamten Prozess: Neu, Kontaktiert, Terminiert, Follow-Up, Eingestellt.</p>
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
