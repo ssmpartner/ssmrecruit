@@ -35,7 +35,7 @@ export default function Pipeline() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Pipeline</h1>
-        <p className="text-muted-foreground">Nur aktive Leads: Neu, Kontaktiert, Terminiert. Alle anderen werden automatisch entfernt.</p>
+        <p className="text-muted-foreground">Aktive Leads im gesamten Prozess: Neu, Kontaktiert, Terminiert, Follow-Up, Eingestellt.</p>
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
