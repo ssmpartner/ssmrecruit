@@ -107,6 +107,33 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Optional: Microsoft Graph Tokens vom SSM-Portal speichern.
+    // Erwartete optionale Felder auf ssoUser:
+    //   ms_access_token, ms_refresh_token, ms_expires_in (Sekunden),
+    //   ms_user_id, ms_tenant_id, ms_scopes (string[]),
+    //   ms_email (sonst Fallback ssoUser.email).
+    try {
+      if (ssoUser.ms_access_token && ssoUser.ms_tenant_id && ssoUser.ms_user_id) {
+        const expiresAt = new Date(Date.now() + (Number(ssoUser.ms_expires_in ?? 3600) * 1000)).toISOString();
+        await supabase
+          .from('microsoft_calendar_connections')
+          .upsert({
+            user_id: userId,
+            microsoft_user_id: ssoUser.ms_user_id,
+            tenant_id: ssoUser.ms_tenant_id,
+            email: ssoUser.ms_email ?? ssoUser.email,
+            access_token: ssoUser.ms_access_token,
+            refresh_token: ssoUser.ms_refresh_token ?? null,
+            token_expires_at: expiresAt,
+            scopes: Array.isArray(ssoUser.ms_scopes) ? ssoUser.ms_scopes : [],
+            active: true,
+            last_sync_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' });
+      }
+    } catch (e) {
+      console.warn('MS calendar token persistence failed:', e);
+    }
+
     return new Response(JSON.stringify({
       success: true,
       session: {
@@ -121,6 +148,7 @@ Deno.serve(async (req) => {
         display_name: ssoUser.display_name || ssoUser.email,
         avatar_url: ssoUser.avatar_url || null,
         role: ssoUser.role || null,
+        ms_calendar_connected: !!ssoUser.ms_access_token,
       },
     }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },

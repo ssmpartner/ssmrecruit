@@ -2399,6 +2399,39 @@ export type Database = {
         }
         Relationships: []
       }
+      interview_calendar_events: {
+        Row: {
+          appointment_id: string
+          calendar_id: string | null
+          created_at: string
+          id: string
+          meeting_url: string | null
+          microsoft_event_id: string
+          organizer_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id: string
+          calendar_id?: string | null
+          created_at?: string
+          id?: string
+          meeting_url?: string | null
+          microsoft_event_id: string
+          organizer_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string
+          calendar_id?: string | null
+          created_at?: string
+          id?: string
+          meeting_url?: string | null
+          microsoft_event_id?: string
+          organizer_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lead_document_waivers: {
         Row: {
           created_at: string
@@ -2676,6 +2709,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      microsoft_calendar_connections: {
+        Row: {
+          access_token: string
+          active: boolean
+          connected_at: string
+          created_at: string
+          email: string
+          id: string
+          last_sync_at: string | null
+          microsoft_user_id: string
+          refresh_token: string | null
+          scopes: string[]
+          tenant_id: string
+          token_expires_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          active?: boolean
+          connected_at?: string
+          created_at?: string
+          email: string
+          id?: string
+          last_sync_at?: string | null
+          microsoft_user_id: string
+          refresh_token?: string | null
+          scopes?: string[]
+          tenant_id: string
+          token_expires_at: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          active?: boolean
+          connected_at?: string
+          created_at?: string
+          email?: string
+          id?: string
+          last_sync_at?: string | null
+          microsoft_user_id?: string
+          refresh_token?: string | null
+          scopes?: string[]
+          tenant_id?: string
+          token_expires_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       news_banners: {
         Row: {
