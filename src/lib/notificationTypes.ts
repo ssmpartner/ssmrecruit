@@ -10,6 +10,15 @@ export const NOTIFICATION_TYPES: { type: string; label: string; group: string }[
   { type: 'task_created', label: 'Neue Aufgabe', group: 'Aufgaben & Prozesse' },
   { type: 'task_overdue', label: 'Aufgabe überfällig', group: 'Aufgaben & Prozesse' },
   { type: 'process_step_changed', label: 'Prozess-Schritt', group: 'Aufgaben & Prozesse' },
+  // Approval-Workflow (Controlling → GL → HR)
+  { type: 'lead_ready_for_controlling', label: 'Lead bereit für Controlling-Prüfung', group: 'Freigabe-Prozess' },
+  { type: 'lead_controlling_approved', label: 'Controlling freigegeben', group: 'Freigabe-Prozess' },
+  { type: 'lead_controlling_rejected', label: 'Controlling abgelehnt', group: 'Freigabe-Prozess' },
+  { type: 'lead_management_approved', label: 'Geschäftsleitung freigegeben', group: 'Freigabe-Prozess' },
+  { type: 'lead_management_rejected', label: 'Geschäftsleitung abgelehnt', group: 'Freigabe-Prozess' },
+  { type: 'lead_hr_processing', label: 'HR-Bearbeitung gestartet', group: 'Freigabe-Prozess' },
+  { type: 'lead_hired', label: 'Lead eingestellt', group: 'Freigabe-Prozess' },
+  { type: 'approval_reminder', label: 'Erinnerung: hängende Freigabe (>24 h)', group: 'Freigabe-Prozess' },
   { type: 'disc_completed', label: 'DISC-Test abgeschlossen', group: 'Weitere' },
   { type: 'insights_completed', label: 'Insights abgeschlossen', group: 'Weitere' },
   { type: 'document_uploaded', label: 'Dokument hochgeladen', group: 'Weitere' },
@@ -27,4 +36,4 @@ export const NOTIFICATION_TYPES: { type: string; label: string; group: string }[
   { type: 'ai_voice_budget_warning', label: 'Budgetwarnung', group: 'AI Voice Agent' },
 ];
 
-export const NOTIFICATION_GROUPS = ['Leads', 'Termine', 'Aufgaben & Prozesse', 'AI Voice Agent', 'Weitere'];
+export const NOTIFICATION_GROUPS = ['Leads', 'Freigabe-Prozess', 'Termine', 'Aufgaben & Prozesse', 'AI Voice Agent', 'Weitere'];
