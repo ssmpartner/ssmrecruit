@@ -105,11 +105,46 @@ Deno.serve(async (req) => {
 
 
   // Effektive Empfänger ermitteln (Rollen-Default + persönlicher Override)
-  const { data: recRows, error: recErr } = await supabase
-    .rpc('get_notification_recipients', { _notification_type: 'lead_new', _channel: 'email', _lead_id: lead.id })
+  // Lead-ID übergeben → RPC schränkt automatisch auf zuständigen Mitarbeiter
+  // + Agency-Manager/Backoffice der Agentur + Superadmin/Admin ein.
+  const [emailRes, inAppRes] = await Promise.all([
+    supabase.rpc('get_notification_recipients', { _notification_type: 'lead_new', _channel: 'email', _lead_id: lead.id }),
+    supabase.rpc('get_notification_recipients', { _notification_type: 'lead_new', _channel: 'in_app', _lead_id: lead.id }),
+  ])
+  const recRows = emailRes.data
+  const inAppRecRows = inAppRes.data
+  if (emailRes.error) console.error('notify-new-lead: email recipient lookup failed', emailRes.error)
+  if (inAppRes.error) console.error('notify-new-lead: in_app recipient lookup failed', inAppRes.error)
 
-  if (recErr) {
-    console.error('notify-new-lead: recipient lookup failed', recErr)
+  // In-App-Glocke + Log
+  type RecipientLite = { user_id: string | null; email: string | null; employee_name: string | null }
+  const inAppRecs = ((inAppRecRows as RecipientLite[] | null) ?? [])
+  const inAppByUser = new Map<string, RecipientLite>()
+  inAppRecs.forEach((r) => { if (r.user_id) inAppByUser.set(r.user_id, r) })
+  if (inAppByUser.size > 0) {
+    const notifRows = Array.from(inAppByUser.values()).map((r) => ({
+      type: 'lead_new',
+      title: `Neuer Lead: ${lead.name ?? lead.id}`,
+      description: `Quelle: ${lead.source ?? '–'} · Kanton: ${lead.canton ?? '–'}`,
+      lead_id: lead.id,
+      recipient_user_id: r.user_id,
+    }))
+    await supabase.from('notifications').insert(notifRows)
+    await supabase.from('notification_activity_log').insert(
+      Array.from(inAppByUser.values()).map((r) => ({
+        notification_type: 'lead_new',
+        channel: 'in_app',
+        trigger_source: 'system_trigger',
+        trigger_label: `lead_new:${lead.source ?? 'manual'}`,
+        entity_type: 'lead',
+        entity_id: lead.id,
+        subject: `Neuer Lead: ${lead.name ?? lead.id}`,
+        recipient_user_id: r.user_id,
+        recipient_email: r.email,
+        recipient_name: r.employee_name,
+        status: 'sent',
+      })),
+    )
   }
 
   type Recipient = { user_id: string | null; email: string; employee_name: string | null }
