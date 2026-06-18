@@ -2569,6 +2569,7 @@ export type Database = {
           id: string
           is_demo: boolean
           is_read: boolean
+          last_approval_reminder_at: string | null
           lead_lifecycle: string
           name: string
           not_reached_count: number
@@ -2606,6 +2607,7 @@ export type Database = {
           id: string
           is_demo?: boolean
           is_read?: boolean
+          last_approval_reminder_at?: string | null
           lead_lifecycle?: string
           name: string
           not_reached_count?: number
@@ -2643,6 +2645,7 @@ export type Database = {
           id?: string
           is_demo?: boolean
           is_read?: boolean
+          last_approval_reminder_at?: string | null
           lead_lifecycle?: string
           name?: string
           not_reached_count?: number
