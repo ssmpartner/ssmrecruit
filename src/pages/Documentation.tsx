@@ -4,9 +4,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.55.0';
+const APP_VERSION = '2.56.0';
 
 const versionHistory = [
+  { version: '2.56.0', date: '22.06.2026', changes: [
+    'Geschäftsleitung-Benachrichtigungen entschärft: Wer seine Freigabe bereits erteilt hat, erhält keine weiteren Erinnerungen mehr – nur noch das ausstehende GL-Mitglied wird angeschrieben',
+    'Termine-Tab im Lead neu strukturiert: 3 feste Kacheln (BG1, BG2, Vertragsunterzeichnung) – immer sichtbar, direkt planbar, mit «Absagen»-Button statt Löschen',
+    'Absagen-Modal mit Grund-Auswahl: «Nicht geeignet» (→ Status «Nicht passend») oder «Nicht zum Termin erschienen» (→ Status «Nicht interessiert») – Begründung landet automatisch in der Aktivität',
+    'Öffentlicher Arbeitsvertrags-Upload: VBV-Zertifikat ist jetzt optional, ID Vorne+Hinten gebündelt in einem Upload, Führerausweis Pflicht',
+    'Öffentlicher Arbeitsvertrags-Upload: Betreibungs- und Strafregisterauszug als Pflichtdokumente ergänzt – mit Hinweis «nicht älter als 3 Monate» und direkten Bestelllinks zu eAMT und Strafregister',
+    '«Neuer Lead erfassen»: E-Mail-Adresse ist nicht mehr Pflicht – Format-Validierung greift nur noch, wenn ein Wert eingegeben wird',
+    'Statuswechsel-E-Mails: Statt technischer Keys (z.B. «not_reached») werden jetzt die deutschen Labels angezeigt («Nicht erreicht»)',
+    'Doppelte Benachrichtigungen behoben: Status-Änderungen lösen nicht mehr zwei identische Mails/Glocken-Einträge gleichzeitig aus (doppelter DB-Trigger entfernt)',
+  ]},
   { version: '2.55.0', date: '17.06.2026', changes: [
     'Benachrichtigungs-System komplett neu skopiert: KEINE Broadcast-Benachrichtigungen mehr – weder per E-Mail noch in der Glocke',
     'Lead-bezogene Events (neuer Lead, Statuswechsel, Zuweisung, Task, Termin, Dokumente, DISC, Duplikate …): Nur zugewiesener Mitarbeiter + Agency-Manager/Backoffice der Lead-Agentur + Superadmin/Admin werden benachrichtigt',
@@ -17,6 +27,7 @@ const versionHistory = [
     'Notification-Activity-Log (Superadmin): Pro Empfänger, Kanal, Auslöser und Status (sent/failed/skipped) wird jede Benachrichtigung protokolliert',
     'DB-Funktion `get_notification_recipients` akzeptiert jetzt `_lead_id` und filtert Empfänger anhand der Lead-Sichtbarkeit (zugewiesene Person + Agentur-Team + Admin/Superadmin)',
   ]},
+
   { version: '2.54.0', date: '10.06.2026', changes: [
     'HR-Rolle: Leads sind jetzt korrekt sichtbar (Cristina-Bug behoben) – HR sieht alle Leads ab «Bereit für Controlling» bis Onboarding-Abschluss in ihrer Queue',
     'HR-Rolle «Personalien»: Volle Einsicht in alle eingereichten Angaben (Personalien, Zivilstand, Lohn, Kinder usw.) im Read-only-Modus',
