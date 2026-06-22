@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS trg_leads_status_change_notify ON public.leads;
