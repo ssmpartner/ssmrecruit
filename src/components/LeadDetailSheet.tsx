@@ -1074,8 +1074,8 @@ export default function LeadDetailSheet() {
                                      </p>
                                      {apt.notes && <p className="text-sm mt-0.5 text-muted-foreground">{apt.notes}</p>}
                                   </div>
-                                  <button onClick={() => removeAppointment(apt.id)} className="shrink-0 rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                                    <Trash2 className="h-3 w-3" />
+                                  <button onClick={() => { setCancelApt(apt); setCancelReason(''); }} className="shrink-0 rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Termin absagen">
+                                    <X className="h-3.5 w-3.5" />
                                   </button>
                                 </div>
                                 {apt.meetingLink && (
