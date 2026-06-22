@@ -189,7 +189,8 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
   const validate = (): boolean => {
     const errs: Partial<Record<keyof FormState, string>> = {};
     if (!form.name.trim()) errs.name = 'Name ist erforderlich';
-    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Gültige E-Mail erforderlich';
+    // E-Mail is optional now
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Gültige E-Mail erforderlich';
     if (!SWISS_PHONE_REGEX.test(form.phone.replace(/\s+/g, ' ').trim())) errs.phone = 'Format: +41 XX XXX XX XX';
     if (!form.plz || form.plz.length !== 4) errs.plz = 'Gültige PLZ erforderlich';
     if (!form.city) errs.city = 'Ort wird benötigt';
@@ -294,7 +295,7 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground">E-Mail *</label>
+                  <label className="text-xs font-medium text-muted-foreground">E-Mail</label>
                   <input value={form.email} onChange={e => set('email', e.target.value)} className={inputCls('email')} type="email" placeholder="max@example.ch" maxLength={255} />
                   {errors.email && <p className="text-xs text-destructive mt-0.5">{errors.email}</p>}
                 </div>
