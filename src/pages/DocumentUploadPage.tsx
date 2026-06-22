@@ -11,23 +11,25 @@ interface SlotDef {
   key: string;
   label: string;
   required: boolean;
+  hint?: string;
   conditional?: (state: { isCH: boolean }) => boolean;
 }
 
 const APPLICATION_SLOTS: SlotDef[] = [
   { key: 'cv', label: 'Lebenslauf (CV)', required: true },
   { key: 'reference', label: 'Arbeitszeugnisse', required: true },
-  { key: 'betreibungsauszug', label: 'Betreibungsauszug', required: true },
-  { key: 'strafregisterauszug', label: 'Strafregisterauszug', required: true },
+  { key: 'betreibungsauszug', label: 'Betreibungsauszug', required: true, hint: 'Nicht älter als 3 Monate' },
+  { key: 'strafregisterauszug', label: 'Strafregisterauszug', required: true, hint: 'Nicht älter als 3 Monate' },
   { key: 'motivation', label: 'Motivationsschreiben (optional)', required: false },
 ];
 
 const EMPLOYMENT_SLOTS: SlotDef[] = [
-  { key: 'id_front', label: 'ID Vorderseite (in Farbe)', required: true },
-  { key: 'id_back', label: 'ID Rückseite (in Farbe)', required: true },
+  { key: 'id_both', label: 'ID Vorder- und Rückseite (in Farbe)', required: true, hint: 'Beide Seiten in einem PDF/Bild kombinieren' },
   { key: 'bank_front', label: 'Bankkarte Vorderseite', required: true },
   { key: 'bank_back', label: 'Bankkarte Rückseite', required: true },
-  { key: 'vbv', label: 'VBV Zertifikat', required: true },
+  { key: 'betreibungsauszug', label: 'Betreibungsauszug', required: true, hint: 'Nicht älter als 3 Monate' },
+  { key: 'strafregisterauszug', label: 'Strafregisterauszug', required: true, hint: 'Nicht älter als 3 Monate' },
+  { key: 'vbv', label: 'VBV Zertifikat (optional)', required: false },
   { key: 'kk_card', label: 'Kopie Krankenkassen-Karte', required: true },
   { key: 'fuehrerausweis', label: 'Führerausweis (PW)', required: true },
   { key: 'auslaenderbewilligung', label: 'Ausländerbewilligung', required: false, conditional: ({ isCH }) => !isCH },
