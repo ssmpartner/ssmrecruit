@@ -1309,6 +1309,54 @@ export default function LeadDetailSheet() {
         </DialogContent>
       </Dialog>
 
+      {/* Cancel Appointment Dialog */}
+      <Dialog open={!!cancelApt} onOpenChange={(v) => { if (!v) { setCancelApt(null); setCancelReason(''); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Termin absagen</DialogTitle>
+            <DialogDescription>
+              {cancelApt && (<>«{cancelApt.title}» am {new Date(cancelApt.date).toLocaleDateString('de-CH')} um {cancelApt.time}</>)}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <p className="text-sm font-medium">Grund auswählen:</p>
+            {CANCEL_REASONS.map(r => (
+              <label key={r.value} className={cn(
+                "flex items-start gap-2.5 rounded-lg border p-3 cursor-pointer transition-colors",
+                cancelReason === r.value ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
+              )}>
+                <input type="radio" name="cancel-reason" value={r.value} checked={cancelReason === r.value}
+                  onChange={() => setCancelReason(r.value)} className="mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{r.label}</p>
+                  <p className="text-xs text-muted-foreground">{r.description}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          <div className="flex justify-end gap-2">
+            <button onClick={() => { setCancelApt(null); setCancelReason(''); }}
+              className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Abbrechen</button>
+            <button
+              disabled={!cancelReason || !cancelApt}
+              onClick={() => {
+                if (!cancelApt || !cancelReason || !selectedLead) return;
+                const reason = CANCEL_REASONS.find(r => r.value === cancelReason)!;
+                const statusLabel = statusConfig[cancelReason as LeadStatus]?.label ?? reason.label;
+                addActivity(selectedLead.id, 'appointment', `Termin «${cancelApt.title}» am ${new Date(cancelApt.date).toLocaleDateString('de-CH')} um ${cancelApt.time} abgesagt – Grund: ${reason.label}. Status geändert zu «${statusLabel}».`);
+                updateLead(selectedLead.id, { status: cancelReason as LeadStatus });
+                removeAppointment(cancelApt.id);
+                toast({ title: 'Termin abgesagt', description: `Status wurde auf «${statusLabel}» gesetzt.` });
+                setCancelApt(null);
+                setCancelReason('');
+              }}
+              className="rounded-md bg-destructive px-4 py-1.5 text-sm font-medium text-destructive-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+              Termin absagen
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Video Call Dialog */}
       {(() => {
         const activeApt = appointments.find(a => a.id === activeCallAptId);
