@@ -49,6 +49,17 @@ const appointmentTypeConfig = {
   onsite: { label: 'Vor Ort', icon: Building2 },
 } as const;
 
+const REQUIRED_APPOINTMENTS = [
+  { title: 'BG 1 (Erstgespräch)', short: 'BG 1' },
+  { title: 'BG 2 (Fortsetzung)', short: 'BG 2' },
+  { title: 'Vertragsunterzeichnung', short: 'Vertrag' },
+] as const;
+
+const CANCEL_REASONS: { value: 'not_suitable' | 'not_interested'; label: string; description: string }[] = [
+  { value: 'not_suitable', label: 'Nicht geeignet', description: 'Status wird auf "Nicht passend" geändert.' },
+  { value: 'not_interested', label: 'Nicht zum Termin erschienen', description: 'Status wird auf "Nicht interessiert" geändert.' },
+];
+
 interface AppointmentSuggestion {
   id: string;
   lead_id: string;
