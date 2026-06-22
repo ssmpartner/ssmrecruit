@@ -98,9 +98,12 @@ function pickEmployee(
   employeeLeadCounts?: Record<string, number>,
 ): { agencyId: string; employeeId: string } {
   // Backoffice, Geschäftsleitung, Controlling und HR erhalten KEINE automatischen Lead-Zuweisungen
+  // Zusätzlich werden Mitarbeiter mit deaktiviertem canReceiveLeads-Flag ausgeschlossen
   const EXCLUDED_ROLES = ['backoffice', 'geschaeftsleitung', 'controlling', 'hr'];
   const agencyEmployees = employees.filter(
-    e => e.agencyId === agencyId && !EXCLUDED_ROLES.includes((e as any).role)
+    e => e.agencyId === agencyId
+      && !EXCLUDED_ROLES.includes((e as any).role)
+      && (e as any).canReceiveLeads !== false
   );
   if (agencyEmployees.length === 0) {
     return { agencyId, employeeId: fallbackEmployeeId };
