@@ -49,6 +49,17 @@ const appointmentTypeConfig = {
   onsite: { label: 'Vor Ort', icon: Building2 },
 } as const;
 
+const REQUIRED_APPOINTMENTS = [
+  { title: 'BG 1 (Erstgespräch)', short: 'BG 1' },
+  { title: 'BG 2 (Fortsetzung)', short: 'BG 2' },
+  { title: 'Vertragsunterzeichnung', short: 'Vertrag' },
+] as const;
+
+const CANCEL_REASONS: { value: 'not_suitable' | 'not_interested'; label: string; description: string }[] = [
+  { value: 'not_suitable', label: 'Nicht geeignet', description: 'Status wird auf "Nicht passend" geändert.' },
+  { value: 'not_interested', label: 'Nicht zum Termin erschienen', description: 'Status wird auf "Nicht interessiert" geändert.' },
+];
+
 interface AppointmentSuggestion {
   id: string;
   lead_id: string;
@@ -76,6 +87,8 @@ export default function LeadDetailSheet() {
   const [confirmReset, setConfirmReset] = useState(false);
   const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
   const [leadDbAppointments, setLeadDbAppointments] = useState<Appointment[]>([]);
+  const [cancelApt, setCancelApt] = useState<Appointment | null>(null);
+  const [cancelReason, setCancelReason] = useState<'not_suitable' | 'not_interested' | ''>('');
   const leadIsNew = selectedLead?.status === 'new';
   const isMarkedViewed = selectedLead?.isRead ?? false;
 
@@ -962,6 +975,42 @@ export default function LeadDetailSheet() {
                           </div>
                         )}
 
+                        {/* Required appointments overview – always visible */}
+                        <div className="rounded-lg border bg-muted/20 p-3 space-y-2">
+                          <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Erforderliche Termine</h5>
+                          <div className="space-y-1.5">
+                            {REQUIRED_APPOINTMENTS.map(req => {
+                              const apt = leadAppointments.find(a => a.title === req.title);
+                              const isPast = apt ? new Date(`${apt.date}T${apt.time}`) < new Date() : false;
+                              return (
+                                <div key={req.title} className="flex items-center justify-between gap-2 text-sm">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    {apt ? (
+                                      <CheckCircle2 className={cn("h-3.5 w-3.5 shrink-0", isPast ? 'text-muted-foreground' : 'text-success')} />
+                                    ) : (
+                                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                                    )}
+                                    <span className="font-medium truncate">{req.title}</span>
+                                  </div>
+                                  {apt ? (
+                                    <span className="text-xs text-muted-foreground shrink-0">
+                                      {new Date(apt.date).toLocaleDateString('de-CH', { day: '2-digit', month: 'short' })} • {apt.time}
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={() => { setAptForm({ title: req.title, date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' }); setShowAptForm(true); }}
+                                      className="text-xs font-medium text-primary hover:underline shrink-0">
+                                      Planen
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+
+
                         {appointmentSuggestions.length > 0 && (
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 mb-1">
@@ -1025,8 +1074,8 @@ export default function LeadDetailSheet() {
                                      </p>
                                      {apt.notes && <p className="text-sm mt-0.5 text-muted-foreground">{apt.notes}</p>}
                                   </div>
-                                  <button onClick={() => removeAppointment(apt.id)} className="shrink-0 rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                                    <Trash2 className="h-3 w-3" />
+                                  <button onClick={() => { setCancelApt(apt); setCancelReason(''); }} className="shrink-0 rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Termin absagen">
+                                    <X className="h-3.5 w-3.5" />
                                   </button>
                                 </div>
                                 {apt.meetingLink && (
@@ -1257,6 +1306,54 @@ export default function LeadDetailSheet() {
             )}
             </>
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Appointment Dialog */}
+      <Dialog open={!!cancelApt} onOpenChange={(v) => { if (!v) { setCancelApt(null); setCancelReason(''); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Termin absagen</DialogTitle>
+            <DialogDescription>
+              {cancelApt && (<>«{cancelApt.title}» am {new Date(cancelApt.date).toLocaleDateString('de-CH')} um {cancelApt.time}</>)}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <p className="text-sm font-medium">Grund auswählen:</p>
+            {CANCEL_REASONS.map(r => (
+              <label key={r.value} className={cn(
+                "flex items-start gap-2.5 rounded-lg border p-3 cursor-pointer transition-colors",
+                cancelReason === r.value ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
+              )}>
+                <input type="radio" name="cancel-reason" value={r.value} checked={cancelReason === r.value}
+                  onChange={() => setCancelReason(r.value)} className="mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{r.label}</p>
+                  <p className="text-xs text-muted-foreground">{r.description}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          <div className="flex justify-end gap-2">
+            <button onClick={() => { setCancelApt(null); setCancelReason(''); }}
+              className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Abbrechen</button>
+            <button
+              disabled={!cancelReason || !cancelApt}
+              onClick={() => {
+                if (!cancelApt || !cancelReason || !selectedLead) return;
+                const reason = CANCEL_REASONS.find(r => r.value === cancelReason)!;
+                const statusLabel = statusConfig[cancelReason as LeadStatus]?.label ?? reason.label;
+                addActivity(selectedLead.id, 'appointment', `Termin «${cancelApt.title}» am ${new Date(cancelApt.date).toLocaleDateString('de-CH')} um ${cancelApt.time} abgesagt – Grund: ${reason.label}. Status geändert zu «${statusLabel}».`);
+                updateLead(selectedLead.id, { status: cancelReason as LeadStatus });
+                removeAppointment(cancelApt.id);
+                toast({ title: 'Termin abgesagt', description: `Status wurde auf «${statusLabel}» gesetzt.` });
+                setCancelApt(null);
+                setCancelReason('');
+              }}
+              className="rounded-md bg-destructive px-4 py-1.5 text-sm font-medium text-destructive-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+              Termin absagen
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
 
