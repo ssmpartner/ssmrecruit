@@ -3280,6 +3280,7 @@ export type Database = {
         Args: { _agency_id: string }
         Returns: string
       }
+      status_label: { Args: { _status: string }; Returns: string }
     }
     Enums: {
       app_role:
