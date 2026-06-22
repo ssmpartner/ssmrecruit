@@ -975,6 +975,42 @@ export default function LeadDetailSheet() {
                           </div>
                         )}
 
+                        {/* Required appointments overview – always visible */}
+                        <div className="rounded-lg border bg-muted/20 p-3 space-y-2">
+                          <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Erforderliche Termine</h5>
+                          <div className="space-y-1.5">
+                            {REQUIRED_APPOINTMENTS.map(req => {
+                              const apt = leadAppointments.find(a => a.title === req.title);
+                              const isPast = apt ? new Date(`${apt.date}T${apt.time}`) < new Date() : false;
+                              return (
+                                <div key={req.title} className="flex items-center justify-between gap-2 text-sm">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    {apt ? (
+                                      <CheckCircle2 className={cn("h-3.5 w-3.5 shrink-0", isPast ? 'text-muted-foreground' : 'text-success')} />
+                                    ) : (
+                                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                                    )}
+                                    <span className="font-medium truncate">{req.title}</span>
+                                  </div>
+                                  {apt ? (
+                                    <span className="text-xs text-muted-foreground shrink-0">
+                                      {new Date(apt.date).toLocaleDateString('de-CH', { day: '2-digit', month: 'short' })} • {apt.time}
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={() => { setAptForm({ title: req.title, date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' }); setShowAptForm(true); }}
+                                      className="text-xs font-medium text-primary hover:underline shrink-0">
+                                      Planen
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+
+
                         {appointmentSuggestions.length > 0 && (
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 mb-1">
