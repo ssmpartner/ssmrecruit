@@ -1,13 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { Save, Loader2, User, Shield, ExternalLink } from 'lucide-react';
+import { Save, Loader2, User, Shield, ExternalLink, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { getMyMsConnection } from '@/lib/ms-calendar';
 
 export default function ProfileSettings() {
   const { profile, updateProfile } = useAuth();
 
   const [displayName, setDisplayName] = useState(profile?.display_name || '');
   const [savingName, setSavingName] = useState(false);
+  const [msConn, setMsConn] = useState<Awaited<ReturnType<typeof getMyMsConnection>> | null>(null);
+  const [msLoading, setMsLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try { setMsConn(await getMyMsConnection()); } catch { /* noop */ }
+      setMsLoading(false);
+    })();
+  }, []);
+
 
   const handleSaveName = async () => {
     if (!displayName.trim()) {
@@ -51,6 +62,44 @@ export default function ProfileSettings() {
             Speichern
           </button>
         </div>
+      </div>
+
+      {/* Microsoft 365 Kalender */}
+      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground" /> Microsoft 365 Kalender
+        </h3>
+        {msLoading ? (
+          <div className="text-sm text-muted-foreground flex items-center gap-2">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Verbindung wird geprüft…
+          </div>
+        ) : msConn?.active ? (
+          <div className="space-y-1.5 text-sm">
+            <div className="flex items-center gap-2 text-success">
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="font-medium">Verbunden</span>
+              <span className="text-muted-foreground">· {msConn.email}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Verfügbarkeiten werden automatisch aus Ihrem Outlook-Kalender gelesen (nur Frei/Besetzt – keine Termininhalte).
+            </p>
+            {msConn.last_sync_at && (
+              <p className="text-xs text-muted-foreground">
+                Letzter Abgleich: {new Date(msConn.last_sync_at).toLocaleString('de-CH')}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-1.5 text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <AlertCircle className="h-4 w-4" />
+              <span>Nicht verbunden</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Melden Sie sich über das SSM Portal mit Microsoft an, um Ihren Outlook-Kalender automatisch zu verbinden.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Central management hint */}
