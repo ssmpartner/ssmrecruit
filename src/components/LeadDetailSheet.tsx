@@ -975,38 +975,50 @@ export default function LeadDetailSheet() {
                           </div>
                         )}
 
-                        {/* Required appointments overview – always visible */}
-                        <div className="rounded-lg border bg-muted/20 p-3 space-y-2">
-                          <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Erforderliche Termine</h5>
-                          <div className="space-y-1.5">
-                            {REQUIRED_APPOINTMENTS.map(req => {
-                              const apt = leadAppointments.find(a => a.title === req.title);
-                              const isPast = apt ? new Date(`${apt.date}T${apt.time}`) < new Date() : false;
-                              return (
-                                <div key={req.title} className="flex items-center justify-between gap-2 text-sm">
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    {apt ? (
-                                      <CheckCircle2 className={cn("h-3.5 w-3.5 shrink-0", isPast ? 'text-muted-foreground' : 'text-success')} />
-                                    ) : (
-                                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                                    )}
-                                    <span className="font-medium truncate">{req.title}</span>
-                                  </div>
+                        {/* Required appointments – 3 tiles always visible */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          {REQUIRED_APPOINTMENTS.map(req => {
+                            const apt = leadAppointments.find(a => a.title === req.title);
+                            const isPast = apt ? new Date(`${apt.date}T${apt.time}`) < new Date() : false;
+                            const TypeIcon = apt ? appointmentTypeConfig[apt.type].icon : CalendarIcon;
+                            return (
+                              <div key={req.title} className={cn(
+                                "rounded-lg border p-3 flex flex-col gap-2 transition-colors",
+                                apt ? (isPast ? 'bg-muted/30 border-muted' : 'bg-primary/5 border-primary/30') : 'bg-muted/10 border-dashed'
+                              )}>
+                                <div className="flex items-center gap-1.5">
                                   {apt ? (
-                                    <span className="text-xs text-muted-foreground shrink-0">
-                                      {new Date(apt.date).toLocaleDateString('de-CH', { day: '2-digit', month: 'short' })} • {apt.time}
-                                    </span>
+                                    <CheckCircle2 className={cn("h-4 w-4 shrink-0", isPast ? 'text-muted-foreground' : 'text-success')} />
                                   ) : (
-                                    <button
-                                      onClick={() => { setAptForm({ title: req.title, date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' }); setShowAptForm(true); }}
-                                      className="text-xs font-medium text-primary hover:underline shrink-0">
-                                      Planen
-                                    </button>
+                                    <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
                                   )}
+                                  <span className="text-sm font-semibold truncate">{req.short}</span>
                                 </div>
-                              );
-                            })}
-                          </div>
+                                <p className="text-xs text-muted-foreground leading-tight">{req.title}</p>
+                                {apt ? (
+                                  <>
+                                    <div className="flex items-center gap-1.5 text-xs">
+                                      <TypeIcon className="h-3 w-3 shrink-0 text-primary" />
+                                      <span className="font-medium">
+                                        {new Date(apt.date).toLocaleDateString('de-CH', { day: '2-digit', month: 'short' })} • {apt.time}
+                                      </span>
+                                    </div>
+                                    <button
+                                      onClick={() => { setCancelApt(apt); setCancelReason(''); }}
+                                      className="mt-auto inline-flex items-center justify-center gap-1 rounded-md border border-destructive/30 bg-background px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors">
+                                      <X className="h-3 w-3" /> Absagen
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button
+                                    onClick={() => { setAptForm({ title: req.title, date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' }); setShowAptForm(true); }}
+                                    className="mt-auto inline-flex items-center justify-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                                    <Plus className="h-3 w-3" /> Planen
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
 
 
@@ -1074,8 +1086,8 @@ export default function LeadDetailSheet() {
                                      </p>
                                      {apt.notes && <p className="text-sm mt-0.5 text-muted-foreground">{apt.notes}</p>}
                                   </div>
-                                  <button onClick={() => { setCancelApt(apt); setCancelReason(''); }} className="shrink-0 rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Termin absagen">
-                                    <X className="h-3.5 w-3.5" />
+                                  <button onClick={() => { setCancelApt(apt); setCancelReason(''); }} className="shrink-0 inline-flex items-center gap-1 rounded-md border border-destructive/30 bg-background px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors" title="Termin absagen">
+                                    <X className="h-3 w-3" /> Absagen
                                   </button>
                                 </div>
                                 {apt.meetingLink && (
