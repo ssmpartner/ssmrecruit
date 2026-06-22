@@ -295,7 +295,7 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground">E-Mail *</label>
+                  <label className="text-xs font-medium text-muted-foreground">E-Mail</label>
                   <input value={form.email} onChange={e => set('email', e.target.value)} className={inputCls('email')} type="email" placeholder="max@example.ch" maxLength={255} />
                   {errors.email && <p className="text-xs text-destructive mt-0.5">{errors.email}</p>}
                 </div>
