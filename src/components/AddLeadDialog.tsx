@@ -189,7 +189,8 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
   const validate = (): boolean => {
     const errs: Partial<Record<keyof FormState, string>> = {};
     if (!form.name.trim()) errs.name = 'Name ist erforderlich';
-    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Gültige E-Mail erforderlich';
+    // E-Mail is optional now
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Gültige E-Mail erforderlich';
     if (!SWISS_PHONE_REGEX.test(form.phone.replace(/\s+/g, ' ').trim())) errs.phone = 'Format: +41 XX XXX XX XX';
     if (!form.plz || form.plz.length !== 4) errs.plz = 'Gültige PLZ erforderlich';
     if (!form.city) errs.city = 'Ort wird benötigt';
