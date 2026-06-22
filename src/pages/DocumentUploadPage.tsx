@@ -11,23 +11,25 @@ interface SlotDef {
   key: string;
   label: string;
   required: boolean;
+  hint?: string;
   conditional?: (state: { isCH: boolean }) => boolean;
 }
 
 const APPLICATION_SLOTS: SlotDef[] = [
   { key: 'cv', label: 'Lebenslauf (CV)', required: true },
   { key: 'reference', label: 'Arbeitszeugnisse', required: true },
-  { key: 'betreibungsauszug', label: 'Betreibungsauszug', required: true },
-  { key: 'strafregisterauszug', label: 'Strafregisterauszug', required: true },
+  { key: 'betreibungsauszug', label: 'Betreibungsauszug', required: true, hint: 'Nicht älter als 3 Monate' },
+  { key: 'strafregisterauszug', label: 'Strafregisterauszug', required: true, hint: 'Nicht älter als 3 Monate' },
   { key: 'motivation', label: 'Motivationsschreiben (optional)', required: false },
 ];
 
 const EMPLOYMENT_SLOTS: SlotDef[] = [
-  { key: 'id_front', label: 'ID Vorderseite (in Farbe)', required: true },
-  { key: 'id_back', label: 'ID Rückseite (in Farbe)', required: true },
+  { key: 'id_both', label: 'ID Vorder- und Rückseite (in Farbe)', required: true, hint: 'Beide Seiten in einem PDF/Bild kombinieren' },
   { key: 'bank_front', label: 'Bankkarte Vorderseite', required: true },
   { key: 'bank_back', label: 'Bankkarte Rückseite', required: true },
-  { key: 'vbv', label: 'VBV Zertifikat', required: true },
+  { key: 'betreibungsauszug', label: 'Betreibungsauszug', required: true, hint: 'Nicht älter als 3 Monate' },
+  { key: 'strafregisterauszug', label: 'Strafregisterauszug', required: true, hint: 'Nicht älter als 3 Monate' },
+  { key: 'vbv', label: 'VBV Zertifikat (optional)', required: false },
   { key: 'kk_card', label: 'Kopie Krankenkassen-Karte', required: true },
   { key: 'fuehrerausweis', label: 'Führerausweis (PW)', required: true },
   { key: 'auslaenderbewilligung', label: 'Ausländerbewilligung', required: false, conditional: ({ isCH }) => !isCH },
@@ -388,6 +390,9 @@ export default function DocumentUploadPage() {
                         {slot.label}
                         {slot.required && <span className="text-destructive ml-1">*</span>}
                       </p>
+                      {slot.hint && !done && !queued && (
+                        <p className="text-xs text-muted-foreground">{slot.hint}</p>
+                      )}
                       {done && (
                         <p className="text-xs text-emerald-700 dark:text-emerald-300 truncate">
                           ✓ Eingereicht am {fmtDate(existing.uploadedAt)} · {existing.name}
@@ -453,23 +458,21 @@ export default function DocumentUploadPage() {
                kind === 'employment' ? 'Arbeitsdossier einreichen' : 'Bewerbung einreichen'}
             </button>
 
-            {kind === 'application' && (
-              <div className="rounded-xl border border-border bg-muted/30 p-5 space-y-4">
-                <p className="text-sm text-foreground">
-                  Falls Sie noch keinen <strong>Betreibungsauszug</strong> oder <strong>Strafregisterauszug</strong> haben, können Sie diese hier online bestellen:
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <a href="https://www.eamt.ch/" target="_blank" rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-                    <ExternalLink className="h-4 w-4" /> eAMT – Betreibungsregisterauszug
-                  </a>
-                  <a href="https://www.e-service.admin.ch/crex/cms/content/strafregister/uebersicht_de" target="_blank" rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-                    <ExternalLink className="h-4 w-4" /> Strafregisterauszug bestellen
-                  </a>
-                </div>
+            <div className="rounded-xl border border-border bg-muted/30 p-5 space-y-4">
+              <p className="text-sm text-foreground">
+                Falls Sie noch keinen <strong>Betreibungsauszug</strong> oder <strong>Strafregisterauszug</strong> haben, können Sie diese hier online bestellen. Bitte beachten Sie: <strong>nicht älter als 3 Monate</strong>.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <a href="https://www.eamt.ch/" target="_blank" rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+                  <ExternalLink className="h-4 w-4" /> eAMT – Betreibungsregisterauszug
+                </a>
+                <a href="https://www.e-service.admin.ch/crex/cms/content/strafregister/uebersicht_de" target="_blank" rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+                  <ExternalLink className="h-4 w-4" /> Strafregisterauszug bestellen
+                </a>
               </div>
-            )}
+            </div>
           </div>
         </div>
 
