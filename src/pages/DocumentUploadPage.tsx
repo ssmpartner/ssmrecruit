@@ -390,6 +390,9 @@ export default function DocumentUploadPage() {
                         {slot.label}
                         {slot.required && <span className="text-destructive ml-1">*</span>}
                       </p>
+                      {slot.hint && !done && !queued && (
+                        <p className="text-xs text-muted-foreground">{slot.hint}</p>
+                      )}
                       {done && (
                         <p className="text-xs text-emerald-700 dark:text-emerald-300 truncate">
                           ✓ Eingereicht am {fmtDate(existing.uploadedAt)} · {existing.name}
