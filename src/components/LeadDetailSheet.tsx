@@ -87,6 +87,8 @@ export default function LeadDetailSheet() {
   const [confirmReset, setConfirmReset] = useState(false);
   const [appointmentSuggestions, setAppointmentSuggestions] = useState<AppointmentSuggestion[]>([]);
   const [leadDbAppointments, setLeadDbAppointments] = useState<Appointment[]>([]);
+  const [cancelApt, setCancelApt] = useState<Appointment | null>(null);
+  const [cancelReason, setCancelReason] = useState<'not_suitable' | 'not_interested' | ''>('');
   const leadIsNew = selectedLead?.status === 'new';
   const isMarkedViewed = selectedLead?.isRead ?? false;
 
