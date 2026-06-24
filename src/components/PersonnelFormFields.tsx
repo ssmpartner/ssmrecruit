@@ -52,7 +52,7 @@ export interface PersonnelData {
 }
 
 const REQUIRED_BASE: (keyof PersonnelData)[] = [
-  'ahvNr', 'nationalitaet', 'sprache', 'heimatortCH', 'auslaenderausweis',
+  'ahvNr', 'nationalitaet', 'sprache', 'heimatortCH', 'heimatortAusland', 'adresse', 'telefon', 'auslaenderausweis',
   'zivilstand', 'konfession',
   'bankName', 'bic', 'iban', 'bankPlzOrt',
   'krankenkasse', 'pensionskasse',
