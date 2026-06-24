@@ -73,6 +73,10 @@ export default function WelcomeWizardConfigTab() {
       enabled: cfg.enabled,
       video_url: cfg.video_url,
       thumbnail_url: cfg.thumbnail_url,
+      video_url_appointments: cfg.video_url_appointments,
+      thumbnail_url_appointments: cfg.thumbnail_url_appointments,
+      appointments_video_title: cfg.appointments_video_title,
+      appointments_video_intro: cfg.appointments_video_intro,
       page_title: cfg.page_title,
       page_intro: cfg.page_intro,
       button_proceed_label: cfg.button_proceed_label,
@@ -91,35 +95,34 @@ export default function WelcomeWizardConfigTab() {
     toast({ title: 'Gespeichert', description: 'Willkommen-Wizard wurde aktualisiert.' });
   };
 
-  const uploadFile = async (file: File, kind: 'video' | 'thumbnail') => {
+  const uploadFile = async (file: File, kind: AssetKind) => {
     if (!cfg) return;
-    const setter = kind === 'video' ? setUploadingVideo : setUploadingThumb;
-    setter(true);
+    setUploading(u => ({ ...u, [kind]: true }));
     const ext = file.name.split('.').pop() ?? 'bin';
-    const path = `${kind}/${crypto.randomUUID()}.${ext}`;
+    const path = `${ASSET_FOLDER[kind]}/${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: false, contentType: file.type });
     if (error) {
       toast({ title: 'Upload fehlgeschlagen', description: error.message, variant: 'destructive' });
-      setter(false);
+      setUploading(u => ({ ...u, [kind]: false }));
       return;
     }
     const url = `${BUCKET}/${path}`;
-    if (kind === 'video') setCfg({ ...cfg, video_url: url });
-    else setCfg({ ...cfg, thumbnail_url: url });
-    setter(false);
+    setCfg({ ...cfg, [ASSET_FIELD[kind]]: url } as Cfg);
+    setUploading(u => ({ ...u, [kind]: false }));
     toast({ title: 'Hochgeladen', description: 'Bitte abschliessend speichern.' });
   };
 
-  const removeAsset = async (kind: 'video' | 'thumbnail') => {
+  const removeAsset = async (kind: AssetKind) => {
     if (!cfg) return;
-    const current = kind === 'video' ? cfg.video_url : cfg.thumbnail_url;
+    const field = ASSET_FIELD[kind];
+    const current = cfg[field] as string | null;
     if (current) {
       const path = current.startsWith(`${BUCKET}/`) ? current.substring(BUCKET.length + 1) : null;
       if (path) await supabase.storage.from(BUCKET).remove([path]);
     }
-    if (kind === 'video') setCfg({ ...cfg, video_url: null });
-    else setCfg({ ...cfg, thumbnail_url: null });
+    setCfg({ ...cfg, [field]: null } as Cfg);
   };
+
 
   const toggleSource = (id: string) => {
     if (!cfg) return;
