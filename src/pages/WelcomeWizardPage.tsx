@@ -20,6 +20,7 @@ export default function WelcomeWizardPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
+  const isPreview = searchParams.get('preview') === '1';
 
   const [view, setView] = useState<View>('loading');
   const [config, setConfig] = useState<Config | null>(null);
@@ -27,6 +28,29 @@ export default function WelcomeWizardPage() {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
+    if (isPreview) {
+      (async () => {
+        const { data, error } = await supabase
+          .from('welcome_wizard_config')
+          .select('page_title,page_intro,button_proceed_label,button_reject_label,proceed_confirmation_text,reject_confirmation_text,video_url,thumbnail_url')
+          .eq('id', true)
+          .maybeSingle();
+        if (error || !data) { setView('error'); setErrorMsg('Konfiguration konnte nicht geladen werden.'); return; }
+        const resolve = async (raw: string | null) => {
+          if (!raw) return null;
+          if (/^https?:\/\//.test(raw)) return raw;
+          const [bucket, ...rest] = raw.split('/');
+          const path = rest.join('/');
+          const { data: signed } = await supabase.storage.from(bucket).createSignedUrl(path, 3600);
+          return signed?.signedUrl ?? null;
+        };
+        const [video_url, thumbnail_url] = await Promise.all([resolve(data.video_url), resolve(data.thumbnail_url)]);
+        setConfig({ ...(data as any), video_url, thumbnail_url });
+        setLeadName('Vorschau');
+        setView('ready');
+      })();
+      return;
+    }
     if (!token) { setView('error'); setErrorMsg('Ungültiger Link.'); return; }
     (async () => {
       const { data, error } = await supabase.functions.invoke('welcome-public-lookup', { body: { token } });
@@ -37,9 +61,14 @@ export default function WelcomeWizardPage() {
       if ((data as any).used_at) setView('already');
       else setView('ready');
     })();
-  }, [token]);
+  }, [token, isPreview]);
 
   const handleAction = async (action: 'reject' | 'proceed') => {
+    if (isPreview) {
+      if (action === 'reject') setView('reject_done');
+      else alert('Vorschau-Modus: Weiterleitung zum Insights-Test erfolgt im echten Link.');
+      return;
+    }
     if (!token) return;
     setView('submitting');
     const { data, error } = await supabase.functions.invoke('welcome-public-action', { body: { token, action } });
