@@ -3142,6 +3142,98 @@ export type Database = {
         }
         Relationships: []
       }
+      welcome_lead_tokens: {
+        Row: {
+          action: string | null
+          created_at: string
+          expires_at: string
+          insights_request_id: string | null
+          lead_id: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          action?: string | null
+          created_at?: string
+          expires_at?: string
+          insights_request_id?: string | null
+          lead_id: string
+          token?: string
+          used_at?: string | null
+        }
+        Update: {
+          action?: string | null
+          created_at?: string
+          expires_at?: string
+          insights_request_id?: string | null
+          lead_id?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "welcome_lead_tokens_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      welcome_wizard_config: {
+        Row: {
+          auto_sources: string[]
+          button_proceed_label: string
+          button_reject_label: string
+          email_html: string
+          email_subject: string
+          enabled: boolean
+          id: boolean
+          page_intro: string
+          page_title: string
+          proceed_confirmation_text: string
+          reject_confirmation_text: string
+          thumbnail_url: string | null
+          updated_at: string
+          updated_by: string | null
+          video_url: string | null
+        }
+        Insert: {
+          auto_sources?: string[]
+          button_proceed_label?: string
+          button_reject_label?: string
+          email_html?: string
+          email_subject?: string
+          enabled?: boolean
+          id?: boolean
+          page_intro?: string
+          page_title?: string
+          proceed_confirmation_text?: string
+          reject_confirmation_text?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          auto_sources?: string[]
+          button_proceed_label?: string
+          button_reject_label?: string
+          email_html?: string
+          email_subject?: string
+          enabled?: boolean
+          id?: boolean
+          page_intro?: string
+          page_title?: string
+          proceed_confirmation_text?: string
+          reject_confirmation_text?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       wizards: {
         Row: {
           created_at: string
