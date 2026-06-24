@@ -122,7 +122,15 @@ export default function WelcomeWizardConfigTab() {
               E-Mail mit Video-Landing-Page für neue Leads. Kandidat wählt: <em>Ablehnen</em> oder <em>Nächste Schritte</em> (Insights-Test).
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <a
+              href="/willkommen?preview=1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Vorschau
+            </a>
             <Label htmlFor="enabled" className="text-sm">Aktiv</Label>
             <Switch id="enabled" checked={cfg.enabled} onCheckedChange={v => setCfg({ ...cfg, enabled: v })} />
           </div>
