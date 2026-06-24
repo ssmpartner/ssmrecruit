@@ -36,8 +36,7 @@ export default function WelcomeWizardConfigTab() {
   const [sources, setSources] = useState<{ id: string; label: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [uploadingThumb, setUploadingThumb] = useState(false);
+  const [uploading, setUploading] = useState<Record<AssetKind, boolean>>({ video: false, thumbnail: false, video_appointments: false, thumbnail_appointments: false });
 
   const load = useCallback(async () => {
     setLoading(true);
