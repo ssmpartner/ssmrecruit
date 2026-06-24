@@ -75,9 +75,10 @@ Deno.serve(async (req) => {
   }
 
   return new Response(JSON.stringify({
-    lead_name: lead?.name ?? null,
-    used_at: tokenRow.used_at,
-    action: tokenRow.action,
+    lead_name: leadName,
+    used_at: usedAt,
+    action: action,
+
     config: cfg ? {
       page_title: cfg.page_title,
       page_intro: cfg.page_intro,
