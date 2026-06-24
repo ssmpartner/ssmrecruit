@@ -295,7 +295,6 @@ function FieldMulti({ label, value, onChange, rows = 3, mono }: { label: string;
 
 function AssetField({ label, currentUrl, uploading, onUpload, onRemove, accept, icon }: {
   label: string;
-  label: string;
   currentUrl: string | null;
   uploading: boolean;
   onUpload: (file: File) => void;
