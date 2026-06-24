@@ -74,6 +74,27 @@ Deno.serve(async (req) => {
     }
   }
 
+  let appointmentsVideoUrl: string | null = null
+  if (cfg?.video_url_appointments) {
+    const path = extractPath(cfg.video_url_appointments, 'welcome-assets')
+    if (path) {
+      const { data: signed } = await supabase.storage.from('welcome-assets').createSignedUrl(path, 60 * 60)
+      appointmentsVideoUrl = signed?.signedUrl ?? null
+    } else {
+      appointmentsVideoUrl = cfg.video_url_appointments
+    }
+  }
+  let appointmentsThumbUrl: string | null = null
+  if (cfg?.thumbnail_url_appointments) {
+    const path = extractPath(cfg.thumbnail_url_appointments, 'welcome-assets')
+    if (path) {
+      const { data: signed } = await supabase.storage.from('welcome-assets').createSignedUrl(path, 60 * 60)
+      appointmentsThumbUrl = signed?.signedUrl ?? null
+    } else {
+      appointmentsThumbUrl = cfg.thumbnail_url_appointments
+    }
+  }
+
   return new Response(JSON.stringify({
     lead_name: leadName,
     used_at: usedAt,
@@ -88,9 +109,14 @@ Deno.serve(async (req) => {
       reject_confirmation_text: cfg.reject_confirmation_text,
       video_url: videoUrl,
       thumbnail_url: thumbUrl,
+      video_url_appointments: appointmentsVideoUrl,
+      thumbnail_url_appointments: appointmentsThumbUrl,
+      appointments_video_title: cfg.appointments_video_title,
+      appointments_video_intro: cfg.appointments_video_intro,
     } : null,
   }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 })
+
 
 function extractPath(url: string, bucket: string): string | null {
   if (url.startsWith(`${bucket}/`)) return url.substring(bucket.length + 1)
