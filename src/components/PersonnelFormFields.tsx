@@ -13,6 +13,8 @@ export interface PersonnelData {
   sprache?: string;
   heimatortCH?: string;
   heimatortAusland?: string;
+  adresse?: string;
+  telefon?: string;
   auslaenderausweis?: string;
   zivilstand?: 'ledig' | 'verheiratet' | 'geschieden' | 'eingetragene_partnerschaft' | '';
   zivilstandDatum?: string;
