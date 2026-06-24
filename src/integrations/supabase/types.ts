@@ -3182,6 +3182,8 @@ export type Database = {
       }
       welcome_wizard_config: {
         Row: {
+          appointments_video_intro: string | null
+          appointments_video_title: string | null
           auto_sources: string[]
           button_proceed_label: string
           button_reject_label: string
@@ -3194,11 +3196,15 @@ export type Database = {
           proceed_confirmation_text: string
           reject_confirmation_text: string
           thumbnail_url: string | null
+          thumbnail_url_appointments: string | null
           updated_at: string
           updated_by: string | null
           video_url: string | null
+          video_url_appointments: string | null
         }
         Insert: {
+          appointments_video_intro?: string | null
+          appointments_video_title?: string | null
           auto_sources?: string[]
           button_proceed_label?: string
           button_reject_label?: string
@@ -3211,11 +3217,15 @@ export type Database = {
           proceed_confirmation_text?: string
           reject_confirmation_text?: string
           thumbnail_url?: string | null
+          thumbnail_url_appointments?: string | null
           updated_at?: string
           updated_by?: string | null
           video_url?: string | null
+          video_url_appointments?: string | null
         }
         Update: {
+          appointments_video_intro?: string | null
+          appointments_video_title?: string | null
           auto_sources?: string[]
           button_proceed_label?: string
           button_reject_label?: string
@@ -3228,9 +3238,11 @@ export type Database = {
           proceed_confirmation_text?: string
           reject_confirmation_text?: string
           thumbnail_url?: string | null
+          thumbnail_url_appointments?: string | null
           updated_at?: string
           updated_by?: string | null
           video_url?: string | null
+          video_url_appointments?: string | null
         }
         Relationships: []
       }

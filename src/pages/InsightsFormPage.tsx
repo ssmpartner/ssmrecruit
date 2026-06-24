@@ -513,10 +513,26 @@ export default function InsightsFormPage() {
 
   const [step, setStep] = useState<WizardStep>('basics');
   const [motivatorPage, setMotivatorPage] = useState(0);
+  const [appointmentsVideo, setAppointmentsVideo] = useState<{ url: string | null; thumb: string | null; title: string; intro: string } | null>(null);
   useEffect(() => {
     if (!token) { setError('Ungültiger Link.'); setLoading(false); return; }
     loadRequest();
   }, [token]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.functions.invoke('welcome-public-lookup', { body: { preview: true } });
+      const c = (data as any)?.config;
+      if (c && (c.video_url_appointments || c.thumbnail_url_appointments)) {
+        setAppointmentsVideo({
+          url: c.video_url_appointments ?? null,
+          thumb: c.thumbnail_url_appointments ?? null,
+          title: c.appointments_video_title ?? '',
+          intro: c.appointments_video_intro ?? '',
+        });
+      }
+    })();
+  }, []);
 
   async function loadRequest() {
     const { data: settingsData } = await supabase
@@ -1046,35 +1062,62 @@ export default function InsightsFormPage() {
             {step === 'appointments' && (
               <>
                 <p className="text-sm text-muted-foreground">Schlagen Sie bis zu 5 Termine vor, an denen Sie für ein Gespräch verfügbar wären.</p>
-                <div className="space-y-3">
-                  {timeSlots.map((slot, i) => (
-                    <div key={i} className="flex items-end gap-3">
-                      <div className="flex-1 space-y-1">
-                        <label className="text-xs font-medium text-muted-foreground">Datum</label>
-                        <input type="date" min={getMinDate()} value={slot.date}
-                          onChange={e => { const u = [...timeSlots]; u[i] = { ...u[i], date: e.target.value }; setTimeSlots(u); }}
-                          className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none" />
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <label className="text-xs font-medium text-muted-foreground">Uhrzeit</label>
-                        <input type="time" value={slot.time}
-                          onChange={e => { const u = [...timeSlots]; u[i] = { ...u[i], time: e.target.value }; setTimeSlots(u); }}
-                          className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none" />
-                      </div>
-                      {timeSlots.length > 1 && (
-                        <button type="button" onClick={() => setTimeSlots(timeSlots.filter((_, j) => j !== i))}
-                          className="rounded-lg border border-destructive/20 bg-destructive/5 p-2.5 text-destructive hover:bg-destructive/10">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+
+                <div className={appointmentsVideo ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : ''}>
+                  {appointmentsVideo && (
+                    <div className="space-y-2 order-first lg:order-last">
+                      {appointmentsVideo.title && (
+                        <h3 className="font-semibold text-foreground">{appointmentsVideo.title}</h3>
                       )}
+                      {appointmentsVideo.intro && (
+                        <p className="text-xs text-muted-foreground">{appointmentsVideo.intro}</p>
+                      )}
+                      <div className="rounded-xl overflow-hidden border border-border bg-black aspect-video sticky top-4">
+                        {appointmentsVideo.url ? (
+                          <video
+                            src={appointmentsVideo.url}
+                            poster={appointmentsVideo.thumb ?? undefined}
+                            controls
+                            playsInline
+                            className="h-full w-full object-cover"
+                          />
+                        ) : appointmentsVideo.thumb ? (
+                          <img src={appointmentsVideo.thumb} alt="" className="h-full w-full object-cover" />
+                        ) : null}
+                      </div>
                     </div>
-                  ))}
-                  {timeSlots.length < 5 && (
-                    <button type="button" onClick={() => setTimeSlots([...timeSlots, { date: '', time: '' }])}
-                      className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80">
-                      <Plus className="h-4 w-4" /> Weiteren Termin hinzufügen
-                    </button>
                   )}
+
+                  <div className="space-y-3">
+                    {timeSlots.map((slot, i) => (
+                      <div key={i} className="flex items-end gap-3">
+                        <div className="flex-1 space-y-1">
+                          <label className="text-xs font-medium text-muted-foreground">Datum</label>
+                          <input type="date" min={getMinDate()} value={slot.date}
+                            onChange={e => { const u = [...timeSlots]; u[i] = { ...u[i], date: e.target.value }; setTimeSlots(u); }}
+                            className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none" />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <label className="text-xs font-medium text-muted-foreground">Uhrzeit</label>
+                          <input type="time" value={slot.time}
+                            onChange={e => { const u = [...timeSlots]; u[i] = { ...u[i], time: e.target.value }; setTimeSlots(u); }}
+                            className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none" />
+                        </div>
+                        {timeSlots.length > 1 && (
+                          <button type="button" onClick={() => setTimeSlots(timeSlots.filter((_, j) => j !== i))}
+                            className="rounded-lg border border-destructive/20 bg-destructive/5 p-2.5 text-destructive hover:bg-destructive/10">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {timeSlots.length < 5 && (
+                      <button type="button" onClick={() => setTimeSlots([...timeSlots, { date: '', time: '' }])}
+                        className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80">
+                        <Plus className="h-4 w-4" /> Weiteren Termin hinzufügen
+                      </button>
+                    )}
+                  </div>
                 </div>
               </>
             )}

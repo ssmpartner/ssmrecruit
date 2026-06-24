@@ -13,6 +13,10 @@ interface Cfg {
   enabled: boolean;
   video_url: string | null;
   thumbnail_url: string | null;
+  video_url_appointments: string | null;
+  thumbnail_url_appointments: string | null;
+  appointments_video_title: string;
+  appointments_video_intro: string;
   page_title: string;
   page_intro: string;
   button_proceed_label: string;
@@ -26,14 +30,29 @@ interface Cfg {
 
 const BUCKET = 'welcome-assets';
 
+type AssetKind = 'video' | 'thumbnail' | 'video_appointments' | 'thumbnail_appointments';
+
+const ASSET_FIELD: Record<AssetKind, keyof Cfg> = {
+  video: 'video_url',
+  thumbnail: 'thumbnail_url',
+  video_appointments: 'video_url_appointments',
+  thumbnail_appointments: 'thumbnail_url_appointments',
+};
+
+const ASSET_FOLDER: Record<AssetKind, string> = {
+  video: 'video',
+  thumbnail: 'thumbnail',
+  video_appointments: 'video-appointments',
+  thumbnail_appointments: 'thumbnail-appointments',
+};
+
 export default function WelcomeWizardConfigTab() {
   const { toast } = useToast();
   const [cfg, setCfg] = useState<Cfg | null>(null);
   const [sources, setSources] = useState<{ id: string; label: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [uploadingThumb, setUploadingThumb] = useState(false);
+  const [uploading, setUploading] = useState<Record<AssetKind, boolean>>({ video: false, thumbnail: false, video_appointments: false, thumbnail_appointments: false });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -54,6 +73,10 @@ export default function WelcomeWizardConfigTab() {
       enabled: cfg.enabled,
       video_url: cfg.video_url,
       thumbnail_url: cfg.thumbnail_url,
+      video_url_appointments: cfg.video_url_appointments,
+      thumbnail_url_appointments: cfg.thumbnail_url_appointments,
+      appointments_video_title: cfg.appointments_video_title,
+      appointments_video_intro: cfg.appointments_video_intro,
       page_title: cfg.page_title,
       page_intro: cfg.page_intro,
       button_proceed_label: cfg.button_proceed_label,
@@ -72,35 +95,34 @@ export default function WelcomeWizardConfigTab() {
     toast({ title: 'Gespeichert', description: 'Willkommen-Wizard wurde aktualisiert.' });
   };
 
-  const uploadFile = async (file: File, kind: 'video' | 'thumbnail') => {
+  const uploadFile = async (file: File, kind: AssetKind) => {
     if (!cfg) return;
-    const setter = kind === 'video' ? setUploadingVideo : setUploadingThumb;
-    setter(true);
+    setUploading(u => ({ ...u, [kind]: true }));
     const ext = file.name.split('.').pop() ?? 'bin';
-    const path = `${kind}/${crypto.randomUUID()}.${ext}`;
+    const path = `${ASSET_FOLDER[kind]}/${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: false, contentType: file.type });
     if (error) {
       toast({ title: 'Upload fehlgeschlagen', description: error.message, variant: 'destructive' });
-      setter(false);
+      setUploading(u => ({ ...u, [kind]: false }));
       return;
     }
     const url = `${BUCKET}/${path}`;
-    if (kind === 'video') setCfg({ ...cfg, video_url: url });
-    else setCfg({ ...cfg, thumbnail_url: url });
-    setter(false);
+    setCfg({ ...cfg, [ASSET_FIELD[kind]]: url } as Cfg);
+    setUploading(u => ({ ...u, [kind]: false }));
     toast({ title: 'Hochgeladen', description: 'Bitte abschliessend speichern.' });
   };
 
-  const removeAsset = async (kind: 'video' | 'thumbnail') => {
+  const removeAsset = async (kind: AssetKind) => {
     if (!cfg) return;
-    const current = kind === 'video' ? cfg.video_url : cfg.thumbnail_url;
+    const field = ASSET_FIELD[kind];
+    const current = cfg[field] as string | null;
     if (current) {
       const path = current.startsWith(`${BUCKET}/`) ? current.substring(BUCKET.length + 1) : null;
       if (path) await supabase.storage.from(BUCKET).remove([path]);
     }
-    if (kind === 'video') setCfg({ ...cfg, video_url: null });
-    else setCfg({ ...cfg, thumbnail_url: null });
+    setCfg({ ...cfg, [field]: null } as Cfg);
   };
+
 
   const toggleSource = (id: string) => {
     if (!cfg) return;
@@ -138,23 +160,21 @@ export default function WelcomeWizardConfigTab() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Medien</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">Willkommen-Video (Landing-Page)</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <AssetField
-            kind="video"
             label="Willkommen-Video (MP4, max. 100 MB empfohlen)"
             currentUrl={cfg.video_url}
-            uploading={uploadingVideo}
+            uploading={uploading.video}
             onUpload={f => uploadFile(f, 'video')}
             onRemove={() => removeAsset('video')}
             accept="video/mp4,video/webm,video/quicktime"
             icon={<Video className="h-4 w-4" />}
           />
           <AssetField
-            kind="thumbnail"
             label="Vorschaubild (JPG/PNG)"
             currentUrl={cfg.thumbnail_url}
-            uploading={uploadingThumb}
+            uploading={uploading.thumbnail}
             onUpload={f => uploadFile(f, 'thumbnail')}
             onRemove={() => removeAsset('thumbnail')}
             accept="image/jpeg,image/png,image/webp"
@@ -162,6 +182,36 @@ export default function WelcomeWizardConfigTab() {
           />
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Video auf der Terminvorschlag-Seite</CardTitle>
+          <p className="text-xs text-muted-foreground">Wird im Insights-Schritt „Abschluss" neben den Terminfeldern angezeigt – der Kandidat kann es ansehen, während er seine Wunschtermine einträgt.</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Field label="Titel über dem Video" value={cfg.appointments_video_title} onChange={v => setCfg({ ...cfg, appointments_video_title: v })} />
+          <FieldMulti label="Begleittext" value={cfg.appointments_video_intro} onChange={v => setCfg({ ...cfg, appointments_video_intro: v })} rows={2} />
+          <AssetField
+            label="Termin-Video (MP4)"
+            currentUrl={cfg.video_url_appointments}
+            uploading={uploading.video_appointments}
+            onUpload={f => uploadFile(f, 'video_appointments')}
+            onRemove={() => removeAsset('video_appointments')}
+            accept="video/mp4,video/webm,video/quicktime"
+            icon={<Video className="h-4 w-4" />}
+          />
+          <AssetField
+            label="Vorschaubild Termin-Video (JPG/PNG)"
+            currentUrl={cfg.thumbnail_url_appointments}
+            uploading={uploading.thumbnail_appointments}
+            onUpload={f => uploadFile(f, 'thumbnail_appointments')}
+            onRemove={() => removeAsset('thumbnail_appointments')}
+            accept="image/jpeg,image/png,image/webp"
+            icon={<ImageIcon className="h-4 w-4" />}
+          />
+        </CardContent>
+      </Card>
+
 
       <Card>
         <CardHeader><CardTitle className="text-base">Landing-Page Texte</CardTitle></CardHeader>
@@ -244,7 +294,6 @@ function FieldMulti({ label, value, onChange, rows = 3, mono }: { label: string;
 }
 
 function AssetField({ label, currentUrl, uploading, onUpload, onRemove, accept, icon }: {
-  kind: 'video' | 'thumbnail';
   label: string;
   currentUrl: string | null;
   uploading: boolean;
