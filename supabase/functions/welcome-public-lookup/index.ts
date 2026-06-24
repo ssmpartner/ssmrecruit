@@ -93,6 +93,7 @@ Deno.serve(async (req) => {
 })
 
 function extractPath(url: string, bucket: string): string | null {
+  if (url.startsWith(`${bucket}/`)) return url.substring(bucket.length + 1)
   const idx = url.indexOf(`/${bucket}/`)
   if (idx === -1) return null
   return url.substring(idx + bucket.length + 2)
