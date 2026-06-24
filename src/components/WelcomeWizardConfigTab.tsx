@@ -160,23 +160,21 @@ export default function WelcomeWizardConfigTab() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Medien</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">Willkommen-Video (Landing-Page)</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <AssetField
-            kind="video"
             label="Willkommen-Video (MP4, max. 100 MB empfohlen)"
             currentUrl={cfg.video_url}
-            uploading={uploadingVideo}
+            uploading={uploading.video}
             onUpload={f => uploadFile(f, 'video')}
             onRemove={() => removeAsset('video')}
             accept="video/mp4,video/webm,video/quicktime"
             icon={<Video className="h-4 w-4" />}
           />
           <AssetField
-            kind="thumbnail"
             label="Vorschaubild (JPG/PNG)"
             currentUrl={cfg.thumbnail_url}
-            uploading={uploadingThumb}
+            uploading={uploading.thumbnail}
             onUpload={f => uploadFile(f, 'thumbnail')}
             onRemove={() => removeAsset('thumbnail')}
             accept="image/jpeg,image/png,image/webp"
@@ -184,6 +182,36 @@ export default function WelcomeWizardConfigTab() {
           />
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Video auf der Terminvorschlag-Seite</CardTitle>
+          <p className="text-xs text-muted-foreground">Wird im Insights-Schritt „Abschluss" neben den Terminfeldern angezeigt – der Kandidat kann es ansehen, während er seine Wunschtermine einträgt.</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Field label="Titel über dem Video" value={cfg.appointments_video_title} onChange={v => setCfg({ ...cfg, appointments_video_title: v })} />
+          <FieldMulti label="Begleittext" value={cfg.appointments_video_intro} onChange={v => setCfg({ ...cfg, appointments_video_intro: v })} rows={2} />
+          <AssetField
+            label="Termin-Video (MP4)"
+            currentUrl={cfg.video_url_appointments}
+            uploading={uploading.video_appointments}
+            onUpload={f => uploadFile(f, 'video_appointments')}
+            onRemove={() => removeAsset('video_appointments')}
+            accept="video/mp4,video/webm,video/quicktime"
+            icon={<Video className="h-4 w-4" />}
+          />
+          <AssetField
+            label="Vorschaubild Termin-Video (JPG/PNG)"
+            currentUrl={cfg.thumbnail_url_appointments}
+            uploading={uploading.thumbnail_appointments}
+            onUpload={f => uploadFile(f, 'thumbnail_appointments')}
+            onRemove={() => removeAsset('thumbnail_appointments')}
+            accept="image/jpeg,image/png,image/webp"
+            icon={<ImageIcon className="h-4 w-4" />}
+          />
+        </CardContent>
+      </Card>
+
 
       <Card>
         <CardHeader><CardTitle className="text-base">Landing-Page Texte</CardTitle></CardHeader>
