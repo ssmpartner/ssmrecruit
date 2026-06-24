@@ -139,6 +139,7 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
           <Field label="Heimatort (Ausland)" error={errors.heimatortAusland}><input className={inputCls('heimatortAusland')} value={data.heimatortAusland ?? ''} onChange={e => set('heimatortAusland', e.target.value)} /></Field>
           <Field label="Adresse *" error={errors.adresse}><input className={inputCls('adresse')} value={data.adresse ?? ''} onChange={e => set('adresse', e.target.value)} /></Field>
           <Field label="Tel. Nr. *" error={errors.telefon}><input className={inputCls('telefon')} value={data.telefon ?? ''} onChange={e => set('telefon', e.target.value)} placeholder="+41 ..." /></Field>
+          <Field label="Kategorie Ausländerausweis *" error={errors.auslaenderausweis}><input className={inputCls('auslaenderausweis')} value={data.auslaenderausweis ?? ''} onChange={e => set('auslaenderausweis', e.target.value)} placeholder="z.B. B, C, L, CH…" /></Field>
         </Grid>
       </Section>
 
