@@ -1,80 +1,74 @@
-# Assessment-Report auf TTI-Niveau (SSM-Eigenmarke)
 
-## Ausgangslage – was wir heute haben
+## Ziel
 
-| Bereich | Heute | TTI-Standard |
-|---|---|---|
-| DISC | 12 Fragen, nur **natürlicher** Stil | Natürlicher **+ adaptierter** Stil (2 Profile) |
-| Motivatoren | 6 Dimensionen, je 2 Fragen | **12** Driving Forces (6 × primär/situativ) |
-| Visualisierungen | Balken | Balken + DISC-Rad + Motivatoren-Rad + Hierarchie |
-| Texte | 9 AI-Abschnitte (~1-2 Seiten je) | ~25 Abschnitte, je tief und personalisiert |
-| Norm-Vergleich | Keiner | "68 % der Bevölkerung liegen im Bereich …" |
-| PDF | HTML → Browser-Download (html2pdf.js) | Identisch (passt für SSM) |
-
-## Lücken-Liste – das wird ergänzt
-
-1. **Adaptierter DISC-Stil** – zusätzlicher Fragebogen-Schritt
-2. **12 Driving Forces** – 6 bestehende Dimensionen je in primär/situativ aufteilen, 12 zusätzliche Items
-3. **Norm-Vergleich** – Mittelwerte + Standardabweichung pro Dimension (Bevölkerungs-Referenz)
-4. **DISC-Rad** und **Motivatoren-Rad** als SVG
-5. **Verhaltens-Hierarchie** (12 Faktoren wie Konkurrenzdenken, Diplomatie, …)
-6. **Zeitfresser + Lösungsvorschläge**, **Verbesserungsbereiche**
-7. **Integration Verhalten ↔ Motivatoren** (Stärken, Konflikte)
-8. **Ideales Umfeld**, **Schlüssel zur Motivation**, **Schlüssel zum Management**, **Aktionsplan**
-9. **Inhaltsverzeichnis** und durchnummerierte Seiten
-10. **Personalisierte Wert-für-das-Unternehmen** Sektion (vorhanden, aber dünn)
-
-## Umsetzung in 4 Etappen
-
-### Etappe 1 – Fragebogen erweitern (Daten-Fundament)
-- **DB-Migration**: `assessment_results` um `disc_scores_adapted (jsonb)`, `driving_forces_scores (jsonb)`, `behavioral_hierarchy (jsonb)`, `norm_reference (jsonb)` erweitern.
-- **Neue Settings**: `app_settings` Keys `disc_adapted_questions` (12 Items) und `driving_forces_questions` (12 Items je 5er-Skala) — admin-editierbar.
-- **InsightsFormPage**: zwei neue Schritte einfügen ("Wie verhalten Sie sich bei der Arbeit?" → adaptiert, "Was treibt Sie an?" → Driving Forces).
-- **Scoring-Funktionen**: `computeAdaptedDiscScores`, `computeDrivingForces` (mappt 6 → 12 mit primär/situativ-Logik).
-
-### Etappe 2 – AI-Texte ausbauen
-- **`analyze-candidate` Edge Function**: Tool-Schema um neue Abschnitte erweitern:
-  - `behavioral_traits` (Liste mit je: Trait, Wert 0-100, Beschreibung)
-  - `time_wasters` (je: Schwäche + Lösungsvorschlag)
-  - `ideal_environment`, `keys_to_motivation`, `keys_to_management`
-  - `action_plan` (3-5 konkrete Schritte)
-  - `value_to_company` (5-8 Sätze, personalisiert)
-  - `behavior_motivator_synergies`, `behavior_motivator_conflicts`
-  - `adapted_style_analysis` (Vergleich natürlich vs. adaptiert)
-  - `driving_forces_primary`, `driving_forces_situational`, `driving_forces_indifferent` (Beschreibungstexte)
-- **Norm-Referenz**: deterministisch in der Edge Function gesetzt (deutschsprachige Referenzwerte, einmalig kalibrierbar).
-
-### Etappe 3 – Visualisierungen
-- **DISC-Rad**: SVG-Komponente, 8 Sektoren, Punkt für natürlichen + adaptierten Stil platziert nach D/I/S/C-Verteilung.
-- **Motivatoren-Rad**: 12 Sektoren, Punkt nach Top-2-Driving-Forces.
-- **Hierarchie-Balken**: 12 horizontale Balken, sortiert nach Stärke, mit "Bereich der Bevölkerung" als Hintergrund-Band.
-- **Natürlich-vs-Adaptiert-Doppelgrafik**: zwei DISC-Balken nebeneinander pro Dimension.
-
-### Etappe 4 – PDF-Reorganisation
-- **`assessment-pdf.ts`** in Module aufteilen: pro Sektion eine `buildSectionXxxHtml()`-Funktion (sonst wird die Datei unleserlich).
-- **Inhaltsverzeichnis** mit Seitennummern (Anchor-basiert, html2pdf rendert Seitenumbrüche via `page-break-before: always`).
-- **Letterhead-Footer** pro Seite (Name, Seitenzahl, Copyright SSM).
-- **Reihenfolge** angelehnt an TTI: Cover → TOC → Verhalten → Motivatoren → Integration → Aktionsplan.
-- **Wasserzeichen "SSM Insights"** dezent als Footer.
-
-## Reihenfolge / Reviews
-
-Ich liefere **Etappe 1 zuerst** (Migration + Fragebogen), du testest, dass die neuen Daten korrekt erhoben werden. Dann Etappe 2 (AI-Texte) — du prüfst Qualität an einem echten Lead. Erst danach Etappe 3+4 (Visuals + PDF-Layout), weil das auf den neuen Daten aufbaut.
-
-## Technische Details
-
-- **Stack**: html2pdf.js (bereits installiert), SVG inline für Räder, Tailwind für PDF-CSS via `@media print`.
-- **AI-Modell**: Gemini 2.5 Flash via Lovable AI Gateway (bestehend). Tool-Schema wächst um ~12 neue Felder — Tokens steigen, aber im Free-Tier-Limit.
-- **Backward-Compat**: Bestehende Reports ohne adaptierten Stil rendern weiterhin (Felder optional). Alte `assessment_results`-Rows werden im PDF mit "Adaptierter Stil nicht erhoben" vermerkt.
-- **Migration-Sicherheit**: Alle neuen Spalten `nullable`, keine Default-Werte, kein Backfill.
-- **Norm-Daten**: Schweizer/DACH-Referenz hardcoded in einer Konstante in der Edge Function (Mittelwert 50 ±15 als pragmatischer Start, später kalibrierbar mit echten SSM-Daten).
-
-## Was bewusst NICHT enthalten ist
-
-- **Keine TTI-API-Anbindung** (Eigenmarke laut deiner Entscheidung).
-- **Keine psychometrische Validierung** auf wissenschaftlichem Niveau — wir bauen die Struktur und Visualisierung; die Tiefe der Texte kommt aus AI + Norm-Referenz. Eine echte Validierungs-Studie wäre ein separates Projekt.
-- **Keine Sprachvarianten** (bleibt Deutsch).
+Neuer "Willkommen-Wizard" für eingehende Leads: automatische/manuelle Willkommen-E-Mail → öffentliche Landing-Page mit Video → "Ablehnen" oder "Nächste Schritte" (Insights-Test). Komplette Pflege durch Superadmin in **Einstellungen → Wizard-Verwaltung**.
 
 ---
 
-Wenn du grünes Licht gibst, starte ich mit **Etappe 1** (Migration + 2 neue Fragebogen-Schritte). Soll ich loslegen?
+## 1. Datenbank (neue Tabelle + Storage)
+
+**`welcome_wizard_config`** (singleton, eine Zeile, Superadmin pflegt):
+- `enabled` (bool), `video_url`, `thumbnail_url`
+- `page_title`, `page_intro` (HTML/Text), `button_proceed_label`, `button_reject_label`, `reject_confirmation_text`, `proceed_confirmation_text`
+- `email_subject`, `email_html` (mit Platzhaltern `{{name}}`, `{{cta_url}}`)
+- `auto_sources` (text[]) – Quellen mit Auto-Versand; leer = nur manuell
+- RLS: lesen authentifiziert + anon (für Landing), schreiben nur superadmin/admin
+
+**`welcome_lead_tokens`**:
+- `token` (uuid, pk), `lead_id`, `created_at`, `expires_at`, `used_at`, `action` (null/'reject'/'proceed')
+- RLS: anon SELECT/UPDATE per Token (Edge Function nutzt Service Role)
+
+**Storage-Bucket**: `welcome-assets` (öffentlich) für Video + Thumbnail.
+
+## 2. Edge Functions
+
+- **`send-welcome-email`** (intern, via DB-Trigger + manueller Button)
+  - Lädt Config, prüft `enabled` + Quelle in `auto_sources` (bei automatischem Versand)
+  - Erzeugt Token, baut CTA-URL `https://recruit.ssmpartner.ch/willkommen?token=...`
+  - Sendet über `send-email`, loggt in `notification_activity_log`
+- **`welcome-public-lookup`** (öffentlich): Token → Config + Lead-Basisdaten (Name)
+- **`welcome-public-action`** (öffentlich): `{ token, action }`
+  - `reject` → Lead-Status `not_interested` + `archived = true`
+  - `proceed` → erzeugt Insights-Token (Wiederverwendung bestehender `insights_requests`/Public-Form Logik) → gibt Redirect-URL zurück
+- DB-Trigger `on_lead_insert` ruft `send-welcome-email` per `net.http_post` (analog `notify_new_lead`)
+
+## 3. Frontend
+
+- **Öffentliche Route** `/willkommen` (`WelcomeWizardPage.tsx`): Video, Begrüssung, zwei Buttons; bei "Nächste Schritte" → Redirect `/insights-form?token=...`
+- **Manueller Button** im `LeadActionPanel` / `LeadDetailSheet`: "Willkommen-E-Mail senden"
+- **Wizard-Verwaltung Tab erweitert** (`WizardsTab.tsx`): neuer Reiter "Willkommen-Wizard" mit Formular (Video-Upload via Storage, Thumbnail-Upload, alle Texte, HTML-Editor für E-Mail, Quellen-Multiselect aus `lead_sources`, Master-Switch)
+- Sichtbar nur für Superadmin
+
+## 4. Trigger-Logik
+
+- DB AFTER INSERT auf `leads`: ruft `send-welcome-email`. Function entscheidet selbst, ob gesendet wird (enabled + Quelle in `auto_sources`).
+- Manueller Button ruft dieselbe Function mit `{ lead_id, force: true }`.
+
+---
+
+## Technische Details
+
+```text
+[Lead Insert] ──trigger──▶ send-welcome-email ──▶ send-email ──▶ Kandidat
+                                  │
+                                  └── insert welcome_lead_tokens
+
+Kandidat klickt CTA
+        │
+        ▼
+/willkommen?token=…  ──▶ welcome-public-lookup (Video + Texte)
+        │
+        ├── "Ablehnen"      ──▶ welcome-public-action(reject)  ──▶ status=not_interested + archived
+        └── "Nächste Schritte" ──▶ welcome-public-action(proceed) ──▶ /insights-form?token=…
+```
+
+- E-Mail-Body: gespeichertes HTML mit `{{name}}`, `{{cta_url}}`, `{{video_thumbnail}}` Platzhaltern (server-seitig ersetzt, kein dangerouslySetInnerHTML im Frontend).
+- Video wird über `<video src>` aus dem öffentlichen Bucket gestreamt.
+- Insights-Weiterleitung nutzt vorhandenes `insights_requests`-System; Function erzeugt Eintrag und liefert dessen Token an die Landing zurück.
+- Idempotenz: pro Lead nur ein aktiver, ungenutzter Token – bei erneutem Send wird alter Token invalidiert.
+
+## Out of Scope (kann später erweitert werden)
+
+- A/B-Varianten der Landing
+- Mehrere Sprachen
+- Erinnerungs-Mails wenn Token nicht angeklickt
