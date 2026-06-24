@@ -810,21 +810,21 @@ export default function InsightsFormPage() {
           </div>
 
           {/* Step indicators */}
-          <div className="flex border-b overflow-x-auto">
+          <div className="flex border-b overflow-x-auto scrollbar-thin">
             {stepConfig.map((s, i) => {
               const Icon = s.icon;
               const isActive = step === s.key;
               const isPast = i < stepIndex;
               return (
                 <button key={s.key} type="button" onClick={() => goToStep(s.key)}
-                  className={`flex-1 min-w-0 flex items-center justify-center gap-1 py-3 text-xs font-medium transition-colors whitespace-nowrap px-2 ${
-                    isActive ? 'border-b-2 border-primary text-primary bg-primary/5'
-                    : isPast ? 'text-ring' : 'text-muted-foreground'
+                  className={`shrink-0 flex items-center justify-center gap-1.5 py-3 px-3 lg:px-4 text-xs font-medium transition-colors whitespace-nowrap border-b-2 ${
+                    isActive ? 'border-primary text-primary bg-primary/5'
+                    : isPast ? 'border-transparent text-ring hover:bg-muted/50' : 'border-transparent text-muted-foreground hover:bg-muted/50'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5 shrink-0" />
-                  <span className="hidden sm:inline">{s.label}</span>
-                  <span className="sm:hidden">{s.shortLabel}</span>
+                  <span className="hidden lg:inline">{s.label}</span>
+                  <span className="lg:hidden">{s.shortLabel}</span>
                   {isPast && <CheckCircle2 className="h-3 w-3 text-ring shrink-0" />}
                 </button>
               );
