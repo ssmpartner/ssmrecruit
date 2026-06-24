@@ -13,6 +13,8 @@ export interface PersonnelData {
   sprache?: string;
   heimatortCH?: string;
   heimatortAusland?: string;
+  adresse?: string;
+  telefon?: string;
   auslaenderausweis?: string;
   zivilstand?: 'ledig' | 'verheiratet' | 'geschieden' | 'eingetragene_partnerschaft' | '';
   zivilstandDatum?: string;
@@ -50,7 +52,7 @@ export interface PersonnelData {
 }
 
 const REQUIRED_BASE: (keyof PersonnelData)[] = [
-  'ahvNr', 'nationalitaet', 'sprache', 'heimatortCH', 'auslaenderausweis',
+  'ahvNr', 'nationalitaet', 'sprache', 'heimatortCH', 'adresse', 'telefon', 'auslaenderausweis',
   'zivilstand', 'konfession',
   'bankName', 'bic', 'iban', 'bankPlzOrt',
   'krankenkasse', 'pensionskasse',
@@ -70,6 +72,10 @@ export function validatePersonnel(data: PersonnelData): Record<string, string> {
   for (const key of REQUIRED_BASE) {
     const v = (data as Record<string, unknown>)[key];
     if (v === undefined || v === null || String(v).trim() === '') errors[key] = 'Pflichtfeld';
+  }
+  // Heimatort: at least one of CH or Ausland must be filled
+  if (!data.heimatortCH?.trim() && !data.heimatortAusland?.trim()) {
+    errors.heimatortCH = 'Bitte Heimatort (CH) oder Heimatort (Ausland) angeben';
   }
   // Conditional: married → ehepartner block
   if (data.zivilstand === 'verheiratet' || data.zivilstand === 'eingetragene_partnerschaft') {
@@ -130,7 +136,9 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
           <Field label="Nationalität *" error={errors.nationalitaet}><input className={inputCls('nationalitaet')} value={data.nationalitaet ?? ''} onChange={e => set('nationalitaet', e.target.value)} /></Field>
           <Field label="Sprache *" error={errors.sprache}><input className={inputCls('sprache')} value={data.sprache ?? ''} onChange={e => set('sprache', e.target.value)} /></Field>
           <Field label="Heimatort (CH) *" error={errors.heimatortCH}><input className={inputCls('heimatortCH')} value={data.heimatortCH ?? ''} onChange={e => set('heimatortCH', e.target.value)} /></Field>
-          <Field label="Heimatort (Ausland)"><input className={baseInput} value={data.heimatortAusland ?? ''} onChange={e => set('heimatortAusland', e.target.value)} /></Field>
+          <Field label="Heimatort (Ausland)" error={errors.heimatortAusland}><input className={inputCls('heimatortAusland')} value={data.heimatortAusland ?? ''} onChange={e => set('heimatortAusland', e.target.value)} /></Field>
+          <Field label="Adresse *" error={errors.adresse}><input className={inputCls('adresse')} value={data.adresse ?? ''} onChange={e => set('adresse', e.target.value)} /></Field>
+          <Field label="Tel. Nr. *" error={errors.telefon}><input className={inputCls('telefon')} value={data.telefon ?? ''} onChange={e => set('telefon', e.target.value)} placeholder="+41 ..." /></Field>
           <Field label="Kategorie Ausländerausweis *" error={errors.auslaenderausweis}><input className={inputCls('auslaenderausweis')} value={data.auslaenderausweis ?? ''} onChange={e => set('auslaenderausweis', e.target.value)} placeholder="z.B. B, C, L, CH…" /></Field>
         </Grid>
       </Section>
