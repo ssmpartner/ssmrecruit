@@ -32,6 +32,7 @@ const DocumentUploadPage = lazy(() => import("./pages/DocumentUploadPage"));
 const PersonnelFormPage = lazy(() => import("./pages/PersonnelFormPage"));
 const ApplicationFormPage = lazy(() => import("./pages/ApplicationFormPage"));
 const BewerbungWizard = lazy(() => import("./pages/BewerbungWizard"));
+const WelcomeWizardPage = lazy(() => import("./pages/WelcomeWizardPage"));
 const SsoCallback = lazy(() => import("./pages/SsoCallback"));
 const AIVoiceAgent = lazy(() => import("./pages/AIVoiceAgent"));
 
@@ -122,6 +123,7 @@ const App = () => (
               <Route path="/personalien" element={<Suspense fallback={<FullScreenLoader />}><PersonnelFormPage /></Suspense>} />
               <Route path="/apply" element={<Suspense fallback={<FullScreenLoader />}><ApplicationFormPage /></Suspense>} />
               <Route path="/bewerbung" element={<Suspense fallback={<FullScreenLoader />}><BewerbungWizard /></Suspense>} />
+              <Route path="/willkommen" element={<Suspense fallback={<FullScreenLoader />}><WelcomeWizardPage /></Suspense>} />
               <Route path="/sso-callback" element={<Suspense fallback={<FullScreenLoader />}><SsoCallback /></Suspense>} />
 
               <Route element={

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Copy, Trash2, Eye, ArrowLeft, GripVertical, Play, ChevronRight, Video, ListChecks, ToggleLeft, Loader2, AlertTriangle, ExternalLink, ClipboardList, Link2, X, ChevronDown } from 'lucide-react';
+import { Plus, Pencil, Copy, Trash2, Eye, ArrowLeft, GripVertical, Play, ChevronRight, Video, ListChecks, ToggleLeft, Loader2, AlertTriangle, ExternalLink, ClipboardList, Link2, X, ChevronDown, Mail } from 'lucide-react';
+import WelcomeWizardConfigTab from './WelcomeWizardConfigTab';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -639,15 +640,26 @@ export default function WizardsTab() {
 
   return (
     <>
-      <WizardList
-        wizards={wizards}
-        loading={loading}
-        onEdit={w => setEditing(w)}
-        onDuplicate={duplicate}
-        onDelete={w => setConfirmDelete(w)}
-        onToggle={toggle}
-        onCreate={handleCreate}
-      />
+      <Tabs defaultValue="wizards" className="w-full">
+        <TabsList>
+          <TabsTrigger value="wizards" className="gap-2"><ListChecks className="h-4 w-4" /> Wizards</TabsTrigger>
+          <TabsTrigger value="welcome" className="gap-2"><Mail className="h-4 w-4" /> Willkommen-Wizard</TabsTrigger>
+        </TabsList>
+        <TabsContent value="wizards" className="pt-4">
+          <WizardList
+            wizards={wizards}
+            loading={loading}
+            onEdit={w => setEditing(w)}
+            onDuplicate={duplicate}
+            onDelete={w => setConfirmDelete(w)}
+            onToggle={toggle}
+            onCreate={handleCreate}
+          />
+        </TabsContent>
+        <TabsContent value="welcome" className="pt-4">
+          <WelcomeWizardConfigTab />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={!!confirmDelete} onOpenChange={() => setConfirmDelete(null)}>
         <DialogContent>
