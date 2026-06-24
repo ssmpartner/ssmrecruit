@@ -30,7 +30,7 @@ interface StepDef {
 }
 
 const BASE_STEPS: StepDef[] = [
-  { key: 'personalien', title: 'Persönliche Angaben', subtitle: 'AHV, Nationalität, Sprache & Heimatort', fields: ['ahvNr','nationalitaet','sprache','heimatortCH','auslaenderausweis'] },
+  { key: 'personalien', title: 'Persönliche Angaben', subtitle: 'AHV, Nationalität, Sprache, Heimatort, Adresse & Telefon', fields: ['ahvNr','nationalitaet','sprache','heimatortCH','adresse','telefon','auslaenderausweis'] },
   { key: 'zivilstand',  title: 'Zivilstand & Konfession', subtitle: 'Familienstand und Religion', fields: ['zivilstand','konfession'] },
   { key: 'bank',        title: 'Lohnüberweisung', subtitle: 'Ihre Bankverbindung', fields: ['bankName','bic','iban','bankPlzOrt'] },
   { key: 'versicherung',title: 'Versicherungen', subtitle: 'Krankenkasse & Pensionskasse', fields: ['krankenkasse','pensionskasse'] },
