@@ -16,34 +16,41 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: corsHeaders })
   }
 
-  let body: { token?: string }
+  let body: { token?: string; preview?: boolean }
   try { body = await req.json() } catch {
     return new Response(JSON.stringify({ error: 'invalid_json' }), { status: 400, headers: corsHeaders })
-  }
-  const token = body.token
-  if (!token || typeof token !== 'string' || token.length < 20 || token.length > 100) {
-    return new Response(JSON.stringify({ error: 'invalid_token' }), { status: 400, headers: corsHeaders })
   }
 
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
 
-  const { data: tokenRow } = await supabase
-    .from('welcome_lead_tokens')
-    .select('token, lead_id, used_at, action, expires_at')
-    .eq('token', token)
-    .maybeSingle()
+  let leadName: string | null = 'Vorschau'
+  let usedAt: string | null = null
+  let action: string | null = null
 
-  if (!tokenRow) {
-    return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: corsHeaders })
-  }
-  if (new Date(tokenRow.expires_at).getTime() < Date.now()) {
-    return new Response(JSON.stringify({ error: 'expired' }), { status: 410, headers: corsHeaders })
+  if (!body.preview) {
+    const token = body.token
+    if (!token || typeof token !== 'string' || token.length < 20 || token.length > 100) {
+      return new Response(JSON.stringify({ error: 'invalid_token' }), { status: 400, headers: corsHeaders })
+    }
+    const { data: tokenRow } = await supabase
+      .from('welcome_lead_tokens')
+      .select('token, lead_id, used_at, action, expires_at')
+      .eq('token', token)
+      .maybeSingle()
+    if (!tokenRow) {
+      return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: corsHeaders })
+    }
+    if (new Date(tokenRow.expires_at).getTime() < Date.now()) {
+      return new Response(JSON.stringify({ error: 'expired' }), { status: 410, headers: corsHeaders })
+    }
+    usedAt = tokenRow.used_at
+    action = tokenRow.action
+    const { data: lead } = await supabase.from('leads').select('name').eq('id', tokenRow.lead_id).maybeSingle()
+    leadName = lead?.name ?? null
   }
 
-  const [{ data: lead }, { data: cfg }] = await Promise.all([
-    supabase.from('leads').select('name').eq('id', tokenRow.lead_id).maybeSingle(),
-    supabase.from('welcome_wizard_config').select('*').eq('id', true).maybeSingle(),
-  ])
+  const { data: cfg } = await supabase.from('welcome_wizard_config').select('*').eq('id', true).maybeSingle()
+
 
   // Signed URL for video (bucket is private)
   let videoUrl: string | null = null
