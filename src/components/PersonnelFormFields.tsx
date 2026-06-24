@@ -73,6 +73,10 @@ export function validatePersonnel(data: PersonnelData): Record<string, string> {
     const v = (data as Record<string, unknown>)[key];
     if (v === undefined || v === null || String(v).trim() === '') errors[key] = 'Pflichtfeld';
   }
+  // Heimatort: at least one of CH or Ausland must be filled
+  if (!data.heimatortCH?.trim() && !data.heimatortAusland?.trim()) {
+    errors.heimatortCH = 'Bitte Heimatort (CH) oder Heimatort (Ausland) angeben';
+  }
   // Conditional: married → ehepartner block
   if (data.zivilstand === 'verheiratet' || data.zivilstand === 'eingetragene_partnerschaft') {
     if (!data.zivilstandDatum) errors.zivilstandDatum = 'Pflichtfeld';
