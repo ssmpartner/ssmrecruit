@@ -25,7 +25,7 @@ serve(async (req) => {
     const { data: stuckLeads } = await supabase
       .from('leads')
       .select('id, name, status, updated_at, last_approval_reminder_at')
-      .in('status', ['ready_for_controlling', 'controlling_approved', 'management_review'])
+      .in('status', ['ready_for_controlling', 'controlling_approved', 'management_review', 'hr_processing', 'hr_pending'])
       .lt('updated_at', approvalCutoff);
 
     if (stuckLeads && stuckLeads.length > 0) {
