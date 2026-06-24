@@ -110,18 +110,72 @@ serve(async (req) => {
             );
           }
         } else {
-          // Controlling-Stufe (oder andere): wie gehabt an Rollen-Empfänger
-          await supabase.rpc('dispatch_notification', {
-            _type: 'approval_reminder',
-            _entity_type: 'lead',
-            _entity_id: lead.id,
-            _lead_id: lead.id,
-            _title: `Erinnerung: ${lead.name ?? lead.id}`,
-            _description: 'wartet seit > 24h auf Controlling-Prüfung',
-            _trigger_label: `approval_reminder:${lead.status}`,
-            _triggered_by: null,
-          });
+          // Controlling-Stufe: NUR Controlling-User (nicht GL/HR) erinnern.
+          const { data: ctrlUsers } = await supabase.rpc('get_role_users', { _role: 'controlling' });
+          const ctrlUserIds = ((ctrlUsers as any[]) || []).map((u: any) => u.user_id);
+          if (ctrlUserIds.length === 0) continue;
+
+          const { data: ctrlEmps } = await supabase
+            .from('employees')
+            .select('user_id, name, email')
+            .in('user_id', ctrlUserIds);
+
+          const title = `Erinnerung: ${lead.name ?? lead.id}`;
+          const description = 'wartet seit > 24h auf Controlling-Prüfung';
+
+          await supabase.from('notifications').insert(
+            ctrlUserIds.map((uid: string) => ({
+              type: 'approval_reminder',
+              title,
+              description,
+              lead_id: lead.id,
+              recipient_user_id: uid,
+            })),
+          );
+
+          const recipients = (ctrlEmps || []).map((e: any) => e.email).filter(Boolean);
+          if (recipients.length > 0) {
+            const html = `<div style="font-family:'DM Sans',Arial,sans-serif;color:#1a1a1a;max-width:560px;margin:0 auto;padding:24px;">
+              <div style="border-left:4px solid #324642;padding:8px 16px;margin-bottom:20px;">
+                <h2 style="margin:0;font-family:'Space Grotesk',Arial,sans-serif;color:#324642;">${title}</h2>
+              </div>
+              <p style="font-size:14px;line-height:1.6;">${description}</p>
+              <div style="margin-top:24px;"><a href="https://recruit.ssmpartner.ch/leads?lead=${encodeURIComponent(lead.id)}" style="background:#324642;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block;">Im System öffnen</a></div>
+              <p style="margin-top:32px;color:#999;font-size:12px;">SSM Recruit · automatische Benachrichtigung</p>
+            </div>`;
+            await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+              },
+              body: JSON.stringify({
+                to: recipients,
+                subject: title,
+                html,
+                audience: 'internal',
+                tags: [{ name: 'type', value: 'approval_reminder_controlling' }],
+              }),
+            });
+
+            await supabase.from('notification_activity_log').insert(
+              (ctrlEmps || []).map((e: any) => ({
+                notification_type: 'approval_reminder',
+                trigger_source: 'system_cron',
+                trigger_label: `approval_reminder_controlling:pending`,
+                entity_type: 'lead',
+                entity_id: lead.id,
+                subject: title,
+                channel: 'email',
+                recipient_user_id: e.user_id,
+                recipient_email: e.email,
+                recipient_name: e.name,
+                status: 'sent',
+              })),
+            );
+          }
         }
+
 
         await supabase
           .from('leads')
