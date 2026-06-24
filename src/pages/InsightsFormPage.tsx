@@ -513,10 +513,26 @@ export default function InsightsFormPage() {
 
   const [step, setStep] = useState<WizardStep>('basics');
   const [motivatorPage, setMotivatorPage] = useState(0);
+  const [appointmentsVideo, setAppointmentsVideo] = useState<{ url: string | null; thumb: string | null; title: string; intro: string } | null>(null);
   useEffect(() => {
     if (!token) { setError('Ungültiger Link.'); setLoading(false); return; }
     loadRequest();
   }, [token]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.functions.invoke('welcome-public-lookup', { body: { preview: true } });
+      const c = (data as any)?.config;
+      if (c && (c.video_url_appointments || c.thumbnail_url_appointments)) {
+        setAppointmentsVideo({
+          url: c.video_url_appointments ?? null,
+          thumb: c.thumbnail_url_appointments ?? null,
+          title: c.appointments_video_title ?? '',
+          intro: c.appointments_video_intro ?? '',
+        });
+      }
+    })();
+  }, []);
 
   async function loadRequest() {
     const { data: settingsData } = await supabase
