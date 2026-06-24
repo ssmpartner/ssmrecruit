@@ -483,6 +483,7 @@ function CompletedView({ analysisResult, leadName, generatingPdf, setGeneratingP
 export default function InsightsFormPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
+  const isPreview = searchParams.get('preview') === '1';
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -515,9 +516,10 @@ export default function InsightsFormPage() {
   const [motivatorPage, setMotivatorPage] = useState(0);
   const [appointmentsVideo, setAppointmentsVideo] = useState<{ url: string | null; thumb: string | null; title: string; intro: string } | null>(null);
   useEffect(() => {
+    if (isPreview) { setLeadName('Vorschau'); setLoading(false); return; }
     if (!token) { setError('Ungültiger Link.'); setLoading(false); return; }
     loadRequest();
-  }, [token]);
+  }, [token, isPreview]);
 
   useEffect(() => {
     (async () => {

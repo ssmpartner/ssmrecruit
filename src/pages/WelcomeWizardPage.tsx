@@ -58,7 +58,7 @@ export default function WelcomeWizardPage() {
   const handleAction = async (action: 'reject' | 'proceed') => {
     if (isPreview) {
       if (action === 'reject') setView('reject_done');
-      else alert('Vorschau-Modus: Weiterleitung zum Insights-Test erfolgt im echten Link.');
+      else navigate('/insights-form?preview=1');
       return;
     }
     if (!token) return;
