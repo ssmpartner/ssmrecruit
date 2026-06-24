@@ -30,6 +30,22 @@ interface Cfg {
 
 const BUCKET = 'welcome-assets';
 
+type AssetKind = 'video' | 'thumbnail' | 'video_appointments' | 'thumbnail_appointments';
+
+const ASSET_FIELD: Record<AssetKind, keyof Cfg> = {
+  video: 'video_url',
+  thumbnail: 'thumbnail_url',
+  video_appointments: 'video_url_appointments',
+  thumbnail_appointments: 'thumbnail_url_appointments',
+};
+
+const ASSET_FOLDER: Record<AssetKind, string> = {
+  video: 'video',
+  thumbnail: 'thumbnail',
+  video_appointments: 'video-appointments',
+  thumbnail_appointments: 'thumbnail-appointments',
+};
+
 export default function WelcomeWizardConfigTab() {
   const { toast } = useToast();
   const [cfg, setCfg] = useState<Cfg | null>(null);
