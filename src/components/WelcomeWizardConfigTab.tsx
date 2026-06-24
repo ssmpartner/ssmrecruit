@@ -13,6 +13,10 @@ interface Cfg {
   enabled: boolean;
   video_url: string | null;
   thumbnail_url: string | null;
+  video_url_appointments: string | null;
+  thumbnail_url_appointments: string | null;
+  appointments_video_title: string;
+  appointments_video_intro: string;
   page_title: string;
   page_intro: string;
   button_proceed_label: string;
