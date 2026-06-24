@@ -30,27 +30,19 @@ export default function WelcomeWizardPage() {
   useEffect(() => {
     if (isPreview) {
       (async () => {
-        const { data, error } = await supabase
-          .from('welcome_wizard_config')
-          .select('page_title,page_intro,button_proceed_label,button_reject_label,proceed_confirmation_text,reject_confirmation_text,video_url,thumbnail_url')
-          .eq('id', true)
-          .maybeSingle();
-        if (error || !data) { setView('error'); setErrorMsg('Konfiguration konnte nicht geladen werden.'); return; }
-        const resolve = async (raw: string | null) => {
-          if (!raw) return null;
-          if (/^https?:\/\//.test(raw)) return raw;
-          const [bucket, ...rest] = raw.split('/');
-          const path = rest.join('/');
-          const { data: signed } = await supabase.storage.from(bucket).createSignedUrl(path, 3600);
-          return signed?.signedUrl ?? null;
-        };
-        const [video_url, thumbnail_url] = await Promise.all([resolve(data.video_url), resolve(data.thumbnail_url)]);
-        setConfig({ ...(data as any), video_url, thumbnail_url });
+        const { data, error } = await supabase.functions.invoke('welcome-public-lookup', { body: { preview: true } });
+        if (error || !data || (data as any).error) {
+          setView('error');
+          setErrorMsg('Konfiguration konnte nicht geladen werden.');
+          return;
+        }
+        setConfig((data as any).config);
         setLeadName('Vorschau');
         setView('ready');
       })();
       return;
     }
+
     if (!token) { setView('error'); setErrorMsg('Ungültiger Link.'); return; }
     (async () => {
       const { data, error } = await supabase.functions.invoke('welcome-public-lookup', { body: { token } });
