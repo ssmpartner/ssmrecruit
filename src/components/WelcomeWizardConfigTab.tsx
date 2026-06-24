@@ -161,11 +161,11 @@ export default function WelcomeWizardConfigTab() {
           <Field label="Titel" value={cfg.page_title} onChange={v => setCfg({ ...cfg, page_title: v })} />
           <FieldMulti label="Begrüssungstext" value={cfg.page_intro} onChange={v => setCfg({ ...cfg, page_intro: v })} rows={4} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Button „Nächste Schritte"" value={cfg.button_proceed_label} onChange={v => setCfg({ ...cfg, button_proceed_label: v })} />
-            <Field label="Button „Ablehnen"" value={cfg.button_reject_label} onChange={v => setCfg({ ...cfg, button_reject_label: v })} />
+            <Field label={'Button „Nächste Schritte"'} value={cfg.button_proceed_label} onChange={v => setCfg({ ...cfg, button_proceed_label: v })} />
+            <Field label={'Button „Ablehnen"'} value={cfg.button_reject_label} onChange={v => setCfg({ ...cfg, button_reject_label: v })} />
           </div>
-          <FieldMulti label="Bestätigung nach „Nächste Schritte"" value={cfg.proceed_confirmation_text} onChange={v => setCfg({ ...cfg, proceed_confirmation_text: v })} rows={2} />
-          <FieldMulti label="Bestätigung nach „Ablehnen"" value={cfg.reject_confirmation_text} onChange={v => setCfg({ ...cfg, reject_confirmation_text: v })} rows={2} />
+          <FieldMulti label={'Bestätigung nach „Nächste Schritte"'} value={cfg.proceed_confirmation_text} onChange={v => setCfg({ ...cfg, proceed_confirmation_text: v })} rows={2} />
+          <FieldMulti label={'Bestätigung nach „Ablehnen"'} value={cfg.reject_confirmation_text} onChange={v => setCfg({ ...cfg, reject_confirmation_text: v })} rows={2} />
         </CardContent>
       </Card>
 
