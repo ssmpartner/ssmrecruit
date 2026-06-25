@@ -67,7 +67,7 @@ const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
 const BACKOFFICE_BLOCKED_PREFIXES = ['/agencies', '/employees', '/processes', '/documentation', '/api-docs'];
 
 // Routes restricted to superadmin only
-const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice', '/contracts'];
+const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice'];
 
 const SSM_PORTAL_URL = 'https://ssmpartner.ch/portal';
 
