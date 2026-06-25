@@ -117,25 +117,31 @@ export default function ContractEditorDialog({ contractId, open, onClose }: Prop
     await load();
   }
 
-  async function exportPdf() {
+  async function finalize() {
     setExporting(true);
-    const { data, error } = await supabase.functions.invoke('generate-contract-pdf', {
+    const { data, error } = await supabase.functions.invoke('finalize-contract', {
       body: { contract_id: contractId },
     });
     setExporting(false);
     if (error) { toast.error(error.message); return; }
-    toast.success('PDF generiert');
-    if ((data as any)?.path) {
-      const { data: s } = await supabase.storage.from('contracts').createSignedUrl((data as any).path, 300);
+    toast.success('Vertrag generiert (Word + PDF + Gesamt-PDF)');
+    if ((data as any)?.merged_pdf_path) {
+      const { data: s } = await supabase.storage.from('contracts').createSignedUrl((data as any).merged_pdf_path, 300);
       if (s?.signedUrl) window.open(s.signedUrl, '_blank');
-      await load();
     }
+    await load();
   }
 
-  async function downloadCurrent() {
-    if (!contract?.pdf_path) return;
-    const { data } = await supabase.storage.from('contracts').createSignedUrl(contract.pdf_path, 300);
+  async function openStored(path?: string | null) {
+    if (!path) return;
+    const { data } = await supabase.storage.from('contracts').createSignedUrl(path, 300);
     if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+  }
+
+  async function updateLetterheadMode(mode: string) {
+    await supabase.from('contracts').update({ letterhead_mode: mode } as any).eq('id', contractId);
+    toast.success('CI-Quelle aktualisiert');
+    load();
   }
 
   async function uploadAttachment(file: File) {
@@ -388,14 +394,41 @@ export default function ContractEditorDialog({ contractId, open, onClose }: Prop
           </TabsContent>
         </Tabs>
 
+        <div className="rounded-lg border bg-muted/40 p-3 flex flex-wrap items-center gap-2 text-xs">
+          <Label className="text-xs">CI-Quelle:</Label>
+          <Select value={(contract?.letterhead_mode as string) ?? 'auto'} onValueChange={updateLetterheadMode}>
+            <SelectTrigger className="h-8 w-56"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">Automatisch (Word wenn vorhanden, sonst PDF)</SelectItem>
+              <SelectItem value="word">CI aus Word übernehmen (kein Overlay)</SelectItem>
+              <SelectItem value="pdf">PDF-Briefpapier verwenden</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-muted-foreground">
+            Doppelte Kopf-/Fusszeilen werden im Word-Modus vermieden.
+          </span>
+        </div>
+
         <DialogFooter className="gap-2 flex-wrap">
-          {contract?.pdf_path && (
-            <Button variant="outline" onClick={downloadCurrent} className="gap-2"><Download className="h-4 w-4" />Aktuelles PDF</Button>
+          {contract?.docx_path && (
+            <Button variant="outline" onClick={() => openStored(contract.docx_path)} className="gap-2">
+              <FileText className="h-4 w-4" />Word herunterladen
+            </Button>
           )}
-          <Button variant="outline" onClick={exportPdf} disabled={exporting} className="gap-2">
-            <FileDown className="h-4 w-4" />{exporting ? 'Generiere…' : 'Finale PDF erzeugen'}
+          {contract?.pdf_path && (
+            <Button variant="outline" onClick={() => openStored(contract.pdf_path)} className="gap-2">
+              <Download className="h-4 w-4" />PDF Hauptvertrag
+            </Button>
+          )}
+          {contract?.merged_pdf_path && (
+            <Button variant="outline" onClick={() => openStored(contract.merged_pdf_path)} className="gap-2">
+              <Download className="h-4 w-4" />Gesamt-PDF (mit Anhängen)
+            </Button>
+          )}
+          <Button variant="default" onClick={finalize} disabled={exporting} className="gap-2">
+            <FileDown className="h-4 w-4" />{exporting ? 'Generiere…' : 'Final generieren (Word + PDF + Gesamt)'}
           </Button>
-          <Button onClick={() => save()} className="gap-2" disabled={!dirty}>
+          <Button onClick={() => save()} className="gap-2" disabled={!dirty} variant="secondary">
             <Save className="h-4 w-4" />Entwurf speichern
           </Button>
         </DialogFooter>
