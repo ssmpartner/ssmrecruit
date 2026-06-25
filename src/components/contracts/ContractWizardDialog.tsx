@@ -10,6 +10,7 @@ import {
   AREA_LABELS, CONTRACT_LANGUAGES,
   renderPlaceholders, DEFAULT_COMPANY, type ContractArea,
 } from '@/lib/contract-placeholders';
+import { useCareerLevels } from '@/hooks/useCareerLevels';
 
 interface Props {
   leadId: string;
