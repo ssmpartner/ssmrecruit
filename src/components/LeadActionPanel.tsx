@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Brain, Copy, Send, Upload, Loader2, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import StepActionsPanel from './StepActionsPanel';
+import LeadContractsSection from './contracts/LeadContractsSection';
 import { type LeadStatus } from '@/lib/mock-data';
 
 interface Props {
@@ -198,6 +199,8 @@ export default function LeadActionPanel({ leadId, leadName, leadStatus, onSchedu
           )}
         </div>
       )}
+
+      <LeadContractsSection leadId={leadId} leadName={leadName} leadStatus={leadStatus} />
     </div>
   );
 }

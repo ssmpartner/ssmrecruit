@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, LogOut, PanelLeftClose, PanelLeft, HelpCircle, Bot, ChevronDown, ChevronRight, Activity, Cog, TrendingUp, BookOpen, FileSearch, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, LogOut, PanelLeftClose, PanelLeft, HelpCircle, Bot, ChevronDown, ChevronRight, Activity, Cog, TrendingUp, BookOpen, FileSearch, MessageSquare, FileSignature } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSidebarState } from '@/context/SidebarContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -15,6 +15,7 @@ const allNavItems = [
   { to: '/agencies', icon: Building2, label: 'Agenturen', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
   { to: '/employees', icon: UserCog, label: 'Mitarbeiter', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },
   { to: '/analytics', icon: BarChart3, label: 'Statistik', roles: null, excludeRoles: ['hr'] as string[] },
+  { to: '/contracts', icon: FileSignature, label: 'Verträge', roles: ['superadmin'] as string[], excludeRoles: [] as string[] },
 ];
 
 const aiVoiceSubItems = [
