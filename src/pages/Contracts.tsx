@@ -37,6 +37,12 @@ export default function Contracts() {
           <TabsTrigger value="library" className="gap-1.5">
             <Library className="h-3.5 w-3.5" /> Bibliothek
           </TabsTrigger>
+          <TabsTrigger value="sets" className="gap-1.5">
+            <PackageOpen className="h-3.5 w-3.5" /> Vertragssets
+          </TabsTrigger>
+          <TabsTrigger value="rules" className="gap-1.5">
+            <ScrollText className="h-3.5 w-3.5" /> Regeln
+          </TabsTrigger>
           <TabsTrigger value="templates" className="gap-1.5">
             <FileText className="h-3.5 w-3.5" /> Vorlagen
           </TabsTrigger>
@@ -46,6 +52,8 @@ export default function Contracts() {
         </TabsList>
         <TabsContent value="overview"><ContractsOverviewTab /></TabsContent>
         <TabsContent value="library"><ContractLibraryTab /></TabsContent>
+        <TabsContent value="sets"><ContractSetsTab /></TabsContent>
+        <TabsContent value="rules"><ContractRulesTab /></TabsContent>
         <TabsContent value="templates"><ContractTemplatesTab /></TabsContent>
         <TabsContent value="letterhead"><ContractLetterheadTab /></TabsContent>
       </Tabs>
