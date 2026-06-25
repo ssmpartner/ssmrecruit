@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import {
-  AREA_LABELS, CAREERPLAN_LEVELS, CONTRACT_LANGUAGES,
+  AREA_LABELS, CONTRACT_LANGUAGES,
   renderPlaceholders, DEFAULT_COMPANY, type ContractArea,
 } from '@/lib/contract-placeholders';
+import { useCareerLevels } from '@/hooks/useCareerLevels';
 
 interface Props {
   leadId: string;
@@ -183,12 +184,11 @@ export default function ContractWizardDialog({ leadId, leadName, open, onClose, 
             {area === 'sales' && (
               <div className="col-span-2">
                 <Label>Karriereplan-Stufe</Label>
-                <Select value={form.careerplan_level} onValueChange={v => setForm({ ...form, careerplan_level: v })}>
-                  <SelectTrigger><SelectValue placeholder="Stufe wählen" /></SelectTrigger>
-                  <SelectContent>
-                    {CAREERPLAN_LEVELS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <CareerLevelSelect
+                  position={form.position}
+                  value={form.careerplan_level}
+                  onChange={v => setForm({ ...form, careerplan_level: v })}
+                />
               </div>
             )}
             <div>
@@ -225,5 +225,17 @@ export default function ContractWizardDialog({ leadId, leadName, open, onClose, 
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function CareerLevelSelect({ position, value, onChange }: { position: string; value: string; onChange: (v: string) => void }) {
+  const { levels, loading } = useCareerLevels(position);
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger><SelectValue placeholder={loading ? 'Lade Stufen…' : (levels.length ? 'Stufe wählen' : 'Keine Stufen hinterlegt')} /></SelectTrigger>
+      <SelectContent>
+        {levels.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+      </SelectContent>
+    </Select>
   );
 }

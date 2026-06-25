@@ -12,9 +12,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Pencil, Archive, CheckCircle2, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  AREA_LABELS, CAREERPLAN_LEVELS, CONTRACT_LANGUAGES, TEMPLATE_STATUS_LABELS,
+  AREA_LABELS, CONTRACT_LANGUAGES, TEMPLATE_STATUS_LABELS,
   KNOWN_PLACEHOLDERS,
 } from '@/lib/contract-placeholders';
+import { useCareerLevels } from '@/hooks/useCareerLevels';
 
 type Template = {
   id: string;
@@ -222,12 +223,11 @@ export default function ContractTemplatesTab() {
                 {edit.careerplan_linked && (
                   <div className="col-span-2">
                     <Label>Karriereplan-Stufe</Label>
-                    <Select value={edit.careerplan_level || ''} onValueChange={v => setEdit({ ...edit, careerplan_level: v })}>
-                      <SelectTrigger><SelectValue placeholder="Stufe wählen" /></SelectTrigger>
-                      <SelectContent>
-                        {CAREERPLAN_LEVELS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <TemplateCareerLevelSelect
+                      position={edit.position || ''}
+                      value={edit.careerplan_level || ''}
+                      onChange={v => setEdit({ ...edit, careerplan_level: v })}
+                    />
                   </div>
                 )}
               </>
@@ -257,5 +257,17 @@ export default function ContractTemplatesTab() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function TemplateCareerLevelSelect({ position, value, onChange }: { position: string; value: string; onChange: (v: string) => void }) {
+  const { levels, loading } = useCareerLevels(position);
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger><SelectValue placeholder={loading ? 'Lade Stufen…' : (levels.length ? 'Stufe wählen' : 'Keine Stufen hinterlegt – bitte unter Einstellungen › SSM Karriereplan anlegen')} /></SelectTrigger>
+      <SelectContent>
+        {levels.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+      </SelectContent>
+    </Select>
   );
 }
