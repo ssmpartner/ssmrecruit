@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,13 +9,14 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Archive, CheckCircle2, FileDown } from 'lucide-react';
+import { Plus, Pencil, Archive, CheckCircle2, FileDown, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AREA_LABELS, CONTRACT_LANGUAGES, TEMPLATE_STATUS_LABELS,
-  KNOWN_PLACEHOLDERS,
+  PLACEHOLDER_GROUPS, findDisallowedPlaceholders,
 } from '@/lib/contract-placeholders';
 import { useCareerLevels } from '@/hooks/useCareerLevels';
+import PlaceholderPicker from './PlaceholderPicker';
 
 type Template = {
   id: string;
