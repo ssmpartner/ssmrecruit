@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import {
-  AREA_LABELS, CAREERPLAN_LEVELS, CONTRACT_LANGUAGES,
+  AREA_LABELS, CONTRACT_LANGUAGES,
   renderPlaceholders, DEFAULT_COMPANY, type ContractArea,
 } from '@/lib/contract-placeholders';
 
