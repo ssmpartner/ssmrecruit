@@ -1976,6 +1976,168 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_set_items: {
+        Row: {
+          category_code: string
+          created_at: string
+          id: string
+          is_mandatory: boolean
+          notes: string | null
+          role: string
+          set_id: string
+          sort_order: number
+        }
+        Insert: {
+          category_code: string
+          created_at?: string
+          id?: string
+          is_mandatory?: boolean
+          notes?: string | null
+          role: string
+          set_id: string
+          sort_order?: number
+        }
+        Update: {
+          category_code?: string
+          created_at?: string
+          id?: string
+          is_mandatory?: boolean
+          notes?: string | null
+          role?: string
+          set_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_set_items_category_code_fkey"
+            columns: ["category_code"]
+            isOneToOne: false
+            referencedRelation: "contract_categories"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_set_items_set_id_fkey"
+            columns: ["set_id"]
+            isOneToOne: false
+            referencedRelation: "contract_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_set_rules: {
+        Row: {
+          actions: Json
+          code: string
+          conditions: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          actions?: Json
+          code: string
+          conditions?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          actions?: Json
+          code?: string
+          conditions?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      contract_sets: {
+        Row: {
+          area: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          kind_code: string | null
+          language: string
+          name: string
+          position_codes: string[]
+          sort_order: number
+          target_group_code: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          area?: string | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind_code?: string | null
+          language?: string
+          name: string
+          position_codes?: string[]
+          sort_order?: number
+          target_group_code?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          area?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind_code?: string | null
+          language?: string
+          name?: string
+          position_codes?: string[]
+          sort_order?: number
+          target_group_code?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_sets_kind_code_fkey"
+            columns: ["kind_code"]
+            isOneToOne: false
+            referencedRelation: "contract_kinds"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_sets_target_group_code_fkey"
+            columns: ["target_group_code"]
+            isOneToOne: false
+            referencedRelation: "contract_target_groups"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       contract_target_groups: {
         Row: {
           code: string
