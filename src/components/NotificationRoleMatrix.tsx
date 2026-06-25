@@ -51,6 +51,7 @@ const NOTIFICATION_TYPES: { type: string; label: string; group: string }[] = [
 ];
 
 const GROUPS = ['Leads', 'Termine', 'Aufgaben & Prozesse', 'AI Voice Agent', 'Weitere'];
+const TASK_EMAIL_DISABLED_TYPES = new Set(['task_created', 'task_overdue']);
 
 export default function NotificationRoleMatrix() {
   const { isSuperadmin } = useAuth();
@@ -77,6 +78,7 @@ export default function NotificationRoleMatrix() {
 
   const toggleValue = (type: string, role: AppRole, field: 'in_app_enabled' | 'email_enabled') => {
     if (!isSuperadmin) return;
+    if (field === 'email_enabled' && TASK_EMAIL_DISABLED_TYPES.has(type)) return;
     setSettings(prev => prev.map(s =>
       s.notification_type === type && s.role === role
         ? { ...s, [field]: !s[field] }
@@ -196,6 +198,7 @@ export default function NotificationRoleMatrix() {
                     <td className="py-2.5 px-4 font-medium">{nt.label}</td>
                     {ROLES.map(r => {
                       const s = getSetting(nt.type, r.value);
+                      const emailBlocked = TASK_EMAIL_DISABLED_TYPES.has(nt.type);
                       return (
                         <>
                           <td key={`${nt.type}-${r.value}-app`} className="text-center py-2.5 px-1">
@@ -213,13 +216,17 @@ export default function NotificationRoleMatrix() {
                           <td key={`${nt.type}-${r.value}-email`} className="text-center py-2.5 px-1">
                             <button
                               onClick={() => toggleValue(nt.type, r.value, 'email_enabled')}
+                              disabled={emailBlocked}
+                              title={emailBlocked ? 'Aufgaben-E-Mails sind vorläufig global deaktiviert' : undefined}
                               className={`h-5 w-5 rounded border-2 transition-all mx-auto flex items-center justify-center ${
-                                s?.email_enabled
+                                !emailBlocked && s?.email_enabled
                                   ? 'bg-emerald-600 border-emerald-600 text-white'
-                                  : 'border-muted-foreground/30 hover:border-muted-foreground/50'
+                                  : emailBlocked
+                                    ? 'border-muted-foreground/20 bg-muted/40 cursor-not-allowed opacity-60'
+                                    : 'border-muted-foreground/30 hover:border-muted-foreground/50'
                               }`}
                             >
-                              {s?.email_enabled && <span className="text-[10px] font-bold">✓</span>}
+                              {!emailBlocked && s?.email_enabled && <span className="text-[10px] font-bold">✓</span>}
                             </button>
                           </td>
                         </>
