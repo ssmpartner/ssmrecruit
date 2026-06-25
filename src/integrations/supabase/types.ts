@@ -2384,6 +2384,7 @@ export type Database = {
       }
       contracts: {
         Row: {
+          agency_name: string | null
           area: string
           body_html: string
           candidate_lead_id: string | null
@@ -2399,19 +2400,24 @@ export type Database = {
           level: string | null
           location: string | null
           manager_name: string | null
+          notice_period: string | null
           pdf_path: string | null
           position: string | null
+          probation_period: string | null
           salary: string | null
+          set_id: string | null
           signature_provider: string | null
           start_date: string | null
           status: string
           target_group_code: string | null
           template_id: string | null
           template_version: number | null
+          thirteenth_salary: boolean | null
           updated_at: string
           workload: string | null
         }
         Insert: {
+          agency_name?: string | null
           area: string
           body_html?: string
           candidate_lead_id?: string | null
@@ -2427,19 +2433,24 @@ export type Database = {
           level?: string | null
           location?: string | null
           manager_name?: string | null
+          notice_period?: string | null
           pdf_path?: string | null
           position?: string | null
+          probation_period?: string | null
           salary?: string | null
+          set_id?: string | null
           signature_provider?: string | null
           start_date?: string | null
           status?: string
           target_group_code?: string | null
           template_id?: string | null
           template_version?: number | null
+          thirteenth_salary?: boolean | null
           updated_at?: string
           workload?: string | null
         }
         Update: {
+          agency_name?: string | null
           area?: string
           body_html?: string
           candidate_lead_id?: string | null
@@ -2455,15 +2466,19 @@ export type Database = {
           level?: string | null
           location?: string | null
           manager_name?: string | null
+          notice_period?: string | null
           pdf_path?: string | null
           position?: string | null
+          probation_period?: string | null
           salary?: string | null
+          set_id?: string | null
           signature_provider?: string | null
           start_date?: string | null
           status?: string
           target_group_code?: string | null
           template_id?: string | null
           template_version?: number | null
+          thirteenth_salary?: boolean | null
           updated_at?: string
           workload?: string | null
         }
@@ -2488,6 +2503,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contract_kinds"
             referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contracts_set_id_fkey"
+            columns: ["set_id"]
+            isOneToOne: false
+            referencedRelation: "contract_sets"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "contracts_target_group_code_fkey"
@@ -3469,6 +3491,7 @@ export type Database = {
           canton: string
           canton_code: string
           city: string
+          contract_generation_unlocked: boolean
           created_at: string
           email: string
           employee_id: string
@@ -3507,6 +3530,7 @@ export type Database = {
           canton?: string
           canton_code?: string
           city?: string
+          contract_generation_unlocked?: boolean
           created_at?: string
           email: string
           employee_id: string
@@ -3545,6 +3569,7 @@ export type Database = {
           canton?: string
           canton_code?: string
           city?: string
+          contract_generation_unlocked?: boolean
           created_at?: string
           email?: string
           employee_id?: string
