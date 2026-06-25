@@ -35,6 +35,7 @@ const BewerbungWizard = lazy(() => import("./pages/BewerbungWizard"));
 const WelcomeWizardPage = lazy(() => import("./pages/WelcomeWizardPage"));
 const SsoCallback = lazy(() => import("./pages/SsoCallback"));
 const AIVoiceAgent = lazy(() => import("./pages/AIVoiceAgent"));
+const Contracts = lazy(() => import("./pages/Contracts"));
 
 // AI Voice – 6 container pages
 const AIVoiceOverview = lazy(() => import("./pages/ai-voice/AIVoiceOverview"));
@@ -66,7 +67,7 @@ const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
 const BACKOFFICE_BLOCKED_PREFIXES = ['/agencies', '/employees', '/processes', '/documentation', '/api-docs'];
 
 // Routes restricted to superadmin only
-const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice'];
+const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice', '/contracts'];
 
 const SSM_PORTAL_URL = 'https://ssmpartner.ch/portal';
 
@@ -153,6 +154,7 @@ const App = () => (
                 <Route path="/documentation" element={<P><Documentation /></P>} />
                 <Route path="/help" element={<P><HelpCenter /></P>} />
                 <Route path="/feedback" element={<P><Feedback /></P>} />
+                <Route path="/contracts" element={<P><Contracts /></P>} />
 
                 {/* AI Voice Agent – 6 Hauptbereiche mit Tabs */}
                 <Route path="/ai-voice" element={<P><AIVoiceAgent /></P>}>

@@ -1632,6 +1632,389 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_attachments: {
+        Row: {
+          contract_id: string
+          created_at: string
+          id: string
+          mime_type: string | null
+          name: string
+          size_bytes: number | null
+          storage_path: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          id?: string
+          mime_type?: string | null
+          name: string
+          size_bytes?: number | null
+          storage_path: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          id?: string
+          mime_type?: string | null
+          name?: string
+          size_bytes?: number | null
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_attachments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_letterhead: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          mime_type: string | null
+          name: string
+          storage_path: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          mime_type?: string | null
+          name?: string
+          storage_path: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          mime_type?: string | null
+          name?: string
+          storage_path?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      contract_permissions: {
+        Row: {
+          can_archive: boolean
+          can_edit: boolean
+          can_finalize: boolean
+          can_generate: boolean
+          can_manage_letterhead: boolean
+          can_manage_templates: boolean
+          can_view: boolean
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_archive?: boolean
+          can_edit?: boolean
+          can_finalize?: boolean
+          can_generate?: boolean
+          can_manage_letterhead?: boolean
+          can_manage_templates?: boolean
+          can_view?: boolean
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_archive?: boolean
+          can_edit?: boolean
+          can_finalize?: boolean
+          can_generate?: boolean
+          can_manage_letterhead?: boolean
+          can_manage_templates?: boolean
+          can_view?: boolean
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      contract_template_attachments: {
+        Row: {
+          created_at: string
+          id: string
+          mime_type: string | null
+          name: string
+          size_bytes: number | null
+          storage_path: string
+          template_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mime_type?: string | null
+          name: string
+          size_bytes?: number | null
+          storage_path: string
+          template_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mime_type?: string | null
+          name?: string
+          size_bytes?: number | null
+          storage_path?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_template_attachments_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "contract_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_template_versions: {
+        Row: {
+          body_html: string
+          created_at: string
+          created_by: string | null
+          id: string
+          snapshot: Json
+          template_id: string
+          title: string
+          version: number
+        }
+        Insert: {
+          body_html: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          snapshot?: Json
+          template_id: string
+          title: string
+          version: number
+        }
+        Update: {
+          body_html?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          snapshot?: Json
+          template_id?: string
+          title?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_template_versions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "contract_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_templates: {
+        Row: {
+          area: string
+          body_html: string
+          careerplan_level: string | null
+          careerplan_linked: boolean
+          contract_type: string
+          created_at: string
+          created_by: string | null
+          id: string
+          language: string
+          level: string | null
+          position: string | null
+          status: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          area: string
+          body_html?: string
+          careerplan_level?: string | null
+          careerplan_linked?: boolean
+          contract_type: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          language?: string
+          level?: string | null
+          position?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          area?: string
+          body_html?: string
+          careerplan_level?: string | null
+          careerplan_linked?: boolean
+          contract_type?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          language?: string
+          level?: string | null
+          position?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
+      contract_versions: {
+        Row: {
+          body_html: string
+          contract_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          pdf_path: string | null
+          snapshot: Json
+          version: number
+        }
+        Insert: {
+          body_html: string
+          contract_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          pdf_path?: string | null
+          snapshot?: Json
+          version: number
+        }
+        Update: {
+          body_html?: string
+          contract_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          pdf_path?: string | null
+          snapshot?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_versions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          area: string
+          body_html: string
+          candidate_lead_id: string | null
+          careerplan_level: string | null
+          commission_model: string | null
+          created_at: string
+          created_by: string | null
+          current_version: number
+          id: string
+          language: string
+          level: string | null
+          location: string | null
+          manager_name: string | null
+          pdf_path: string | null
+          position: string | null
+          salary: string | null
+          signature_provider: string | null
+          start_date: string | null
+          status: string
+          template_id: string | null
+          template_version: number | null
+          updated_at: string
+          workload: string | null
+        }
+        Insert: {
+          area: string
+          body_html?: string
+          candidate_lead_id?: string | null
+          careerplan_level?: string | null
+          commission_model?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_version?: number
+          id?: string
+          language?: string
+          level?: string | null
+          location?: string | null
+          manager_name?: string | null
+          pdf_path?: string | null
+          position?: string | null
+          salary?: string | null
+          signature_provider?: string | null
+          start_date?: string | null
+          status?: string
+          template_id?: string | null
+          template_version?: number | null
+          updated_at?: string
+          workload?: string | null
+        }
+        Update: {
+          area?: string
+          body_html?: string
+          candidate_lead_id?: string | null
+          careerplan_level?: string | null
+          commission_model?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_version?: number
+          id?: string
+          language?: string
+          level?: string | null
+          location?: string | null
+          manager_name?: string | null
+          pdf_path?: string | null
+          position?: string | null
+          salary?: string | null
+          signature_provider?: string | null
+          start_date?: string | null
+          status?: string
+          template_id?: string | null
+          template_version?: number | null
+          updated_at?: string
+          workload?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_candidate_lead_id_fkey"
+            columns: ["candidate_lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "contract_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       disc_results: {
         Row: {
           answers: Json
