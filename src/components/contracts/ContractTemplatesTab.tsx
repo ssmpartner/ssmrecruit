@@ -12,9 +12,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Pencil, Archive, CheckCircle2, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  AREA_LABELS, CAREERPLAN_LEVELS, CONTRACT_LANGUAGES, TEMPLATE_STATUS_LABELS,
+  AREA_LABELS, CONTRACT_LANGUAGES, TEMPLATE_STATUS_LABELS,
   KNOWN_PLACEHOLDERS,
 } from '@/lib/contract-placeholders';
+import { useCareerLevels } from '@/hooks/useCareerLevels';
 
 type Template = {
   id: string;
