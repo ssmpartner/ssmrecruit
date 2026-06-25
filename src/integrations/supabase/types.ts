@@ -1636,28 +1636,37 @@ export type Database = {
         Row: {
           contract_id: string
           created_at: string
+          document_id: string | null
           id: string
           mime_type: string | null
           name: string
           size_bytes: number | null
+          sort_order: number
+          source: string
           storage_path: string
         }
         Insert: {
           contract_id: string
           created_at?: string
+          document_id?: string | null
           id?: string
           mime_type?: string | null
           name: string
           size_bytes?: number | null
+          sort_order?: number
+          source?: string
           storage_path: string
         }
         Update: {
           contract_id?: string
           created_at?: string
+          document_id?: string | null
           id?: string
           mime_type?: string | null
           name?: string
           size_bytes?: number | null
+          sort_order?: number
+          source?: string
           storage_path?: string
         }
         Relationships: [
@@ -1705,6 +1714,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      contract_change_log: {
+        Row: {
+          action: string
+          changed_by: string | null
+          changed_by_name: string | null
+          contract_id: string
+          created_at: string
+          field: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+        }
+        Insert: {
+          action?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          contract_id: string
+          created_at?: string
+          field: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          contract_id?: string
+          created_at?: string
+          field?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_change_log_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contract_document_versions: {
         Row: {
@@ -2385,6 +2438,7 @@ export type Database = {
       contracts: {
         Row: {
           agency_name: string | null
+          archived_at: string | null
           area: string
           body_html: string
           candidate_lead_id: string | null
@@ -2394,7 +2448,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           current_version: number
+          finalized_at: string | null
           id: string
+          internal_notes: string | null
           kind_code: string | null
           language: string
           level: string | null
@@ -2402,11 +2458,14 @@ export type Database = {
           manager_name: string | null
           notice_period: string | null
           pdf_path: string | null
+          placeholder_overrides: Json
           position: string | null
           probation_period: string | null
           salary: string | null
+          sent_at: string | null
           set_id: string | null
           signature_provider: string | null
+          signed_at: string | null
           start_date: string | null
           status: string
           target_group_code: string | null
@@ -2418,6 +2477,7 @@ export type Database = {
         }
         Insert: {
           agency_name?: string | null
+          archived_at?: string | null
           area: string
           body_html?: string
           candidate_lead_id?: string | null
@@ -2427,7 +2487,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_version?: number
+          finalized_at?: string | null
           id?: string
+          internal_notes?: string | null
           kind_code?: string | null
           language?: string
           level?: string | null
@@ -2435,11 +2497,14 @@ export type Database = {
           manager_name?: string | null
           notice_period?: string | null
           pdf_path?: string | null
+          placeholder_overrides?: Json
           position?: string | null
           probation_period?: string | null
           salary?: string | null
+          sent_at?: string | null
           set_id?: string | null
           signature_provider?: string | null
+          signed_at?: string | null
           start_date?: string | null
           status?: string
           target_group_code?: string | null
@@ -2451,6 +2516,7 @@ export type Database = {
         }
         Update: {
           agency_name?: string | null
+          archived_at?: string | null
           area?: string
           body_html?: string
           candidate_lead_id?: string | null
@@ -2460,7 +2526,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_version?: number
+          finalized_at?: string | null
           id?: string
+          internal_notes?: string | null
           kind_code?: string | null
           language?: string
           level?: string | null
@@ -2468,11 +2536,14 @@ export type Database = {
           manager_name?: string | null
           notice_period?: string | null
           pdf_path?: string | null
+          placeholder_overrides?: Json
           position?: string | null
           probation_period?: string | null
           salary?: string | null
+          sent_at?: string | null
           set_id?: string | null
           signature_provider?: string | null
+          signed_at?: string | null
           start_date?: string | null
           status?: string
           target_group_code?: string | null
