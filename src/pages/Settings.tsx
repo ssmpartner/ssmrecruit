@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin, X, Download, Building2, Image, KeyRound } from 'lucide-react';
+import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin, X, Download, Building2, Image, KeyRound, ShieldCheck } from 'lucide-react';
+import ContractPermissionsTab from '@/components/contracts/ContractPermissionsTab';
 import { generateAssessmentPdf, getSampleAssessmentData, loadLetterhead, assessmentToPdfData } from '@/lib/assessment-pdf';
 import EmailSettingsTab from '@/components/EmailSettingsTab';
 import NotificationRoleMatrix from '@/components/NotificationRoleMatrix';
@@ -62,7 +63,7 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'profile' | 'notifications' | 'news' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'career' | 'email' | 'integrations' | 'api';
+type SettingsTab = 'profile' | 'notifications' | 'news' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'career' | 'contract_permissions' | 'email' | 'integrations' | 'api';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
   { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name & Profildaten' },
@@ -73,6 +74,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[
   { id: 'insights', label: 'Insights / DISC', icon: Brain, desc: 'Persönlichkeitstest-Einstellungen' },
   { id: 'wizards', label: 'Wizards', icon: Wand2, desc: 'Wizard-Abläufe verwalten' },
   { id: 'career', label: 'SSM Karriereplan', icon: Target, desc: 'Karrierepfade & Stufen verwalten' },
+  { id: 'contract_permissions', label: 'Vertrags-Berechtigungen', icon: ShieldCheck, desc: 'Wer darf Verträge sehen, erstellen, freigeben' },
   { id: 'email', label: 'E-Mail Automationen', icon: Mail, desc: 'Templates & Regeln verwalten' },
   { id: 'integrations', label: 'Integrationen', icon: Plug, desc: 'Lead-Quellen & Webhooks' },
   { id: 'api', label: 'API-Schlüssel', icon: Key, desc: 'API-Keys generieren & verwalten' },
@@ -240,6 +242,7 @@ export default function Settings() {
           {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}
           {activeTab === 'wizards' && <WizardsTab />}
           {activeTab === 'career' && <CareerPlansTab />}
+          {activeTab === 'contract_permissions' && isSuperadmin && <ContractPermissionsTab />}
           {activeTab === 'news' && <NewsBannerTab />}
           {activeTab === 'email' && <EmailSettingsTab />}
           {activeTab === 'integrations' && (
