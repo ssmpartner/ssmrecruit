@@ -242,6 +242,7 @@ export default function Settings() {
           {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}
           {activeTab === 'wizards' && <WizardsTab />}
           {activeTab === 'career' && <CareerPlansTab />}
+          {activeTab === 'contract_permissions' && isSuperadmin && <ContractPermissionsTab />}
           {activeTab === 'news' && <NewsBannerTab />}
           {activeTab === 'email' && <EmailSettingsTab />}
           {activeTab === 'integrations' && (
