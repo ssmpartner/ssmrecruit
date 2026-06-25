@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileSignature, FileText, Image, Library, PackageOpen, ScrollText } from 'lucide-react';
+import { FileSignature, FileText, History, Image, Library, PackageOpen, ScrollText } from 'lucide-react';
 import ContractsOverviewTab from '@/components/contracts/ContractsOverviewTab';
 import ContractTemplatesTab from '@/components/contracts/ContractTemplatesTab';
 import ContractLetterheadTab from '@/components/contracts/ContractLetterheadTab';
 import ContractLibraryTab from '@/components/contracts/ContractLibraryTab';
 import ContractSetsTab from '@/components/contracts/ContractSetsTab';
 import ContractRulesTab from '@/components/contracts/ContractRulesTab';
+import ContractAuditLogTab from '@/components/contracts/ContractAuditLogTab';
+import { useContractPermissions } from '@/hooks/useContractPermissions';
 
 export default function Contracts() {
   const { isSuperadmin, loading } = useAuth();
