@@ -394,14 +394,41 @@ export default function ContractEditorDialog({ contractId, open, onClose }: Prop
           </TabsContent>
         </Tabs>
 
+        <div className="rounded-lg border bg-muted/40 p-3 flex flex-wrap items-center gap-2 text-xs">
+          <Label className="text-xs">CI-Quelle:</Label>
+          <Select value={(contract?.letterhead_mode as string) ?? 'auto'} onValueChange={updateLetterheadMode}>
+            <SelectTrigger className="h-8 w-56"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">Automatisch (Word wenn vorhanden, sonst PDF)</SelectItem>
+              <SelectItem value="word">CI aus Word übernehmen (kein Overlay)</SelectItem>
+              <SelectItem value="pdf">PDF-Briefpapier verwenden</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-muted-foreground">
+            Doppelte Kopf-/Fusszeilen werden im Word-Modus vermieden.
+          </span>
+        </div>
+
         <DialogFooter className="gap-2 flex-wrap">
-          {contract?.pdf_path && (
-            <Button variant="outline" onClick={downloadCurrent} className="gap-2"><Download className="h-4 w-4" />Aktuelles PDF</Button>
+          {contract?.docx_path && (
+            <Button variant="outline" onClick={() => openStored(contract.docx_path)} className="gap-2">
+              <FileText className="h-4 w-4" />Word herunterladen
+            </Button>
           )}
-          <Button variant="outline" onClick={exportPdf} disabled={exporting} className="gap-2">
-            <FileDown className="h-4 w-4" />{exporting ? 'Generiere…' : 'Finale PDF erzeugen'}
+          {contract?.pdf_path && (
+            <Button variant="outline" onClick={() => openStored(contract.pdf_path)} className="gap-2">
+              <Download className="h-4 w-4" />PDF Hauptvertrag
+            </Button>
+          )}
+          {contract?.merged_pdf_path && (
+            <Button variant="outline" onClick={() => openStored(contract.merged_pdf_path)} className="gap-2">
+              <Download className="h-4 w-4" />Gesamt-PDF (mit Anhängen)
+            </Button>
+          )}
+          <Button variant="default" onClick={finalize} disabled={exporting} className="gap-2">
+            <FileDown className="h-4 w-4" />{exporting ? 'Generiere…' : 'Final generieren (Word + PDF + Gesamt)'}
           </Button>
-          <Button onClick={() => save()} className="gap-2" disabled={!dirty}>
+          <Button onClick={() => save()} className="gap-2" disabled={!dirty} variant="secondary">
             <Save className="h-4 w-4" />Entwurf speichern
           </Button>
         </DialogFooter>
