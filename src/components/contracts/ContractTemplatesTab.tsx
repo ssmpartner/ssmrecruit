@@ -223,12 +223,11 @@ export default function ContractTemplatesTab() {
                 {edit.careerplan_linked && (
                   <div className="col-span-2">
                     <Label>Karriereplan-Stufe</Label>
-                    <Select value={edit.careerplan_level || ''} onValueChange={v => setEdit({ ...edit, careerplan_level: v })}>
-                      <SelectTrigger><SelectValue placeholder="Stufe wählen" /></SelectTrigger>
-                      <SelectContent>
-                        {CAREERPLAN_LEVELS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <TemplateCareerLevelSelect
+                      position={edit.position || ''}
+                      value={edit.careerplan_level || ''}
+                      onChange={v => setEdit({ ...edit, careerplan_level: v })}
+                    />
                   </div>
                 )}
               </>
