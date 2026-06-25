@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,13 +9,14 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Archive, CheckCircle2, FileDown } from 'lucide-react';
+import { Plus, Pencil, Archive, CheckCircle2, FileDown, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AREA_LABELS, CONTRACT_LANGUAGES, TEMPLATE_STATUS_LABELS,
-  KNOWN_PLACEHOLDERS,
+  PLACEHOLDER_GROUPS, findDisallowedPlaceholders,
 } from '@/lib/contract-placeholders';
 import { useCareerLevels } from '@/hooks/useCareerLevels';
+import PlaceholderPicker from './PlaceholderPicker';
 
 type Template = {
   id: string;
@@ -44,6 +45,26 @@ export default function ContractTemplatesTab() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<Partial<Template>>(empty);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+
+  function insertAtCursor(token: string) {
+    const ta = bodyRef.current;
+    const current = edit.body_html || '';
+    if (!ta) { setEdit({ ...edit, body_html: current + token }); return; }
+    const start = ta.selectionStart ?? current.length;
+    const endPos = ta.selectionEnd ?? current.length;
+    const next = current.slice(0, start) + token + current.slice(endPos);
+    setEdit({ ...edit, body_html: next });
+    requestAnimationFrame(() => {
+      ta.focus();
+      const pos = start + token.length;
+      ta.setSelectionRange(pos, pos);
+    });
+  }
+
+  const disallowed = edit.body_html
+    ? findDisallowedPlaceholders(edit.body_html, (edit.area || 'sales') as any)
+    : [];
 
   async function load() {
     setLoading(true);
@@ -234,17 +255,38 @@ export default function ContractTemplatesTab() {
             )}
 
             <div className="col-span-2">
-              <Label>Vertragsinhalt (HTML) – Platzhalter mit {`{{candidate.first_name}}`} usw.</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label>Vertragsinhalt (HTML)</Label>
+                <PlaceholderPicker area={(edit.area || 'sales') as any} onInsert={insertAtCursor} />
+              </div>
               <Textarea
+                ref={bodyRef}
                 rows={14} className="font-mono text-xs"
                 value={edit.body_html || ''}
                 onChange={e => setEdit({ ...edit, body_html: e.target.value })}
               />
+              {disallowed.length > 0 && (
+                <div className="mt-2 flex items-start gap-2 rounded border border-amber-300 bg-amber-50 text-amber-900 px-2 py-1.5 text-xs">
+                  <AlertTriangle className="h-3.5 w-3.5 mt-0.5" />
+                  <div>
+                    Nicht erlaubte Platzhalter für diesen Bereich:{' '}
+                    {disallowed.map(k => <code key={k} className="mx-0.5">{`{{${k}}}`}</code>)}
+                    <div className="opacity-70">Werden beim Generieren automatisch entfernt.</div>
+                  </div>
+                </div>
+              )}
               <details className="mt-2 text-xs text-muted-foreground">
-                <summary className="cursor-pointer">Verfügbare Platzhalter</summary>
-                <div className="mt-2 grid grid-cols-3 gap-1">
-                  {KNOWN_PLACEHOLDERS.map(k => (
-                    <code key={k} className={`px-1 ${k.startsWith('careerplan.') && edit.area === 'office' ? 'line-through opacity-40' : ''}`}>{`{{${k}}}`}</code>
+                <summary className="cursor-pointer">Alle verfügbaren Platzhalter</summary>
+                <div className="mt-2 space-y-2">
+                  {PLACEHOLDER_GROUPS.map(g => (
+                    <div key={g.id}>
+                      <div className="font-medium text-foreground/80">{g.label}</div>
+                      <div className="grid grid-cols-3 gap-1">
+                        {g.placeholders.map(p => (
+                          <code key={p.key} className="px-1" title={p.label}>{`{{${p.key}}}`}</code>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </details>
