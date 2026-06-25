@@ -184,12 +184,11 @@ export default function ContractWizardDialog({ leadId, leadName, open, onClose, 
             {area === 'sales' && (
               <div className="col-span-2">
                 <Label>Karriereplan-Stufe</Label>
-                <Select value={form.careerplan_level} onValueChange={v => setForm({ ...form, careerplan_level: v })}>
-                  <SelectTrigger><SelectValue placeholder="Stufe wählen" /></SelectTrigger>
-                  <SelectContent>
-                    {CAREERPLAN_LEVELS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <CareerLevelSelect
+                  position={form.position}
+                  value={form.careerplan_level}
+                  onChange={v => setForm({ ...form, careerplan_level: v })}
+                />
               </div>
             )}
             <div>
