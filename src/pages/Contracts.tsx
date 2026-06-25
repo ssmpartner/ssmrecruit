@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileSignature, FileText, Image } from 'lucide-react';
+import { FileSignature, FileText, Image, Library } from 'lucide-react';
 import ContractsOverviewTab from '@/components/contracts/ContractsOverviewTab';
 import ContractTemplatesTab from '@/components/contracts/ContractTemplatesTab';
 import ContractLetterheadTab from '@/components/contracts/ContractLetterheadTab';
+import ContractLibraryTab from '@/components/contracts/ContractLibraryTab';
 
 export default function Contracts() {
   const { isSuperadmin, loading } = useAuth();
@@ -31,6 +32,9 @@ export default function Contracts() {
           <TabsTrigger value="overview" className="gap-1.5">
             <FileSignature className="h-3.5 w-3.5" /> Übersicht
           </TabsTrigger>
+          <TabsTrigger value="library" className="gap-1.5">
+            <Library className="h-3.5 w-3.5" /> Bibliothek
+          </TabsTrigger>
           <TabsTrigger value="templates" className="gap-1.5">
             <FileText className="h-3.5 w-3.5" /> Vorlagen
           </TabsTrigger>
@@ -39,6 +43,7 @@ export default function Contracts() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="overview"><ContractsOverviewTab /></TabsContent>
+        <TabsContent value="library"><ContractLibraryTab /></TabsContent>
         <TabsContent value="templates"><ContractTemplatesTab /></TabsContent>
         <TabsContent value="letterhead"><ContractLetterheadTab /></TabsContent>
       </Tabs>

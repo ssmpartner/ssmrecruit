@@ -1706,6 +1706,168 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_document_versions: {
+        Row: {
+          change_note: string | null
+          created_at: string
+          created_by: string | null
+          document_id: string
+          id: string
+          original_storage_path: string | null
+          snapshot: Json
+          template_storage_path: string | null
+          version: number
+        }
+        Insert: {
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id: string
+          id?: string
+          original_storage_path?: string | null
+          snapshot: Json
+          template_storage_path?: string | null
+          version: number
+        }
+        Update: {
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id?: string
+          id?: string
+          original_storage_path?: string | null
+          snapshot?: Json
+          template_storage_path?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_document_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "contract_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_documents: {
+        Row: {
+          area: string | null
+          category_code: string | null
+          created_at: string
+          created_by: string | null
+          doc_type: string
+          id: string
+          is_careerplan_relevant: boolean
+          is_leadership_relevant: boolean
+          is_mandatory_attachment: boolean
+          is_optional_attachment: boolean
+          kind_code: string | null
+          language: string
+          name: string
+          notes: string | null
+          original_filename: string | null
+          original_mime_type: string | null
+          original_size_bytes: number | null
+          original_storage_path: string | null
+          status: string
+          target_group_code: string | null
+          template_filename: string | null
+          template_mime_type: string | null
+          template_size_bytes: number | null
+          template_storage_path: string | null
+          updated_at: string
+          updated_by: string | null
+          valid_from: string | null
+          valid_to: string | null
+          version: number
+        }
+        Insert: {
+          area?: string | null
+          category_code?: string | null
+          created_at?: string
+          created_by?: string | null
+          doc_type?: string
+          id?: string
+          is_careerplan_relevant?: boolean
+          is_leadership_relevant?: boolean
+          is_mandatory_attachment?: boolean
+          is_optional_attachment?: boolean
+          kind_code?: string | null
+          language?: string
+          name: string
+          notes?: string | null
+          original_filename?: string | null
+          original_mime_type?: string | null
+          original_size_bytes?: number | null
+          original_storage_path?: string | null
+          status?: string
+          target_group_code?: string | null
+          template_filename?: string | null
+          template_mime_type?: string | null
+          template_size_bytes?: number | null
+          template_storage_path?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: number
+        }
+        Update: {
+          area?: string | null
+          category_code?: string | null
+          created_at?: string
+          created_by?: string | null
+          doc_type?: string
+          id?: string
+          is_careerplan_relevant?: boolean
+          is_leadership_relevant?: boolean
+          is_mandatory_attachment?: boolean
+          is_optional_attachment?: boolean
+          kind_code?: string | null
+          language?: string
+          name?: string
+          notes?: string | null
+          original_filename?: string | null
+          original_mime_type?: string | null
+          original_size_bytes?: number | null
+          original_storage_path?: string | null
+          status?: string
+          target_group_code?: string | null
+          template_filename?: string | null
+          template_mime_type?: string | null
+          template_size_bytes?: number | null
+          template_storage_path?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          valid_from?: string | null
+          valid_to?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_documents_category_code_fkey"
+            columns: ["category_code"]
+            isOneToOne: false
+            referencedRelation: "contract_categories"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_documents_kind_code_fkey"
+            columns: ["kind_code"]
+            isOneToOne: false
+            referencedRelation: "contract_kinds"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_documents_target_group_code_fkey"
+            columns: ["target_group_code"]
+            isOneToOne: false
+            referencedRelation: "contract_target_groups"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       contract_kinds: {
         Row: {
           code: string
