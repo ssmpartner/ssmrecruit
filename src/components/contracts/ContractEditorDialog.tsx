@@ -14,7 +14,7 @@ import {
   ArrowUp, ArrowDown, Upload, FileText, Send, CheckCircle2, Archive, ListChecks,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { CONTRACT_STATUS_LABELS, PLACEHOLDER_GROUPS, renderPlaceholders } from '@/lib/contract-placeholders';
+import { CONTRACT_STATUS_LABELS, PLACEHOLDER_GROUPS } from '@/lib/contract-placeholders';
 
 interface Props {
   contractId: string;
