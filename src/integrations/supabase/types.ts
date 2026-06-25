@@ -1670,6 +1670,75 @@ export type Database = {
           },
         ]
       }
+      contract_categories: {
+        Row: {
+          code: string
+          created_at: string
+          is_active: boolean
+          is_attachment: boolean
+          label_de: string
+          label_fr: string | null
+          label_it: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          is_active?: boolean
+          is_attachment?: boolean
+          label_de: string
+          label_fr?: string | null
+          label_it?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          is_active?: boolean
+          is_attachment?: boolean
+          label_de?: string
+          label_fr?: string | null
+          label_it?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contract_kinds: {
+        Row: {
+          code: string
+          created_at: string
+          is_active: boolean
+          label_de: string
+          label_fr: string | null
+          label_it: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          is_active?: boolean
+          label_de: string
+          label_fr?: string | null
+          label_it?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          is_active?: boolean
+          label_de?: string
+          label_fr?: string | null
+          label_it?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contract_letterhead: {
         Row: {
           created_at: string
@@ -1742,6 +1811,39 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      contract_target_groups: {
+        Row: {
+          code: string
+          created_at: string
+          is_active: boolean
+          label_de: string
+          label_fr: string | null
+          label_it: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          is_active?: boolean
+          label_de: string
+          label_fr?: string | null
+          label_it?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          is_active?: boolean
+          label_de?: string
+          label_fr?: string | null
+          label_it?: string | null
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1830,14 +1932,18 @@ export type Database = {
           body_html: string
           careerplan_level: string | null
           careerplan_linked: boolean
+          category_code: string | null
           contract_type: string
           created_at: string
           created_by: string | null
           id: string
+          kind_code: string | null
           language: string
+          languages_supported: string[]
           level: string | null
           position: string | null
           status: string
+          target_group_code: string | null
           title: string
           updated_at: string
           updated_by: string | null
@@ -1848,14 +1954,18 @@ export type Database = {
           body_html?: string
           careerplan_level?: string | null
           careerplan_linked?: boolean
+          category_code?: string | null
           contract_type: string
           created_at?: string
           created_by?: string | null
           id?: string
+          kind_code?: string | null
           language?: string
+          languages_supported?: string[]
           level?: string | null
           position?: string | null
           status?: string
+          target_group_code?: string | null
           title: string
           updated_at?: string
           updated_by?: string | null
@@ -1866,20 +1976,46 @@ export type Database = {
           body_html?: string
           careerplan_level?: string | null
           careerplan_linked?: boolean
+          category_code?: string | null
           contract_type?: string
           created_at?: string
           created_by?: string | null
           id?: string
+          kind_code?: string | null
           language?: string
+          languages_supported?: string[]
           level?: string | null
           position?: string | null
           status?: string
+          target_group_code?: string | null
           title?: string
           updated_at?: string
           updated_by?: string | null
           version?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contract_templates_category_code_fkey"
+            columns: ["category_code"]
+            isOneToOne: false
+            referencedRelation: "contract_categories"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_templates_kind_code_fkey"
+            columns: ["kind_code"]
+            isOneToOne: false
+            referencedRelation: "contract_kinds"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_templates_target_group_code_fkey"
+            columns: ["target_group_code"]
+            isOneToOne: false
+            referencedRelation: "contract_target_groups"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       contract_versions: {
         Row: {
@@ -1928,11 +2064,13 @@ export type Database = {
           body_html: string
           candidate_lead_id: string | null
           careerplan_level: string | null
+          category_code: string | null
           commission_model: string | null
           created_at: string
           created_by: string | null
           current_version: number
           id: string
+          kind_code: string | null
           language: string
           level: string | null
           location: string | null
@@ -1943,6 +2081,7 @@ export type Database = {
           signature_provider: string | null
           start_date: string | null
           status: string
+          target_group_code: string | null
           template_id: string | null
           template_version: number | null
           updated_at: string
@@ -1953,11 +2092,13 @@ export type Database = {
           body_html?: string
           candidate_lead_id?: string | null
           careerplan_level?: string | null
+          category_code?: string | null
           commission_model?: string | null
           created_at?: string
           created_by?: string | null
           current_version?: number
           id?: string
+          kind_code?: string | null
           language?: string
           level?: string | null
           location?: string | null
@@ -1968,6 +2109,7 @@ export type Database = {
           signature_provider?: string | null
           start_date?: string | null
           status?: string
+          target_group_code?: string | null
           template_id?: string | null
           template_version?: number | null
           updated_at?: string
@@ -1978,11 +2120,13 @@ export type Database = {
           body_html?: string
           candidate_lead_id?: string | null
           careerplan_level?: string | null
+          category_code?: string | null
           commission_model?: string | null
           created_at?: string
           created_by?: string | null
           current_version?: number
           id?: string
+          kind_code?: string | null
           language?: string
           level?: string | null
           location?: string | null
@@ -1993,6 +2137,7 @@ export type Database = {
           signature_provider?: string | null
           start_date?: string | null
           status?: string
+          target_group_code?: string | null
           template_id?: string | null
           template_version?: number | null
           updated_at?: string
@@ -2005,6 +2150,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "leads"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_category_code_fkey"
+            columns: ["category_code"]
+            isOneToOne: false
+            referencedRelation: "contract_categories"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contracts_kind_code_fkey"
+            columns: ["kind_code"]
+            isOneToOne: false
+            referencedRelation: "contract_kinds"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contracts_target_group_code_fkey"
+            columns: ["target_group_code"]
+            isOneToOne: false
+            referencedRelation: "contract_target_groups"
+            referencedColumns: ["code"]
           },
           {
             foreignKeyName: "contracts_template_id_fkey"
