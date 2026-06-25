@@ -52,13 +52,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadUserData = async (userId: string) => {
     const ROLE_PRIORITY: AppRole[] = ['superadmin', 'admin', 'geschaeftsleitung', 'controlling', 'hr', 'teamleiter', 'agency_manager', 'backoffice'] as AppRole[];
-    const [profileRes, roleRes] = await Promise.all([
+    const [profileRes, roleRes, empRes] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
       supabase.from('user_roles').select('role').eq('user_id', userId),
+      supabase.from('employees').select('role').eq('user_id', userId).maybeSingle(),
     ]);
     setProfile(profileRes.data as Profile | null);
     const roles = (roleRes.data ?? []).map(r => r.role as AppRole);
-    const best = ROLE_PRIORITY.find(r => roles.includes(r)) ?? roles[0] ?? null;
+    let best = ROLE_PRIORITY.find(r => roles.includes(r)) ?? roles[0] ?? null;
+
+    // Fallback: kein user_roles-Eintrag → Rolle aus employees übernehmen und gleichzeitig nachpflegen
+    if (!best) {
+      const empRole = (empRes.data as { role?: string } | null)?.role as AppRole | undefined;
+      if (empRole) {
+        best = empRole;
+        supabase.from('user_roles').insert({ user_id: userId, role: empRole }).then(() => {});
+      } else {
+        best = 'employee' as AppRole;
+      }
+    }
     setRole(best);
   };
 
