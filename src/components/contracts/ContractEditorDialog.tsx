@@ -117,25 +117,31 @@ export default function ContractEditorDialog({ contractId, open, onClose }: Prop
     await load();
   }
 
-  async function exportPdf() {
+  async function finalize() {
     setExporting(true);
-    const { data, error } = await supabase.functions.invoke('generate-contract-pdf', {
+    const { data, error } = await supabase.functions.invoke('finalize-contract', {
       body: { contract_id: contractId },
     });
     setExporting(false);
     if (error) { toast.error(error.message); return; }
-    toast.success('PDF generiert');
-    if ((data as any)?.path) {
-      const { data: s } = await supabase.storage.from('contracts').createSignedUrl((data as any).path, 300);
+    toast.success('Vertrag generiert (Word + PDF + Gesamt-PDF)');
+    if ((data as any)?.merged_pdf_path) {
+      const { data: s } = await supabase.storage.from('contracts').createSignedUrl((data as any).merged_pdf_path, 300);
       if (s?.signedUrl) window.open(s.signedUrl, '_blank');
-      await load();
     }
+    await load();
   }
 
-  async function downloadCurrent() {
-    if (!contract?.pdf_path) return;
-    const { data } = await supabase.storage.from('contracts').createSignedUrl(contract.pdf_path, 300);
+  async function openStored(path?: string | null) {
+    if (!path) return;
+    const { data } = await supabase.storage.from('contracts').createSignedUrl(path, 300);
     if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+  }
+
+  async function updateLetterheadMode(mode: string) {
+    await supabase.from('contracts').update({ letterhead_mode: mode } as any).eq('id', contractId);
+    toast.success('CI-Quelle aktualisiert');
+    load();
   }
 
   async function uploadAttachment(file: File) {
