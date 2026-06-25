@@ -45,6 +45,26 @@ export default function ContractTemplatesTab() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<Partial<Template>>(empty);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+
+  function insertAtCursor(token: string) {
+    const ta = bodyRef.current;
+    const current = edit.body_html || '';
+    if (!ta) { setEdit({ ...edit, body_html: current + token }); return; }
+    const start = ta.selectionStart ?? current.length;
+    const endPos = ta.selectionEnd ?? current.length;
+    const next = current.slice(0, start) + token + current.slice(endPos);
+    setEdit({ ...edit, body_html: next });
+    requestAnimationFrame(() => {
+      ta.focus();
+      const pos = start + token.length;
+      ta.setSelectionRange(pos, pos);
+    });
+  }
+
+  const disallowed = edit.body_html
+    ? findDisallowedPlaceholders(edit.body_html, (edit.area || 'sales') as any)
+    : [];
 
   async function load() {
     setLoading(true);
