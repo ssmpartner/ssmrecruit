@@ -37,14 +37,10 @@ export default function Contracts() {
           <TabsTrigger value="letterhead" className="gap-1.5">
             <Image className="h-3.5 w-3.5" /> Briefpapier
           </TabsTrigger>
-          <TabsTrigger value="permissions" className="gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5" /> Berechtigungen
-          </TabsTrigger>
         </TabsList>
         <TabsContent value="overview"><ContractsOverviewTab /></TabsContent>
         <TabsContent value="templates"><ContractTemplatesTab /></TabsContent>
         <TabsContent value="letterhead"><ContractLetterheadTab /></TabsContent>
-        <TabsContent value="permissions"><ContractPermissionsTab /></TabsContent>
       </Tabs>
     </div>
   );
