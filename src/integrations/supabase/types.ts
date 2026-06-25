@@ -1959,6 +1959,8 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          is_default_for_language: boolean
+          language: string | null
           mime_type: string | null
           name: string
           storage_path: string
@@ -1969,6 +1971,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          is_default_for_language?: boolean
+          language?: string | null
           mime_type?: string | null
           name?: string
           storage_path: string
@@ -1979,6 +1983,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          is_default_for_language?: boolean
+          language?: string | null
           mime_type?: string | null
           name?: string
           storage_path?: string
@@ -2133,6 +2139,7 @@ export type Database = {
           is_active: boolean
           kind_code: string | null
           language: string
+          letterhead_id: string | null
           name: string
           position_codes: string[]
           sort_order: number
@@ -2150,6 +2157,7 @@ export type Database = {
           is_active?: boolean
           kind_code?: string | null
           language?: string
+          letterhead_id?: string | null
           name: string
           position_codes?: string[]
           sort_order?: number
@@ -2167,6 +2175,7 @@ export type Database = {
           is_active?: boolean
           kind_code?: string | null
           language?: string
+          letterhead_id?: string | null
           name?: string
           position_codes?: string[]
           sort_order?: number
@@ -2181,6 +2190,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contract_kinds"
             referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_sets_letterhead_id_fkey"
+            columns: ["letterhead_id"]
+            isOneToOne: false
+            referencedRelation: "contract_letterhead"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "contract_sets_target_group_code_fkey"
@@ -2313,10 +2329,12 @@ export type Database = {
           contract_type: string
           created_at: string
           created_by: string | null
+          docx_storage_path: string | null
           id: string
           kind_code: string | null
           language: string
           languages_supported: string[]
+          letterhead_mode: string
           level: string | null
           position: string | null
           status: string
@@ -2335,10 +2353,12 @@ export type Database = {
           contract_type: string
           created_at?: string
           created_by?: string | null
+          docx_storage_path?: string | null
           id?: string
           kind_code?: string | null
           language?: string
           languages_supported?: string[]
+          letterhead_mode?: string
           level?: string | null
           position?: string | null
           status?: string
@@ -2357,10 +2377,12 @@ export type Database = {
           contract_type?: string
           created_at?: string
           created_by?: string | null
+          docx_storage_path?: string | null
           id?: string
           kind_code?: string | null
           language?: string
           languages_supported?: string[]
+          letterhead_mode?: string
           level?: string | null
           position?: string | null
           status?: string
@@ -2448,14 +2470,18 @@ export type Database = {
           created_at: string
           created_by: string | null
           current_version: number
+          docx_path: string | null
           finalized_at: string | null
           id: string
           internal_notes: string | null
           kind_code: string | null
           language: string
+          letterhead_id: string | null
+          letterhead_mode: string | null
           level: string | null
           location: string | null
           manager_name: string | null
+          merged_pdf_path: string | null
           notice_period: string | null
           pdf_path: string | null
           placeholder_overrides: Json
@@ -2487,14 +2513,18 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_version?: number
+          docx_path?: string | null
           finalized_at?: string | null
           id?: string
           internal_notes?: string | null
           kind_code?: string | null
           language?: string
+          letterhead_id?: string | null
+          letterhead_mode?: string | null
           level?: string | null
           location?: string | null
           manager_name?: string | null
+          merged_pdf_path?: string | null
           notice_period?: string | null
           pdf_path?: string | null
           placeholder_overrides?: Json
@@ -2526,14 +2556,18 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_version?: number
+          docx_path?: string | null
           finalized_at?: string | null
           id?: string
           internal_notes?: string | null
           kind_code?: string | null
           language?: string
+          letterhead_id?: string | null
+          letterhead_mode?: string | null
           level?: string | null
           location?: string | null
           manager_name?: string | null
+          merged_pdf_path?: string | null
           notice_period?: string | null
           pdf_path?: string | null
           placeholder_overrides?: Json
@@ -2574,6 +2608,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contract_kinds"
             referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contracts_letterhead_id_fkey"
+            columns: ["letterhead_id"]
+            isOneToOne: false
+            referencedRelation: "contract_letterhead"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "contracts_set_id_fkey"
