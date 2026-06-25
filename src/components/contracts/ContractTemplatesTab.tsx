@@ -259,3 +259,15 @@ export default function ContractTemplatesTab() {
     </div>
   );
 }
+
+function TemplateCareerLevelSelect({ position, value, onChange }: { position: string; value: string; onChange: (v: string) => void }) {
+  const { levels, loading } = useCareerLevels(position);
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger><SelectValue placeholder={loading ? 'Lade Stufen…' : (levels.length ? 'Stufe wählen' : 'Keine Stufen hinterlegt – bitte unter Einstellungen › SSM Karriereplan anlegen')} /></SelectTrigger>
+      <SelectContent>
+        {levels.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+      </SelectContent>
+    </Select>
+  );
+}
