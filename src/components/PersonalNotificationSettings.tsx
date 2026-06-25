@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { NOTIFICATION_TYPES, NOTIFICATION_GROUPS } from '@/lib/notificationTypes';
 
 type Channel = 'in_app' | 'email';
+const TASK_EMAIL_DISABLED_TYPES = new Set(['task_created', 'task_overdue']);
 
 interface RoleDefault {
   notification_type: string;
@@ -58,6 +59,7 @@ export default function PersonalNotificationSettings() {
   }, [roleDefaults, employeeRole]);
 
   const effectiveValue = (type: string, channel: Channel): boolean => {
+    if (channel === 'email' && TASK_EMAIL_DISABLED_TYPES.has(type)) return false;
     const p = prefs[type];
     const override = p ? (channel === 'email' ? p.email_enabled : p.in_app_enabled) : null;
     if (override !== null && override !== undefined) return override;
@@ -74,6 +76,7 @@ export default function PersonalNotificationSettings() {
 
   const setOverride = async (type: string, channel: Channel, value: boolean | null) => {
     if (!user?.id) return;
+    if (channel === 'email' && TASK_EMAIL_DISABLED_TYPES.has(type)) return;
     const key = `${type}:${channel}`;
     setBusy((b) => ({ ...b, [key]: true }));
     const prev = prefs[type];
@@ -145,6 +148,7 @@ export default function PersonalNotificationSettings() {
             {items.map((item) => {
               const inAppEff = effectiveValue(item.type, 'in_app');
               const emailEff = effectiveValue(item.type, 'email');
+              const emailBlocked = TASK_EMAIL_DISABLED_TYPES.has(item.type);
               const anyOverride = isOverridden(item.type, 'in_app') || isOverridden(item.type, 'email');
               return (
                 <div key={item.type} className="px-5 py-3 grid grid-cols-[1fr,80px,80px,40px] gap-3 items-center border-b border-border last:border-b-0">
@@ -152,6 +156,9 @@ export default function PersonalNotificationSettings() {
                     {item.label}
                     {anyOverride && (
                       <span className="ml-2 text-[10px] uppercase tracking-wide text-primary/70">eigene Einstellung</span>
+                    )}
+                    {emailBlocked && (
+                      <span className="ml-2 text-[10px] uppercase tracking-wide text-muted-foreground">E-Mail global aus</span>
                     )}
                   </div>
                   <div className="flex justify-center">
@@ -165,7 +172,7 @@ export default function PersonalNotificationSettings() {
                     <Switch
                       checked={emailEff}
                       onCheckedChange={(v) => setOverride(item.type, 'email', v)}
-                      disabled={busy[`${item.type}:email`]}
+                      disabled={emailBlocked || busy[`${item.type}:email`]}
                     />
                   </div>
                   <div className="flex justify-center">
