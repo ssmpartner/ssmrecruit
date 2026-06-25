@@ -50,9 +50,9 @@ export default function ContractPermissionsTab() {
     setRows(rs => rs.map(r => r.user_id === userId ? { ...r, perms: { ...r.perms, [key]: value } } : r));
     const existing = (await supabase.from('contract_permissions').select('id').eq('user_id', userId).maybeSingle()).data;
     if (existing) {
-      await supabase.from('contract_permissions').update({ [key]: value }).eq('user_id', userId);
+      await (supabase.from('contract_permissions') as any).update({ [key]: value }).eq('user_id', userId);
     } else {
-      await supabase.from('contract_permissions').insert({ user_id: userId, [key]: value });
+      await (supabase.from('contract_permissions') as any).insert({ user_id: userId, [key]: value });
     }
     toast.success('Aktualisiert');
   }
