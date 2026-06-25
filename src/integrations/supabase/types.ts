@@ -1679,6 +1679,45 @@ export type Database = {
           },
         ]
       }
+      contract_audit_log: {
+        Row: {
+          action: string
+          changed_by: string | null
+          changed_by_name: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          field: string | null
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          field?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          field?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+        }
+        Relationships: []
+      }
       contract_categories: {
         Row: {
           code: string
@@ -1999,9 +2038,14 @@ export type Database = {
           can_edit: boolean
           can_finalize: boolean
           can_generate: boolean
+          can_manage_attachments: boolean
           can_manage_letterhead: boolean
+          can_manage_placeholders: boolean
+          can_manage_sets: boolean
           can_manage_templates: boolean
+          can_send: boolean
           can_view: boolean
+          can_view_audit_log: boolean
           created_at: string
           id: string
           updated_at: string
@@ -2012,9 +2056,14 @@ export type Database = {
           can_edit?: boolean
           can_finalize?: boolean
           can_generate?: boolean
+          can_manage_attachments?: boolean
           can_manage_letterhead?: boolean
+          can_manage_placeholders?: boolean
+          can_manage_sets?: boolean
           can_manage_templates?: boolean
+          can_send?: boolean
           can_view?: boolean
+          can_view_audit_log?: boolean
           created_at?: string
           id?: string
           updated_at?: string
@@ -2025,9 +2074,14 @@ export type Database = {
           can_edit?: boolean
           can_finalize?: boolean
           can_generate?: boolean
+          can_manage_attachments?: boolean
           can_manage_letterhead?: boolean
+          can_manage_placeholders?: boolean
+          can_manage_sets?: boolean
           can_manage_templates?: boolean
+          can_send?: boolean
           can_view?: boolean
+          can_view_audit_log?: boolean
           created_at?: string
           id?: string
           updated_at?: string
@@ -2127,6 +2181,44 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: []
+      }
+      contract_set_versions: {
+        Row: {
+          change_note: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          set_id: string
+          snapshot: Json
+          version: number
+        }
+        Insert: {
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          set_id: string
+          snapshot: Json
+          version: number
+        }
+        Update: {
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          set_id?: string
+          snapshot?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_set_versions_set_id_fkey"
+            columns: ["set_id"]
+            isOneToOne: false
+            referencedRelation: "contract_sets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contract_sets: {
         Row: {
@@ -2239,6 +2331,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      contract_template_attachment_versions: {
+        Row: {
+          attachment_id: string
+          change_note: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          snapshot: Json
+          storage_path: string | null
+          version: number
+        }
+        Insert: {
+          attachment_id: string
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          snapshot: Json
+          storage_path?: string | null
+          version: number
+        }
+        Update: {
+          attachment_id?: string
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          snapshot?: Json
+          storage_path?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_template_attachment_versions_attachment_id_fkey"
+            columns: ["attachment_id"]
+            isOneToOne: false
+            referencedRelation: "contract_template_attachments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contract_template_attachments: {
         Row: {
@@ -4361,6 +4494,10 @@ export type Database = {
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_contract_permission: {
+        Args: { _perm: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {

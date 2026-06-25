@@ -2,20 +2,25 @@ import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileSignature, FileText, Image, Library, PackageOpen, ScrollText } from 'lucide-react';
+import { FileSignature, FileText, History, Image, Library, PackageOpen, ScrollText } from 'lucide-react';
 import ContractsOverviewTab from '@/components/contracts/ContractsOverviewTab';
 import ContractTemplatesTab from '@/components/contracts/ContractTemplatesTab';
 import ContractLetterheadTab from '@/components/contracts/ContractLetterheadTab';
 import ContractLibraryTab from '@/components/contracts/ContractLibraryTab';
 import ContractSetsTab from '@/components/contracts/ContractSetsTab';
 import ContractRulesTab from '@/components/contracts/ContractRulesTab';
+import ContractAuditLogTab from '@/components/contracts/ContractAuditLogTab';
+import { useContractPermissions } from '@/hooks/useContractPermissions';
 
 export default function Contracts() {
-  const { isSuperadmin, loading } = useAuth();
+  const { loading } = useAuth();
+  const { has, loading: permLoading } = useContractPermissions();
   const [tab, setTab] = useState('overview');
 
-  if (loading) return null;
-  if (!isSuperadmin) return <Navigate to="/" replace />;
+  if (loading || permLoading) return null;
+  if (!has('can_view')) return <Navigate to="/" replace />;
+
+  const showAudit = has('can_view_audit_log');
 
   return (
     <div className="space-y-6">
@@ -30,7 +35,7 @@ export default function Contracts() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab} className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="overview" className="gap-1.5">
             <FileSignature className="h-3.5 w-3.5" /> Übersicht
           </TabsTrigger>
@@ -49,6 +54,11 @@ export default function Contracts() {
           <TabsTrigger value="letterhead" className="gap-1.5">
             <Image className="h-3.5 w-3.5" /> Briefpapier
           </TabsTrigger>
+          {showAudit && (
+            <TabsTrigger value="audit" className="gap-1.5">
+              <History className="h-3.5 w-3.5" /> Audit-Log
+            </TabsTrigger>
+          )}
         </TabsList>
         <TabsContent value="overview"><ContractsOverviewTab /></TabsContent>
         <TabsContent value="library"><ContractLibraryTab /></TabsContent>
@@ -56,6 +66,7 @@ export default function Contracts() {
         <TabsContent value="rules"><ContractRulesTab /></TabsContent>
         <TabsContent value="templates"><ContractTemplatesTab /></TabsContent>
         <TabsContent value="letterhead"><ContractLetterheadTab /></TabsContent>
+        {showAudit && <TabsContent value="audit"><ContractAuditLogTab /></TabsContent>}
       </Tabs>
     </div>
   );

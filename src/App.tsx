@@ -60,14 +60,14 @@ function FullScreenLoader() {
 const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
   controlling: ['/', '/leads', '/calendar', '/analytics', '/settings', '/help', '/feedback'],
   geschaeftsleitung: ['/', '/leads', '/calendar', '/analytics', '/settings', '/help', '/feedback'],
-  hr: ['/', '/leads', '/calendar', '/analytics', '/settings', '/help', '/feedback'],
+  hr: ['/', '/leads', '/calendar', '/analytics', '/settings', '/help', '/feedback', '/contracts'],
 };
 
 // Routes blocked for backoffice role (agency-scoped users)
 const BACKOFFICE_BLOCKED_PREFIXES = ['/agencies', '/employees', '/processes', '/documentation', '/api-docs'];
 
 // Routes restricted to superadmin only
-const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice', '/contracts'];
+const SUPERADMIN_ONLY_PREFIXES = ['/ai-voice'];
 
 const SSM_PORTAL_URL = 'https://ssmpartner.ch/portal';
 
