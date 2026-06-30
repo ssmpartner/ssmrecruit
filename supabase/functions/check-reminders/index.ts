@@ -252,7 +252,7 @@ serve(async (req) => {
 
         await supabase
           .from('leads')
-          .update({ last_approval_reminder_at: now.toISOString() })
+          .update({ last_approval_reminder_at: now.toISOString(), approval_reminder_count: (lead.approval_reminder_count ?? 0) + 1 })
           .eq('id', lead.id);
 
         results.approvalReminders++;
