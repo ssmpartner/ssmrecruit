@@ -3725,6 +3725,7 @@ export type Database = {
           alt_email: string
           alt_phone: string
           approval_history: Json
+          approval_reminder_count: number
           approval_stage: string
           approval_status: string
           approved_by_role: string
@@ -3764,6 +3765,7 @@ export type Database = {
           alt_email?: string
           alt_phone?: string
           approval_history?: Json
+          approval_reminder_count?: number
           approval_stage?: string
           approval_status?: string
           approved_by_role?: string
@@ -3803,6 +3805,7 @@ export type Database = {
           alt_email?: string
           alt_phone?: string
           approval_history?: Json
+          approval_reminder_count?: number
           approval_stage?: string
           approval_status?: string
           approved_by_role?: string

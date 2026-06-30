@@ -22,11 +22,13 @@ serve(async (req) => {
 
     // === Hängende Freigaben > 24h ===
     const approvalCutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+    const MAX_REMINDERS = 5;
     const { data: stuckLeads } = await supabase
       .from('leads')
-      .select('id, name, status, updated_at, last_approval_reminder_at')
+      .select('id, name, status, updated_at, last_approval_reminder_at, assigned_approver_user_id, assigned_approver_role, approval_reminder_count')
       .in('status', ['ready_for_controlling', 'controlling_approved', 'management_review', 'hr_processing', 'hr_pending'])
-      .lt('updated_at', approvalCutoff);
+      .lt('updated_at', approvalCutoff)
+      .lt('approval_reminder_count', MAX_REMINDERS);
 
     if (stuckLeads && stuckLeads.length > 0) {
       for (const lead of stuckLeads) {
@@ -175,9 +177,15 @@ serve(async (req) => {
             );
           }
         } else if (lead.status === 'hr_processing' || lead.status === 'hr_pending') {
-          // HR-Stufe: NUR HR-User (nicht GL/Controlling) erinnern.
-          const { data: hrUsers } = await supabase.rpc('get_role_users', { _role: 'hr' });
-          const hrUserIds = ((hrUsers as any[]) || []).map((u: any) => u.user_id);
+          // HR-Stufe: First come, first serve – falls bereits ein HR-User zuständig ist,
+          // erinnern wir NUR diese Person. Sonst geht's an den HR-Pool.
+          let hrUserIds: string[] = [];
+          if (lead.assigned_approver_user_id && (lead.assigned_approver_role === 'hr' || !lead.assigned_approver_role)) {
+            hrUserIds = [lead.assigned_approver_user_id];
+          } else {
+            const { data: hrUsers } = await supabase.rpc('get_role_users', { _role: 'hr' });
+            hrUserIds = ((hrUsers as any[]) || []).map((u: any) => u.user_id);
+          }
           if (hrUserIds.length === 0) continue;
 
           const { data: hrEmps } = await supabase
@@ -244,7 +252,7 @@ serve(async (req) => {
 
         await supabase
           .from('leads')
-          .update({ last_approval_reminder_at: now.toISOString() })
+          .update({ last_approval_reminder_at: now.toISOString(), approval_reminder_count: (lead.approval_reminder_count ?? 0) + 1 })
           .eq('id', lead.id);
 
         results.approvalReminders++;
