@@ -177,9 +177,15 @@ serve(async (req) => {
             );
           }
         } else if (lead.status === 'hr_processing' || lead.status === 'hr_pending') {
-          // HR-Stufe: NUR HR-User (nicht GL/Controlling) erinnern.
-          const { data: hrUsers } = await supabase.rpc('get_role_users', { _role: 'hr' });
-          const hrUserIds = ((hrUsers as any[]) || []).map((u: any) => u.user_id);
+          // HR-Stufe: First come, first serve – falls bereits ein HR-User zuständig ist,
+          // erinnern wir NUR diese Person. Sonst geht's an den HR-Pool.
+          let hrUserIds: string[] = [];
+          if (lead.assigned_approver_user_id && (lead.assigned_approver_role === 'hr' || !lead.assigned_approver_role)) {
+            hrUserIds = [lead.assigned_approver_user_id];
+          } else {
+            const { data: hrUsers } = await supabase.rpc('get_role_users', { _role: 'hr' });
+            hrUserIds = ((hrUsers as any[]) || []).map((u: any) => u.user_id);
+          }
           if (hrUserIds.length === 0) continue;
 
           const { data: hrEmps } = await supabase
