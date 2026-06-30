@@ -22,11 +22,13 @@ serve(async (req) => {
 
     // === Hängende Freigaben > 24h ===
     const approvalCutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+    const MAX_REMINDERS = 5;
     const { data: stuckLeads } = await supabase
       .from('leads')
-      .select('id, name, status, updated_at, last_approval_reminder_at')
+      .select('id, name, status, updated_at, last_approval_reminder_at, assigned_approver_user_id, assigned_approver_role, approval_reminder_count')
       .in('status', ['ready_for_controlling', 'controlling_approved', 'management_review', 'hr_processing', 'hr_pending'])
-      .lt('updated_at', approvalCutoff);
+      .lt('updated_at', approvalCutoff)
+      .lt('approval_reminder_count', MAX_REMINDERS);
 
     if (stuckLeads && stuckLeads.length > 0) {
       for (const lead of stuckLeads) {
