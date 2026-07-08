@@ -28,7 +28,9 @@ serve(async (req) => {
       .select('id, name, status, updated_at, last_approval_reminder_at, assigned_approver_user_id, assigned_approver_role, approval_reminder_count')
       .in('status', ['ready_for_controlling', 'controlling_approved', 'management_review', 'hr_processing', 'hr_pending'])
       .lt('updated_at', approvalCutoff)
-      .lt('approval_reminder_count', MAX_REMINDERS);
+      .lt('approval_reminder_count', MAX_REMINDERS)
+      .not('id', 'like', 'sample-%')
+      .not('id', 'like', 'test-%');
 
     if (stuckLeads && stuckLeads.length > 0) {
       for (const lead of stuckLeads) {
@@ -112,9 +114,15 @@ serve(async (req) => {
             );
           }
         } else if (lead.status === 'ready_for_controlling') {
-          // Controlling-Stufe: NUR Controlling-User (nicht GL/HR) erinnern.
-          const { data: ctrlUsers } = await supabase.rpc('get_role_users', { _role: 'controlling' });
-          const ctrlUserIds = ((ctrlUsers as any[]) || []).map((u: any) => u.user_id);
+          // Controlling-Stufe: First come, first serve – falls bereits ein Controlling-User
+          // zuständig ist, erinnern wir NUR diese Person. Sonst geht's an den Controlling-Pool.
+          let ctrlUserIds: string[] = [];
+          if (lead.assigned_approver_user_id && (lead.assigned_approver_role === 'controlling' || !lead.assigned_approver_role)) {
+            ctrlUserIds = [lead.assigned_approver_user_id];
+          } else {
+            const { data: ctrlUsers } = await supabase.rpc('get_role_users', { _role: 'controlling' });
+            ctrlUserIds = ((ctrlUsers as any[]) || []).map((u: any) => u.user_id);
+          }
           if (ctrlUserIds.length === 0) continue;
 
           const { data: ctrlEmps } = await supabase
