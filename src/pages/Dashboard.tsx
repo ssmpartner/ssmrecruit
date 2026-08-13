@@ -148,7 +148,7 @@ export default function Dashboard() {
     return [];
   }, [activeLeads, isControlling, isGeschaeftsleitung, isHR]);
 
-  const roleTitle = isControlling ? 'Zu prüfen' : isGeschaeftsleitung ? 'Freigaben offen' : 'Onboarding';
+  const roleTitle = isControlling ? 'Zu prüfen' : isGeschaeftsleitung ? 'Freigaben offen' : 'Onboarding & Eingestellt';
 
   // Controlling gets a focused, minimal dashboard
   if (isControlling) {
