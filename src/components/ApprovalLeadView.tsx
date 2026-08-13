@@ -124,7 +124,7 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
     if (isHR) {
       return leads.filter(l =>
         l.lifecycle === 'active'
-        && ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing','hr_pending'].includes(l.status)
+        && ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing','hr_pending','hired'].includes(l.status)
       );
     }
     const sf = 'ready_for_controlling';
