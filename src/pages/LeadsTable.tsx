@@ -86,9 +86,8 @@ export default function LeadsTable() {
     } else if (isGeschaeftsleitung) {
       filtered = filtered.filter(l => ['ready_for_controlling','controlling_approved','management_review'].includes(l.status));
     } else if (isHR) {
-      filtered = filtered.filter(l => HR_VISIBLE_STATUSES.includes(l.status));
+      filtered = filtered.filter(l => ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing'].includes(l.status));
     }
-
 
     return filtered;
   }, [leads, activeTab, isControlling, isGeschaeftsleitung, isHR]);
@@ -176,7 +175,7 @@ export default function LeadsTable() {
     let items = leads.filter(l => l.lifecycle === 'active');
     if (isControlling) items = items.filter(l => l.status === 'ready_for_controlling');
     else if (isGeschaeftsleitung) items = items.filter(l => ['ready_for_controlling','controlling_approved','management_review'].includes(l.status));
-    else if (isHR) items = items.filter(l => HR_VISIBLE_STATUSES.includes(l.status));
+    else if (isHR) items = items.filter(l => ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing'].includes(l.status));
     return items.length;
   }, [leads, isControlling, isGeschaeftsleitung, isHR]);
 
@@ -187,7 +186,7 @@ export default function LeadsTable() {
   const demoCount = leads.filter(l => l.isDemo).length;
 
   const tabs: { key: TabKey; label: string; icon: React.ReactNode; count: number; superadminOnly?: boolean; hideForReview?: boolean }[] = [
-    { key: 'active', label: isControlling ? 'Zu prüfen' : isGeschaeftsleitung ? 'Freigaben offen' : isHR ? 'Onboarding & Eingestellt' : 'Aktiv', icon: null, count: activeCount },
+    { key: 'active', label: isControlling ? 'Zu prüfen' : isGeschaeftsleitung ? 'Freigaben offen' : isHR ? 'Onboarding' : 'Aktiv', icon: null, count: activeCount },
     { key: 'archived', label: 'Archiviert', icon: <Archive className="h-3.5 w-3.5" />, count: archivedCount, superadminOnly: true, hideForReview: true },
     { key: 'deleted', label: 'Gelöscht', icon: <Trash2 className="h-3.5 w-3.5" />, count: deletedCount, superadminOnly: true, hideForReview: true },
     { key: 'duplicates', label: 'Doppelte Leads', icon: <Copy className="h-3.5 w-3.5" />, count: 0, hideForReview: true },
