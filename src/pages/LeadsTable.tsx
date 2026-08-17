@@ -23,10 +23,6 @@ import { cn } from '@/lib/utils';
 type TabKey = 'active' | 'archived' | 'deleted' | 'duplicates' | 'demo';
 type PageSize = 10 | 20 | 30 | 50 | 100 | 'all';
 
-// HR sieht den gesamten Onboarding-Bereich inkl. bereits eingestellter Kandidaten
-const HR_VISIBLE_STATUSES: string[] = ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing','hr_pending','hired'];
-
-
 const PAGE_SIZES: { value: PageSize; label: string }[] = [
   { value: 10, label: '10' },
   { value: 20, label: '20' },
