@@ -144,11 +144,11 @@ export default function Dashboard() {
   const roleLeads = useMemo(() => {
     if (isControlling) return activeLeads.filter(l => l.status === 'ready_for_controlling');
     if (isGeschaeftsleitung) return activeLeads.filter(l => ['ready_for_controlling','controlling_approved','management_review'].includes(l.status));
-    if (isHR) return activeLeads.filter(l => ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing','hr_pending','hired'].includes(l.status));
+    if (isHR) return activeLeads.filter(l => ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing'].includes(l.status));
     return [];
   }, [activeLeads, isControlling, isGeschaeftsleitung, isHR]);
 
-  const roleTitle = isControlling ? 'Zu prüfen' : isGeschaeftsleitung ? 'Freigaben offen' : 'Onboarding & Eingestellt';
+  const roleTitle = isControlling ? 'Zu prüfen' : isGeschaeftsleitung ? 'Freigaben offen' : 'Onboarding';
 
   // Controlling gets a focused, minimal dashboard
   if (isControlling) {
