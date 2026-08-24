@@ -32,6 +32,7 @@ import LeadHiringReadiness from './LeadHiringReadiness';
 import ManagementApprovalPanel from './ManagementApprovalPanel';
 import PendingApprovalsPanel from './PendingApprovalsPanel';
 import AddressAutocomplete, { type AddressSuggestion } from './AddressAutocomplete';
+import { assignableEmployees } from '@/lib/assignable-employees';
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
@@ -645,7 +646,7 @@ export default function LeadDetailSheet() {
                               <div>
                                 <label className="text-sm text-muted-foreground">Mitarbeiter</label>
                                 <select value={selectedLead.employeeId} onChange={e => changeEmployee(e.target.value)} className={inputCls + ' mt-0.5'}>
-                                  {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                                  {assignableEmployees(employees).map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                                 </select>
                               </div>
                             </div>

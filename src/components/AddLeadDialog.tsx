@@ -10,6 +10,7 @@ import { useLeads } from '@/context/useLeads';
 import { searchPlz, lookupPlz, swissLocations } from '@/lib/swiss-plz';
 import { type LeadStatus } from '@/lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
+import { assignableEmployees } from '@/lib/assignable-employees';
 
 const SWISS_PHONE_REGEX = /^\+41\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
@@ -402,7 +403,7 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
                     disabled={!isSuperadmin}
                   >
                     <option value="">Wählen…</option>
-                    {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                    {assignableEmployees(employees).map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                   </select>
                   {errors.employeeId && <p className="text-xs text-destructive mt-0.5">{errors.employeeId}</p>}
                   {!isSuperadmin && (
