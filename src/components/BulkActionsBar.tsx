@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { assignableEmployees } from '@/lib/assignable-employees';
 
 interface BulkActionsBarProps {
   selectedIds: string[];
@@ -95,7 +96,7 @@ export default function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarP
                 <SelectValue placeholder="Mitarbeiter wählen..." />
               </SelectTrigger>
               <SelectContent>
-                {employees.map(e => (
+                {assignableEmployees(employees).map(e => (
                   <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
                 ))}
               </SelectContent>
