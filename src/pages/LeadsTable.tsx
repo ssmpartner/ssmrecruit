@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadLifecycle, statusConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
@@ -19,6 +19,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import { detectDuplicates } from '@/lib/duplicate-detection';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type TabKey = 'active' | 'archived' | 'deleted' | 'duplicates' | 'demo';
 type PageSize = 10 | 20 | 30 | 50 | 100 | 'all';
@@ -131,6 +133,35 @@ export default function LeadsTable() {
   useMemo(() => {
     setCurrentPage(1);
   }, [statusFilter, sourceFilter, agencyFilter, employeeFilter, cantonFilter, search, dateFrom, dateTo, activeTab, pageSize]);
+
+  // Duplikat-Erkennung (nur für Superadmin sichtbar)
+  const duplicateInfo = useMemo(() => {
+    if (!isSuperadmin) return new Map<string, { confidence: number; reason: string; partners: string[] }>();
+    const scanLeads = leads
+      .filter(l => l.lifecycle === 'active')
+      .map(l => ({
+        id: l.id, name: l.name, email: l.email ?? '', phone: l.phone ?? '',
+        plz: l.plz ?? '', city: l.city ?? '', position: l.position ?? '',
+      }));
+    const map = new Map<string, { confidence: number; reason: string; partners: string[] }>();
+    const nameById = new Map(leads.map(l => [l.id, l.name]));
+    for (const pair of detectDuplicates(scanLeads)) {
+      for (const [id, otherId] of [[pair.leadId1, pair.leadId2], [pair.leadId2, pair.leadId1]] as const) {
+        const existing = map.get(id);
+        const partnerName = nameById.get(otherId) || '';
+        if (existing) {
+          existing.partners.push(partnerName);
+          if (pair.confidence > existing.confidence) {
+            existing.confidence = pair.confidence;
+            existing.reason = pair.reason;
+          }
+        } else {
+          map.set(id, { confidence: pair.confidence, reason: pair.reason, partners: [partnerName] });
+        }
+      }
+    }
+    return map;
+  }, [leads, isSuperadmin]);
 
   const hasFilters = statusFilter || sourceFilter || agencyFilter || employeeFilter || cantonFilter || search || dateFrom || dateTo;
 
@@ -410,6 +441,29 @@ export default function LeadsTable() {
                               Demo
                             </span>
                           )}
+                          {(() => {
+                            const dup = duplicateInfo.get(lead.id);
+                            if (!dup) return null;
+                            return (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span
+                                      onClick={e => e.stopPropagation()}
+                                      className="inline-flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-destructive"
+                                    >
+                                      <GitMerge className="h-3 w-3" />
+                                      Duplikat {dup.confidence}%
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p className="font-semibold">{dup.reason}</p>
+                                    <p className="text-xs mt-1">Ähnlich zu: {dup.partners.filter(Boolean).join(', ') || '—'}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            );
+                          })()}
                         </div>
                       </td>
                       {!isControlling && <td className="px-5 py-3 text-muted-foreground text-xs">{lead.phone}</td>}
