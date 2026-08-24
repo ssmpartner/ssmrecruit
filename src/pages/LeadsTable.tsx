@@ -441,6 +441,29 @@ export default function LeadsTable() {
                               Demo
                             </span>
                           )}
+                          {(() => {
+                            const dup = duplicateInfo.get(lead.id);
+                            if (!dup) return null;
+                            return (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span
+                                      onClick={e => e.stopPropagation()}
+                                      className="inline-flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-destructive"
+                                    >
+                                      <GitMerge className="h-3 w-3" />
+                                      Duplikat {dup.confidence}%
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p className="font-semibold">{dup.reason}</p>
+                                    <p className="text-xs mt-1">Ähnlich zu: {dup.partners.filter(Boolean).join(', ') || '—'}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            );
+                          })()}
                         </div>
                       </td>
                       {!isControlling && <td className="px-5 py-3 text-muted-foreground text-xs">{lead.phone}</td>}
