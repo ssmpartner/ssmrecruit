@@ -132,6 +132,35 @@ export default function LeadsTable() {
     setCurrentPage(1);
   }, [statusFilter, sourceFilter, agencyFilter, employeeFilter, cantonFilter, search, dateFrom, dateTo, activeTab, pageSize]);
 
+  // Duplikat-Erkennung (nur für Superadmin sichtbar)
+  const duplicateInfo = useMemo(() => {
+    if (!isSuperadmin) return new Map<string, { confidence: number; reason: string; partners: string[] }>();
+    const scanLeads = leads
+      .filter(l => l.lifecycle === 'active')
+      .map(l => ({
+        id: l.id, name: l.name, email: l.email ?? '', phone: l.phone ?? '',
+        plz: l.plz ?? '', city: l.city ?? '', position: l.position ?? '',
+      }));
+    const map = new Map<string, { confidence: number; reason: string; partners: string[] }>();
+    const nameById = new Map(leads.map(l => [l.id, l.name]));
+    for (const pair of detectDuplicates(scanLeads)) {
+      for (const [id, otherId] of [[pair.leadId1, pair.leadId2], [pair.leadId2, pair.leadId1]] as const) {
+        const existing = map.get(id);
+        const partnerName = nameById.get(otherId) || '';
+        if (existing) {
+          existing.partners.push(partnerName);
+          if (pair.confidence > existing.confidence) {
+            existing.confidence = pair.confidence;
+            existing.reason = pair.reason;
+          }
+        } else {
+          map.set(id, { confidence: pair.confidence, reason: pair.reason, partners: [partnerName] });
+        }
+      }
+    }
+    return map;
+  }, [leads, isSuperadmin]);
+
   const hasFilters = statusFilter || sourceFilter || agencyFilter || employeeFilter || cantonFilter || search || dateFrom || dateTo;
 
   const clearFilters = () => {
