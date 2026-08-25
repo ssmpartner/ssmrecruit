@@ -229,9 +229,12 @@ Deno.serve(async (req) => {
       .from('contracts').select('*').eq('id', contract_id).single();
     if (cErr || !contract) throw cErr || new Error('Contract not found');
 
-    const [{ data: lead }, { data: tmpl }, { data: set }, { data: atts }] = await Promise.all([
+    const [{ data: lead }, { data: employee }, { data: tmpl }, { data: set }, { data: atts }] = await Promise.all([
       contract.candidate_lead_id
         ? supabase.from('leads').select('*').eq('id', contract.candidate_lead_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      contract.employee_id
+        ? supabase.from('employees').select('*').eq('id', contract.employee_id).maybeSingle()
         : Promise.resolve({ data: null }),
       contract.template_id
         ? supabase.from('contract_templates').select('*').eq('id', contract.template_id).maybeSingle()
@@ -241,6 +244,7 @@ Deno.serve(async (req) => {
         : Promise.resolve({ data: null }),
       supabase.from('contract_attachments').select('*').eq('contract_id', contract_id).order('sort_order', { ascending: true }),
     ]);
+    const person = lead ?? employee ?? null;
 
     // Resolve letterhead
     let lhRow: AnyRec | null = null;
@@ -273,7 +277,26 @@ Deno.serve(async (req) => {
       (contract.letterhead_mode as any) ?? (tmpl?.letterhead_mode as any) ?? 'auto';
     const hasDocxTemplate = Boolean(tmpl?.docx_storage_path);
 
-    const flat = flattenContext(contract, lead);
+    const flat = flattenContext(contract, person);
+
+    // Vertragsart-Bezeichnung und Dateibasis
+    let kindLabel = contract.kind_code ?? 'Vertrag';
+    if (contract.kind_code) {
+      const { data: kindRow } = await supabase.from('contract_kinds')
+        .select('label_de').eq('code', contract.kind_code).maybeSingle();
+      if (kindRow?.label_de) kindLabel = kindRow.label_de;
+    }
+    const ver = contract.current_version ?? 1;
+    const parts = personNameParts(person);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const namePart = fileSafe([parts.last, parts.first].filter(Boolean).join('-') || 'Unbekannt');
+    const fileBase = `${dateStr}_${namePart}_${fileSafe(kindLabel)}_v${ver}`;
+    const footerText = [
+      contract.contract_number ?? '',
+      `Version ${ver}`,
+      parts.full || '–',
+      `Erstellt ${new Date().toLocaleDateString('de-CH')}`,
+    ].filter(Boolean).join('  ·  ');
 
     // --- 1) Editable DOCX (only if template provides a DOCX source) -----
     let docxPath: string | null = contract.docx_path ?? null;
