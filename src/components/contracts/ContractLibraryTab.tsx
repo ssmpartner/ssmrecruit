@@ -11,10 +11,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Download, Edit, Eye, History, Plus, Trash2, Upload, Library, Info } from 'lucide-react';
+import { Download, Edit, Eye, FileSignature, History, Loader2, Plus, Trash2, Upload, Library, Info, Braces } from 'lucide-react';
 import { useContractLookups, CONTRACT_LANGUAGES, ContractLang } from '@/hooks/useContractLookups';
 import { useAuth } from '@/context/AuthContext';
 import LibraryPreviewDialog from './LibraryPreviewDialog';
+
+interface ConvertedTemplateInfo {
+  templateId: string;
+  title: string;
+  updated: boolean;
+  version: number;
+}
 
 type DocStatus = 'draft' | 'active' | 'archived';
 type DocType = 'contract' | 'attachment' | 'reference';
