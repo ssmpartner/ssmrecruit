@@ -9,6 +9,7 @@ import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { assignableEmployees } from '@/lib/assignable-employees';
 
 const mainFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired'];
 
@@ -359,7 +360,7 @@ function EscalationRuleEditor({
                               <select className={inputCls} value={action.targetEmployeeId || ''}
                                 onChange={e => updateAction(rule.id, idx, { targetEmployeeId: e.target.value })}>
                                 <option value="">Mitarbeiter wählen...</option>
-                                {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
+                                {assignableEmployees(employees).map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
                               </select>
                             )}
                             {action.type === 'status_change' && (
