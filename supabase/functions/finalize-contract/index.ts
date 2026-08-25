@@ -26,22 +26,54 @@ const DEFAULT_COMPANY = {
   name: 'SSM Partner AG', address: 'Schweiz', zip: '', city: '', uid: '', phone: '', email: '',
 };
 
-function flattenContext(contract: AnyRec, lead: AnyRec | null): Record<string, string> {
+function fileSafe(s: string): string {
+  return String(s || '')
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+    .replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue')
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-zA-Z0-9-_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'Vertrag';
+}
+
+function personNameParts(person: AnyRec | null): { first: string; last: string; full: string } {
+  const name = String(person?.name ?? '').trim();
+  const first = name.split(' ')[0] ?? '';
+  const last = name.split(' ').slice(1).join(' ') ?? '';
+  return { first, last, full: name };
+}
+
+async function stampFooter(pdfBytes: Uint8Array, footerText: string): Promise<Uint8Array> {
+  const doc = await PDFDocument.load(pdfBytes);
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  for (const page of doc.getPages()) {
+    const { width } = page.getSize();
+    const w = font.widthOfTextAtSize(footerText, 7.5);
+    page.drawText(footerText, {
+      x: Math.max(30, (width - w) / 2), y: 22, size: 7.5, font,
+      color: rgb(0.45, 0.45, 0.45),
+    });
+  }
+  return await doc.save();
+}
+
+function flattenContext(contract: AnyRec, person: AnyRec | null): Record<string, string> {
   const flat: Record<string, string> = {};
   const push = (prefix: string, obj?: AnyRec) => {
     if (!obj) return;
     for (const [k, v] of Object.entries(obj)) flat[`${prefix}.${k}`] = v == null ? '' : String(v);
   };
+  const parts = personNameParts(person);
   push('candidate', {
-    first_name: lead?.name?.split(' ')?.[0] ?? '',
-    last_name: lead?.name?.split(' ')?.slice(1).join(' ') ?? '',
-    full_name: lead?.name ?? '',
-    birth_date: lead?.birth_date ?? '',
-    address: lead?.address ?? '',
-    zip: lead?.zip ?? '',
-    city: lead?.city ?? '',
-    email: lead?.email ?? lead?.alt_email ?? '',
-    phone: lead?.phone ?? lead?.alt_phone ?? '',
+    first_name: parts.first,
+    last_name: parts.last,
+    full_name: parts.full,
+    birth_date: person?.birth_date ?? '',
+    address: person?.address ?? '',
+    zip: person?.zip ?? '',
+    city: person?.city ?? '',
+    email: person?.email ?? person?.alt_email ?? '',
+    phone: person?.phone ?? person?.alt_phone ?? '',
   });
   push('employment', {
     start_date: contract.start_date ?? '',
@@ -197,9 +229,12 @@ Deno.serve(async (req) => {
       .from('contracts').select('*').eq('id', contract_id).single();
     if (cErr || !contract) throw cErr || new Error('Contract not found');
 
-    const [{ data: lead }, { data: tmpl }, { data: set }, { data: atts }] = await Promise.all([
+    const [{ data: lead }, { data: employee }, { data: tmpl }, { data: set }, { data: atts }] = await Promise.all([
       contract.candidate_lead_id
         ? supabase.from('leads').select('*').eq('id', contract.candidate_lead_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      contract.employee_id
+        ? supabase.from('employees').select('*').eq('id', contract.employee_id).maybeSingle()
         : Promise.resolve({ data: null }),
       contract.template_id
         ? supabase.from('contract_templates').select('*').eq('id', contract.template_id).maybeSingle()
@@ -209,6 +244,7 @@ Deno.serve(async (req) => {
         : Promise.resolve({ data: null }),
       supabase.from('contract_attachments').select('*').eq('contract_id', contract_id).order('sort_order', { ascending: true }),
     ]);
+    const person = lead ?? employee ?? null;
 
     // Resolve letterhead
     let lhRow: AnyRec | null = null;
@@ -241,7 +277,26 @@ Deno.serve(async (req) => {
       (contract.letterhead_mode as any) ?? (tmpl?.letterhead_mode as any) ?? 'auto';
     const hasDocxTemplate = Boolean(tmpl?.docx_storage_path);
 
-    const flat = flattenContext(contract, lead);
+    const flat = flattenContext(contract, person);
+
+    // Vertragsart-Bezeichnung und Dateibasis
+    let kindLabel = contract.kind_code ?? 'Vertrag';
+    if (contract.kind_code) {
+      const { data: kindRow } = await supabase.from('contract_kinds')
+        .select('label_de').eq('code', contract.kind_code).maybeSingle();
+      if (kindRow?.label_de) kindLabel = kindRow.label_de;
+    }
+    const ver = contract.current_version ?? 1;
+    const parts = personNameParts(person);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const namePart = fileSafe([parts.last, parts.first].filter(Boolean).join('-') || 'Unbekannt');
+    const fileBase = `${dateStr}_${namePart}_${fileSafe(kindLabel)}_v${ver}`;
+    const footerText = [
+      contract.contract_number ?? '',
+      `Version ${ver}`,
+      parts.full || '–',
+      `Erstellt ${new Date().toLocaleDateString('de-CH')}`,
+    ].filter(Boolean).join('  ·  ');
 
     // --- 1) Editable DOCX (only if template provides a DOCX source) -----
     let docxPath: string | null = contract.docx_path ?? null;
@@ -250,7 +305,7 @@ Deno.serve(async (req) => {
       if (docxFile) {
         const srcBytes = new Uint8Array(await docxFile.arrayBuffer());
         const newDocx = await generateDocx(srcBytes, flat);
-        docxPath = `contracts/${contract_id}/v${contract.current_version ?? 1}-${Date.now()}.docx`;
+        docxPath = `contracts/${contract_id}/${fileBase}.docx`;
         const { error: upErr } = await supabase.storage.from('contracts').upload(docxPath, newDocx, {
           contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           upsert: true,
@@ -267,8 +322,9 @@ Deno.serve(async (req) => {
       mode === 'word' ? false :
       !hasDocxTemplate;
 
-    const pdfBytes = await renderHtmlPdf(contract.body_html ?? '', flat, letterheadBytes, overlay);
-    const pdfPath = `contracts/${contract_id}/v${contract.current_version ?? 1}-${Date.now()}.pdf`;
+    const pdfBytesRaw = await renderHtmlPdf(contract.body_html ?? '', flat, letterheadBytes, overlay);
+    const pdfBytes = await stampFooter(pdfBytesRaw, footerText);
+    const pdfPath = `contracts/${contract_id}/${fileBase}.pdf`;
     const { error: pdfErr } = await supabase.storage.from('contracts').upload(pdfPath, pdfBytes, {
       contentType: 'application/pdf', upsert: true,
     });
@@ -282,8 +338,9 @@ Deno.serve(async (req) => {
       const { data: f } = await supabase.storage.from('contracts').download(a.storage_path);
       if (f) parts.push(new Uint8Array(await f.arrayBuffer()));
     }
-    const mergedBytes = await mergePdfs(parts);
-    const mergedPath = `contracts/${contract_id}/v${contract.current_version ?? 1}-${Date.now()}-merged.pdf`;
+    const mergedBytesRaw = await mergePdfs(parts);
+    const mergedBytes = await stampFooter(mergedBytesRaw, footerText);
+    const mergedPath = `contracts/${contract_id}/${fileBase}-Gesamt.pdf`;
     const { error: mErr } = await supabase.storage.from('contracts').upload(mergedPath, mergedBytes, {
       contentType: 'application/pdf', upsert: true,
     });

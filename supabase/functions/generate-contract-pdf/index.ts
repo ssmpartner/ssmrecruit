@@ -19,6 +19,34 @@ Deno.serve(async (req) => {
     const { data: contract, error: cErr } = await supabase.from('contracts').select('*').eq('id', contract_id).single();
     if (cErr || !contract) throw cErr || new Error('Contract not found');
 
+    const [{ data: lead }, { data: employee }, { data: kindRow }] = await Promise.all([
+      contract.candidate_lead_id
+        ? supabase.from('leads').select('name').eq('id', contract.candidate_lead_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      contract.employee_id
+        ? supabase.from('employees').select('name').eq('id', contract.employee_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      contract.kind_code
+        ? supabase.from('contract_kinds').select('label_de').eq('code', contract.kind_code).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+    const personName = String(lead?.name ?? employee?.name ?? 'Unbekannt');
+    const nameParts = personName.split(' ');
+    const firstName = nameParts[0] ?? '';
+    const lastName = nameParts.slice(1).join(' ');
+    const fileSafe = (s: string) => String(s || '')
+      .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+      .replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue')
+      .replace(/ß/g, 'ss').replace(/[^a-zA-Z0-9-_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'Vertrag';
+    const ver = contract.current_version ?? 1;
+    const fileBase = `${new Date().toISOString().slice(0, 10)}_${fileSafe([lastName, firstName].filter(Boolean).join('-') || 'Unbekannt')}_${fileSafe(kindRow?.label_de ?? contract.kind_code ?? 'Vertrag')}_v${ver}`;
+    const footerText = [
+      contract.contract_number ?? '',
+      `Version ${ver}`,
+      personName,
+      `Erstellt ${new Date().toLocaleDateString('de-CH')}`,
+    ].filter(Boolean).join('  ·  ');
+
     // HTML zu plaintext (sehr einfach, hält Absätze)
     const text = String(contract.body_html || '')
       .replace(/<br\s*\/?>/gi, '\n')
@@ -104,8 +132,18 @@ Deno.serve(async (req) => {
       y -= lineHeight * 0.5;
     }
 
+    // Fusszeile auf jeder Seite
+    for (const p of basePdf.getPages()) {
+      const w = font.widthOfTextAtSize(footerText, 7.5);
+      const sz = p.getSize();
+      p.drawText(footerText, {
+        x: Math.max(30, (sz.width - w) / 2), y: 22, size: 7.5, font,
+        color: rgb(0.45, 0.45, 0.45),
+      });
+    }
+
     const bytes = await basePdf.save();
-    const path = `contracts/${contract_id}/v${contract.current_version ?? 1}-${Date.now()}.pdf`;
+    const path = `contracts/${contract_id}/${fileBase}.pdf`;
     const { error: upErr } = await supabase.storage.from('contracts').upload(path, bytes, {
       contentType: 'application/pdf', upsert: true,
     });

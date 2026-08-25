@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.assign_contract_number() FROM PUBLIC, anon, authenticated;

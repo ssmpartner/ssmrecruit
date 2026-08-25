@@ -89,6 +89,7 @@ export default function LeadContractsSection({ leadId, leadName, leadStatus }: P
             <li key={r.id} className="flex items-center justify-between rounded border p-2 text-xs">
               <div className="flex items-center gap-2">
                 <Badge variant={r.area === 'sales' ? 'default' : 'secondary'} className="text-[10px]">{AREA_LABELS[r.area as 'sales' | 'office']}</Badge>
+                {r.contract_number && <span className="font-mono text-muted-foreground">{r.contract_number}</span>}
                 <span>{r.position || '–'}</span>
                 <Badge variant="outline" className="text-[10px]">{CONTRACT_STATUS_LABELS[r.status] ?? r.status}</Badge>
               </div>
