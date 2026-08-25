@@ -1798,6 +1798,21 @@ export type Database = {
           },
         ]
       }
+      contract_counters: {
+        Row: {
+          last_no: number
+          year: number
+        }
+        Insert: {
+          last_no?: number
+          year: number
+        }
+        Update: {
+          last_no?: number
+          year?: number
+        }
+        Relationships: []
+      }
       contract_document_versions: {
         Row: {
           change_note: string | null
@@ -2610,10 +2625,12 @@ export type Database = {
           careerplan_level: string | null
           category_code: string | null
           commission_model: string | null
+          contract_number: string | null
           created_at: string
           created_by: string | null
           current_version: number
           docx_path: string | null
+          employee_id: string | null
           finalized_at: string | null
           id: string
           internal_notes: string | null
@@ -2653,10 +2670,12 @@ export type Database = {
           careerplan_level?: string | null
           category_code?: string | null
           commission_model?: string | null
+          contract_number?: string | null
           created_at?: string
           created_by?: string | null
           current_version?: number
           docx_path?: string | null
+          employee_id?: string | null
           finalized_at?: string | null
           id?: string
           internal_notes?: string | null
@@ -2696,10 +2715,12 @@ export type Database = {
           careerplan_level?: string | null
           category_code?: string | null
           commission_model?: string | null
+          contract_number?: string | null
           created_at?: string
           created_by?: string | null
           current_version?: number
           docx_path?: string | null
+          employee_id?: string | null
           finalized_at?: string | null
           id?: string
           internal_notes?: string | null
