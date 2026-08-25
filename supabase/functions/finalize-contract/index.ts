@@ -26,22 +26,54 @@ const DEFAULT_COMPANY = {
   name: 'SSM Partner AG', address: 'Schweiz', zip: '', city: '', uid: '', phone: '', email: '',
 };
 
-function flattenContext(contract: AnyRec, lead: AnyRec | null): Record<string, string> {
+function fileSafe(s: string): string {
+  return String(s || '')
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+    .replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue')
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-zA-Z0-9-_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'Vertrag';
+}
+
+function personNameParts(person: AnyRec | null): { first: string; last: string; full: string } {
+  const name = String(person?.name ?? '').trim();
+  const first = name.split(' ')[0] ?? '';
+  const last = name.split(' ').slice(1).join(' ') ?? '';
+  return { first, last, full: name };
+}
+
+async function stampFooter(pdfBytes: Uint8Array, footerText: string): Promise<Uint8Array> {
+  const doc = await PDFDocument.load(pdfBytes);
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  for (const page of doc.getPages()) {
+    const { width } = page.getSize();
+    const w = font.widthOfTextAtSize(footerText, 7.5);
+    page.drawText(footerText, {
+      x: Math.max(30, (width - w) / 2), y: 22, size: 7.5, font,
+      color: rgb(0.45, 0.45, 0.45),
+    });
+  }
+  return await doc.save();
+}
+
+function flattenContext(contract: AnyRec, person: AnyRec | null): Record<string, string> {
   const flat: Record<string, string> = {};
   const push = (prefix: string, obj?: AnyRec) => {
     if (!obj) return;
     for (const [k, v] of Object.entries(obj)) flat[`${prefix}.${k}`] = v == null ? '' : String(v);
   };
+  const parts = personNameParts(person);
   push('candidate', {
-    first_name: lead?.name?.split(' ')?.[0] ?? '',
-    last_name: lead?.name?.split(' ')?.slice(1).join(' ') ?? '',
-    full_name: lead?.name ?? '',
-    birth_date: lead?.birth_date ?? '',
-    address: lead?.address ?? '',
-    zip: lead?.zip ?? '',
-    city: lead?.city ?? '',
-    email: lead?.email ?? lead?.alt_email ?? '',
-    phone: lead?.phone ?? lead?.alt_phone ?? '',
+    first_name: parts.first,
+    last_name: parts.last,
+    full_name: parts.full,
+    birth_date: person?.birth_date ?? '',
+    address: person?.address ?? '',
+    zip: person?.zip ?? '',
+    city: person?.city ?? '',
+    email: person?.email ?? person?.alt_email ?? '',
+    phone: person?.phone ?? person?.alt_phone ?? '',
   });
   push('employment', {
     start_date: contract.start_date ?? '',
