@@ -442,7 +442,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              Neuer Vertrag{person ? ` – ${personal.first_name} ${personal.last_name}`.trim() && ` – ${personal.first_name} ${personal.last_name}`.trim() : ''}
+              Neuer Vertrag{person && ` – ${`${personal.first_name} ${personal.last_name}`.trim()}`}
             </DialogTitle>
           </DialogHeader>
 
