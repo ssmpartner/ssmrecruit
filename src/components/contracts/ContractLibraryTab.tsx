@@ -544,6 +544,44 @@ export default function ContractLibraryTab({ onOpenTemplateEditor }: { onOpenTem
         />
       )}
 
+      <Dialog open={!!converted} onOpenChange={(o) => !o && setConverted(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileSignature className="h-5 w-5 text-primary" />
+              {converted?.updated ? `Vorlage aktualisiert (v${converted?.version})` : 'Vorlage erstellt'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <p>
+              „{converted?.title}" wurde als bearbeitbare Vertragsvorlage {converted?.updated ? 'aktualisiert' : 'angelegt'}.
+              Das Originaldokument in der Bibliothek bleibt unverändert und ist weiterhin die rechtsverbindliche Quelle.
+            </p>
+            <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-amber-900">
+              <Braces className="h-4 w-4 mt-0.5 shrink-0" />
+              <p className="text-xs">
+                Wichtig: Die Textstellen, an denen im Vertrag Kandidatendaten stehen (Name, Adresse,
+                Eintrittsdatum, Lohn usw.), müssen noch durch Platzhalter ersetzt werden –
+                sonst werden die Daten beim Generieren nicht automatisch eingesetzt.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setConverted(null)}>Später</Button>
+            <Button
+              className="gap-1.5"
+              onClick={() => {
+                const id = converted?.templateId;
+                setConverted(null);
+                if (id && onOpenTemplateEditor) onOpenTemplateEditor(id);
+              }}
+            >
+              <Edit className="h-4 w-4" /> Jetzt Platzhalter setzen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
