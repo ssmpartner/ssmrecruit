@@ -11,9 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Download, Edit, History, Plus, Trash2, Upload, Library } from 'lucide-react';
+import { Download, Edit, Eye, History, Plus, Trash2, Upload, Library, Info } from 'lucide-react';
 import { useContractLookups, CONTRACT_LANGUAGES, ContractLang } from '@/hooks/useContractLookups';
 import { useAuth } from '@/context/AuthContext';
+import LibraryPreviewDialog from './LibraryPreviewDialog';
 
 type DocStatus = 'draft' | 'active' | 'archived';
 type DocType = 'contract' | 'attachment' | 'reference';
@@ -80,6 +81,7 @@ export default function ContractLibraryTab() {
   const [templateFile, setTemplateFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<DocRow | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -274,6 +276,20 @@ export default function ContractLibraryTab() {
     a.download = filename || 'dokument';
     a.target = '_blank';
     a.click();
+  };
+
+  const changeStatus = async (r: DocRow, status: DocStatus) => {
+    if (status === r.status) return;
+    setRows(prev => prev.map(x => x.id === r.id ? { ...x, status } : x));
+    const { error } = await supabase.from('contract_documents')
+      .update({ status, updated_by: user?.id || null })
+      .eq('id', r.id);
+    if (error) {
+      toast.error('Status konnte nicht geändert werden: ' + error.message);
+      setRows(prev => prev.map(x => x.id === r.id ? { ...x, status: r.status } : x));
+    } else {
+      toast.success(`Status auf „${STATUS_LABELS[status]}" gesetzt`);
+    }
   };
 
   const labelOf = (list: { code: string; label_de: string }[], code: string | null) =>
