@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
+import { assignableEmployees } from '@/lib/assignable-employees';
 
 type Task = Tables<'tasks'>;
 type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -426,7 +427,7 @@ export default function Tasks() {
                           <Select value={task.assigned_to} onValueChange={(v) => reassignTask(task.id, v)}>
                             <SelectTrigger className="h-7 text-xs w-[160px]"><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              {employees.map(e => (
+                              {assignableEmployees(employees).map(e => (
                                 <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
                               ))}
                             </SelectContent>

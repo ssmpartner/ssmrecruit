@@ -9,6 +9,7 @@ import LeadStatusBadge from './LeadStatusBadge';
 import SourceBadge from './SourceBadge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { assignableEmployees } from '@/lib/assignable-employees';
 
 const mainFlow: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired'];
 
