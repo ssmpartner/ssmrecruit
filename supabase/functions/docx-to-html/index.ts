@@ -117,7 +117,7 @@ serve(async (req) => {
     ]
 
     const result = await mammoth.convertToHtml(
-      { arrayBuffer },
+      { buffer },
       {
         styleMap,
         // Bilder als eingebettete Data-URLs uebernehmen
