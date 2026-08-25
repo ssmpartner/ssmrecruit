@@ -65,7 +65,7 @@ const emptyForm = (): Partial<DocRow> => ({
   valid_from: null, valid_to: null, notes: '',
 });
 
-export default function ContractLibraryTab() {
+export default function ContractLibraryTab({ onOpenTemplateEditor }: { onOpenTemplateEditor?: (templateId: string) => void }) {
   const { user } = useAuth();
   const { kinds, categories, targetGroups } = useContractLookups();
   const [rows, setRows] = useState<DocRow[]>([]);
@@ -89,6 +89,8 @@ export default function ContractLibraryTab() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [previewDoc, setPreviewDoc] = useState<DocRow | null>(null);
+  const [convertingId, setConvertingId] = useState<string | null>(null);
+  const [converted, setConverted] = useState<ConvertedTemplateInfo | null>(null);
 
   const load = async () => {
     setLoading(true);
