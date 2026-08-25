@@ -359,7 +359,7 @@ function EscalationRuleEditor({
                               <select className={inputCls} value={action.targetEmployeeId || ''}
                                 onChange={e => updateAction(rule.id, idx, { targetEmployeeId: e.target.value })}>
                                 <option value="">Mitarbeiter wählen...</option>
-                                {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
+                                {assignableEmployees(employees).map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
                               </select>
                             )}
                             {action.type === 'status_change' && (
