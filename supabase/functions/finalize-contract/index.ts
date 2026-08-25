@@ -338,8 +338,9 @@ Deno.serve(async (req) => {
       const { data: f } = await supabase.storage.from('contracts').download(a.storage_path);
       if (f) parts.push(new Uint8Array(await f.arrayBuffer()));
     }
-    const mergedBytes = await mergePdfs(parts);
-    const mergedPath = `contracts/${contract_id}/v${contract.current_version ?? 1}-${Date.now()}-merged.pdf`;
+    const mergedBytesRaw = await mergePdfs(parts);
+    const mergedBytes = await stampFooter(mergedBytesRaw, footerText);
+    const mergedPath = `contracts/${contract_id}/${fileBase}-Gesamt.pdf`;
     const { error: mErr } = await supabase.storage.from('contracts').upload(mergedPath, mergedBytes, {
       contentType: 'application/pdf', upsert: true,
     });
