@@ -16,6 +16,12 @@ export default function Contracts() {
   const { loading } = useAuth();
   const { has, loading: permLoading } = useContractPermissions();
   const [tab, setTab] = useState('overview');
+  const [editTemplateId, setEditTemplateId] = useState<string | null>(null);
+
+  const openTemplateEditor = (templateId: string) => {
+    setEditTemplateId(templateId);
+    setTab('templates');
+  };
 
   if (loading || permLoading) return null;
   if (!has('can_view')) return <Navigate to="/" replace />;
@@ -61,10 +67,12 @@ export default function Contracts() {
           )}
         </TabsList>
         <TabsContent value="overview"><ContractsOverviewTab /></TabsContent>
-        <TabsContent value="library"><ContractLibraryTab /></TabsContent>
+        <TabsContent value="library"><ContractLibraryTab onOpenTemplateEditor={openTemplateEditor} /></TabsContent>
         <TabsContent value="sets"><ContractSetsTab /></TabsContent>
         <TabsContent value="rules"><ContractRulesTab /></TabsContent>
-        <TabsContent value="templates"><ContractTemplatesTab /></TabsContent>
+        <TabsContent value="templates">
+          <ContractTemplatesTab editTemplateId={editTemplateId} onEditHandled={() => setEditTemplateId(null)} />
+        </TabsContent>
         <TabsContent value="letterhead"><ContractLetterheadTab /></TabsContent>
         {showAudit && <TabsContent value="audit"><ContractAuditLogTab /></TabsContent>}
       </Tabs>

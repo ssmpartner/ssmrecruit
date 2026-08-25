@@ -11,10 +11,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Download, Edit, Eye, History, Plus, Trash2, Upload, Library, Info } from 'lucide-react';
+import { Download, Edit, Eye, FileSignature, History, Loader2, Plus, Trash2, Upload, Library, Info, Braces } from 'lucide-react';
 import { useContractLookups, CONTRACT_LANGUAGES, ContractLang } from '@/hooks/useContractLookups';
 import { useAuth } from '@/context/AuthContext';
 import LibraryPreviewDialog from './LibraryPreviewDialog';
+
+interface ConvertedTemplateInfo {
+  templateId: string;
+  title: string;
+  updated: boolean;
+  version: number;
+}
 
 type DocStatus = 'draft' | 'active' | 'archived';
 type DocType = 'contract' | 'attachment' | 'reference';
@@ -58,7 +65,7 @@ const emptyForm = (): Partial<DocRow> => ({
   valid_from: null, valid_to: null, notes: '',
 });
 
-export default function ContractLibraryTab() {
+export default function ContractLibraryTab({ onOpenTemplateEditor }: { onOpenTemplateEditor?: (templateId: string) => void }) {
   const { user } = useAuth();
   const { kinds, categories, targetGroups } = useContractLookups();
   const [rows, setRows] = useState<DocRow[]>([]);
@@ -82,6 +89,8 @@ export default function ContractLibraryTab() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [previewDoc, setPreviewDoc] = useState<DocRow | null>(null);
+  const [convertingId, setConvertingId] = useState<string | null>(null);
+  const [converted, setConverted] = useState<ConvertedTemplateInfo | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -295,6 +304,72 @@ export default function ContractLibraryTab() {
   const labelOf = (list: { code: string; label_de: string }[], code: string | null) =>
     list.find(x => x.code === code)?.label_de || '–';
 
+  const isDocx = (path: string | null, name: string | null) =>
+    (name || path || '').toLowerCase().endsWith('.docx');
+
+  /** Konvertiert die DOCX-Vorlage eines Vertrags-Dokuments in eine bearbeitbare Vorlage.
+   *  Bestehende Vorlage aus demselben Dokument wird aktualisiert (Version +1). */
+  const convertToTemplate = async (r: DocRow) => {
+    setConvertingId(r.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('docx-to-html', {
+        body: { document_id: r.id },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      if (!data?.html) throw new Error('Keine HTML-Ausgabe erhalten');
+
+      const kindLabel = kinds.find(k => k.code === r.kind_code)?.label_de;
+      const payload = {
+        title: r.name,
+        contract_type: kindLabel || 'Arbeitsvertrag',
+        kind_code: r.kind_code,
+        category_code: r.category_code,
+        target_group_code: r.target_group_code,
+        area: r.area || 'sales',
+        language: r.language || 'de',
+        languages_supported: [r.language || 'de'],
+        letterhead_mode: 'auto',
+        careerplan_linked: false,
+        body_html: data.html,
+        source_document_id: r.id,
+        updated_by: user?.id || null,
+      };
+
+      const { data: existing } = await supabase
+        .from('contract_templates')
+        .select('*')
+        .eq('source_document_id', r.id)
+        .maybeSingle();
+
+      if (existing) {
+        // Versionshistorie der alten Vorlage
+        await supabase.from('contract_template_versions').insert({
+          template_id: existing.id, version: existing.version,
+          title: existing.title, body_html: existing.body_html,
+          snapshot: existing as any, created_by: user?.id || null,
+        });
+        const nextVersion = (existing.version ?? 1) + 1;
+        const { error: upErr } = await supabase.from('contract_templates')
+          .update({ ...payload, version: nextVersion })
+          .eq('id', existing.id);
+        if (upErr) throw upErr;
+        setConverted({ templateId: existing.id, title: r.name, updated: true, version: nextVersion });
+      } else {
+        const { data: created, error: insErr } = await supabase.from('contract_templates')
+          .insert({ ...payload, status: 'draft', version: 1, created_by: user?.id || null })
+          .select('id')
+          .single();
+        if (insErr) throw insErr;
+        setConverted({ templateId: created!.id, title: r.name, updated: false, version: 1 });
+      }
+    } catch (e: any) {
+      toast.error('Konvertierung fehlgeschlagen: ' + (e?.message || e));
+    } finally {
+      setConvertingId(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <Card>
@@ -428,11 +503,26 @@ export default function ContractLibraryTab() {
                       {!r.original_storage_path && !r.template_storage_path && <span className="text-muted-foreground">Keine Datei</span>}
                     </TableCell>
                     <TableCell className="text-right">
-                      {(r.original_storage_path || r.template_storage_path) && (
-                        <Button size="icon" variant="ghost" title="Vorschau" onClick={() => setPreviewDoc(r)}><Eye className="h-4 w-4" /></Button>
-                      )}
-                      <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Edit className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" onClick={() => remove(r)}><Trash2 className="h-4 w-4" /></Button>
+                      <div className="flex justify-end items-center gap-1">
+                        {r.doc_type === 'contract' && isDocx(r.template_storage_path, r.template_filename) && (
+                          <Button
+                            size="sm" variant="outline" className="h-7 gap-1.5 text-xs"
+                            disabled={convertingId === r.id}
+                            title="DOCX in bearbeitbare Vertragsvorlage umwandeln"
+                            onClick={() => convertToTemplate(r)}
+                          >
+                            {convertingId === r.id
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              : <FileSignature className="h-3.5 w-3.5" />}
+                            Als Vorlage übernehmen
+                          </Button>
+                        )}
+                        {(r.original_storage_path || r.template_storage_path) && (
+                          <Button size="icon" variant="ghost" title="Vorschau" onClick={() => setPreviewDoc(r)}><Eye className="h-4 w-4" /></Button>
+                        )}
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Edit className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => remove(r)}><Trash2 className="h-4 w-4" /></Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -453,6 +543,44 @@ export default function ContractLibraryTab() {
           templateFilename={previewDoc.template_filename}
         />
       )}
+
+      <Dialog open={!!converted} onOpenChange={(o) => !o && setConverted(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileSignature className="h-5 w-5 text-primary" />
+              {converted?.updated ? `Vorlage aktualisiert (v${converted?.version})` : 'Vorlage erstellt'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <p>
+              „{converted?.title}" wurde als bearbeitbare Vertragsvorlage {converted?.updated ? 'aktualisiert' : 'angelegt'}.
+              Das Originaldokument in der Bibliothek bleibt unverändert und ist weiterhin die rechtsverbindliche Quelle.
+            </p>
+            <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-amber-900">
+              <Braces className="h-4 w-4 mt-0.5 shrink-0" />
+              <p className="text-xs">
+                Wichtig: Die Textstellen, an denen im Vertrag Kandidatendaten stehen (Name, Adresse,
+                Eintrittsdatum, Lohn usw.), müssen noch durch Platzhalter ersetzt werden –
+                sonst werden die Daten beim Generieren nicht automatisch eingesetzt.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setConverted(null)}>Später</Button>
+            <Button
+              className="gap-1.5"
+              onClick={() => {
+                const id = converted?.templateId;
+                setConverted(null);
+                if (id && onOpenTemplateEditor) onOpenTemplateEditor(id);
+              }}
+            >
+              <Edit className="h-4 w-4" /> Jetzt Platzhalter setzen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">

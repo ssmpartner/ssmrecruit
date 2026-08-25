@@ -2470,6 +2470,7 @@ export type Database = {
           letterhead_mode: string
           level: string | null
           position: string | null
+          source_document_id: string | null
           status: string
           target_group_code: string | null
           title: string
@@ -2494,6 +2495,7 @@ export type Database = {
           letterhead_mode?: string
           level?: string | null
           position?: string | null
+          source_document_id?: string | null
           status?: string
           target_group_code?: string | null
           title: string
@@ -2518,6 +2520,7 @@ export type Database = {
           letterhead_mode?: string
           level?: string | null
           position?: string | null
+          source_document_id?: string | null
           status?: string
           target_group_code?: string | null
           title?: string
@@ -2539,6 +2542,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contract_kinds"
             referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "contract_templates_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "contract_documents"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "contract_templates_target_group_code_fkey"

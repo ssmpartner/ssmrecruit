@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,11 +9,11 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Archive, CheckCircle2, FileDown, AlertTriangle } from 'lucide-react';
+import { Plus, Pencil, Archive, CheckCircle2, AlertTriangle, Library, CircleCheck, CircleDashed } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AREA_LABELS, CONTRACT_LANGUAGES, TEMPLATE_STATUS_LABELS,
-  PLACEHOLDER_GROUPS, findDisallowedPlaceholders,
+  PLACEHOLDER_GROUPS, ALL_PLACEHOLDERS, extractUsedPlaceholders, findDisallowedPlaceholders,
 } from '@/lib/contract-placeholders';
 import { useCareerLevels } from '@/hooks/useCareerLevels';
 import PlaceholderPicker from './PlaceholderPicker';
@@ -31,6 +31,7 @@ type Template = {
   status: 'draft' | 'active' | 'archived';
   body_html: string;
   version: number;
+  source_document_id: string | null;
   updated_at: string;
 };
 
@@ -40,7 +41,13 @@ const empty: Partial<Template> = {
   careerplan_linked: false, careerplan_level: null, status: 'draft', body_html: '',
 };
 
-export default function ContractTemplatesTab() {
+interface Props {
+  /** Wenn gesetzt, wird der Editor fuer diese Vorlage geoeffnet (z.B. nach DOCX-Konvertierung). */
+  editTemplateId?: string | null;
+  onEditHandled?: () => void;
+}
+
+export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: Props) {
   const [rows, setRows] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -62,9 +69,26 @@ export default function ContractTemplatesTab() {
     });
   }
 
-  const disallowed = edit.body_html
-    ? findDisallowedPlaceholders(edit.body_html, (edit.area || 'sales') as any)
-    : [];
+  const area = (edit.area || 'sales') as 'sales' | 'office';
+
+  const disallowed = edit.body_html ? findDisallowedPlaceholders(edit.body_html, area) : [];
+
+  // Im Body vorkommende Platzhalter
+  const usedPlaceholders = useMemo(
+    () => (edit.body_html ? extractUsedPlaceholders(edit.body_html) : []),
+    [edit.body_html],
+  );
+
+  // Pflichtplatzhalter, die in der Vorlage noch fehlen
+  const missingRequired = useMemo(() => {
+    const used = new Set(usedPlaceholders);
+    return ALL_PLACEHOLDERS.filter(p => {
+      if (!p.required) return false;
+      if (used.has(p.key)) return false;
+      if (p.areaScope && !p.areaScope.includes(area)) return false;
+      return true;
+    });
+  }, [usedPlaceholders, area]);
 
   async function load() {
     setLoading(true);
@@ -77,6 +101,19 @@ export default function ContractTemplatesTab() {
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
+
+  // Extern geoeffnete Vorlage (nach Konvertierung aus der Bibliothek)
+  useEffect(() => {
+    if (!editTemplateId) return;
+    const t = rows.find(r => r.id === editTemplateId);
+    if (t) { setEdit({ ...t }); setOpen(true); }
+    else {
+      // Zeile evtl. noch nicht geladen → gezielt nachladen
+      supabase.from('contract_templates').select('*').eq('id', editTemplateId).single()
+        .then(({ data }) => { if (data) { setEdit({ ...(data as Template) }); setOpen(true); } });
+    }
+    onEditHandled?.();
+  }, [editTemplateId]);
 
   function openNew() { setEdit({ ...empty }); setOpen(true); }
   function openEdit(t: Template) { setEdit({ ...t }); setOpen(true); }
@@ -154,7 +191,16 @@ export default function ContractTemplatesTab() {
             {!loading && rows.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Noch keine Vorlagen.</TableCell></TableRow>}
             {rows.map(t => (
               <TableRow key={t.id}>
-                <TableCell className="font-medium">{t.title}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-1.5">
+                    {t.title}
+                    {t.source_document_id && (
+                      <Badge variant="outline" className="gap-1 text-[10px]" title="Aus einem Bibliotheksdokument konvertiert">
+                        <Library className="h-3 w-3" /> Bibliothek
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell><Badge variant={t.area === 'sales' ? 'default' : 'secondary'}>{AREA_LABELS[t.area]}</Badge></TableCell>
                 <TableCell>{t.position || '–'}</TableCell>
                 <TableCell>{t.level || '–'}</TableCell>
@@ -180,11 +226,12 @@ export default function ContractTemplatesTab() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[92vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{edit.id ? 'Vorlage bearbeiten' : 'Neue Vorlage'}</DialogTitle>
+            <DialogTitle>{edit.id ? `Vorlage bearbeiten (v${edit.version})` : 'Neue Vorlage'}</DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="col-span-2">
               <Label>Titel *</Label>
               <Input value={edit.title || ''} onChange={e => setEdit({ ...edit, title: e.target.value })} />
@@ -253,20 +300,64 @@ export default function ContractTemplatesTab() {
                 )}
               </>
             )}
+          </div>
 
-            <div className="col-span-2">
-              <div className="flex items-center justify-between mb-1">
+          {/* Editor + Live-Vorschau */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
                 <Label>Vertragsinhalt (HTML)</Label>
-                <PlaceholderPicker area={(edit.area || 'sales') as any} onInsert={insertAtCursor} />
+                <PlaceholderPicker area={area} onInsert={insertAtCursor} />
               </div>
               <Textarea
                 ref={bodyRef}
-                rows={14} className="font-mono text-xs"
+                rows={22} className="font-mono text-xs"
                 value={edit.body_html || ''}
                 onChange={e => setEdit({ ...edit, body_html: e.target.value })}
               />
+
+              {/* Platzhalter-Status */}
+              <div className="rounded-lg border p-3 space-y-2 text-xs">
+                <div className="font-medium text-sm">Platzhalter in dieser Vorlage</div>
+                {usedPlaceholders.length === 0 ? (
+                  <p className="text-muted-foreground">Noch keine Platzhalter vorhanden.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-1">
+                    {usedPlaceholders.map(k => (
+                      <Badge key={k} variant="secondary" className="font-mono text-[10px]">{`{{${k}}}`}</Badge>
+                    ))}
+                  </div>
+                )}
+                <div className="border-t pt-2">
+                  {missingRequired.length === 0 ? (
+                    <p className="flex items-center gap-1.5 text-emerald-700">
+                      <CircleCheck className="h-3.5 w-3.5" /> Alle Pflichtplatzhalter sind vorhanden.
+                    </p>
+                  ) : (
+                    <div className="space-y-1">
+                      <p className="flex items-center gap-1.5 text-amber-700 font-medium">
+                        <CircleDashed className="h-3.5 w-3.5" /> Fehlende Pflichtplatzhalter:
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {missingRequired.map(p => (
+                          <button
+                            key={p.key}
+                            type="button"
+                            onClick={() => insertAtCursor(`{{${p.key}}}`)}
+                            className="px-1.5 py-0.5 rounded border border-amber-300 bg-amber-50 text-amber-900 font-mono text-[10px] hover:bg-amber-100 transition"
+                            title={`${p.label} – Klicken zum Einfügen`}
+                          >
+                            {`{{${p.key}}}`} – {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {disallowed.length > 0 && (
-                <div className="mt-2 flex items-start gap-2 rounded border border-amber-300 bg-amber-50 text-amber-900 px-2 py-1.5 text-xs">
+                <div className="flex items-start gap-2 rounded border border-amber-300 bg-amber-50 text-amber-900 px-2 py-1.5 text-xs">
                   <AlertTriangle className="h-3.5 w-3.5 mt-0.5" />
                   <div>
                     Nicht erlaubte Platzhalter für diesen Bereich:{' '}
@@ -275,23 +366,39 @@ export default function ContractTemplatesTab() {
                   </div>
                 </div>
               )}
-              <details className="mt-2 text-xs text-muted-foreground">
-                <summary className="cursor-pointer">Alle verfügbaren Platzhalter</summary>
-                <div className="mt-2 space-y-2">
-                  {PLACEHOLDER_GROUPS.map(g => (
-                    <div key={g.id}>
-                      <div className="font-medium text-foreground/80">{g.label}</div>
-                      <div className="grid grid-cols-3 gap-1">
-                        {g.placeholders.map(p => (
-                          <code key={p.key} className="px-1" title={p.label}>{`{{${p.key}}}`}</code>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </details>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Live-Vorschau</Label>
+              <div className="rounded-lg border bg-white dark:bg-muted/30 min-h-[520px] max-h-[70vh] overflow-y-auto p-6">
+                {edit.body_html ? (
+                  <div
+                    className="prose prose-sm max-w-none dark:prose-invert [&_table]:border-collapse [&_td]:border [&_td]:border-border [&_td]:p-1.5 [&_th]:border [&_th]:border-border [&_th]:p-1.5"
+                    dangerouslySetInnerHTML={{ __html: edit.body_html }}
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground">Vorschau erscheint, sobald Inhalt vorhanden ist.</p>
+                )}
+              </div>
             </div>
           </div>
+
+          <details className="text-xs text-muted-foreground">
+            <summary className="cursor-pointer">Alle verfügbaren Platzhalter</summary>
+            <div className="mt-2 space-y-2">
+              {PLACEHOLDER_GROUPS.map(g => (
+                <div key={g.id}>
+                  <div className="font-medium text-foreground/80">{g.label}</div>
+                  <div className="grid grid-cols-3 gap-1">
+                    {g.placeholders.map(p => (
+                      <code key={p.key} className="px-1" title={p.label}>{`{{${p.key}}}`}</code>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </details>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
             <Button onClick={save}>Speichern</Button>
