@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import mammoth from 'npm:mammoth@1.8.0'
+import { Buffer } from 'node:buffer'
 
 // Wandelt eine DOCX-Datei aus dem Bucket "contracts" in sauberes HTML um.
 // Ueberschriften, Absaetze, Fettschrift, Listen und Tabellen bleiben erhalten.
@@ -95,7 +96,7 @@ serve(async (req) => {
       })
     }
 
-    const arrayBuffer = await fileData.arrayBuffer()
+    const buffer = Buffer.from(await fileData.arrayBuffer())
 
     // mammoth: DOCX -> HTML
     // Stil-Mapping: Ueberschriften, Listen, Tabellen sauber mappen
