@@ -249,7 +249,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
   }
 
   function generatePreview() {
-    if (!template?.body_html) { toast.error('Keine aktive Hauptvorlage gefunden.'); return; }
+    if (!template?.body_html) { toast.error(templateError || 'Keine aktive Hauptvorlage gefunden.'); return; }
     const tg = sets.find(s => s.id === setId)?.target_group_code as TargetGroupCode | undefined;
     const ctx = buildContext();
     const m = findMissingRequired(template.body_html, ctx, area, tg);
@@ -545,8 +545,16 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label>Vorschau</Label>
-                <Button size="sm" variant="outline" onClick={generatePreview}>Vorschau aktualisieren</Button>
+                <Button size="sm" variant="outline" onClick={generatePreview} disabled={!template}>Vorschau aktualisieren</Button>
               </div>
+              {!template && templateError && (
+                <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs">
+                  <div className="flex items-center gap-1.5 font-medium text-destructive mb-1">
+                    <AlertTriangle className="h-3.5 w-3.5" />Hauptvorlage fehlt
+                  </div>
+                  <p>{templateError}</p>
+                </div>
+              )}
               {missing.length > 0 && (
                 <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs">
                   <div className="flex items-center gap-1.5 font-medium text-destructive mb-1">
