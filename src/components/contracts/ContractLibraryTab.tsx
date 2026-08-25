@@ -342,8 +342,13 @@ export default function ContractLibraryTab() {
             <Input placeholder="Version" value={fVersion} onChange={e => setFVersion(e.target.value)} />
             <Input type="date" placeholder="Gültig am" value={fValidOn} onChange={e => setFValidOn(e.target.value)} />
           </div>
-          <div className="flex justify-end">
-            <Button onClick={openNew} className="gap-1.5"><Plus className="h-4 w-4" /> Dokument hochladen</Button>
+          <div className="flex items-center justify-between gap-3">
+            <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+              <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              Dokumente mit Status „Entwurf" werden im Generierungs-Wizard ignoriert und tauchen dort nicht auf –
+              erst „Aktiv" macht ein Dokument für die Vertragserstellung sichtbar.
+            </p>
+            <Button onClick={openNew} className="gap-1.5 shrink-0"><Plus className="h-4 w-4" /> Dokument hochladen</Button>
           </div>
         </CardContent>
       </Card>
@@ -397,7 +402,18 @@ export default function ContractLibraryTab() {
                     <TableCell className="text-xs whitespace-nowrap">
                       {r.valid_from || '–'} {r.valid_to ? `→ ${r.valid_to}` : ''}
                     </TableCell>
-                    <TableCell><Badge variant={STATUS_VARIANTS[r.status]}>{STATUS_LABELS[r.status]}</Badge></TableCell>
+                    <TableCell>
+                      <Select value={r.status} onValueChange={(v: DocStatus) => changeStatus(r, v)}>
+                        <SelectTrigger className="h-7 w-[120px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="draft">Entwurf</SelectItem>
+                          <SelectItem value="active">Aktiv</SelectItem>
+                          <SelectItem value="archived">Archiviert</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
                     <TableCell className="text-xs space-y-1">
                       {r.original_storage_path && (
                         <Button size="sm" variant="ghost" className="h-6 px-1 gap-1" onClick={() => downloadFile(r.original_storage_path, r.original_filename)}>
@@ -412,6 +428,9 @@ export default function ContractLibraryTab() {
                       {!r.original_storage_path && !r.template_storage_path && <span className="text-muted-foreground">Keine Datei</span>}
                     </TableCell>
                     <TableCell className="text-right">
+                      {(r.original_storage_path || r.template_storage_path) && (
+                        <Button size="icon" variant="ghost" title="Vorschau" onClick={() => setPreviewDoc(r)}><Eye className="h-4 w-4" /></Button>
+                      )}
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Edit className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" onClick={() => remove(r)}><Trash2 className="h-4 w-4" /></Button>
                     </TableCell>
@@ -422,6 +441,18 @@ export default function ContractLibraryTab() {
           )}
         </CardContent>
       </Card>
+
+      {previewDoc && (
+        <LibraryPreviewDialog
+          open={!!previewDoc}
+          onClose={() => setPreviewDoc(null)}
+          docName={previewDoc.name}
+          originalPath={previewDoc.original_storage_path}
+          originalFilename={previewDoc.original_filename}
+          templatePath={previewDoc.template_storage_path}
+          templateFilename={previewDoc.template_filename}
+        />
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
