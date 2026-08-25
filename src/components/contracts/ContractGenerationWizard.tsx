@@ -60,6 +60,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
   const [setItems, setSetItems] = useState<any[]>([]);
   const [documents, setDocuments] = useState<any[]>([]);
   const [template, setTemplate] = useState<any>(null);
+  const [templateError, setTemplateError] = useState<string | null>(null);
 
   // Selections
   const [kindCode, setKindCode] = useState<string>('');
@@ -91,7 +92,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
     if (open) {
       setStep(0); setKindCode(''); setPosition(''); setArea('sales');
       setLanguage('de'); setSetId(''); setSelectedDocs(new Set());
-      setTemplate(null); setPreview(''); setMissing([]);
+      setTemplate(null); setTemplateError(null); setPreview(''); setMissing([]);
     }
   }, [open]);
 
@@ -137,7 +138,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
 
   // Vertragsset → Items + Vorlage + Dokumente laden
   useEffect(() => {
-    if (!setId) { setSetItems([]); setDocuments([]); setTemplate(null); setSelectedDocs(new Set()); return; }
+    if (!setId) { setSetItems([]); setDocuments([]); setTemplate(null); setTemplateError(null); setSelectedDocs(new Set()); return; }
     (async () => {
       const { data: items } = await supabase
         .from('contract_set_items')
@@ -164,22 +165,50 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
         }
         setSelectedDocs(pre);
 
-        // Hauptvertrag-Template (role = main) als Vorlage
+        // Hauptvertrag-Template (role = main) suchen:
+        // 1. Vertragsart + Kategorie + Bereich + Sprache
+        // 2. Vertragsart + Bereich + Sprache
+        // 3. Kategorie + Bereich + Sprache
+        // 4. Bereich + Sprache (Fallback)
         const mainItem = (items || []).find((i: any) => i.role === 'main');
         if (mainItem) {
-          const { data: tpl } = await supabase.from('contract_templates')
-            .select('*')
-            .eq('status', 'active')
-            .eq('area', area)
-            .eq('language', language)
-            .limit(1).maybeSingle();
+          const catCode = mainItem.category_code as string | null;
+          const catLabel = mainItem.contract_categories?.label_de || catCode || '–';
+          const kindLabel = kinds.find(k => k.code === kindCode)?.label_de || kindCode || '–';
+          const langLabel = LANGUAGES.find(l => l.value === language)?.label || language;
+
+          const attempts: { kind?: string; cat?: string }[] = [
+            ...(kindCode ? [{ kind: kindCode, cat: catCode ?? undefined }] : []),
+            ...(kindCode ? [{ kind: kindCode }] : []),
+            ...(catCode ? [{ cat: catCode }] : []),
+            {},
+          ];
+
+          let tpl: any = null;
+          for (const a of attempts) {
+            let q = supabase.from('contract_templates')
+              .select('*')
+              .eq('status', 'active')
+              .eq('area', area)
+              .eq('language', language);
+            if (a.kind) q = q.eq('kind_code', a.kind);
+            if (a.cat) q = q.eq('category_code', a.cat);
+            const { data } = await q.order('updated_at', { ascending: false }).limit(1).maybeSingle();
+            if (data) { tpl = data; break; }
+          }
+
           setTemplate(tpl);
+          setTemplateError(tpl ? null
+            : `Keine aktive Hauptvorlage gefunden für Vertragsart „${kindLabel}", Kategorie „${catLabel}", Sprache „${langLabel}" (Bereich: ${area === 'sales' ? 'Vertrieb' : 'Innendienst'}). Bitte unter „Vorlagen" eine entsprechende aktive Vorlage hinterlegen.`);
+        } else {
+          setTemplate(null);
+          setTemplateError('Dieses Set enthält kein Haupt-Item (Rolle „Haupt") – ohne Hauptkategorie kann keine Vertragsvorlage bestimmt werden.');
         }
       } else {
         setDocuments([]);
       }
     })();
-  }, [setId, language, area]);
+  }, [setId, language, area, kindCode, kinds]);
 
   function buildContext(): PlaceholderContext {
     const fn = lead?.name?.split(' ')[0];
@@ -220,7 +249,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
   }
 
   function generatePreview() {
-    if (!template?.body_html) { toast.error('Keine aktive Hauptvorlage gefunden.'); return; }
+    if (!template?.body_html) { toast.error(templateError || 'Keine aktive Hauptvorlage gefunden.'); return; }
     const tg = sets.find(s => s.id === setId)?.target_group_code as TargetGroupCode | undefined;
     const ctx = buildContext();
     const m = findMissingRequired(template.body_html, ctx, area, tg);
@@ -516,8 +545,16 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label>Vorschau</Label>
-                <Button size="sm" variant="outline" onClick={generatePreview}>Vorschau aktualisieren</Button>
+                <Button size="sm" variant="outline" onClick={generatePreview} disabled={!template}>Vorschau aktualisieren</Button>
               </div>
+              {!template && templateError && (
+                <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs">
+                  <div className="flex items-center gap-1.5 font-medium text-destructive mb-1">
+                    <AlertTriangle className="h-3.5 w-3.5" />Hauptvorlage fehlt
+                  </div>
+                  <p>{templateError}</p>
+                </div>
+              )}
               {missing.length > 0 && (
                 <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs">
                   <div className="flex items-center gap-1.5 font-medium text-destructive mb-1">

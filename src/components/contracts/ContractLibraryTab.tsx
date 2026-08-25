@@ -11,9 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Download, Edit, History, Plus, Trash2, Upload, Library } from 'lucide-react';
+import { Download, Edit, Eye, History, Plus, Trash2, Upload, Library, Info } from 'lucide-react';
 import { useContractLookups, CONTRACT_LANGUAGES, ContractLang } from '@/hooks/useContractLookups';
 import { useAuth } from '@/context/AuthContext';
+import LibraryPreviewDialog from './LibraryPreviewDialog';
 
 type DocStatus = 'draft' | 'active' | 'archived';
 type DocType = 'contract' | 'attachment' | 'reference';
@@ -80,6 +81,7 @@ export default function ContractLibraryTab() {
   const [templateFile, setTemplateFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<DocRow | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -276,6 +278,20 @@ export default function ContractLibraryTab() {
     a.click();
   };
 
+  const changeStatus = async (r: DocRow, status: DocStatus) => {
+    if (status === r.status) return;
+    setRows(prev => prev.map(x => x.id === r.id ? { ...x, status } : x));
+    const { error } = await supabase.from('contract_documents')
+      .update({ status, updated_by: user?.id || null })
+      .eq('id', r.id);
+    if (error) {
+      toast.error('Status konnte nicht geändert werden: ' + error.message);
+      setRows(prev => prev.map(x => x.id === r.id ? { ...x, status: r.status } : x));
+    } else {
+      toast.success(`Status auf „${STATUS_LABELS[status]}" gesetzt`);
+    }
+  };
+
   const labelOf = (list: { code: string; label_de: string }[], code: string | null) =>
     list.find(x => x.code === code)?.label_de || '–';
 
@@ -326,8 +342,13 @@ export default function ContractLibraryTab() {
             <Input placeholder="Version" value={fVersion} onChange={e => setFVersion(e.target.value)} />
             <Input type="date" placeholder="Gültig am" value={fValidOn} onChange={e => setFValidOn(e.target.value)} />
           </div>
-          <div className="flex justify-end">
-            <Button onClick={openNew} className="gap-1.5"><Plus className="h-4 w-4" /> Dokument hochladen</Button>
+          <div className="flex items-center justify-between gap-3">
+            <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+              <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              Dokumente mit Status „Entwurf" werden im Generierungs-Wizard ignoriert und tauchen dort nicht auf –
+              erst „Aktiv" macht ein Dokument für die Vertragserstellung sichtbar.
+            </p>
+            <Button onClick={openNew} className="gap-1.5 shrink-0"><Plus className="h-4 w-4" /> Dokument hochladen</Button>
           </div>
         </CardContent>
       </Card>
@@ -381,7 +402,18 @@ export default function ContractLibraryTab() {
                     <TableCell className="text-xs whitespace-nowrap">
                       {r.valid_from || '–'} {r.valid_to ? `→ ${r.valid_to}` : ''}
                     </TableCell>
-                    <TableCell><Badge variant={STATUS_VARIANTS[r.status]}>{STATUS_LABELS[r.status]}</Badge></TableCell>
+                    <TableCell>
+                      <Select value={r.status} onValueChange={(v: DocStatus) => changeStatus(r, v)}>
+                        <SelectTrigger className="h-7 w-[120px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="draft">Entwurf</SelectItem>
+                          <SelectItem value="active">Aktiv</SelectItem>
+                          <SelectItem value="archived">Archiviert</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
                     <TableCell className="text-xs space-y-1">
                       {r.original_storage_path && (
                         <Button size="sm" variant="ghost" className="h-6 px-1 gap-1" onClick={() => downloadFile(r.original_storage_path, r.original_filename)}>
@@ -396,6 +428,9 @@ export default function ContractLibraryTab() {
                       {!r.original_storage_path && !r.template_storage_path && <span className="text-muted-foreground">Keine Datei</span>}
                     </TableCell>
                     <TableCell className="text-right">
+                      {(r.original_storage_path || r.template_storage_path) && (
+                        <Button size="icon" variant="ghost" title="Vorschau" onClick={() => setPreviewDoc(r)}><Eye className="h-4 w-4" /></Button>
+                      )}
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Edit className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" onClick={() => remove(r)}><Trash2 className="h-4 w-4" /></Button>
                     </TableCell>
@@ -406,6 +441,18 @@ export default function ContractLibraryTab() {
           )}
         </CardContent>
       </Card>
+
+      {previewDoc && (
+        <LibraryPreviewDialog
+          open={!!previewDoc}
+          onClose={() => setPreviewDoc(null)}
+          docName={previewDoc.name}
+          originalPath={previewDoc.original_storage_path}
+          originalFilename={previewDoc.original_filename}
+          templatePath={previewDoc.template_storage_path}
+          templateFilename={previewDoc.template_filename}
+        />
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
