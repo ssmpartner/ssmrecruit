@@ -16,6 +16,12 @@ export default function Contracts() {
   const { loading } = useAuth();
   const { has, loading: permLoading } = useContractPermissions();
   const [tab, setTab] = useState('overview');
+  const [editTemplateId, setEditTemplateId] = useState<string | null>(null);
+
+  const openTemplateEditor = (templateId: string) => {
+    setEditTemplateId(templateId);
+    setTab('templates');
+  };
 
   if (loading || permLoading) return null;
   if (!has('can_view')) return <Navigate to="/" replace />;
