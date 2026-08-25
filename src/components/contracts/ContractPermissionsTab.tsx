@@ -29,6 +29,7 @@ type Row = {
 
 const ROLE_DEFAULTS: Record<string, string[]> = {
   hr: ['can_view', 'can_generate', 'can_edit', 'can_finalize', 'can_send'],
+  geschaeftsleitung: ['can_view', 'can_generate'],
   teamleiter: ['can_view', 'can_generate', 'can_edit'],
   backoffice: ['can_view', 'can_generate', 'can_edit'],
   agency_manager: ['can_view', 'can_generate', 'can_edit'],
@@ -78,6 +79,7 @@ export default function ContractPermissionsTab() {
         </p>
         <ul className="ml-4 list-disc">
           <li><strong>HR</strong>: Ansehen, Generieren, Bearbeiten, Finalisieren, Versenden</li>
+          <li><strong>Geschäftsleitung</strong>: Ansehen, Generieren</li>
           <li><strong>Recruiter</strong> (Teamleiter, Backoffice, Agency Manager): Ansehen, Generieren, Bearbeiten</li>
         </ul>
       </div>
