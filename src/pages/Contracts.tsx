@@ -67,10 +67,12 @@ export default function Contracts() {
           )}
         </TabsList>
         <TabsContent value="overview"><ContractsOverviewTab /></TabsContent>
-        <TabsContent value="library"><ContractLibraryTab /></TabsContent>
+        <TabsContent value="library"><ContractLibraryTab onOpenTemplateEditor={openTemplateEditor} /></TabsContent>
         <TabsContent value="sets"><ContractSetsTab /></TabsContent>
         <TabsContent value="rules"><ContractRulesTab /></TabsContent>
-        <TabsContent value="templates"><ContractTemplatesTab /></TabsContent>
+        <TabsContent value="templates">
+          <ContractTemplatesTab editTemplateId={editTemplateId} onEditHandled={() => setEditTemplateId(null)} />
+        </TabsContent>
         <TabsContent value="letterhead"><ContractLetterheadTab /></TabsContent>
         {showAudit && <TabsContent value="audit"><ContractAuditLogTab /></TabsContent>}
       </Tabs>
