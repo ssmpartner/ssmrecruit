@@ -503,11 +503,26 @@ export default function ContractLibraryTab({ onOpenTemplateEditor }: { onOpenTem
                       {!r.original_storage_path && !r.template_storage_path && <span className="text-muted-foreground">Keine Datei</span>}
                     </TableCell>
                     <TableCell className="text-right">
-                      {(r.original_storage_path || r.template_storage_path) && (
-                        <Button size="icon" variant="ghost" title="Vorschau" onClick={() => setPreviewDoc(r)}><Eye className="h-4 w-4" /></Button>
-                      )}
-                      <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Edit className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" onClick={() => remove(r)}><Trash2 className="h-4 w-4" /></Button>
+                      <div className="flex justify-end items-center gap-1">
+                        {r.doc_type === 'contract' && isDocx(r.template_storage_path, r.template_filename) && (
+                          <Button
+                            size="sm" variant="outline" className="h-7 gap-1.5 text-xs"
+                            disabled={convertingId === r.id}
+                            title="DOCX in bearbeitbare Vertragsvorlage umwandeln"
+                            onClick={() => convertToTemplate(r)}
+                          >
+                            {convertingId === r.id
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              : <FileSignature className="h-3.5 w-3.5" />}
+                            Als Vorlage übernehmen
+                          </Button>
+                        )}
+                        {(r.original_storage_path || r.template_storage_path) && (
+                          <Button size="icon" variant="ghost" title="Vorschau" onClick={() => setPreviewDoc(r)}><Eye className="h-4 w-4" /></Button>
+                        )}
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Edit className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => remove(r)}><Trash2 className="h-4 w-4" /></Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
