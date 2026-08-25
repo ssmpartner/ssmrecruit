@@ -132,8 +132,18 @@ Deno.serve(async (req) => {
       y -= lineHeight * 0.5;
     }
 
+    // Fusszeile auf jeder Seite
+    for (const p of basePdf.getPages()) {
+      const w = font.widthOfTextAtSize(footerText, 7.5);
+      const sz = p.getSize();
+      p.drawText(footerText, {
+        x: Math.max(30, (sz.width - w) / 2), y: 22, size: 7.5, font,
+        color: rgb(0.45, 0.45, 0.45),
+      });
+    }
+
     const bytes = await basePdf.save();
-    const path = `contracts/${contract_id}/v${contract.current_version ?? 1}-${Date.now()}.pdf`;
+    const path = `contracts/${contract_id}/${fileBase}.pdf`;
     const { error: upErr } = await supabase.storage.from('contracts').upload(path, bytes, {
       contentType: 'application/pdf', upsert: true,
     });
