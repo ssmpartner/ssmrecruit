@@ -305,7 +305,7 @@ Deno.serve(async (req) => {
       if (docxFile) {
         const srcBytes = new Uint8Array(await docxFile.arrayBuffer());
         const newDocx = await generateDocx(srcBytes, flat);
-        docxPath = `contracts/${contract_id}/v${contract.current_version ?? 1}-${Date.now()}.docx`;
+        docxPath = `contracts/${contract_id}/${fileBase}.docx`;
         const { error: upErr } = await supabase.storage.from('contracts').upload(docxPath, newDocx, {
           contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           upsert: true,
@@ -322,8 +322,9 @@ Deno.serve(async (req) => {
       mode === 'word' ? false :
       !hasDocxTemplate;
 
-    const pdfBytes = await renderHtmlPdf(contract.body_html ?? '', flat, letterheadBytes, overlay);
-    const pdfPath = `contracts/${contract_id}/v${contract.current_version ?? 1}-${Date.now()}.pdf`;
+    const pdfBytesRaw = await renderHtmlPdf(contract.body_html ?? '', flat, letterheadBytes, overlay);
+    const pdfBytes = await stampFooter(pdfBytesRaw, footerText);
+    const pdfPath = `contracts/${contract_id}/${fileBase}.pdf`;
     const { error: pdfErr } = await supabase.storage.from('contracts').upload(pdfPath, pdfBytes, {
       contentType: 'application/pdf', upsert: true,
     });
