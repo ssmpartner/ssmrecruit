@@ -8,17 +8,11 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 
-// Notification types allowed for Controlling role
+// Notification types allowed for Controlling role (only their own stage)
 const CONTROLLING_ALLOWED_TYPES = new Set([
-  'lead_assigned',
-  'lead_status_change',
-  'process_step_changed',
-  'task_created',
-  'task_overdue',
+  'lead_ready_for_controlling',
+  'approval_reminder',
   'system',
-  'ai_voice_escalation',
-  'ai_voice_status_suggested',
-  'ai_voice_status_changed',
 ]);
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {

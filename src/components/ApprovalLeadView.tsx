@@ -100,35 +100,51 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
 
   const wizardType: ApprovalWizardType = isControlling ? 'controlling' : isGeschaeftsleitung ? 'management' : 'hr';
 
-  // Load leads the current GL user has already decided (so they drop off the queue)
+  // Load leads the current user has already decided (so they drop off the queue)
   useEffect(() => {
-    if (!isGeschaeftsleitung || !user) return;
-    supabase
-      .from('lead_management_approvals')
-      .select('lead_id')
-      .eq('user_id', user.id)
-      .then(({ data }) => {
-        setMyDecidedLeadIds(new Set((data || []).map((r: any) => r.lead_id)));
-      });
-  }, [isGeschaeftsleitung, user?.id, selectedLead?.id]);
+    if (!user) return;
+    if (isGeschaeftsleitung) {
+      supabase
+        .from('lead_management_approvals')
+        .select('lead_id')
+        .eq('user_id', user.id)
+        .then(({ data }) => {
+          setMyDecidedLeadIds(new Set((data || []).map((r: any) => r.lead_id)));
+        });
+      return;
+    }
+    if (isControlling) {
+      // Controlling: once a decision exists for a lead, it is done for this role
+      supabase
+        .from('status_wizard_results')
+        .select('lead_id')
+        .eq('wizard_type', 'controlling_approval')
+        .then(({ data }) => {
+          setMyDecidedLeadIds(new Set((data || []).map((r: any) => r.lead_id)));
+        });
+    }
+  }, [isGeschaeftsleitung, isControlling, user?.id, selectedLead?.id]);
 
   const queueLeads = useMemo(() => {
     if (isGeschaeftsleitung) {
-      // GL sees the whole approval pipeline up to their stage (read-only on ready_for_controlling)
+      // GL sees only leads that are in their own approval stage
       return leads.filter(l =>
         l.lifecycle === 'active'
-        && ['ready_for_controlling','controlling_approved','management_review'].includes(l.status)
+        && ['controlling_approved','management_review'].includes(l.status)
         && !myDecidedLeadIds.has(l.id)
       );
     }
     if (isHR) {
       return leads.filter(l =>
         l.lifecycle === 'active'
-        && ['ready_for_controlling','controlling_approved','management_review','management_approved','hr_processing','hr_pending','hired'].includes(l.status)
+        && ['management_approved','hr_processing','hr_pending'].includes(l.status)
       );
     }
-    const sf = 'ready_for_controlling';
-    return leads.filter(l => l.lifecycle === 'active' && l.status === sf);
+    return leads.filter(l =>
+      l.lifecycle === 'active'
+      && l.status === 'ready_for_controlling'
+      && !myDecidedLeadIds.has(l.id)
+    );
   }, [leads, isControlling, isGeschaeftsleitung, isHR, myDecidedLeadIds]);
 
   const currentIndex = useMemo(() => selectedLead ? queueLeads.findIndex(l => l.id === selectedLead.id) : -1, [selectedLead, queueLeads]);
