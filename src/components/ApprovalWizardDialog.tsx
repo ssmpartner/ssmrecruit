@@ -137,12 +137,37 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
     || (wizardType === 'management' && isGeschaeftsleitung)
     || (wizardType === 'hr' && isHR);
 
+  // Reihenfolge der Prüfphasen – verhindert, dass eine erneute Prüfung
+  // einen Kandidaten in eine frühere Phase zurückwirft.
+  const PHASE_ORDER: LeadStatus[] = [
+    'ready_for_controlling', 'controlling_approved', 'management_review',
+    'management_approved', 'hr_pending', 'hr_processing', 'hired',
+  ] as LeadStatus[];
+
   const handleAction = async (action: 'approve' | 'reject' | 'query') => {
     if (!isAuthorized) {
       toast({ title: 'Keine Berechtigung', description: `${config.label} kann nur von der zuständigen Rolle durchgeführt werden.`, variant: 'destructive' });
       return;
     }
+
+    // Schutz vor versehentlicher Wiederholung einer bereits erledigten Prüfung
+    if (action !== 'query') {
+      const { data: current } = await supabase.from('leads').select('status').eq('id', leadId).single();
+      const currentIdx = PHASE_ORDER.indexOf((current?.status || '') as LeadStatus);
+      const triggerIdx = PHASE_ORDER.indexOf(config.triggerStatus);
+      if (currentIdx > -1 && triggerIdx > -1 && currentIdx > triggerIdx) {
+        toast({
+          title: 'Prüfung bereits abgeschlossen',
+          description: `${leadName} ist bereits weiter im Prozess (${statusConfig[current!.status as LeadStatus]?.label || current?.status}). Diese Prüfung kann nicht erneut ausgeführt werden.`,
+          variant: 'destructive',
+        });
+        onOpenChange(false);
+        return;
+      }
+    }
+
     setSubmitting(true);
+
     try {
       const answers: Record<string, any> = { action };
 
