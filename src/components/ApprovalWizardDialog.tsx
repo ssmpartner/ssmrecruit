@@ -69,7 +69,7 @@ interface Props {
 
 export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, leadId, leadName }: Props) {
   const { updateLead, addActivity } = useLeads();
-  const { profile } = useAuth();
+  const { profile, isSuperadmin, isControlling, isGeschaeftsleitung, isHR } = useAuth();
   const { toast } = useToast();
   const currentUser = profile?.display_name || 'System';
   const config = WIZARD_CONFIG[wizardType];
@@ -132,7 +132,16 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
     setRejectReason('');
   };
 
+  const isAuthorized = isSuperadmin
+    || (wizardType === 'controlling' && isControlling)
+    || (wizardType === 'management' && isGeschaeftsleitung)
+    || (wizardType === 'hr' && isHR);
+
   const handleAction = async (action: 'approve' | 'reject' | 'query') => {
+    if (!isAuthorized) {
+      toast({ title: 'Keine Berechtigung', description: `${config.label} kann nur von der zuständigen Rolle durchgeführt werden.`, variant: 'destructive' });
+      return;
+    }
     setSubmitting(true);
     try {
       const answers: Record<string, any> = { action };
@@ -363,7 +372,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
   const allChecked = wizardType !== 'controlling' || (insightsComplete && matchingOk && docsComplete);
   const controllingReady = wizardType !== 'controlling' || (controllingAction !== '' && scoring !== '');
   const rejectReady = wizardType !== 'controlling' || controllingAction !== 'ablehnen' || rejectReason.trim().length > 0;
-  const canSubmit = allChecked && controllingReady && rejectReady;
+  const canSubmit = isAuthorized && allChecked && controllingReady && rejectReady;
 
   const handleControllingSubmit = () => {
     if (controllingAction === 'selektionieren') handleAction('approve');
@@ -418,12 +427,12 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
             ) : (
               <>
                 {config.rejectStatus && (
-                  <button onClick={() => handleAction('reject')} disabled={submitting}
+                  <button onClick={() => handleAction('reject')} disabled={submitting || !isAuthorized}
                     className="rounded-md border border-destructive/30 bg-destructive/5 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors flex items-center gap-1.5">
                     <XCircle className="h-3.5 w-3.5" /> Ablehnen
                   </button>
                 )}
-                <button onClick={() => handleAction('approve')} disabled={submitting || !allChecked}
+                <button onClick={() => handleAction('approve')} disabled={submitting || !allChecked || !isAuthorized}
                   className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center gap-1.5">
                   {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
                   {wizardType === 'hr' ? 'Einstellen' : 'Freigeben'}
