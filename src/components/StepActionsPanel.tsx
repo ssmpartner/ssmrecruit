@@ -40,8 +40,12 @@ export default function StepActionsPanel({
   discCompleted, documentsCompleted, insightsSent,
 }: StepActionsPanelProps) {
   const { updateLead, addActivity } = useLeads();
-  const { isSuperadmin, isAdmin, isControlling } = useAuth();
+  const { isSuperadmin, isAdmin, isControlling, isGeschaeftsleitung, isHR } = useAuth();
   const canManageControllingStep = isSuperadmin || isAdmin || isControlling;
+  // Freigaben dürfen nur von der jeweils zuständigen Rolle erteilt werden
+  const canApproveControlling = isSuperadmin || isControlling;
+  const canApproveManagement = isSuperadmin || isGeschaeftsleitung;
+  const canApproveHR = isSuperadmin || isHR;
   const { toast } = useToast();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [activeWizardType, setActiveWizardType] = useState<WizardType>('contacted');
@@ -329,14 +333,20 @@ export default function StepActionsPanel({
           <p className="text-xs text-muted-foreground">
             Insights, Matching-Score und Dokumente prüfen. Freigabe oder Rückweisung.
           </p>
-          <button onClick={() => openApprovalWizard('controlling')}
-            className="w-full flex items-center gap-3 rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-left hover:bg-cyan-100 transition-colors">
-            <ClipboardCheck className="h-5 w-5 text-cyan-700 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-cyan-800">Controlling Wizard öffnen</p>
-              <p className="text-[11px] text-cyan-600">Prüfung durchführen (Approve / Reject / Rückfrage)</p>
+          {canApproveControlling ? (
+            <button onClick={() => openApprovalWizard('controlling')}
+              className="w-full flex items-center gap-3 rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-left hover:bg-cyan-100 transition-colors">
+              <ClipboardCheck className="h-5 w-5 text-cyan-700 shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-cyan-800">Controlling Wizard öffnen</p>
+                <p className="text-[11px] text-cyan-600">Prüfung durchführen (Approve / Reject / Rückfrage)</p>
+              </div>
+            </button>
+          ) : (
+            <div className="rounded-lg border border-dashed bg-muted/40 p-3">
+              <p className="text-xs text-muted-foreground">Diese Freigabe kann nur von der Rolle Controlling erteilt werden.</p>
             </div>
-          </button>
+          )}
         </div>
         <ApprovalWizardDialog open={approvalWizardOpen} onOpenChange={setApprovalWizardOpen}
           wizardType="controlling" leadId={leadId} leadName={leadName} />
@@ -358,14 +368,20 @@ export default function StepActionsPanel({
           <p className="text-xs text-muted-foreground">
             Read-only Übersicht der Ergebnisse. Freigabe oder Rückweisung an Controlling.
           </p>
-          <button onClick={() => openApprovalWizard('management')}
-            className="w-full flex items-center gap-3 rounded-lg border border-purple-200 bg-purple-50 p-3 text-left hover:bg-purple-100 transition-colors">
-            <Eye className="h-5 w-5 text-purple-700 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-purple-800">Management Wizard öffnen</p>
-              <p className="text-[11px] text-purple-600">Übersicht prüfen (Approve / Reject)</p>
+          {canApproveManagement ? (
+            <button onClick={() => openApprovalWizard('management')}
+              className="w-full flex items-center gap-3 rounded-lg border border-purple-200 bg-purple-50 p-3 text-left hover:bg-purple-100 transition-colors">
+              <Eye className="h-5 w-5 text-purple-700 shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-purple-800">Management Wizard öffnen</p>
+                <p className="text-[11px] text-purple-600">Übersicht prüfen (Approve / Reject)</p>
+              </div>
+            </button>
+          ) : (
+            <div className="rounded-lg border border-dashed bg-muted/40 p-3">
+              <p className="text-xs text-muted-foreground">Diese Freigabe kann nur von der Rolle Geschäftsleitung erteilt werden.</p>
             </div>
-          </button>
+          )}
         </div>
         <ApprovalWizardDialog open={approvalWizardOpen} onOpenChange={setApprovalWizardOpen}
           wizardType="management" leadId={leadId} leadName={leadName} />
@@ -387,14 +403,20 @@ export default function StepActionsPanel({
           <p className="text-xs text-muted-foreground">
             Onboarding-Prozess starten und finalen Status setzen.
           </p>
-          <button onClick={() => openApprovalWizard('hr')}
-            className="w-full flex items-center gap-3 rounded-lg border border-teal-200 bg-teal-50 p-3 text-left hover:bg-teal-100 transition-colors">
-            <UserCheck className="h-5 w-5 text-teal-700 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-teal-800">HR Wizard öffnen</p>
-              <p className="text-[11px] text-teal-600">Onboarding starten & Einstellen</p>
+          {canApproveHR ? (
+            <button onClick={() => openApprovalWizard('hr')}
+              className="w-full flex items-center gap-3 rounded-lg border border-teal-200 bg-teal-50 p-3 text-left hover:bg-teal-100 transition-colors">
+              <UserCheck className="h-5 w-5 text-teal-700 shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-teal-800">HR Wizard öffnen</p>
+                <p className="text-[11px] text-teal-600">Onboarding starten & Einstellen</p>
+              </div>
+            </button>
+          ) : (
+            <div className="rounded-lg border border-dashed bg-muted/40 p-3">
+              <p className="text-xs text-muted-foreground">Diese Freigabe kann nur von der Rolle HR erteilt werden.</p>
             </div>
-          </button>
+          )}
         </div>
         <ApprovalWizardDialog open={approvalWizardOpen} onOpenChange={setApprovalWizardOpen}
           wizardType="hr" leadId={leadId} leadName={leadName} />
