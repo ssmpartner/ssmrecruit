@@ -26,7 +26,7 @@ const WIZARD_CONFIG: Record<WizardType, { label: string; icon: typeof Phone; col
 };
 
 // Statuses that ALWAYS trigger lead withdrawal on submit.
-// 'not_reached' is handled separately: only withdraws after 3 attempts (every 48h reminder in between).
+// 'not_reached' withdraws NEVER – der Lead bleibt beim Bearbeiter (meldet sich evtl. später).
 const WITHDRAWAL_TYPES: WizardType[] = ['not_interested', 'no_need', 'not_suitable', 'internal'];
 const MAX_NOT_REACHED_ATTEMPTS = 3;
 const REMINDER_HOURS = 48;
@@ -194,11 +194,11 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
             not_reached_last_at: nowIso,
           }).eq('id', leadId);
 
+          // Lead bleibt beim Bearbeiter – auch nach ${MAX_NOT_REACHED_ATTEMPTS} Versuchen
+          // kein automatischer Entzug/Archivierung, da sich die Person evtl. später meldet.
           if (newAttempt >= MAX_NOT_REACHED_ATTEMPTS) {
-            // 3rd attempt → withdraw + archive
-            shouldWithdraw = true;
-            answers.escalated = true;
-            addActivity(leadId, 'status_change', `Limit "Nicht erreicht" erreicht (${newAttempt}/${MAX_NOT_REACHED_ATTEMPTS}) – Lead wird archiviert`);
+            answers.max_attempts_reached = true;
+            addActivity(leadId, 'note', `"Nicht erreicht" Versuch ${newAttempt} – Lead bleibt zugewiesen und kann weiterbearbeitet werden`);
           } else {
             // Schedule a 48h reminder task for the current owner
             const dueDate = new Date(Date.now() + REMINDER_HOURS * 60 * 60 * 1000);
