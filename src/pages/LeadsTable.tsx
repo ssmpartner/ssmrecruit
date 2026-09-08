@@ -76,7 +76,8 @@ export default function LeadsTable() {
       return leads.filter(l => l.isDemo);
     }
     const lifecycle: LeadLifecycle = activeTab === 'active' ? 'active' : activeTab === 'archived' ? 'archived' : 'deleted';
-    let filtered = leads.filter(l => l.lifecycle === lifecycle);
+    let filtered = leads.filter(l => l.lifecycle === lifecycle && !l.isDemo);
+
 
     // Role-based status filtering for review roles
     if (isControlling) {
