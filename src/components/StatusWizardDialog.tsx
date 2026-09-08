@@ -162,17 +162,29 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           answers.reminder = callbackReminder;
           answers.attempt = newCount;
 
+          await supabase.from('leads').update({ callback_count: newCount }).eq('id', leadId);
+          newStatus = 'callback';
+
           if (newCount >= 3) {
-            // Max 3 callbacks → escalate
-            shouldWithdraw = true;
-            newStatus = 'not_reached';
-            answers.escalated = true;
-            addActivity(leadId, 'status_change', `Rückruflimit erreicht (${newCount}/3) – Lead wird entzogen und Superadmin zugewiesen`);
-          } else {
-            newStatus = 'callback';
-            // Update callback count
-            await supabase.from('leads').update({ callback_count: newCount }).eq('id', leadId);
+            // Lead bleibt beim Bearbeiter – kein Entzug mehr. Stattdessen dauerhafte Erinnerung,
+            // den Status anzupassen.
+            answers.max_attempts_reached = true;
+            const dueDate = new Date(Date.now() + REMINDER_HOURS * 60 * 60 * 1000);
+            await supabase.from('tasks').insert({
+              title: `Status anpassen: ${leadName}`,
+              description: `${newCount} Rückruf-Versuche ohne Erfolg – bitte Status des Kandidaten anpassen.`,
+              lead_id: leadId,
+              assigned_to: originalEmployeeId,
+              agency_id: lead?.agencyId || null,
+              priority: 'high',
+              status: 'open',
+              source: 'system',
+              due_date: dueDate.toISOString().slice(0, 10),
+              lead_status: 'callback',
+            });
+            addActivity(leadId, 'note', `Rückruflimit erreicht (${newCount}/3) – Lead bleibt zugewiesen, Erinnerung zur Statusanpassung erstellt`);
           }
+
           break;
         }
 
@@ -198,7 +210,21 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           // kein automatischer Entzug/Archivierung, da sich die Person evtl. später meldet.
           if (newAttempt >= MAX_NOT_REACHED_ATTEMPTS) {
             answers.max_attempts_reached = true;
-            addActivity(leadId, 'note', `"Nicht erreicht" Versuch ${newAttempt} – Lead bleibt zugewiesen und kann weiterbearbeitet werden`);
+            const dueDate = new Date(Date.now() + REMINDER_HOURS * 60 * 60 * 1000);
+            await supabase.from('tasks').insert({
+              title: `Status anpassen: ${leadName}`,
+              description: `${newAttempt} Kontaktversuche ohne Erfolg – bitte Status des Kandidaten anpassen.`,
+              lead_id: leadId,
+              assigned_to: originalEmployeeId,
+              agency_id: lead?.agencyId || null,
+              priority: 'high',
+              status: 'open',
+              source: 'system',
+              due_date: dueDate.toISOString().slice(0, 10),
+              lead_status: 'not_reached',
+            });
+            addActivity(leadId, 'note', `"Nicht erreicht" Versuch ${newAttempt} – Lead bleibt zugewiesen, Erinnerung zur Statusanpassung erstellt`);
+
           } else {
             // Schedule a 48h reminder task for the current owner
             const dueDate = new Date(Date.now() + REMINDER_HOURS * 60 * 60 * 1000);
@@ -464,8 +490,9 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
               <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5">
                 <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
                 <p className="text-xs text-amber-800">
-                  Rückruf-Versuch <strong>{((lead as any).callbackCount || 0) + 1}/3</strong> – nach 3 Versuchen wird der Lead automatisch entzogen.
+                  Rückruf-Versuch <strong>{((lead as any).callbackCount || 0) + 1}/3</strong> – der Kandidat bleibt bei Ihnen. Ab dem 3. Versuch erhalten Sie eine Erinnerung, den Status anzupassen.
                 </p>
+
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
