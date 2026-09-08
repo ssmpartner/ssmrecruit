@@ -689,11 +689,10 @@ export default function LeadDetailSheet() {
                                 />
                                 {fieldErrors.name && <p className="text-sm text-destructive mt-0.5">{fieldErrors.name}</p>}
                               </div>
-                              <div className={!form.position ? 'rounded-lg border border-destructive/30 bg-destructive/5 p-2.5 -m-2.5' : ''}>
+                              <div>
                                 <label className={`text-sm flex items-center gap-1 ${!form.position ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
                                   Wunschposition
                                   <span className="text-destructive">*</span>
-                                  {!form.position && <span className="ml-auto text-xs text-destructive">Bitte auswählen</span>}
                                 </label>
                                 <select
                                   value={form.position || ''}
@@ -714,6 +713,7 @@ export default function LeadDetailSheet() {
                                     </optgroup>
                                   ))}
                                 </select>
+                                {!form.position && <p className="text-xs text-destructive mt-1">Bitte auswählen, damit der Lead weiterbearbeitet werden kann.</p>}
                               </div>
 
                             </div>
