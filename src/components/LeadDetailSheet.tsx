@@ -413,7 +413,16 @@ export default function LeadDetailSheet() {
                         </span>
                       )}
                     </div>
-                    <DialogDescription className="text-sm text-muted-foreground leading-tight">{selectedLead.position || 'Keine Wunschposition'}</DialogDescription>
+                    <DialogDescription className="text-sm leading-tight flex items-center gap-2 flex-wrap">
+                      {selectedLead.position ? (
+                        <span className="text-muted-foreground">{selectedLead.position}</span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive border border-destructive/20">
+                          <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+                          Wunschposition fehlt
+                        </span>
+                      )}
+                    </DialogDescription>
                   </DialogHeader>
                 </div>
 
@@ -680,11 +689,10 @@ export default function LeadDetailSheet() {
                                 />
                                 {fieldErrors.name && <p className="text-sm text-destructive mt-0.5">{fieldErrors.name}</p>}
                               </div>
-                              <div className={!form.position ? 'rounded-lg border border-destructive/30 bg-destructive/5 p-2.5 -m-2.5' : ''}>
+                              <div>
                                 <label className={`text-sm flex items-center gap-1 ${!form.position ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
                                   Wunschposition
                                   <span className="text-destructive">*</span>
-                                  {!form.position && <span className="ml-auto text-xs text-destructive">Bitte auswählen</span>}
                                 </label>
                                 <select
                                   value={form.position || ''}
@@ -705,6 +713,7 @@ export default function LeadDetailSheet() {
                                     </optgroup>
                                   ))}
                                 </select>
+                                {!form.position && <p className="text-xs text-destructive mt-1">Bitte auswählen, damit der Lead weiterbearbeitet werden kann.</p>}
                               </div>
 
                             </div>
