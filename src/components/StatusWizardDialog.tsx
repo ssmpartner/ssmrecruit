@@ -162,17 +162,29 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           answers.reminder = callbackReminder;
           answers.attempt = newCount;
 
+          await supabase.from('leads').update({ callback_count: newCount }).eq('id', leadId);
+          newStatus = 'callback';
+
           if (newCount >= 3) {
-            // Max 3 callbacks → escalate
-            shouldWithdraw = true;
-            newStatus = 'not_reached';
-            answers.escalated = true;
-            addActivity(leadId, 'status_change', `Rückruflimit erreicht (${newCount}/3) – Lead wird entzogen und Superadmin zugewiesen`);
-          } else {
-            newStatus = 'callback';
-            // Update callback count
-            await supabase.from('leads').update({ callback_count: newCount }).eq('id', leadId);
+            // Lead bleibt beim Bearbeiter – kein Entzug mehr. Stattdessen dauerhafte Erinnerung,
+            // den Status anzupassen.
+            answers.max_attempts_reached = true;
+            const dueDate = new Date(Date.now() + REMINDER_HOURS * 60 * 60 * 1000);
+            await supabase.from('tasks').insert({
+              title: `Status anpassen: ${leadName}`,
+              description: `${newCount} Rückruf-Versuche ohne Erfolg – bitte Status des Kandidaten anpassen.`,
+              lead_id: leadId,
+              assigned_to: originalEmployeeId,
+              agency_id: lead?.agencyId || null,
+              priority: 'high',
+              status: 'open',
+              source: 'system',
+              due_date: dueDate.toISOString().slice(0, 10),
+              lead_status: 'callback',
+            });
+            addActivity(leadId, 'note', `Rückruflimit erreicht (${newCount}/3) – Lead bleibt zugewiesen, Erinnerung zur Statusanpassung erstellt`);
           }
+
           break;
         }
 
