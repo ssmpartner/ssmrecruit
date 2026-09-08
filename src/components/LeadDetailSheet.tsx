@@ -703,7 +703,7 @@ export default function LeadDetailSheet() {
                                     </optgroup>
                                   ))}
                                 </select>
-                                {!form.position && <p className="text-xs text-destructive mt-1">Bitte auswählen, damit der Lead weiterbearbeitet werden kann.</p>}
+                                
                               </div>
 
                             </div>
