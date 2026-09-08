@@ -413,7 +413,16 @@ export default function LeadDetailSheet() {
                         </span>
                       )}
                     </div>
-                    <DialogDescription className="text-sm text-muted-foreground leading-tight">{selectedLead.position || 'Keine Wunschposition'}</DialogDescription>
+                    <DialogDescription className="text-sm leading-tight flex items-center gap-2 flex-wrap">
+                      {selectedLead.position ? (
+                        <span className="text-muted-foreground">{selectedLead.position}</span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive border border-destructive/20">
+                          <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+                          Wunschposition fehlt
+                        </span>
+                      )}
+                    </DialogDescription>
                   </DialogHeader>
                 </div>
 
