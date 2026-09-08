@@ -58,6 +58,11 @@ export default function LeadsTable() {
   const [agencyFilter, setAgencyFilter] = useState('');
   const [cantonFilter, setCantonFilter] = useState('');
   const [employeeFilter, setEmployeeFilter] = useState('');
+  // Mitarbeiterliste zusätzlich auf die gewählte Agentur einschränken
+  const employeeOptions = useMemo(
+    () => (agencyFilter ? visibleEmployees.filter(e => e.agencyId === agencyFilter) : visibleEmployees),
+    [visibleEmployees, agencyFilter],
+  );
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
@@ -327,7 +332,7 @@ export default function LeadsTable() {
                 )}
                 <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
                   <option value="">{isTeamleiter ? 'Nur ich' : isAgencyScoped ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
-                  {visibleEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                  {employeeOptions.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                 </select>
                 <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>
                   <option value="">Alle Kantone</option>
