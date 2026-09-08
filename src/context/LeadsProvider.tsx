@@ -749,7 +749,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const filteredLeads = useMemo(() => {
     // Superadmin and Admin see all leads
     if (isSuperadmin || role === 'admin') return leads;
-    // Review roles: full pipeline visibility from ready_for_controlling onward.
+    // Demo-/Muster-Leads sind ausschliesslich für Superadmin sichtbar
+    const leadsNoDemo = leads.filter(l => !l.isDemo);
+
     // Per-role action gating happens in the UI (ApprovalLeadView).
     const PIPELINE_VISIBLE = [
       'ready_for_controlling',
