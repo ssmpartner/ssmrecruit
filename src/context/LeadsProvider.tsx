@@ -187,10 +187,13 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
       setLeads(prev => {
         const mapped = pageRows.map(dbToLead);
-        // De-dupe by id in case realtime already inserted something
-        const ids = new Set(prev.map(l => l.id));
-        const fresh = mapped.filter(l => !ids.has(l.id));
-        return prev.length === 0 ? mapped : [...prev, ...fresh];
+        // Database values are authoritative. Replace already loaded rows as well,
+        // otherwise an old agency assignment can survive a reload in local state.
+        const mappedById = new Map(mapped.map(lead => [lead.id, lead]));
+        const refreshed = prev.map(lead => mappedById.get(lead.id) ?? lead);
+        const existingIds = new Set(prev.map(lead => lead.id));
+        const fresh = mapped.filter(lead => !existingIds.has(lead.id));
+        return prev.length === 0 ? mapped : [...refreshed, ...fresh];
       });
       // Flip loading off as soon as we have *any* leads – Dashboard can paint.
       setLoading(false);
