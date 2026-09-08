@@ -146,7 +146,7 @@ export default function LeadsTable() {
       }));
     const map = new Map<string, { confidence: number; reason: string; partners: string[] }>();
     const nameById = new Map(leads.map(l => [l.id, l.name]));
-    for (const pair of detectDuplicates(scanLeads)) {
+    for (const pair of detectDuplicates(scanLeads, { limit: Infinity })) {
       for (const [id, otherId] of [[pair.leadId1, pair.leadId2], [pair.leadId2, pair.leadId1]] as const) {
         const existing = map.get(id);
         const partnerName = nameById.get(otherId) || '';
