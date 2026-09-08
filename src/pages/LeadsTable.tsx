@@ -332,7 +332,7 @@ export default function LeadsTable() {
                 )}
                 <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
                   <option value="">{isTeamleiter ? 'Nur ich' : isAgencyScoped ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
-                  {visibleEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                  {employeeOptions.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                 </select>
                 <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>
                   <option value="">Alle Kantone</option>
