@@ -413,7 +413,7 @@ export default function LeadDetailSheet() {
                         </span>
                       )}
                     </div>
-                    <DialogDescription className="text-sm text-muted-foreground leading-tight">{selectedLead.position || 'Keine Position'}</DialogDescription>
+                    <DialogDescription className="text-sm text-muted-foreground leading-tight">{selectedLead.position || 'Keine Wunschposition'}</DialogDescription>
                   </DialogHeader>
                 </div>
 
