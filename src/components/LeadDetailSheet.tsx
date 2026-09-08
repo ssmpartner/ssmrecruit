@@ -33,6 +33,8 @@ import ManagementApprovalPanel from './ManagementApprovalPanel';
 import PendingApprovalsPanel from './PendingApprovalsPanel';
 import AddressAutocomplete, { type AddressSuggestion } from './AddressAutocomplete';
 import { assignableEmployees } from '@/lib/assignable-employees';
+import { useCareerLevels } from '@/hooks/useCareerLevels';
+
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
 
@@ -260,7 +262,7 @@ export default function LeadDetailSheet() {
     if (form.salutation !== (selectedLead.salutation || '')) changes.push(`Anrede → "${form.salutation || '—'}"`);
     if (form.email !== selectedLead.email) changes.push(`Email → "${form.email}"`);
     if (form.phone !== selectedLead.phone) changes.push(`Telefon aktualisiert`);
-    if (form.position !== selectedLead.position) changes.push(`Position → "${form.position}"`);
+    if (form.position !== selectedLead.position) changes.push(`Wunschposition → "${form.position}"`);
     if (form.address !== selectedLead.address) changes.push(`Adresse aktualisiert`);
     if (form.plz !== selectedLead.plz) changes.push(`PLZ → ${form.plz} ${form.city}`);
     if (form.notes !== selectedLead.notes) changes.push(`Notizen aktualisiert`);
@@ -317,6 +319,8 @@ export default function LeadDetailSheet() {
   };
 
   const leadActivities = selectedLead ? activities.filter(a => a.leadId === selectedLead.id) : [];
+  const { plans: careerPlans } = useCareerLevels();
+
   const inputCls = "h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
   const inputErr = (field: string) => fieldErrors[field] ? inputCls + ' border-destructive ring-1 ring-destructive/30' : inputCls;
 
@@ -409,7 +413,7 @@ export default function LeadDetailSheet() {
                         </span>
                       )}
                     </div>
-                    <DialogDescription className="text-sm text-muted-foreground leading-tight">{selectedLead.position || 'Keine Position'}</DialogDescription>
+                    <DialogDescription className="text-sm text-muted-foreground leading-tight">{selectedLead.position || 'Keine Wunschposition'}</DialogDescription>
                   </DialogHeader>
                 </div>
 
@@ -677,9 +681,28 @@ export default function LeadDetailSheet() {
                                 {fieldErrors.name && <p className="text-sm text-destructive mt-0.5">{fieldErrors.name}</p>}
                               </div>
                               <div>
-                                <label className="text-sm text-muted-foreground">Position</label>
-                                <input value={form.position} onChange={e => setForm(prev => ({ ...prev, position: e.target.value }))} className={inputCls} />
+                                <label className="text-sm text-muted-foreground">Wunschposition</label>
+                                <select
+                                  value={form.position || ''}
+                                  onChange={e => setForm(prev => ({ ...prev, position: e.target.value }))}
+                                  className={inputCls}
+                                >
+                                  <option value="">Keine Angabe</option>
+                                  {form.position && !careerPlans.some(p => p.position === form.position || p.levels.some(l => (l?.name || '').trim() === form.position)) && (
+                                    <option value={form.position}>{form.position}</option>
+                                  )}
+                                  {careerPlans.map(p => (
+                                    <optgroup key={p.id} label={p.position}>
+                                      <option value={p.position}>{p.position}</option>
+                                      {p.levels.map((l, i) => {
+                                        const name = (l?.name || '').trim();
+                                        return name ? <option key={`${p.id}-${i}`} value={name}>{name}</option> : null;
+                                      })}
+                                    </optgroup>
+                                  ))}
+                                </select>
                               </div>
+
                             </div>
                             <div className="grid grid-cols-2 gap-2.5">
                               <div>
@@ -833,7 +856,7 @@ export default function LeadDetailSheet() {
                                 ...(selectedLead.altEmail ? [['Alt. E-Mail', selectedLead.altEmail]] : []),
                                 ...(!isFrozenForEmployee ? [['Telefon', selectedLead.phone]] : []),
                                 ...(selectedLead.altPhone ? [['Alt. Telefon', selectedLead.altPhone]] : []),
-                                ['Position', selectedLead.position],
+                                ['Wunschposition', selectedLead.position],
                                 ['Geburtsdatum', selectedLead.birthDate ? new Date(selectedLead.birthDate).toLocaleDateString('de-CH') : ''],
                                 ['Leaddatum', new Date(selectedLead.createdAt).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
                                ['Adresse', selectedLead.address],
