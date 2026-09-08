@@ -25,7 +25,8 @@ export interface DuplicatePair {
   reason: string;
 }
 
-export function detectDuplicates(leads: LeadForScan[]): DuplicatePair[] {
+export function detectDuplicates(leads: LeadForScan[], options?: { limit?: number }): DuplicatePair[] {
+  const limit = options?.limit ?? 20;
   const duplicates: DuplicatePair[] = [];
 
   for (let i = 0; i < leads.length; i++) {
@@ -99,5 +100,6 @@ export function detectDuplicates(leads: LeadForScan[]): DuplicatePair[] {
     }
   }
 
-  return duplicates.sort((a, b) => b.confidence - a.confidence).slice(0, 20);
+  const sorted = duplicates.sort((a, b) => b.confidence - a.confidence);
+  return Number.isFinite(limit) ? sorted.slice(0, limit) : sorted;
 }
