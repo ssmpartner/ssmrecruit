@@ -677,9 +677,28 @@ export default function LeadDetailSheet() {
                                 {fieldErrors.name && <p className="text-sm text-destructive mt-0.5">{fieldErrors.name}</p>}
                               </div>
                               <div>
-                                <label className="text-sm text-muted-foreground">Position</label>
-                                <input value={form.position} onChange={e => setForm(prev => ({ ...prev, position: e.target.value }))} className={inputCls} />
+                                <label className="text-sm text-muted-foreground">Wunschposition</label>
+                                <select
+                                  value={form.position || ''}
+                                  onChange={e => setForm(prev => ({ ...prev, position: e.target.value }))}
+                                  className={inputCls}
+                                >
+                                  <option value="">Keine Angabe</option>
+                                  {form.position && !careerPlans.some(p => p.position === form.position || p.levels.some(l => (l?.name || '').trim() === form.position)) && (
+                                    <option value={form.position}>{form.position}</option>
+                                  )}
+                                  {careerPlans.map(p => (
+                                    <optgroup key={p.id} label={p.position}>
+                                      <option value={p.position}>{p.position}</option>
+                                      {p.levels.map((l, i) => {
+                                        const name = (l?.name || '').trim();
+                                        return name ? <option key={`${p.id}-${i}`} value={name}>{name}</option> : null;
+                                      })}
+                                    </optgroup>
+                                  ))}
+                                </select>
                               </div>
+
                             </div>
                             <div className="grid grid-cols-2 gap-2.5">
                               <div>
