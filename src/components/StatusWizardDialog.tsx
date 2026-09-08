@@ -210,7 +210,21 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
           // kein automatischer Entzug/Archivierung, da sich die Person evtl. später meldet.
           if (newAttempt >= MAX_NOT_REACHED_ATTEMPTS) {
             answers.max_attempts_reached = true;
-            addActivity(leadId, 'note', `"Nicht erreicht" Versuch ${newAttempt} – Lead bleibt zugewiesen und kann weiterbearbeitet werden`);
+            const dueDate = new Date(Date.now() + REMINDER_HOURS * 60 * 60 * 1000);
+            await supabase.from('tasks').insert({
+              title: `Status anpassen: ${leadName}`,
+              description: `${newAttempt} Kontaktversuche ohne Erfolg – bitte Status des Kandidaten anpassen.`,
+              lead_id: leadId,
+              assigned_to: originalEmployeeId,
+              agency_id: lead?.agencyId || null,
+              priority: 'high',
+              status: 'open',
+              source: 'system',
+              due_date: dueDate.toISOString().slice(0, 10),
+              lead_status: 'not_reached',
+            });
+            addActivity(leadId, 'note', `"Nicht erreicht" Versuch ${newAttempt} – Lead bleibt zugewiesen, Erinnerung zur Statusanpassung erstellt`);
+
           } else {
             // Schedule a 48h reminder task for the current owner
             const dueDate = new Date(Date.now() + REMINDER_HOURS * 60 * 60 * 1000);
