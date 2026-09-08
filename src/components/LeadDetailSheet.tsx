@@ -413,15 +413,8 @@ export default function LeadDetailSheet() {
                         </span>
                       )}
                     </div>
-                    <DialogDescription className="text-sm leading-tight flex items-center gap-2 flex-wrap">
-                      {selectedLead.position ? (
-                        <span className="text-muted-foreground">{selectedLead.position}</span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive border border-destructive/20">
-                          <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
-                          Wunschposition fehlt
-                        </span>
-                      )}
+                    <DialogDescription className="text-sm leading-tight text-muted-foreground">
+                      {selectedLead.position || 'Keine Angabe'}
                     </DialogDescription>
                   </DialogHeader>
                 </div>
@@ -690,14 +683,11 @@ export default function LeadDetailSheet() {
                                 {fieldErrors.name && <p className="text-sm text-destructive mt-0.5">{fieldErrors.name}</p>}
                               </div>
                               <div>
-                                <label className={`text-sm flex items-center gap-1 ${!form.position ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
-                                  Wunschposition
-                                  <span className="text-destructive">*</span>
-                                </label>
+                                <label className="text-sm text-muted-foreground">Wunschposition</label>
                                 <select
                                   value={form.position || ''}
                                   onChange={e => setForm(prev => ({ ...prev, position: e.target.value }))}
-                                  className={!form.position ? inputErr('position') : inputCls}
+                                  className={inputCls}
                                 >
                                   <option value="">Bitte auswählen...</option>
                                   {form.position && !careerPlans.some(p => p.position === form.position || p.levels.some(l => (l?.name || '').trim() === form.position)) && (
@@ -713,7 +703,7 @@ export default function LeadDetailSheet() {
                                     </optgroup>
                                   ))}
                                 </select>
-                                {!form.position && <p className="text-xs text-destructive mt-1">Bitte auswählen, damit der Lead weiterbearbeitet werden kann.</p>}
+                                
                               </div>
 
                             </div>

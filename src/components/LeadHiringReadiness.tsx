@@ -179,7 +179,24 @@ export default function LeadHiringReadiness({ leadId }: Props) {
     return m.isPast ? d : `Geplant: ${d}`;
   };
 
+  const positionSet = !!(lead?.position && lead.position.trim());
   const baseItems: ReadinessItem[] = [
+    {
+      label: 'Wunschposition',
+      progress: positionSet ? 1 : 0,
+      hint: positionSet ? (lead?.position as string) : 'Fehlt',
+      renderExtra: positionSet ? undefined : () => (
+        <div className="mt-2 ml-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[11px] font-semibold text-destructive">
+            <AlertCircle className="h-3 w-3" />
+            Wunschposition fehlt
+          </span>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Wunschposition im Reiter «Details» auswählen — ohne Angabe keine Übergabe an Controlling.
+          </p>
+        </div>
+      ),
+    },
     { label: 'BG (Bewerbungsgespräch)', progress: milestones.bg.done ? 1 : 0, hint: formatMilestoneHint(milestones.bg) },
     { label: 'BG2 (Zweitgespräch)', progress: milestones.bg2.done ? 1 : 0, hint: formatMilestoneHint(milestones.bg2) },
     { label: 'Personalien', progress: personnelDone ? 1 : 0, hint: personnelDone ? 'Vollständig eingereicht' : 'Unvollständig' },
