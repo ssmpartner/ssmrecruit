@@ -680,14 +680,18 @@ export default function LeadDetailSheet() {
                                 />
                                 {fieldErrors.name && <p className="text-sm text-destructive mt-0.5">{fieldErrors.name}</p>}
                               </div>
-                              <div>
-                                <label className="text-sm text-muted-foreground">Wunschposition</label>
+                              <div className={!form.position ? 'rounded-lg border border-destructive/30 bg-destructive/5 p-2.5 -m-2.5' : ''}>
+                                <label className={`text-sm flex items-center gap-1 ${!form.position ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                                  Wunschposition
+                                  <span className="text-destructive">*</span>
+                                  {!form.position && <span className="ml-auto text-xs text-destructive">Bitte auswählen</span>}
+                                </label>
                                 <select
                                   value={form.position || ''}
                                   onChange={e => setForm(prev => ({ ...prev, position: e.target.value }))}
-                                  className={inputCls}
+                                  className={!form.position ? inputErr('position') : inputCls}
                                 >
-                                  <option value="">Keine Angabe</option>
+                                  <option value="">Bitte auswählen...</option>
                                   {form.position && !careerPlans.some(p => p.position === form.position || p.levels.some(l => (l?.name || '').trim() === form.position)) && (
                                     <option value={form.position}>{form.position}</option>
                                   )}
