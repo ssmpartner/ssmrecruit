@@ -762,23 +762,22 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       'hired',
     ];
     if (role === 'controlling' || role === 'geschaeftsleitung' || role === 'hr') {
-      return leads.filter(l => PIPELINE_VISIBLE.includes(l.status));
+      return leadsNoDemo.filter(l => PIPELINE_VISIBLE.includes(l.status));
     }
     const userEmail = (user?.email || '').toLowerCase();
     const myEmployee = employees.find(e => (e.email || '').toLowerCase() === userEmail);
     // Agency Manager & Backoffice: see all leads of their agency
     if (role === 'agency_manager' || role === 'backoffice') {
       if (!myEmployee) return [];
-      return leads.filter(l => l.agencyId === myEmployee.agencyId);
+      return leadsNoDemo.filter(l => l.agencyId === myEmployee.agencyId);
     }
     // Teamleiter: see ONLY leads personally assigned to them
     if (role === 'teamleiter') {
       if (!myEmployee) return [];
-      return leads.filter(l => l.employeeId === myEmployee.id);
+      return leadsNoDemo.filter(l => l.employeeId === myEmployee.id);
     }
-    // Analyst: read-only but can see all
-    if (role === 'analyst') return leads;
-    return leads;
+    return leadsNoDemo;
+
   }, [leads, employees, role, isSuperadmin, user]);
 
   return (
