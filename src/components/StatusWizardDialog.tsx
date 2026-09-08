@@ -490,8 +490,9 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
               <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5">
                 <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
                 <p className="text-xs text-amber-800">
-                  Rückruf-Versuch <strong>{((lead as any).callbackCount || 0) + 1}/3</strong> – nach 3 Versuchen wird der Lead automatisch entzogen.
+                  Rückruf-Versuch <strong>{((lead as any).callbackCount || 0) + 1}/3</strong> – der Kandidat bleibt bei Ihnen. Ab dem 3. Versuch erhalten Sie eine Erinnerung, den Status anzupassen.
                 </p>
+
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
