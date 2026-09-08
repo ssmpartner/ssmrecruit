@@ -749,7 +749,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const filteredLeads = useMemo(() => {
     // Superadmin and Admin see all leads
     if (isSuperadmin || role === 'admin') return leads;
-    // Review roles: full pipeline visibility from ready_for_controlling onward.
+    // Demo-/Muster-Leads sind ausschliesslich für Superadmin sichtbar
+    const leadsNoDemo = leads.filter(l => !l.isDemo);
+
     // Per-role action gating happens in the UI (ApprovalLeadView).
     const PIPELINE_VISIBLE = [
       'ready_for_controlling',
@@ -760,23 +762,22 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       'hired',
     ];
     if (role === 'controlling' || role === 'geschaeftsleitung' || role === 'hr') {
-      return leads.filter(l => PIPELINE_VISIBLE.includes(l.status));
+      return leadsNoDemo.filter(l => PIPELINE_VISIBLE.includes(l.status));
     }
     const userEmail = (user?.email || '').toLowerCase();
     const myEmployee = employees.find(e => (e.email || '').toLowerCase() === userEmail);
     // Agency Manager & Backoffice: see all leads of their agency
     if (role === 'agency_manager' || role === 'backoffice') {
       if (!myEmployee) return [];
-      return leads.filter(l => l.agencyId === myEmployee.agencyId);
+      return leadsNoDemo.filter(l => l.agencyId === myEmployee.agencyId);
     }
     // Teamleiter: see ONLY leads personally assigned to them
     if (role === 'teamleiter') {
       if (!myEmployee) return [];
-      return leads.filter(l => l.employeeId === myEmployee.id);
+      return leadsNoDemo.filter(l => l.employeeId === myEmployee.id);
     }
-    // Analyst: read-only but can see all
-    if (role === 'analyst') return leads;
-    return leads;
+    return leadsNoDemo;
+
   }, [leads, employees, role, isSuperadmin, user]);
 
   return (
