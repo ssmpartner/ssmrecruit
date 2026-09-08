@@ -856,7 +856,7 @@ export default function LeadDetailSheet() {
                                 ...(selectedLead.altEmail ? [['Alt. E-Mail', selectedLead.altEmail]] : []),
                                 ...(!isFrozenForEmployee ? [['Telefon', selectedLead.phone]] : []),
                                 ...(selectedLead.altPhone ? [['Alt. Telefon', selectedLead.altPhone]] : []),
-                                ['Position', selectedLead.position],
+                                ['Wunschposition', selectedLead.position],
                                 ['Geburtsdatum', selectedLead.birthDate ? new Date(selectedLead.birthDate).toLocaleDateString('de-CH') : ''],
                                 ['Leaddatum', new Date(selectedLead.createdAt).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
                                ['Adresse', selectedLead.address],
