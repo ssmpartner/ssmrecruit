@@ -262,7 +262,7 @@ export default function LeadDetailSheet() {
     if (form.salutation !== (selectedLead.salutation || '')) changes.push(`Anrede → "${form.salutation || '—'}"`);
     if (form.email !== selectedLead.email) changes.push(`Email → "${form.email}"`);
     if (form.phone !== selectedLead.phone) changes.push(`Telefon aktualisiert`);
-    if (form.position !== selectedLead.position) changes.push(`Position → "${form.position}"`);
+    if (form.position !== selectedLead.position) changes.push(`Wunschposition → "${form.position}"`);
     if (form.address !== selectedLead.address) changes.push(`Adresse aktualisiert`);
     if (form.plz !== selectedLead.plz) changes.push(`PLZ → ${form.plz} ${form.city}`);
     if (form.notes !== selectedLead.notes) changes.push(`Notizen aktualisiert`);
