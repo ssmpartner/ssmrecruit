@@ -607,19 +607,22 @@ const roles = [
   { role: 'Backoffice', color: 'bg-accent/50 text-accent-foreground', permissions: ['Leads einsehen & bearbeiten', 'Termine erstellen', 'Aufgaben bearbeiten', 'CSV-Import'] },
   { role: 'Analyst', color: 'bg-muted text-muted-foreground', permissions: ['Dashboard & Analytics (nur lesen)', 'Lead-Daten einsehen', 'Berichte exportieren'] },
   { role: 'Controlling', color: 'bg-cyan-600/10 text-cyan-600', permissions: [
-    'Zugriff nur auf Leads im Sub-Status «Controlling Prüfung» (ready_for_controlling)',
+    'Zugriff nur auf Kandidaten in der Phase «Controlling Prüfung» (ready_for_controlling)',
     'Kein Zugriff auf andere Prozess-Schritte oder Gesamtanzahl Leads',
-    'Sichtbar: Name, Lead-Datum, Position, Standort, Betreuer, Insights/DISC, Dokumentenstatus',
+    'Sichtbar: Name, Lead-Datum, Wunschposition, Standort, Betreuer, Insights/DISC, Dokumentenstatus',
     'Ausgeblendet: Telefonnummer, E-Mail-Adresse',
     'Controlling Wizard: Selektionieren (mit Scoring: Perfekt/Sehr gut/Gut) oder Ablehnen (Pflicht-Begründung)',
-    'Selektioniert → Lead an Geschäftsleitung (management_review)',
-    'Abgelehnt → Lead gesperrt (Read-Only, lifecycle=closed)',
-    'Rückfrage → Task mit hoher Priorität an zuständigen Mitarbeiter',
+    'Freigabe ausschliesslich durch Rolle Controlling oder Superadmin – zusätzlich per Datenbank-Trigger erzwungen',
+    'Selektioniert → Kandidat an Geschäftsleitung (controlling_approved / management_review)',
+    'Sonderfall-Kandidaten (Feld controlling_direct_to_hr) gehen einmalig direkt an HR – ohne Geschäftsleitung',
+    'Abgelehnt → Kandidat gesperrt (Read-Only, lifecycle=closed)',
+    'Rückfrage → Aufgabe mit hoher Priorität an zuständigen Mitarbeiter',
+    'Erledigte Prüfungen verschwinden aus der eigenen Warteschlange und lösen keine weiteren Benachrichtigungen aus',
     'Eskalation: Erinnerung nach 2 Tagen, Admin-Eskalation nach 5 Tagen',
-    'Pflicht zur objektiven Bewertung – kein Zugriff auf Kontaktdaten',
   ]},
-  { role: 'Geschäftsleitung', color: 'bg-purple-600/10 text-purple-600', permissions: ['Nur Leads mit Status «Management Review»', 'Read-only Übersicht (Score, Insights, Controlling-Entscheidung inkl. Scoring)', 'Approve → HR Processing', 'Reject → Zurück an Controlling'] },
-  { role: 'HR', color: 'bg-pink-600/10 text-pink-600', permissions: ['Nur Leads mit Status «HR Processing»', 'Lead ansehen', 'Onboarding starten', 'Finalen Status setzen → Eingestellt'] },
+  { role: 'Geschäftsleitung', color: 'bg-purple-600/10 text-purple-600', permissions: ['Nur Kandidaten mit Status «Controlling freigegeben» oder «Management Review»', 'Read-only Übersicht (Score, Insights, Controlling-Entscheidung inkl. Scoring)', 'Freigabe pro GL-Mitglied: Sobald alle freigegeben haben, geht der Kandidat direkt an HR', 'Ablehnen → zurück an Controlling', 'Keine Zuweisung von Kandidaten möglich (nicht im Zuweisungs-Dropdown)'] },
+  { role: 'HR', color: 'bg-pink-600/10 text-pink-600', permissions: ['Kandidaten in den HR-Phasen (Management freigegeben, HR-Bearbeitung, HR Pendent)', 'Personalien und Dokumente vollständig einsehen, als PDF oder ZIP/CSV exportieren', 'Termin zur Vertragsunterzeichnung festlegen oder bis zu 3 Vorschläge senden', 'Onboarding starten, «Eingestellt bestätigen» oder mit Begründung «Auf Pendent setzen»', 'Zugriff auf das Modul «Verträge»', 'Keine Zuweisung von Kandidaten möglich (nicht im Zuweisungs-Dropdown)'] },
+
 ];
 
 function VersionHistoryTab() {
