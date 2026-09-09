@@ -4,9 +4,56 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.56.0';
+const APP_VERSION = '2.62.0';
 
 const versionHistory = [
+  { version: '2.62.0', date: '09.09.2026', changes: [
+    'Controlling-Freigabe technisch abgesichert: Nur Rolle Controlling (aktuell Manuel Gomes) und Superadmin können freigeben – Datenbank-Trigger blockieren Statuswechsel auf «Controlling freigegeben» und Freigabe-Einträge unberechtigter Benutzer',
+    'Freigabe-Optionen sind für nicht zuständige Rollen komplett unsichtbar (nicht mehr im DOM) – stattdessen neutraler Hinweis zum aktuellen Prozessstand, keine Umgehungsmöglichkeit',
+    'Sonderfall-Korrektur: Vier fehlerhaft (ohne Controlling-Berechtigung) freigegebene Kandidaten wurden an Controlling zurückgegeben, alte Freigaben entwertet und im Verlauf dokumentiert',
+    'Neues Feld «controlling_direct_to_hr»: Diese Sonderfälle gehen nach der Controlling-Freigabe einmalig direkt an HR – ohne Geschäftsleitung, mit Hinweis im Freigabefenster',
+    'Rollen-Vorschau für Superadmin: Im Profil-Menü zwischen Mitarbeiter, Controlling, Geschäftsleitung und HR wechseln, um Ansichten und Rechte zu prüfen – mit Hinweisbalken und «Beenden»-Button',
+    'Freigabe-Status in der Liste und im Freigabe-Panel: Profilbilder werden auch dann korrekt grün markiert, wenn die Freigabe unter dem Anzeigenamen statt der Benutzer-ID gespeichert wurde',
+  ]},
+  { version: '2.61.0', date: '02.09.2026', changes: [
+    'HR-Listenansicht angepasst: Statt Telefon, Ort und Kanton werden Vertrags-/Umzugstermin, Wunschposition und die Freigaben angezeigt',
+    'Vertragstermin in der Liste: Festgelegte Termine mit Datum und Uhrzeit (grün), HR-Vorschläge (blau, «Vorschlag»), fehlende Termine (gelb, «Noch nicht festgelegt»)',
+    'Freigaben in der Liste: Gruppen für Controlling, Geschäftsleitung und HR mit Profilbildern, Statusring und ✓/✕-Badge sowie Namen beim Überfahren',
+    'Wunschposition wird für HR immer angezeigt – fehlt sie, erscheint «Keine Angabe» gelb hervorgehoben',
+    'Vertragstermine: Nur HR legt den Termin zur Vertragsunterzeichnung fest, kann bis zu 3 Vorschläge machen; der Mitarbeiter bestätigt einen – Termin landet automatisch im Kalender, im Termine-Tab und wird per Benachrichtigung gemeldet',
+    'Sichtbarkeitsregeln geschärft: Controlling sieht nur Kandidaten in der Controlling-Phase, Geschäftsleitung nur «Controlling freigegeben»/«Management Review», HR nur die HR-Phasen – inklusive passender E-Mail- und Glocken-Benachrichtigungen',
+    'Erledigte Prüfungen verschwinden aus der eigenen Warteschlange; veraltete Benachrichtigungen wurden bereinigt',
+  ]},
+  { version: '2.60.0', date: '26.08.2026', changes: [
+    'Kalender komplett ausgebaut: Monats-, Wochen- und Tagesansicht mit Zeitraster 07:00–20:00 Uhr',
+    'Kalender-Filter nach Mitarbeiter sowie Info-Box beim Überfahren eines Termins mit Direktlinks zu Lead, E-Mail, Telefon und Meeting',
+    'Termine sind nach Typ farblich und mit Symbol gekennzeichnet (BG 1, BG 2, Vertragsunterzeichnung, Telefon, Video, Vor Ort)',
+    'Schweizer Feiertage: Nationale und verbreitete kantonale Feiertage (inkl. Ostern und Bettag) werden im Kalender markiert und bei der Terminwahl mit Name und Geltungsbereich gewarnt',
+    'Microsoft 365 Kalender – Phase 1: Kalenderverbindung pro Benutzer, Verfügbarkeiten lesen und Interviewtermine für Outlook vorbereiten',
+  ]},
+  { version: '2.59.0', date: '19.08.2026', changes: [
+    'Wunschposition statt freies Positionsfeld: Auswahl direkt aus den in den Einstellungen hinterlegten Karriereplan-Stufen (bestehende Freitext-Werte bleiben wählbar)',
+    'Einstellungs-Readiness: Fehlende Wunschposition wird als offener Punkt angezeigt und blockiert die Übergabe ans Controlling',
+    'Bestätigungs-Modal für «An Controlling einreichen»: Erklärt den Ablauf Controlling (Manuel Gomes) → Geschäftsleitung → HR und erlaubt die Auswahl der Wunschposition; bei Demo-Kandidaten wird nur simuliert',
+    'Demo-Kandidaten: Nur für Superadmin sichtbar und ausschliesslich im Demo-Tab – nicht mehr unter Aktiv, Archiviert oder Gelöscht',
+    'Duplikat-Badge in der Listenansicht: Erkennung ist nicht mehr auf 20 Treffer begrenzt, dadurch stimmen Liste und Detailfenster überein',
+  ]},
+  { version: '2.58.0', date: '12.08.2026', changes: [
+    'Status «Nicht erreicht» zieht Kandidaten nicht mehr automatisch zurück – sie bleiben beim zuständigen Mitarbeiter und können weiter bearbeitet werden',
+    'Auch nach 3 erfolglosen Rückrufen bleibt der Kandidat beim Bearbeiter; stattdessen wird eine Aufgabe «Status anpassen» mit hoher Priorität und 48 Stunden Frist erstellt',
+    'Aufgaben lösen vorläufig keine E-Mail-Benachrichtigungen mehr aus (serverseitig blockiert, manueller Versand bleibt möglich)',
+    'Zuweisungs-Dropdowns: HR- und Geschäftsleitungs-Benutzer erscheinen nicht mehr und können keine Kandidaten zugewiesen bekommen',
+    'Automatische Zuweisung respektiert den Schalter «kann Leads erhalten» pro Mitarbeiter – deaktivierte Mitarbeiter erhalten keine neuen Kandidaten',
+    'Routing korrigiert: Nur Duplikate landen beim Hauptsitz; falsch zugewiesene Kandidaten wurden nachträglich korrekt verteilt',
+  ]},
+  { version: '2.57.0', date: '05.08.2026', changes: [
+    'Neues Modul «Verträge»: Vertragsvorlagen, Vertragsbibliothek, Vertragssets, Regel-Engine, Platzhalter-System und Briefkopf-Verwaltung',
+    'Vierstufiger Vertragsgenerator mit Vorschau, PDF-Finalisierung, Versionierung, automatischer Vertragsnummer und Änderungsprotokoll',
+    'Rollenbasierte Vertragsberechtigungen inkl. serverseitiger Prüfung sowie Audit-Log über alle Vertragsaktionen',
+    'Willkommens-Prozess: Neue Kandidaten erhalten eine Willkommens-E-Mail mit öffentlicher Seite, Willkommensvideo und den Optionen «Ablehnen» oder «Nächste Schritte» (Insights-Test)',
+    'Willkommens-Konfiguration in den Einstellungen: Video, Texte, Buttons und Gültigkeit der öffentlichen Links',
+  ]},
+
   { version: '2.56.0', date: '22.06.2026', changes: [
     'Geschäftsleitung-Benachrichtigungen entschärft: Wer seine Freigabe bereits erteilt hat, erhält keine weiteren Erinnerungen mehr – nur noch das ausstehende GL-Mitglied wird angeschrieben',
     'Termine-Tab im Lead neu strukturiert: 3 feste Kacheln (BG1, BG2, Vertragsunterzeichnung) – immer sichtbar, direkt planbar, mit «Absagen»-Button statt Löschen',
@@ -508,8 +555,26 @@ const appFeatures = [
     { name: 'Rollensystem', desc: '9 Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Agenturleiter, Teamleiter, Backoffice, Analyst, Controlling (Prüfrolle), Geschäftsleitung (Freigaberolle), HR (Onboarding-Rolle).' },
     { name: 'Einstellungen', desc: 'Zentrale Konfiguration für Benachrichtigungen, Termine, Integrationen und API.' },
     { name: 'Profilverwaltung', desc: 'Benutzer können Name und Avatar in den Profileinstellungen ändern. E-Mail und Passwort werden zentral über das SSM Portal verwaltet.' },
+    { name: 'Rollen-Vorschau (Superadmin)', desc: 'Superadmins wechseln im Profil-Menü testweise in die Sicht von Mitarbeiter, Controlling, Geschäftsleitung oder HR. Ein Hinweisbalken zeigt die aktive Vorschau, die echten Rechte bleiben erhalten.' },
+    { name: 'Karriereplan-Stufen', desc: 'In den Einstellungen hinterlegte SSM-Karrierestufen (inkl. Fixlohn und Spesen) dienen als Auswahl für die Wunschposition eines Kandidaten.' },
+  ]},
+  { category: 'Verträge', icon: '📄', features: [
+    { name: 'Vertragsvorlagen', desc: 'Vorlagen mit Kategorien, Zielgruppen, Vertragsarten und Platzhaltern – inkl. Versionierung und Beilagen.' },
+    { name: 'Vertragsbibliothek', desc: 'Zentrale Ablage aller Dokumente und Beilagen mit Vorschau und Versionen.' },
+    { name: 'Vertragssets & Regeln', desc: 'Mehrere Dokumente als Set bündeln und per Regel-Engine automatisch der richtigen Zielgruppe zuordnen.' },
+    { name: 'Vertragsgenerator', desc: 'Vierstufiger Assistent: Vorlage wählen, Daten befüllen, Vorschau prüfen, PDF finalisieren – mit automatischer Vertragsnummer.' },
+    { name: 'Briefkopf & Layout', desc: 'Globaler Briefkopf mit Logo und Fusszeile für alle generierten PDFs.' },
+    { name: 'Berechtigungen & Audit-Log', desc: 'Rollenbasierte Vertragsrechte mit serverseitiger Prüfung und vollständigem Protokoll aller Vertragsaktionen.' },
+    { name: 'Vertragstermin (HR)', desc: 'HR legt den Termin zur Vertragsunterzeichnung fest oder macht bis zu 3 Vorschläge; der Mitarbeiter bestätigt einen Termin.' },
+  ]},
+  { category: 'Kandidaten-Erlebnis', icon: '🎬', features: [
+    { name: 'Willkommens-Seite', desc: 'Öffentliche Seite mit Willkommensvideo und den Optionen «Ablehnen» oder «Nächste Schritte» – automatisch nach Eingang eines neuen Kandidaten versendet.' },
+    { name: 'Willkommens-Konfiguration', desc: 'Video, Texte, Buttons und Gültigkeit der öffentlichen Links in den Einstellungen anpassbar.' },
+    { name: 'Dokumenten-Upload (öffentlich)', desc: 'Sichere Upload-Seite mit Pflicht- und optionalen Dokumenten: ID (Vorder- und Rückseite gebündelt), Führerausweis, Betreibungs- und Strafregisterauszug (nicht älter als 3 Monate, mit Bestelllinks), VBV-Zertifikat optional.' },
+    { name: 'Personalien-Formular', desc: 'Öffentliches Formular für Personalien, Zivilstand, Lohn und Kinder – von HR als PDF oder CSV exportierbar.' },
   ]},
 ];
+
 
 const techStack = [
   { name: 'React 18', desc: 'UI-Framework', icon: '⚛️' },
@@ -523,7 +588,17 @@ const techStack = [
   { name: 'Radix UI', desc: 'Komponenten', icon: '🧩' },
   { name: 'TanStack Query', desc: 'Daten-Management', icon: '🔄' },
   { name: 'Mapbox GL JS', desc: 'Karten & Geocoding', icon: '🗺️' },
+  { name: 'React Flow (@xyflow/react)', desc: 'Prozess-Visualisierung', icon: '🔀' },
+  { name: 'date-fns', desc: 'Datum & Feiertage', icon: '📆' },
+  { name: 'html2pdf.js', desc: 'PDF-Erstellung', icon: '🧾' },
+  { name: 'JSZip', desc: 'ZIP-Export von Dokumenten', icon: '🗜️' },
+  { name: 'React Hook Form + Zod', desc: 'Formulare & Validierung', icon: '✅' },
+  { name: 'Sonner', desc: 'Hinweismeldungen', icon: '🔔' },
+  { name: 'Jitsi Meet', desc: 'Video-Gespräche', icon: '🎥' },
+  { name: 'Microsoft Graph', desc: 'Microsoft 365 Kalender', icon: '📇' },
+  { name: 'Vitest & Playwright', desc: 'Tests & Prüfung', icon: '🧪' },
 ];
+
 
 const roles = [
   { role: 'Superadmin', color: 'bg-destructive/10 text-destructive', permissions: ['Vollzugriff auf alle Module', 'Rollen zuweisen (über SSM Portal)', 'Integrationen konfigurieren', 'CSV-Export', 'Leads dauerhaft löschen', 'Mehrfachauswahl & Bulk-Zuweisung', 'App-Einstellungen ändern', 'Mitarbeiter Agentur-Zuweisung'] },
@@ -532,19 +607,22 @@ const roles = [
   { role: 'Backoffice', color: 'bg-accent/50 text-accent-foreground', permissions: ['Leads einsehen & bearbeiten', 'Termine erstellen', 'Aufgaben bearbeiten', 'CSV-Import'] },
   { role: 'Analyst', color: 'bg-muted text-muted-foreground', permissions: ['Dashboard & Analytics (nur lesen)', 'Lead-Daten einsehen', 'Berichte exportieren'] },
   { role: 'Controlling', color: 'bg-cyan-600/10 text-cyan-600', permissions: [
-    'Zugriff nur auf Leads im Sub-Status «Controlling Prüfung» (ready_for_controlling)',
+    'Zugriff nur auf Kandidaten in der Phase «Controlling Prüfung» (ready_for_controlling)',
     'Kein Zugriff auf andere Prozess-Schritte oder Gesamtanzahl Leads',
-    'Sichtbar: Name, Lead-Datum, Position, Standort, Betreuer, Insights/DISC, Dokumentenstatus',
+    'Sichtbar: Name, Lead-Datum, Wunschposition, Standort, Betreuer, Insights/DISC, Dokumentenstatus',
     'Ausgeblendet: Telefonnummer, E-Mail-Adresse',
     'Controlling Wizard: Selektionieren (mit Scoring: Perfekt/Sehr gut/Gut) oder Ablehnen (Pflicht-Begründung)',
-    'Selektioniert → Lead an Geschäftsleitung (management_review)',
-    'Abgelehnt → Lead gesperrt (Read-Only, lifecycle=closed)',
-    'Rückfrage → Task mit hoher Priorität an zuständigen Mitarbeiter',
+    'Freigabe ausschliesslich durch Rolle Controlling oder Superadmin – zusätzlich per Datenbank-Trigger erzwungen',
+    'Selektioniert → Kandidat an Geschäftsleitung (controlling_approved / management_review)',
+    'Sonderfall-Kandidaten (Feld controlling_direct_to_hr) gehen einmalig direkt an HR – ohne Geschäftsleitung',
+    'Abgelehnt → Kandidat gesperrt (Read-Only, lifecycle=closed)',
+    'Rückfrage → Aufgabe mit hoher Priorität an zuständigen Mitarbeiter',
+    'Erledigte Prüfungen verschwinden aus der eigenen Warteschlange und lösen keine weiteren Benachrichtigungen aus',
     'Eskalation: Erinnerung nach 2 Tagen, Admin-Eskalation nach 5 Tagen',
-    'Pflicht zur objektiven Bewertung – kein Zugriff auf Kontaktdaten',
   ]},
-  { role: 'Geschäftsleitung', color: 'bg-purple-600/10 text-purple-600', permissions: ['Nur Leads mit Status «Management Review»', 'Read-only Übersicht (Score, Insights, Controlling-Entscheidung inkl. Scoring)', 'Approve → HR Processing', 'Reject → Zurück an Controlling'] },
-  { role: 'HR', color: 'bg-pink-600/10 text-pink-600', permissions: ['Nur Leads mit Status «HR Processing»', 'Lead ansehen', 'Onboarding starten', 'Finalen Status setzen → Eingestellt'] },
+  { role: 'Geschäftsleitung', color: 'bg-purple-600/10 text-purple-600', permissions: ['Nur Kandidaten mit Status «Controlling freigegeben» oder «Management Review»', 'Read-only Übersicht (Score, Insights, Controlling-Entscheidung inkl. Scoring)', 'Freigabe pro GL-Mitglied: Sobald alle freigegeben haben, geht der Kandidat direkt an HR', 'Ablehnen → zurück an Controlling', 'Keine Zuweisung von Kandidaten möglich (nicht im Zuweisungs-Dropdown)'] },
+  { role: 'HR', color: 'bg-pink-600/10 text-pink-600', permissions: ['Kandidaten in den HR-Phasen (Management freigegeben, HR-Bearbeitung, HR Pendent)', 'Personalien und Dokumente vollständig einsehen, als PDF oder ZIP/CSV exportieren', 'Termin zur Vertragsunterzeichnung festlegen oder bis zu 3 Vorschläge senden', 'Onboarding starten, «Eingestellt bestätigen» oder mit Begründung «Auf Pendent setzen»', 'Zugriff auf das Modul «Verträge»', 'Keine Zuweisung von Kandidaten möglich (nicht im Zuweisungs-Dropdown)'] },
+
 ];
 
 function VersionHistoryTab() {
