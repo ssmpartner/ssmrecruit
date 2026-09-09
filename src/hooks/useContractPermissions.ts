@@ -11,10 +11,15 @@ export type ContractPermKey =
 const ROLE_DEFAULTS: Record<string, ContractPermKey[]> = {
   hr: ['can_view', 'can_generate', 'can_edit', 'can_finalize', 'can_send'],
   geschaeftsleitung: ['can_view', 'can_generate'],
-  teamleiter: ['can_view', 'can_generate', 'can_edit'],
-  backoffice: ['can_view', 'can_generate', 'can_edit'],
-  agency_manager: ['can_view', 'can_generate', 'can_edit'],
+  teamleiter: ['can_view'],
+  backoffice: ['can_view'],
+  agency_manager: ['can_view'],
+  employee: ['can_view'],
+  analyst: ['can_view'],
 };
+
+// Recruiter-Rollen: ausschliesslich Leserecht, keine Erweiterung möglich
+const VIEW_ONLY_ROLES = ['teamleiter', 'backoffice', 'agency_manager', 'employee', 'analyst'];
 
 export function useContractPermissions() {
   const { user, role, isSuperadmin, isAdmin } = useAuth();
