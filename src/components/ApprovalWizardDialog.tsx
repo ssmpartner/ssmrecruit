@@ -94,6 +94,17 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
   const [controllingDecision, setControllingDecision] = useState<string>('—');
 
   const [queryText, setQueryText] = useState('');
+  const [skipGl, setSkipGl] = useState(false);
+
+  useEffect(() => {
+    if (!open || wizardType !== 'controlling') return;
+    (async () => {
+      const { data } = await supabase.from('leads').select('controlling_direct_to_hr').eq('id', leadId).single();
+      setSkipGl(!!data?.controlling_direct_to_hr);
+    })();
+  }, [open, wizardType, leadId]);
+
+
 
   useEffect(() => {
     if (!open || wizardType !== 'management') return;
