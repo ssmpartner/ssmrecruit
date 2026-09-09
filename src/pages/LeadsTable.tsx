@@ -31,7 +31,7 @@ const initialsOf = (n?: string | null) =>
   (n || '?').split(/\s+/).map(s => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 
 function ApprovalAvatar({ u, state, roleLabel }: { u: RoleUser; state: 'approved' | 'rejected' | 'pending'; roleLabel: string }) {
-  const ring = state === 'approved' ? 'ring-emerald-500' : state === 'rejected' ? 'ring-destructive' : 'ring-muted';
+  const ring = state === 'approved' ? 'ring-emerald-500' : state === 'rejected' ? 'ring-destructive' : 'ring-border';
   const stateLabel = state === 'approved' ? 'freigegeben' : state === 'rejected' ? 'abgelehnt' : 'ausstehend';
   return (
     <TooltipProvider>
@@ -39,10 +39,22 @@ function ApprovalAvatar({ u, state, roleLabel }: { u: RoleUser; state: 'approved
         <TooltipTrigger asChild>
           <span onClick={e => e.stopPropagation()} className="relative inline-flex shrink-0">
             {u.avatar_url ? (
-              <img src={u.avatar_url} alt="" className={cn('h-6 w-6 rounded-full object-cover ring-2', ring, state === 'pending' && 'opacity-50 grayscale')} />
+              <img
+                src={u.avatar_url}
+                alt={u.display_name || ''}
+                className={cn('h-8 w-8 rounded-full object-cover ring-2', ring, state === 'pending' && 'opacity-60')}
+              />
             ) : (
-              <span className={cn('flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[9px] font-bold text-primary ring-2', ring, state === 'pending' && 'opacity-50 grayscale')}>
+              <span className={cn('flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary ring-2', ring, state === 'pending' && 'opacity-60')}>
                 {initialsOf(u.display_name)}
+              </span>
+            )}
+            {state !== 'pending' && (
+              <span className={cn(
+                'absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-card text-[8px] font-bold text-white',
+                state === 'approved' ? 'bg-emerald-500' : 'bg-destructive',
+              )}>
+                {state === 'approved' ? '✓' : '✕'}
               </span>
             )}
           </span>
@@ -52,6 +64,15 @@ function ApprovalAvatar({ u, state, roleLabel }: { u: RoleUser; state: 'approved
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
+  );
+}
+
+function ApprovalGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col items-start gap-1">
+      <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-1">{children}</div>
+    </div>
   );
 }
 
