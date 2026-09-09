@@ -944,7 +944,9 @@ export default function LeadDetailSheet() {
                                     <option value="">Bitte wählen…</option>
                                     <option value="BG 1 (Erstgespräch)">BG 1 (Erstgespräch)</option>
                                     <option value="BG 2 (Fortsetzung)">BG 2 (Fortsetzung)</option>
-                                    <option value="Vertragsunterzeichnung">Vertragsunterzeichnung</option>
+                                    {(isSuperadmin || isAdmin) && (
+                                      <option value="Vertragsunterzeichnung">Vertragsunterzeichnung</option>
+                                    )}
                                   </select>
                                 </div>
                                <div>
