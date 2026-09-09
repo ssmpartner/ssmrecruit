@@ -300,7 +300,16 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
 
   const renderControllingFields = () => (
     <div className="space-y-4">
+      {skipGl && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            <strong>Sonderfall:</strong> Die frühere Freigabe erfolgte ohne Controlling-Berechtigung. Nach deiner Freigabe geht der Kandidat <strong>direkt an HR</strong> – ohne Geschäftsleitung.
+          </p>
+        </div>
+      )}
       <div className="space-y-2">
+
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prüfpunkte</p>
         {[
           { checked: insightsComplete, set: setInsightsComplete, icon: Brain, color: 'text-violet-600', label: 'Insights abgeschlossen', sub: 'DISC & Motivatoren vollständig' },
