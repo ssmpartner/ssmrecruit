@@ -463,8 +463,15 @@ export default function LeadsTable() {
                     </th>
                   )}
                   <th className="px-5 py-3 font-medium">Name</th>
-                  {!isControlling && <th className="px-5 py-3 font-medium">Telefon</th>}
-                  <th className="px-5 py-3 font-medium">Ort</th>
+                  {!isControlling && !isHR && <th className="px-5 py-3 font-medium">Telefon</th>}
+                  {isHR ? (
+                    <>
+                      <th className="px-5 py-3 font-medium">Vertragstermin</th>
+                      <th className="px-5 py-3 font-medium">Freigaben</th>
+                    </>
+                  ) : (
+                    <th className="px-5 py-3 font-medium">Ort</th>
+                  )}
                   <th className="px-5 py-3 font-medium">Kanton</th>
                   <th className="px-5 py-3 font-medium">Quelle</th>
                   <th className="px-5 py-3 font-medium">Status</th>
