@@ -1,11 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Circle, AlertCircle, Trophy, Send, Loader2, MinusCircle } from 'lucide-react';
+import { CheckCircle2, Circle, AlertCircle, Trophy, Send, Loader2, MinusCircle, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeads } from '@/context/useLeads';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { statusConfig, type Appointment } from '@/lib/mock-data';
 import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
+import { useCareerLevels } from '@/hooks/useCareerLevels';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
 interface Props {
   leadId: string;
