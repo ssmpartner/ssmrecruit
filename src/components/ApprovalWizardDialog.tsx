@@ -151,8 +151,10 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
     }
 
     // Schutz vor versehentlicher Wiederholung einer bereits erledigten Prüfung
+    let directToHr = false;
     if (action !== 'query') {
-      const { data: current } = await supabase.from('leads').select('status').eq('id', leadId).single();
+      const { data: current } = await supabase.from('leads').select('status, controlling_direct_to_hr').eq('id', leadId).single();
+      directToHr = !!current?.controlling_direct_to_hr;
       const currentIdx = PHASE_ORDER.indexOf((current?.status || '') as LeadStatus);
       const triggerIdx = PHASE_ORDER.indexOf(config.triggerStatus);
       if (currentIdx > -1 && triggerIdx > -1 && currentIdx > triggerIdx) {
@@ -165,6 +167,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
         return;
       }
     }
+
 
     setSubmitting(true);
 
