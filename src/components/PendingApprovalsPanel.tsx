@@ -268,7 +268,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
         )}
         {ctrlDone && controllingApprover && (
           <p className="text-[11px] text-emerald-700 mt-2">
-            Freigegeben durch {controllingUsers.find(u => u.user_id === controllingApprover)?.display_name || '—'}
+            Freigegeben durch {controllingUsers.find(u => matchesApprover(controllingApprover, u))?.display_name || controllingApprover}
           </p>
         )}
       </div>
