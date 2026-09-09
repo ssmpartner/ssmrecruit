@@ -984,8 +984,18 @@ export default function LeadDetailSheet() {
                                 </select>
                               </div>
                             </div>
-                            <div>
-                               <label className="text-sm text-muted-foreground">Notizen</label>
+                            {(() => {
+                              const hol = aptForm.date ? getHolidayForDate(aptForm.date) : undefined;
+                              if (!hol) return null;
+                              return (
+                                <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                                  <strong>Achtung – Feiertag:</strong> {format(aptForm.date!, 'dd.MM.yyyy')} ist «{hol.name}»
+                                  {hol.national ? ' (ganze Schweiz)' : ` (nur in: ${(hol.cantons ?? []).join(', ')})`}. Bitte einen anderen Tag prüfen.
+                                </div>
+                              );
+                            })()}
+                             <div>
+                                <label className="text-sm text-muted-foreground">Notizen</label>
                                <textarea value={aptForm.notes} onChange={e => setAptForm(prev => ({ ...prev, notes: e.target.value }))} rows={2} placeholder="Optional..."
                                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none" />
                             </div>
