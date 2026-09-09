@@ -588,7 +588,17 @@ const techStack = [
   { name: 'Radix UI', desc: 'Komponenten', icon: '🧩' },
   { name: 'TanStack Query', desc: 'Daten-Management', icon: '🔄' },
   { name: 'Mapbox GL JS', desc: 'Karten & Geocoding', icon: '🗺️' },
+  { name: 'React Flow (@xyflow/react)', desc: 'Prozess-Visualisierung', icon: '🔀' },
+  { name: 'date-fns', desc: 'Datum & Feiertage', icon: '📆' },
+  { name: 'html2pdf.js', desc: 'PDF-Erstellung', icon: '🧾' },
+  { name: 'JSZip', desc: 'ZIP-Export von Dokumenten', icon: '🗜️' },
+  { name: 'React Hook Form + Zod', desc: 'Formulare & Validierung', icon: '✅' },
+  { name: 'Sonner', desc: 'Hinweismeldungen', icon: '🔔' },
+  { name: 'Jitsi Meet', desc: 'Video-Gespräche', icon: '🎥' },
+  { name: 'Microsoft Graph', desc: 'Microsoft 365 Kalender', icon: '📇' },
+  { name: 'Vitest & Playwright', desc: 'Tests & Prüfung', icon: '🧪' },
 ];
+
 
 const roles = [
   { role: 'Superadmin', color: 'bg-destructive/10 text-destructive', permissions: ['Vollzugriff auf alle Module', 'Rollen zuweisen (über SSM Portal)', 'Integrationen konfigurieren', 'CSV-Export', 'Leads dauerhaft löschen', 'Mehrfachauswahl & Bulk-Zuweisung', 'App-Einstellungen ändern', 'Mitarbeiter Agentur-Zuweisung'] },
