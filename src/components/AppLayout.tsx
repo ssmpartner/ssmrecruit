@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
 import GlobalSearchDialog from './GlobalSearchDialog';
-import { Search, ChevronDown, ExternalLink, Settings, LogOut } from 'lucide-react';
+import { Search, ChevronDown, ExternalLink, Settings, LogOut, Eye, UserCog, Check, X } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
 import { useAuth } from '@/context/AuthContext';
 import { useSidebarState } from '@/context/SidebarContext';
