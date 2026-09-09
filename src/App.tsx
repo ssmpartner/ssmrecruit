@@ -148,6 +148,7 @@ const App = () => (
                 <Route path="/calendar" element={<P><CalendarPage /></P>} />
                 <Route path="/analytics" element={<P><Analytics /></P>} />
                 <Route path="/settings" element={<P><Settings /></P>} />
+                <Route path="/settings/:section" element={<P><Settings /></P>} />
                 <Route path="/processes" element={<P><Processes /></P>} />
                 <Route path="/tasks" element={<P><Tasks /></P>} />
                 <Route path="/api-docs" element={<P><ApiDocs /></P>} />
