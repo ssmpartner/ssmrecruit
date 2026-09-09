@@ -979,6 +979,38 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
               </div>
             </TabsContent>
 
+            {/* ─── TAB: Termine (nur HR) ─── */}
+            {isHR && (
+              <TabsContent value="appointments" className="flex-1 overflow-y-auto p-5 mt-0">
+                <div className="max-w-3xl mx-auto space-y-4">
+                  <ContractAppointmentPanel leadId={selectedLead.id} mode="hr" />
+
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" /> Alle Termine des Kandidaten
+                    </h3>
+                    {leadAppointments.length === 0 ? (
+                      <p className="text-sm text-muted-foreground py-6 text-center">Keine Termine vorhanden</p>
+                    ) : leadAppointments.map(apt => {
+                      const isPast = new Date(`${apt.date}T${apt.time || '00:00'}`) < new Date();
+                      return (
+                        <div key={apt.id} className={cn('rounded-lg border p-3', isPast ? 'bg-muted/30 opacity-70' : 'bg-card')}>
+                          <p className="text-sm font-medium">{apt.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {new Date(apt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
+                            {' • '}{apt.time} • {apt.duration} Min.
+                            {apt.type === 'phone' ? ' • Telefon' : apt.type === 'video' ? ' • Video-Call' : ' • Vor Ort'}
+                            {isPast ? ' • vergangen' : ''}
+                          </p>
+                          {apt.notes && <p className="text-xs text-muted-foreground mt-1">{apt.notes}</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </TabsContent>
+            )}
+
             {/* ─── TAB: Verlauf ─── */}
             <TabsContent value="history" className="flex-1 overflow-y-auto p-5 mt-0">
               <div className="max-w-3xl mx-auto space-y-2">
