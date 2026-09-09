@@ -276,14 +276,43 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const total = items.length;
   const pct = Math.round((totalProgress / total) * 100);
   const ready = totalProgress >= total;
+  // Alles ausser Wunschposition erledigt → Dialog erlaubt Nachtragen der Position
+  const readyExceptPosition = items
+    .filter(i => i.label !== 'Wunschposition')
+    .every(i => i.progress >= 1);
+  const isDemo = !!lead?.isDemo;
+
+  const openConfirm = () => {
+    setSelectedPosition(lead?.position?.trim() || '');
+    setConfirmOpen(true);
+  };
 
   const handleSubmit = async () => {
-    if (!lead || !ready || submitting) return;
+    if (!lead || !readyExceptPosition || submitting) return;
+    const position = selectedPosition.trim();
+    if (!position) {
+      toast({ title: 'Wunschposition fehlt', description: 'Bitte eine Wunschposition auswählen.', variant: 'destructive' });
+      return;
+    }
     setSubmitting(true);
     try {
+      if (isDemo) {
+        // Demo-Kandidat: keine echte Weiterleitung, nur Simulation
+        setDemoSimulated(true);
+        setConfirmOpen(false);
+        toast({
+          title: '🧪 Simulation (Demo)',
+          description: 'Demo-Kandidat: Die Weiterleitung an Controlling wurde nur simuliert.',
+        });
+        return;
+      }
+      if (position !== (lead.position || '').trim()) {
+        updateLead(leadId, { position });
+      }
       updateLead(leadId, { status: 'ready_for_controlling' });
-      addActivity(leadId, 'status_change', `Lead zur Controlling-Prüfung eingereicht (Einstellungs-Readiness 100 %)`);
-      toast({ title: '✅ Eingereicht', description: 'Lead wurde an Controlling übergeben.' });
+      addActivity(leadId, 'status_change', `Lead zur Controlling-Prüfung eingereicht (Wunschposition: ${position})`);
+      toast({ title: '✅ Eingereicht', description: 'Lead wurde an Controlling (Manuel Gomes) übergeben.' });
+      setConfirmOpen(false);
     } catch (e) {
       toast({ title: 'Fehler beim Einreichen', description: (e as Error).message, variant: 'destructive' });
     } finally {
