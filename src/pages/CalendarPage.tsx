@@ -167,31 +167,8 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* Feiertage */}
-      <div className="rounded-xl border bg-card p-4 shadow-sm">
-        <h3 className="text-sm font-semibold mb-3">Schweizer Feiertage {year}</h3>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {getSwissHolidays(year).map(h => {
-            const d = new Date(`${h.date}T00:00:00`);
-            return (
-              <div key={h.date + h.name} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs">
-                <div className="min-w-0">
-                  <p className="font-medium truncate">{h.name}</p>
-                  <p className="text-muted-foreground">
-                    {WEEKDAYS[(d.getDay() + 6) % 7]}, {d.getDate()}. {MONTHS[d.getMonth()]}
-                  </p>
-                </div>
-                <span className={`shrink-0 rounded px-1.5 py-0.5 font-medium ${h.national ? 'bg-destructive/15 text-destructive' : 'bg-warning/15 text-warning'}`}>
-                  {h.national ? 'CH' : 'teilweise'}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-        <p className="mt-3 text-xs text-muted-foreground">
-          «CH» gilt in der ganzen Schweiz, «teilweise» nur in einzelnen Kantonen – Details beim Überfahren im Kalender.
-        </p>
-      </div>
+
+
 
       {/* Summary */}
       <div className="grid gap-4 sm:grid-cols-3">
