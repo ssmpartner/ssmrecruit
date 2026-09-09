@@ -147,6 +147,21 @@ export default function AppLayout() {
             </DropdownMenu>
           </div>
         </header>
+        {viewAsRole && (
+          <div className="sticky top-16 z-10 flex items-center justify-center gap-3 border-b border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+            <Eye className="h-4 w-4 shrink-0" />
+            <span>
+              Rollen-Vorschau aktiv:{' '}
+              <strong>{PREVIEW_ROLES.find(r => r.role === viewAsRole)?.label ?? viewAsRole}</strong> – du siehst die App wie diese Rolle.
+            </span>
+            <button
+              onClick={() => switchRole(null)}
+              className="inline-flex items-center gap-1 rounded-md border border-amber-400 bg-white px-2 py-1 text-xs font-medium hover:bg-amber-100 transition-colors"
+            >
+              <X className="h-3 w-3" /> Beenden
+            </button>
+          </div>
+        )}
         <main className="p-8">
           <Outlet />
         </main>
