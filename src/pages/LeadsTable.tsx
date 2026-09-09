@@ -619,7 +619,12 @@ export default function LeadsTable() {
                                     key={`c-${u.user_id}`}
                                     u={u}
                                     roleLabel="Controlling"
-                                    state={hrCtrlApprovers.get(lead.id) === u.user_id ? 'approved' : 'pending'}
+                                    state={(() => {
+                                      const by = hrCtrlApprovers.get(lead.id);
+                                      if (!by) return 'pending';
+                                      const norm = (s: string) => s.trim().toLowerCase();
+                                      return norm(by) === norm(u.display_name || '') ? 'approved' : 'pending';
+                                    })()}
                                   />
                                 ))}
                               </ApprovalGroup>
