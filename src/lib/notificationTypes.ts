@@ -7,6 +7,8 @@ export const NOTIFICATION_TYPES: { type: string; label: string; group: string }[
   { type: 'appointment_created', label: 'Termin erstellt', group: 'Termine' },
   { type: 'appointment_reminder', label: 'Termin-Erinnerungen', group: 'Termine' },
   { type: 'appointment_cancelled', label: 'Termin gelöscht', group: 'Termine' },
+  { type: 'contract_appointment_proposed', label: 'Vertragstermin vorgeschlagen (HR)', group: 'Termine' },
+  { type: 'contract_appointment_confirmed', label: 'Vertragstermin bestätigt', group: 'Termine' },
   { type: 'task_created', label: 'Neue Aufgabe', group: 'Aufgaben & Prozesse' },
   { type: 'task_overdue', label: 'Aufgabe überfällig', group: 'Aufgaben & Prozesse' },
   { type: 'process_step_changed', label: 'Prozess-Schritt', group: 'Aufgaben & Prozesse' },
