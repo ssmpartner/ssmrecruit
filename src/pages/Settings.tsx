@@ -193,77 +193,97 @@ export default function Settings() {
 
   const isAdmin = role === 'admin';
 
-  return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Einstellungen</h1>
-        <p className="text-muted-foreground">System konfigurieren und verwalten</p>
-      </div>
+  const activeMeta = visibleTabs.find(t => t.id === activeTab);
 
-      <div className="flex gap-6">
-        {/* Sidebar Navigation */}
-        <nav className="w-56 shrink-0 space-y-1">
+  // Overview: tiles
+  if (!section || !activeMeta) {
+    return (
+      <div>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold tracking-tight">Einstellungen</h1>
+          <p className="text-muted-foreground">System konfigurieren und verwalten</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${
-                  isActive
-                    ? 'bg-primary/10 text-primary shadow-sm'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                }`}
+                onClick={() => navigate(`/settings/${tab.id}`)}
+                className="group flex flex-col items-start gap-3 rounded-2xl border bg-card p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
               >
-                <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${isActive ? 'text-primary' : ''}`} />
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                  <Icon className="h-5 w-5" />
+                </span>
                 <div>
-                  <p className={`text-sm ${isActive ? 'font-semibold' : 'font-medium'}`}>{tab.label}</p>
-                  <p className="text-[11px] text-muted-foreground leading-tight">{tab.desc}</p>
+                  <p className="font-semibold leading-tight">{tab.label}</p>
+                  <p className="mt-1 text-xs text-muted-foreground leading-snug">{tab.desc}</p>
                 </div>
               </button>
             );
           })}
-        </nav>
-
-        {/* Content */}
-        <div className="flex-1 max-w-2xl space-y-6">
-          {activeTab === 'profile' && <ProfileSettings />}
-          {activeTab === 'notifications' && (
-            <div className="space-y-8">
-              <PersonalNotificationSettings />
-              {isSuperadmin && <NotificationRoleMatrix />}
-              {isSuperadmin && <NotificationActivityLog />}
-            </div>
-          )}
-          
-          {activeTab === 'sources' && <LeadSourcesTab isSuperadmin={isSuperadmin} />}
-          {activeTab === 'appointments' && <AppointmentsTab appointmentSettings={appointmentSettings} updateAppointmentSettings={updateAppointmentSettings} toast={toast} />}
-          {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}
-          {activeTab === 'wizards' && <WizardsTab />}
-          {activeTab === 'career' && <CareerPlansTab />}
-          {activeTab === 'contract_permissions' && isSuperadmin && <ContractPermissionsTab />}
-          {activeTab === 'news' && <NewsBannerTab />}
-          {activeTab === 'email' && <EmailSettingsTab />}
-          {activeTab === 'integrations' && (
-            <IntegrationsTab
-              integrations={integrations}
-              expandedId={expandedId}
-              setExpandedId={setExpandedId}
-              updateIntegration={updateIntegration}
-              saveIntegration={saveIntegration}
-              disconnectIntegration={disconnectIntegration}
-              testWebhook={testWebhook}
-              toast={toast}
-            />
-          )}
-          {activeTab === 'api' && <ApiKeysTab toast={toast} />}
-          
         </div>
+      </div>
+    );
+  }
+
+  const ActiveIcon = activeMeta.icon;
+
+  return (
+    <div>
+      <button
+        onClick={() => navigate('/settings')}
+        className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ChevronLeft className="h-4 w-4" /> Alle Einstellungen
+      </button>
+
+      <div className="mb-6 flex items-start gap-3">
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <ActiveIcon className="h-5 w-5" />
+        </span>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{activeMeta.label}</h1>
+          <p className="text-muted-foreground">{activeMeta.desc}</p>
+        </div>
+      </div>
+
+      <div className="max-w-3xl space-y-6">
+        {activeTab === 'profile' && <ProfileSettings />}
+        {activeTab === 'notifications' && (
+          <div className="space-y-8">
+            <PersonalNotificationSettings />
+            {isSuperadmin && <NotificationRoleMatrix />}
+            {isSuperadmin && <NotificationActivityLog />}
+          </div>
+        )}
+
+        {activeTab === 'sources' && <LeadSourcesTab isSuperadmin={isSuperadmin} />}
+        {activeTab === 'appointments' && <AppointmentsTab appointmentSettings={appointmentSettings} updateAppointmentSettings={updateAppointmentSettings} toast={toast} />}
+        {activeTab === 'insights' && <InsightsTab insightsSettings={insightsSettings} updateInsightsSettings={updateInsightsSettings} toast={toast} />}
+        {activeTab === 'wizards' && <WizardsTab />}
+        {activeTab === 'career' && <CareerPlansTab />}
+        {activeTab === 'contract_permissions' && isSuperadmin && <ContractPermissionsTab />}
+        {activeTab === 'news' && <NewsBannerTab />}
+        {activeTab === 'email' && <EmailSettingsTab />}
+        {activeTab === 'integrations' && (
+          <IntegrationsTab
+            integrations={integrations}
+            expandedId={expandedId}
+            setExpandedId={setExpandedId}
+            updateIntegration={updateIntegration}
+            saveIntegration={saveIntegration}
+            disconnectIntegration={disconnectIntegration}
+            testWebhook={testWebhook}
+            toast={toast}
+          />
+        )}
+        {activeTab === 'api' && <ApiKeysTab toast={toast} />}
       </div>
     </div>
   );
 }
+
 
 /* ═══════════════════════════════════════════════════════════════
    TAB COMPONENTS
