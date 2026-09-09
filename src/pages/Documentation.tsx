@@ -555,8 +555,26 @@ const appFeatures = [
     { name: 'Rollensystem', desc: '9 Rollen mit abgestuften Berechtigungen: Superadmin, Admin, Agenturleiter, Teamleiter, Backoffice, Analyst, Controlling (Prüfrolle), Geschäftsleitung (Freigaberolle), HR (Onboarding-Rolle).' },
     { name: 'Einstellungen', desc: 'Zentrale Konfiguration für Benachrichtigungen, Termine, Integrationen und API.' },
     { name: 'Profilverwaltung', desc: 'Benutzer können Name und Avatar in den Profileinstellungen ändern. E-Mail und Passwort werden zentral über das SSM Portal verwaltet.' },
+    { name: 'Rollen-Vorschau (Superadmin)', desc: 'Superadmins wechseln im Profil-Menü testweise in die Sicht von Mitarbeiter, Controlling, Geschäftsleitung oder HR. Ein Hinweisbalken zeigt die aktive Vorschau, die echten Rechte bleiben erhalten.' },
+    { name: 'Karriereplan-Stufen', desc: 'In den Einstellungen hinterlegte SSM-Karrierestufen (inkl. Fixlohn und Spesen) dienen als Auswahl für die Wunschposition eines Kandidaten.' },
+  ]},
+  { category: 'Verträge', icon: '📄', features: [
+    { name: 'Vertragsvorlagen', desc: 'Vorlagen mit Kategorien, Zielgruppen, Vertragsarten und Platzhaltern – inkl. Versionierung und Beilagen.' },
+    { name: 'Vertragsbibliothek', desc: 'Zentrale Ablage aller Dokumente und Beilagen mit Vorschau und Versionen.' },
+    { name: 'Vertragssets & Regeln', desc: 'Mehrere Dokumente als Set bündeln und per Regel-Engine automatisch der richtigen Zielgruppe zuordnen.' },
+    { name: 'Vertragsgenerator', desc: 'Vierstufiger Assistent: Vorlage wählen, Daten befüllen, Vorschau prüfen, PDF finalisieren – mit automatischer Vertragsnummer.' },
+    { name: 'Briefkopf & Layout', desc: 'Globaler Briefkopf mit Logo und Fusszeile für alle generierten PDFs.' },
+    { name: 'Berechtigungen & Audit-Log', desc: 'Rollenbasierte Vertragsrechte mit serverseitiger Prüfung und vollständigem Protokoll aller Vertragsaktionen.' },
+    { name: 'Vertragstermin (HR)', desc: 'HR legt den Termin zur Vertragsunterzeichnung fest oder macht bis zu 3 Vorschläge; der Mitarbeiter bestätigt einen Termin.' },
+  ]},
+  { category: 'Kandidaten-Erlebnis', icon: '🎬', features: [
+    { name: 'Willkommens-Seite', desc: 'Öffentliche Seite mit Willkommensvideo und den Optionen «Ablehnen» oder «Nächste Schritte» – automatisch nach Eingang eines neuen Kandidaten versendet.' },
+    { name: 'Willkommens-Konfiguration', desc: 'Video, Texte, Buttons und Gültigkeit der öffentlichen Links in den Einstellungen anpassbar.' },
+    { name: 'Dokumenten-Upload (öffentlich)', desc: 'Sichere Upload-Seite mit Pflicht- und optionalen Dokumenten: ID (Vorder- und Rückseite gebündelt), Führerausweis, Betreibungs- und Strafregisterauszug (nicht älter als 3 Monate, mit Bestelllinks), VBV-Zertifikat optional.' },
+    { name: 'Personalien-Formular', desc: 'Öffentliches Formular für Personalien, Zivilstand, Lohn und Kinder – von HR als PDF oder CSV exportierbar.' },
   ]},
 ];
+
 
 const techStack = [
   { name: 'React 18', desc: 'UI-Framework', icon: '⚛️' },
