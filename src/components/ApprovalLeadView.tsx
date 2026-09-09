@@ -10,6 +10,7 @@ import PersonalityProfile from './PersonalityProfile';
 import LeadHiringReadiness from './LeadHiringReadiness';
 import ManagementApprovalPanel from './ManagementApprovalPanel';
 import PendingApprovalsPanel from './PendingApprovalsPanel';
+import ContractAppointmentPanel from './ContractAppointmentPanel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -99,6 +100,24 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
 
 
   const wizardType: ApprovalWizardType = isControlling ? 'controlling' : isGeschaeftsleitung ? 'management' : 'hr';
+
+  // Termine des Kandidaten (für HR-Termin-Tab)
+  const [leadAppointments, setLeadAppointments] = useState<{ id: string; title: string; date: string; time: string; duration: number; type: string; notes: string | null }[]>([]);
+  useEffect(() => {
+    if (!selectedLead?.id) { setLeadAppointments([]); return; }
+    const load = async () => {
+      const { data } = await supabase.from('appointments')
+        .select('id,title,date,time,duration,type,notes')
+        .eq('lead_id', selectedLead.id)
+        .order('date', { ascending: true }).order('time', { ascending: true });
+      setLeadAppointments((data ?? []) as any[]);
+    };
+    load();
+    const ch = supabase.channel(`approval-apts-${selectedLead.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: `lead_id=eq.${selectedLead.id}` }, load)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [selectedLead?.id]);
 
   // Load leads the current user has already decided (so they drop off the queue)
   useEffect(() => {
@@ -372,6 +391,11 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                 <TabsTrigger value="personnel" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
                   <UserSquare2 className="h-3.5 w-3.5 mr-1.5" />Personalien
                 </TabsTrigger>
+                {isHR && (
+                  <TabsTrigger value="appointments" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
+                    <Calendar className="h-3.5 w-3.5 mr-1.5" />Termine ({leadAppointments.length})
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="history" className="rounded-t-lg rounded-b-none border border-b-0 data-[state=active]:bg-background data-[state=active]:shadow-none px-4 py-2 text-xs">
                   <Clock className="h-3.5 w-3.5 mr-1.5" />Verlauf
                 </TabsTrigger>
@@ -973,6 +997,38 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                 )}
               </div>
             </TabsContent>
+
+            {/* ─── TAB: Termine (nur HR) ─── */}
+            {isHR && (
+              <TabsContent value="appointments" className="flex-1 overflow-y-auto p-5 mt-0">
+                <div className="max-w-3xl mx-auto space-y-4">
+                  <ContractAppointmentPanel leadId={selectedLead.id} mode="hr" />
+
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" /> Alle Termine des Kandidaten
+                    </h3>
+                    {leadAppointments.length === 0 ? (
+                      <p className="text-sm text-muted-foreground py-6 text-center">Keine Termine vorhanden</p>
+                    ) : leadAppointments.map(apt => {
+                      const isPast = new Date(`${apt.date}T${apt.time || '00:00'}`) < new Date();
+                      return (
+                        <div key={apt.id} className={cn('rounded-lg border p-3', isPast ? 'bg-muted/30 opacity-70' : 'bg-card')}>
+                          <p className="text-sm font-medium">{apt.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {new Date(apt.date).toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
+                            {' • '}{apt.time} • {apt.duration} Min.
+                            {apt.type === 'phone' ? ' • Telefon' : apt.type === 'video' ? ' • Video-Call' : ' • Vor Ort'}
+                            {isPast ? ' • vergangen' : ''}
+                          </p>
+                          {apt.notes && <p className="text-xs text-muted-foreground mt-1">{apt.notes}</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </TabsContent>
+            )}
 
             {/* ─── TAB: Verlauf ─── */}
             <TabsContent value="history" className="flex-1 overflow-y-auto p-5 mt-0">

@@ -35,6 +35,7 @@ import AddressAutocomplete, { type AddressSuggestion } from './AddressAutocomple
 import { assignableEmployees } from '@/lib/assignable-employees';
 import { useCareerLevels } from '@/hooks/useCareerLevels';
 import { isSwissHoliday, getHolidayForDate } from '@/lib/swiss-holidays';
+import ContractAppointmentPanel from './ContractAppointmentPanel';
 
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
@@ -944,7 +945,9 @@ export default function LeadDetailSheet() {
                                     <option value="">Bitte wählen…</option>
                                     <option value="BG 1 (Erstgespräch)">BG 1 (Erstgespräch)</option>
                                     <option value="BG 2 (Fortsetzung)">BG 2 (Fortsetzung)</option>
-                                    <option value="Vertragsunterzeichnung">Vertragsunterzeichnung</option>
+                                    {(isSuperadmin || isAdmin) && (
+                                      <option value="Vertragsunterzeichnung">Vertragsunterzeichnung</option>
+                                    )}
                                   </select>
                                 </div>
                                <div>
@@ -1049,6 +1052,10 @@ export default function LeadDetailSheet() {
                                       <X className="h-3 w-3" /> Absagen
                                     </button>
                                   </>
+                                ) : req.title === 'Vertragsunterzeichnung' && !(isSuperadmin || isAdmin) ? (
+                                  <p className="mt-auto rounded-md border border-dashed px-2 py-1 text-[11px] text-muted-foreground text-center">
+                                    Wird vom HR festgelegt
+                                  </p>
                                 ) : (
                                   <button
                                     onClick={() => { setAptForm({ title: req.title, date: undefined, time: '09:00', duration: 30, type: 'phone', notes: '' }); setShowAptForm(true); }}
@@ -1060,6 +1067,11 @@ export default function LeadDetailSheet() {
                             );
                           })}
                         </div>
+
+                        {/* Vertragsunterzeichnung – HR-Vorschläge zur Bestätigung */}
+                        <ContractAppointmentPanel leadId={selectedLead.id} mode="employee" />
+
+
 
 
 
