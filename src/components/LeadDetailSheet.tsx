@@ -35,6 +35,7 @@ import AddressAutocomplete, { type AddressSuggestion } from './AddressAutocomple
 import { assignableEmployees } from '@/lib/assignable-employees';
 import { useCareerLevels } from '@/hooks/useCareerLevels';
 import { isSwissHoliday, getHolidayForDate } from '@/lib/swiss-holidays';
+import ContractAppointmentPanel from './ContractAppointmentPanel';
 
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
