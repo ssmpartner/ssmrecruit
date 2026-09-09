@@ -966,6 +966,8 @@ export default function LeadDetailSheet() {
                                   <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar mode="single" selected={aptForm.date} onSelect={(d) => setAptForm(prev => ({ ...prev, date: d }))}
                                       disabled={isSuperadmin ? undefined : (date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                      modifiers={{ holiday: (date: Date) => isSwissHoliday(date) }}
+                                      modifiersClassNames={{ holiday: 'text-destructive font-semibold' }}
                                       initialFocus className={cn("p-3 pointer-events-auto")} />
                                   </PopoverContent>
                                 </Popover>
