@@ -242,7 +242,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
         <div className="flex flex-wrap gap-1.5">
           {controllingUsers.length === 0 && <p className="text-xs text-muted-foreground italic">Keine Controlling-User</p>}
           {controllingUsers.map(u => {
-            const isApprover = controllingApprover === u.user_id;
+            const isApprover = matchesApprover(controllingApprover, u);
             const state: 'approved' | 'pending' = ctrlDone ? (isApprover ? 'approved' : 'pending') : 'pending';
             return (
               <div key={u.user_id} className="flex items-center gap-1.5 rounded-full bg-background border pr-2 pl-0.5 py-0.5">
