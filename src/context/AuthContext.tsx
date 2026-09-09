@@ -33,7 +33,16 @@ interface AuthContextType {
   isBackoffice: boolean;
   isAgencyScoped: boolean;
   isReviewRole: boolean;
+  /** Echte Rolle des angemeldeten Kontos (ignoriert die Rollen-Vorschau) */
+  realRole: AppRole | null;
+  /** Nur Superadmin: aktuell simulierte Rolle (null = eigene Rolle) */
+  viewAsRole: AppRole | null;
+  setViewAsRole: (r: AppRole | null) => void;
+  /** true, wenn das Konto wirklich Superadmin ist (auch während einer Rollen-Vorschau) */
+  isRealSuperadmin: boolean;
 }
+
+const VIEW_AS_KEY = 'ssm_view_as_role';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -49,6 +58,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [viewAsRoleState, setViewAsRoleState] = useState<AppRole | null>(
+    () => (sessionStorage.getItem(VIEW_AS_KEY) as AppRole | null) || null
+  );
+
+  const isRealSuperadmin = role === 'superadmin';
+  const viewAsRole = isRealSuperadmin ? viewAsRoleState : null;
+  const effectiveRole: AppRole | null = viewAsRole ?? role;
+
+  const setViewAsRole = (r: AppRole | null) => {
+    if (r) sessionStorage.setItem(VIEW_AS_KEY, r);
+    else sessionStorage.removeItem(VIEW_AS_KEY);
+    setViewAsRoleState(r);
+  };
 
   const loadUserData = async (userId: string) => {
     const ROLE_PRIORITY: AppRole[] = ['superadmin', 'admin', 'geschaeftsleitung', 'controlling', 'hr', 'teamleiter', 'agency_manager', 'backoffice'] as AppRole[];
@@ -208,6 +230,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    sessionStorage.removeItem(VIEW_AS_KEY);
+    setViewAsRoleState(null);
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
@@ -246,17 +270,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      user, session, profile, role, loading,
-      isSuperadmin: role === 'superadmin',
-      isAdmin: role === 'admin',
-      isTeamleiter: role === 'teamleiter',
-      isControlling: role === 'controlling',
-      isGeschaeftsleitung: role === 'geschaeftsleitung',
-      isHR: role === 'hr',
-      isAgencyManager: role === 'agency_manager',
-      isBackoffice: role === 'backoffice',
-      isAgencyScoped: role === 'agency_manager' || role === 'backoffice',
-      isReviewRole: role === 'controlling' || role === 'geschaeftsleitung' || role === 'hr',
+      user, session, profile, role: effectiveRole, loading,
+      isSuperadmin: effectiveRole === 'superadmin',
+      isAdmin: effectiveRole === 'admin',
+      isTeamleiter: effectiveRole === 'teamleiter',
+      isControlling: effectiveRole === 'controlling',
+      isGeschaeftsleitung: effectiveRole === 'geschaeftsleitung',
+      isHR: effectiveRole === 'hr',
+      isAgencyManager: effectiveRole === 'agency_manager',
+      isBackoffice: effectiveRole === 'backoffice',
+      isAgencyScoped: effectiveRole === 'agency_manager' || effectiveRole === 'backoffice',
+      isReviewRole: effectiveRole === 'controlling' || effectiveRole === 'geschaeftsleitung' || effectiveRole === 'hr',
+      realRole: role, viewAsRole, setViewAsRole, isRealSuperadmin,
       signUp, signIn, signOut,
       updateProfile, updateEmail, updatePassword, resetPassword,
     }}>

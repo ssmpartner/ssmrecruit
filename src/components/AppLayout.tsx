@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
 import GlobalSearchDialog from './GlobalSearchDialog';
-import { Search, ChevronDown, ExternalLink, Settings, LogOut } from 'lucide-react';
+import { Search, ChevronDown, ExternalLink, Settings, LogOut, Eye, UserCog, Check, X } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
 import { useAuth } from '@/context/AuthContext';
 import { useSidebarState } from '@/context/SidebarContext';
@@ -13,10 +13,21 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 
+const PREVIEW_ROLES = [
+  { role: 'teamleiter', label: 'Mitarbeiter (Teamleiter)' },
+  { role: 'controlling', label: 'Controlling' },
+  { role: 'geschaeftsleitung', label: 'Geschäftsleitung' },
+  { role: 'hr', label: 'HR' },
+] as const;
+
 export default function AppLayout() {
-  const { profile, user, signOut } = useAuth();
+  const { profile, user, signOut, isRealSuperadmin, viewAsRole, setViewAsRole } = useAuth();
   const { collapsed } = useSidebarState();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -47,6 +58,11 @@ export default function AppLayout() {
   const handleLogout = async () => {
     await signOut();
     navigate('/login');
+  };
+
+  const switchRole = (r: (typeof PREVIEW_ROLES)[number]['role'] | null) => {
+    setViewAsRole(r as any);
+    navigate('/');
   };
 
   return (
@@ -89,6 +105,34 @@ export default function AppLayout() {
                   <Settings className="mr-2 h-4 w-4" />
                   Einstellungen
                 </DropdownMenuItem>
+                {isRealSuperadmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                      Rollen-Vorschau
+                    </DropdownMenuLabel>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger className="cursor-pointer">
+                        <UserCog className="mr-2 h-4 w-4" />
+                        {viewAsRole
+                          ? PREVIEW_ROLES.find(r => r.role === viewAsRole)?.label ?? viewAsRole
+                          : 'Rolle wechseln'}
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent className="w-60">
+                        <DropdownMenuItem onClick={() => switchRole(null)} className="cursor-pointer">
+                          {!viewAsRole ? <Check className="mr-2 h-4 w-4" /> : <span className="mr-2 h-4 w-4" />}
+                          Superadmin (eigene Rolle)
+                        </DropdownMenuItem>
+                        {PREVIEW_ROLES.map(r => (
+                          <DropdownMenuItem key={r.role} onClick={() => switchRole(r.role)} className="cursor-pointer">
+                            {viewAsRole === r.role ? <Check className="mr-2 h-4 w-4" /> : <span className="mr-2 h-4 w-4" />}
+                            {r.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handlePortalSwitch} className="cursor-pointer">
                   <ExternalLink className="mr-2 h-4 w-4" />
@@ -103,6 +147,21 @@ export default function AppLayout() {
             </DropdownMenu>
           </div>
         </header>
+        {viewAsRole && (
+          <div className="sticky top-16 z-10 flex items-center justify-center gap-3 border-b border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+            <Eye className="h-4 w-4 shrink-0" />
+            <span>
+              Rollen-Vorschau aktiv:{' '}
+              <strong>{PREVIEW_ROLES.find(r => r.role === viewAsRole)?.label ?? viewAsRole}</strong> – du siehst die App wie diese Rolle.
+            </span>
+            <button
+              onClick={() => switchRole(null)}
+              className="inline-flex items-center gap-1 rounded-md border border-amber-400 bg-white px-2 py-1 text-xs font-medium hover:bg-amber-100 transition-colors"
+            >
+              <X className="h-3 w-3" /> Beenden
+            </button>
+          </div>
+        )}
         <main className="p-8">
           <Outlet />
         </main>
