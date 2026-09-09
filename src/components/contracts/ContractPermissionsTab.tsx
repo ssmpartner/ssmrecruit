@@ -80,7 +80,7 @@ export default function ContractPermissionsTab() {
         <ul className="ml-4 list-disc">
           <li><strong>HR</strong>: Ansehen, Generieren, Bearbeiten, Finalisieren, Versenden</li>
           <li><strong>Geschäftsleitung</strong>: Ansehen, Generieren</li>
-          <li><strong>Recruiter</strong> (Teamleiter, Backoffice, Agency Manager): Ansehen, Generieren, Bearbeiten</li>
+          <li><strong>Recruiter</strong> (Teamleiter, Backoffice, Agency Manager, Mitarbeiter): nur Ansehen – weitere Rechte sind für diese Rollen gesperrt</li>
         </ul>
       </div>
       <div className="rounded-lg border bg-card overflow-x-auto">

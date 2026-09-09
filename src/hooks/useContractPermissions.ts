@@ -45,6 +45,7 @@ export function useContractPermissions() {
 
   const has = (perm: ContractPermKey): boolean => {
     if (isSuperadmin || isAdmin) return true;
+    if (VIEW_ONLY_ROLES.includes(role ?? '')) return perm === 'can_view';
     if (perms[perm]) return true;
     const defaults = ROLE_DEFAULTS[role ?? ''] ?? [];
     return defaults.includes(perm);
