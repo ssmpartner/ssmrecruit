@@ -108,12 +108,13 @@ export default function ContractPermissionsTab() {
                     <div className="text-xs text-muted-foreground">{r.email} · {r.role || 'kein Rolle'}</div>
                   </TableCell>
                   {PERMS.map(p => {
-                    const isDefault = defaults.includes(p.key);
-                    return (
-                      <TableCell key={p.key} className={`text-center ${isDefault ? 'bg-yellow-50 dark:bg-yellow-950/20' : ''}`}>
-                        <Checkbox checked={r.perms[p.key] || isDefault} disabled={isDefault} onCheckedChange={v => toggle(r.user_id, p.key, !!v)} />
-                      </TableCell>
-                    );
+                     const isDefault = defaults.includes(p.key);
+                     const locked = isDefault || (viewOnly && p.key !== 'can_view');
+                     return (
+                       <TableCell key={p.key} className={`text-center ${isDefault ? 'bg-yellow-50 dark:bg-yellow-950/20' : ''}`}>
+                         <Checkbox checked={viewOnly ? p.key === 'can_view' : (r.perms[p.key] || isDefault)} disabled={locked} onCheckedChange={v => toggle(r.user_id, p.key, !!v)} />
+                       </TableCell>
+                     );
                   })}
                 </TableRow>
               );
