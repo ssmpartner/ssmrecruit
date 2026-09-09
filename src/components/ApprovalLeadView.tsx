@@ -100,6 +100,24 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
 
   const wizardType: ApprovalWizardType = isControlling ? 'controlling' : isGeschaeftsleitung ? 'management' : 'hr';
 
+  // Termine des Kandidaten (für HR-Termin-Tab)
+  const [leadAppointments, setLeadAppointments] = useState<{ id: string; title: string; date: string; time: string; duration: number; type: string; notes: string | null }[]>([]);
+  useEffect(() => {
+    if (!selectedLead?.id) { setLeadAppointments([]); return; }
+    const load = async () => {
+      const { data } = await supabase.from('appointments')
+        .select('id,title,date,time,duration,type,notes')
+        .eq('lead_id', selectedLead.id)
+        .order('date', { ascending: true }).order('time', { ascending: true });
+      setLeadAppointments((data ?? []) as any[]);
+    };
+    load();
+    const ch = supabase.channel(`approval-apts-${selectedLead.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: `lead_id=eq.${selectedLead.id}` }, load)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [selectedLead?.id]);
+
   // Load leads the current user has already decided (so they drop off the queue)
   useEffect(() => {
     if (!user) return;
