@@ -69,9 +69,9 @@ function ApprovalAvatar({ u, state, roleLabel }: { u: RoleUser; state: 'approved
 
 function ApprovalGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-start gap-1">
+    <div className="flex shrink-0 flex-col items-start gap-1">
       <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-1">{children}</div>
+      <div className="flex items-center gap-1.5">{children}</div>
     </div>
   );
 }
@@ -608,7 +608,7 @@ export default function LeadsTable() {
                             })()}
                           </td>
                           <td className="px-5 py-3">
-                            <div className="flex items-start gap-3">
+                            <div className="flex items-start gap-4 whitespace-nowrap">
                               <ApprovalGroup label="Controlling">
                                 {roleUsers.controlling.map(u => (
                                   <ApprovalAvatar
