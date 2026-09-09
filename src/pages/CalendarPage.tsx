@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useLeads } from '@/context/useLeads';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 import { ChevronLeft, ChevronRight, Phone, Video, Building2, CalendarIcon } from 'lucide-react';
+import { getHolidayByISO, getSwissHolidays } from '@/lib/swiss-holidays';
 
 const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
