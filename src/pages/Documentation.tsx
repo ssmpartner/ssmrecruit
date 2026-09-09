@@ -4,9 +4,56 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.56.0';
+const APP_VERSION = '2.62.0';
 
 const versionHistory = [
+  { version: '2.62.0', date: '09.09.2026', changes: [
+    'Controlling-Freigabe technisch abgesichert: Nur Rolle Controlling (aktuell Manuel Gomes) und Superadmin können freigeben – Datenbank-Trigger blockieren Statuswechsel auf «Controlling freigegeben» und Freigabe-Einträge unberechtigter Benutzer',
+    'Freigabe-Optionen sind für nicht zuständige Rollen komplett unsichtbar (nicht mehr im DOM) – stattdessen neutraler Hinweis zum aktuellen Prozessstand, keine Umgehungsmöglichkeit',
+    'Sonderfall-Korrektur: Vier fehlerhaft (ohne Controlling-Berechtigung) freigegebene Kandidaten wurden an Controlling zurückgegeben, alte Freigaben entwertet und im Verlauf dokumentiert',
+    'Neues Feld «controlling_direct_to_hr»: Diese Sonderfälle gehen nach der Controlling-Freigabe einmalig direkt an HR – ohne Geschäftsleitung, mit Hinweis im Freigabefenster',
+    'Rollen-Vorschau für Superadmin: Im Profil-Menü zwischen Mitarbeiter, Controlling, Geschäftsleitung und HR wechseln, um Ansichten und Rechte zu prüfen – mit Hinweisbalken und «Beenden»-Button',
+    'Freigabe-Status in der Liste und im Freigabe-Panel: Profilbilder werden auch dann korrekt grün markiert, wenn die Freigabe unter dem Anzeigenamen statt der Benutzer-ID gespeichert wurde',
+  ]},
+  { version: '2.61.0', date: '02.09.2026', changes: [
+    'HR-Listenansicht angepasst: Statt Telefon, Ort und Kanton werden Vertrags-/Umzugstermin, Wunschposition und die Freigaben angezeigt',
+    'Vertragstermin in der Liste: Festgelegte Termine mit Datum und Uhrzeit (grün), HR-Vorschläge (blau, «Vorschlag»), fehlende Termine (gelb, «Noch nicht festgelegt»)',
+    'Freigaben in der Liste: Gruppen für Controlling, Geschäftsleitung und HR mit Profilbildern, Statusring und ✓/✕-Badge sowie Namen beim Überfahren',
+    'Wunschposition wird für HR immer angezeigt – fehlt sie, erscheint «Keine Angabe» gelb hervorgehoben',
+    'Vertragstermine: Nur HR legt den Termin zur Vertragsunterzeichnung fest, kann bis zu 3 Vorschläge machen; der Mitarbeiter bestätigt einen – Termin landet automatisch im Kalender, im Termine-Tab und wird per Benachrichtigung gemeldet',
+    'Sichtbarkeitsregeln geschärft: Controlling sieht nur Kandidaten in der Controlling-Phase, Geschäftsleitung nur «Controlling freigegeben»/«Management Review», HR nur die HR-Phasen – inklusive passender E-Mail- und Glocken-Benachrichtigungen',
+    'Erledigte Prüfungen verschwinden aus der eigenen Warteschlange; veraltete Benachrichtigungen wurden bereinigt',
+  ]},
+  { version: '2.60.0', date: '26.08.2026', changes: [
+    'Kalender komplett ausgebaut: Monats-, Wochen- und Tagesansicht mit Zeitraster 07:00–20:00 Uhr',
+    'Kalender-Filter nach Mitarbeiter sowie Info-Box beim Überfahren eines Termins mit Direktlinks zu Lead, E-Mail, Telefon und Meeting',
+    'Termine sind nach Typ farblich und mit Symbol gekennzeichnet (BG 1, BG 2, Vertragsunterzeichnung, Telefon, Video, Vor Ort)',
+    'Schweizer Feiertage: Nationale und verbreitete kantonale Feiertage (inkl. Ostern und Bettag) werden im Kalender markiert und bei der Terminwahl mit Name und Geltungsbereich gewarnt',
+    'Microsoft 365 Kalender – Phase 1: Kalenderverbindung pro Benutzer, Verfügbarkeiten lesen und Interviewtermine für Outlook vorbereiten',
+  ]},
+  { version: '2.59.0', date: '19.08.2026', changes: [
+    'Wunschposition statt freies Positionsfeld: Auswahl direkt aus den in den Einstellungen hinterlegten Karriereplan-Stufen (bestehende Freitext-Werte bleiben wählbar)',
+    'Einstellungs-Readiness: Fehlende Wunschposition wird als offener Punkt angezeigt und blockiert die Übergabe ans Controlling',
+    'Bestätigungs-Modal für «An Controlling einreichen»: Erklärt den Ablauf Controlling (Manuel Gomes) → Geschäftsleitung → HR und erlaubt die Auswahl der Wunschposition; bei Demo-Kandidaten wird nur simuliert',
+    'Demo-Kandidaten: Nur für Superadmin sichtbar und ausschliesslich im Demo-Tab – nicht mehr unter Aktiv, Archiviert oder Gelöscht',
+    'Duplikat-Badge in der Listenansicht: Erkennung ist nicht mehr auf 20 Treffer begrenzt, dadurch stimmen Liste und Detailfenster überein',
+  ]},
+  { version: '2.58.0', date: '12.08.2026', changes: [
+    'Status «Nicht erreicht» zieht Kandidaten nicht mehr automatisch zurück – sie bleiben beim zuständigen Mitarbeiter und können weiter bearbeitet werden',
+    'Auch nach 3 erfolglosen Rückrufen bleibt der Kandidat beim Bearbeiter; stattdessen wird eine Aufgabe «Status anpassen» mit hoher Priorität und 48 Stunden Frist erstellt',
+    'Aufgaben lösen vorläufig keine E-Mail-Benachrichtigungen mehr aus (serverseitig blockiert, manueller Versand bleibt möglich)',
+    'Zuweisungs-Dropdowns: HR- und Geschäftsleitungs-Benutzer erscheinen nicht mehr und können keine Kandidaten zugewiesen bekommen',
+    'Automatische Zuweisung respektiert den Schalter «kann Leads erhalten» pro Mitarbeiter – deaktivierte Mitarbeiter erhalten keine neuen Kandidaten',
+    'Routing korrigiert: Nur Duplikate landen beim Hauptsitz; falsch zugewiesene Kandidaten wurden nachträglich korrekt verteilt',
+  ]},
+  { version: '2.57.0', date: '05.08.2026', changes: [
+    'Neues Modul «Verträge»: Vertragsvorlagen, Vertragsbibliothek, Vertragssets, Regel-Engine, Platzhalter-System und Briefkopf-Verwaltung',
+    'Vierstufiger Vertragsgenerator mit Vorschau, PDF-Finalisierung, Versionierung, automatischer Vertragsnummer und Änderungsprotokoll',
+    'Rollenbasierte Vertragsberechtigungen inkl. serverseitiger Prüfung sowie Audit-Log über alle Vertragsaktionen',
+    'Willkommens-Prozess: Neue Kandidaten erhalten eine Willkommens-E-Mail mit öffentlicher Seite, Willkommensvideo und den Optionen «Ablehnen» oder «Nächste Schritte» (Insights-Test)',
+    'Willkommens-Konfiguration in den Einstellungen: Video, Texte, Buttons und Gültigkeit der öffentlichen Links',
+  ]},
+
   { version: '2.56.0', date: '22.06.2026', changes: [
     'Geschäftsleitung-Benachrichtigungen entschärft: Wer seine Freigabe bereits erteilt hat, erhält keine weiteren Erinnerungen mehr – nur noch das ausstehende GL-Mitglied wird angeschrieben',
     'Termine-Tab im Lead neu strukturiert: 3 feste Kacheln (BG1, BG2, Vertragsunterzeichnung) – immer sichtbar, direkt planbar, mit «Absagen»-Button statt Löschen',
