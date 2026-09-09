@@ -1,11 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Circle, AlertCircle, Trophy, Send, Loader2, MinusCircle } from 'lucide-react';
+import { CheckCircle2, Circle, AlertCircle, Trophy, Send, Loader2, MinusCircle, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeads } from '@/context/useLeads';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { statusConfig, type Appointment } from '@/lib/mock-data';
 import { validatePersonnel, type PersonnelData } from './PersonnelFormFields';
+import { useCareerLevels } from '@/hooks/useCareerLevels';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
 interface Props {
   leadId: string;
@@ -64,6 +71,21 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const [leadDbAppointments, setLeadDbAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState<string>('');
+  const [demoSimulated, setDemoSimulated] = useState(false);
+  const { plans } = useCareerLevels();
+  const positionOptions = useMemo(() => {
+    const opts: string[] = [];
+    for (const p of plans) {
+      const name = (p.position || '').trim();
+      if (name && !opts.includes(name)) opts.push(name);
+    }
+    if (lead?.position && lead.position.trim() && !opts.includes(lead.position.trim())) {
+      opts.unshift(lead.position.trim());
+    }
+    return opts;
+  }, [plans, lead?.position]);
 
   async function loadAll() {
     const [pRes, dRes, wRes, aRes] = await Promise.all([
@@ -254,14 +276,43 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const total = items.length;
   const pct = Math.round((totalProgress / total) * 100);
   const ready = totalProgress >= total;
+  // Alles ausser Wunschposition erledigt → Dialog erlaubt Nachtragen der Position
+  const readyExceptPosition = items
+    .filter(i => i.label !== 'Wunschposition')
+    .every(i => i.progress >= 1);
+  const isDemo = !!lead?.isDemo;
+
+  const openConfirm = () => {
+    setSelectedPosition(lead?.position?.trim() || '');
+    setConfirmOpen(true);
+  };
 
   const handleSubmit = async () => {
-    if (!lead || !ready || submitting) return;
+    if (!lead || !readyExceptPosition || submitting) return;
+    const position = selectedPosition.trim();
+    if (!position) {
+      toast({ title: 'Wunschposition fehlt', description: 'Bitte eine Wunschposition auswählen.', variant: 'destructive' });
+      return;
+    }
     setSubmitting(true);
     try {
+      if (isDemo) {
+        // Demo-Kandidat: keine echte Weiterleitung, nur Simulation
+        setDemoSimulated(true);
+        setConfirmOpen(false);
+        toast({
+          title: '🧪 Simulation (Demo)',
+          description: 'Demo-Kandidat: Die Weiterleitung an Controlling wurde nur simuliert.',
+        });
+        return;
+      }
+      if (position !== (lead.position || '').trim()) {
+        updateLead(leadId, { position });
+      }
       updateLead(leadId, { status: 'ready_for_controlling' });
-      addActivity(leadId, 'status_change', `Lead zur Controlling-Prüfung eingereicht (Einstellungs-Readiness 100 %)`);
-      toast({ title: '✅ Eingereicht', description: 'Lead wurde an Controlling übergeben.' });
+      addActivity(leadId, 'status_change', `Lead zur Controlling-Prüfung eingereicht (Wunschposition: ${position})`);
+      toast({ title: '✅ Eingereicht', description: 'Lead wurde an Controlling (Manuel Gomes) übergeben.' });
+      setConfirmOpen(false);
     } catch (e) {
       toast({ title: 'Fehler beim Einreichen', description: (e as Error).message, variant: 'destructive' });
     } finally {
@@ -327,17 +378,21 @@ export default function LeadHiringReadiness({ leadId }: Props) {
         })}
       </div>
 
-      {(ready || alreadySubmitted) && (
+      {(readyExceptPosition || alreadySubmitted) && (
         <div className={cn('border-t p-3 flex items-center justify-between gap-3', alreadySubmitted ? 'bg-muted/30' : 'bg-emerald-50/50 dark:bg-emerald-950/20')}>
           <div className="text-xs text-muted-foreground">
             {alreadySubmitted
               ? <>Bereits weitergeleitet · Status: <strong className="text-foreground">{lead && statusConfig[lead.status]?.label}</strong></>
-              : 'Alle Anforderungen erfüllt — Lead an Controlling weiterleiten.'}
+              : demoSimulated
+              ? 'Demo-Kandidat: Weiterleitung wurde simuliert (kein echter Versand).'
+              : ready
+              ? 'Alle Anforderungen erfüllt — Lead an Controlling weiterleiten.'
+              : 'Nur noch die Wunschposition fehlt — im nächsten Schritt auswählbar.'}
           </div>
           <button
             type="button"
-            onClick={handleSubmit}
-            disabled={!ready || submitting || !!alreadySubmitted}
+            onClick={openConfirm}
+            disabled={!readyExceptPosition || submitting || !!alreadySubmitted}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-opacity',
               alreadySubmitted
@@ -350,6 +405,63 @@ export default function LeadHiringReadiness({ leadId }: Props) {
           </button>
         </div>
       )}
+
+      <Dialog open={confirmOpen} onOpenChange={o => !submitting && setConfirmOpen(o)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>An Controlling einreichen</DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                <p>
+                  {lead?.name ? <strong className="text-foreground">{lead.name}</strong> : 'Der Kandidat'} wird an die
+                  Controlling-Abteilung (<strong className="text-foreground">Manuel Gomes</strong>) weitergeleitet.
+                </p>
+                <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="rounded-full border px-2 py-0.5">Controlling</span>
+                  <ArrowRight className="h-3 w-3" />
+                  <span className="rounded-full border px-2 py-0.5">Geschäftsleitung</span>
+                  <ArrowRight className="h-3 w-3" />
+                  <span className="rounded-full border px-2 py-0.5">HR</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Nach der Freigabe durch Controlling geht das Dossier automatisch an die Geschäftsleitung und
+                  anschliessend an das HR.
+                </p>
+                {isDemo && (
+                  <p className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs font-medium text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+                    Demo-Kandidat: Die Weiterleitung wird nur simuliert — es wird nichts wirklich übergeben oder versendet.
+                  </p>
+                )}
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Wunschposition</Label>
+            <Select value={selectedPosition} onValueChange={setSelectedPosition}>
+              <SelectTrigger className={cn(!selectedPosition && 'border-destructive/50')}>
+                <SelectValue placeholder="Wunschposition auswählen" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                {positionOptions.map(p => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {!selectedPosition && (
+              <p className="text-[11px] text-destructive">Pflichtangabe für die Übergabe an Controlling.</p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={submitting}>Abbrechen</Button>
+            <Button onClick={handleSubmit} disabled={submitting || !selectedPosition}>
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {isDemo ? 'Simulieren' : 'Jetzt einreichen'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
