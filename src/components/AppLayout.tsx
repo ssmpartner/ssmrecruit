@@ -60,6 +60,11 @@ export default function AppLayout() {
     navigate('/login');
   };
 
+  const switchRole = (r: (typeof PREVIEW_ROLES)[number]['role'] | null) => {
+    setViewAsRole(r as any);
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <AppSidebar />
