@@ -40,12 +40,12 @@ export default function StepActionsPanel({
   discCompleted, documentsCompleted, insightsSent,
 }: StepActionsPanelProps) {
   const { updateLead, addActivity } = useLeads();
-  const { isSuperadmin, isAdmin, isControlling, isGeschaeftsleitung, isHR } = useAuth();
-  const canManageControllingStep = isSuperadmin || isAdmin || isControlling;
+  const { isSuperadmin, isControlling, isGeschaeftsleitung, isHR } = useAuth();
   // Freigaben dürfen nur von der jeweils zuständigen Rolle erteilt werden
   const canApproveControlling = isSuperadmin || isControlling;
   const canApproveManagement = isSuperadmin || isGeschaeftsleitung;
   const canApproveHR = isSuperadmin || isHR;
+  const canManageControllingStep = canApproveControlling;
   const { toast } = useToast();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [activeWizardType, setActiveWizardType] = useState<WizardType>('contacted');
