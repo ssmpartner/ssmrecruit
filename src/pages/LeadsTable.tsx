@@ -614,19 +614,33 @@ export default function LeadsTable() {
                           <td className="px-5 py-3">
                             <div className="flex items-start gap-4 whitespace-nowrap">
                               <ApprovalGroup label="Controlling">
-                                {roleUsers.controlling.map(u => (
-                                  <ApprovalAvatar
-                                    key={`c-${u.user_id}`}
-                                    u={u}
-                                    roleLabel="Controlling"
-                                    state={(() => {
-                                      const by = hrCtrlApprovers.get(lead.id);
-                                      if (!by) return 'pending';
-                                      const norm = (s: string) => s.trim().toLowerCase();
-                                      return norm(by) === norm(u.display_name || '') ? 'approved' : 'pending';
-                                    })()}
-                                  />
-                                ))}
+                                {(() => {
+                                  const by = hrCtrlApprovers.get(lead.id) || null;
+                                  const norm = (s?: string | null) => (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+                                  const matched = by
+                                    ? roleUsers.controlling.find(u => u.user_id === by || norm(u.display_name) === norm(by))
+                                    : undefined;
+                                  const avatars = roleUsers.controlling.map(u => (
+                                    <ApprovalAvatar
+                                      key={`c-${u.user_id}`}
+                                      u={u}
+                                      roleLabel="Controlling"
+                                      state={matched && matched.user_id === u.user_id ? 'approved' : 'pending'}
+                                    />
+                                  ));
+                                  // Freigabe wurde von einer Person ausserhalb der Controlling-Liste erteilt
+                                  if (by && !matched) {
+                                    avatars.unshift(
+                                      <ApprovalAvatar
+                                        key="c-ext"
+                                        u={{ user_id: 'ext', display_name: by, avatar_url: null }}
+                                        roleLabel="Controlling-Freigabe"
+                                        state="approved"
+                                      />,
+                                    );
+                                  }
+                                  return avatars;
+                                })()}
                               </ApprovalGroup>
                               <ApprovalGroup label="GL">
                                 {roleUsers.gl.map(u => {
