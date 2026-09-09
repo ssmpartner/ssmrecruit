@@ -87,7 +87,9 @@ export default function Settings() {
   const { isSuperadmin, role } = useAuth();
   // Non-superadmin roles only see profile + notifications
   const visibleTabs = isSuperadmin ? tabs : tabs.filter(t => t.id === 'profile' || t.id === 'notifications');
-  const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
+  const { section } = useParams<{ section?: string }>();
+  const navigate = useNavigate();
+  const activeTab = (section as SettingsTab) ?? 'profile';
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [integrationsLoading, setIntegrationsLoading] = useState(false);
@@ -96,11 +98,12 @@ export default function Settings() {
   useEffect(() => {
     const handler = (e: Event) => {
       const tab = (e as CustomEvent).detail as SettingsTab;
-      if (tab) setActiveTab(tab);
+      if (tab) navigate(`/settings/${tab}`);
     };
     window.addEventListener('settings-navigate', handler);
     return () => window.removeEventListener('settings-navigate', handler);
-  }, []);
+  }, [navigate]);
+
 
   // Load integrations from DB
   const loadIntegrations = useCallback(async () => {
