@@ -30,10 +30,15 @@ type Row = {
 const ROLE_DEFAULTS: Record<string, string[]> = {
   hr: ['can_view', 'can_generate', 'can_edit', 'can_finalize', 'can_send'],
   geschaeftsleitung: ['can_view', 'can_generate'],
-  teamleiter: ['can_view', 'can_generate', 'can_edit'],
-  backoffice: ['can_view', 'can_generate', 'can_edit'],
-  agency_manager: ['can_view', 'can_generate', 'can_edit'],
+  teamleiter: ['can_view'],
+  backoffice: ['can_view'],
+  agency_manager: ['can_view'],
+  employee: ['can_view'],
+  analyst: ['can_view'],
 };
+
+// Diese Rollen sind auf reines Ansehen begrenzt (serverseitig erzwungen)
+const VIEW_ONLY_ROLES = ['teamleiter', 'backoffice', 'agency_manager', 'employee', 'analyst'];
 
 export default function ContractPermissionsTab() {
   const [rows, setRows] = useState<Row[]>([]);
