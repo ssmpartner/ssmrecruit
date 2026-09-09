@@ -48,6 +48,13 @@ const initials = (n?: string | null) =>
 const STATUS_ORDER = ['ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired'];
 const idxOf = (s: string) => STATUS_ORDER.indexOf(s);
 
+// completed_by kann eine UUID ODER ein Anzeigename sein → beides berücksichtigen
+const normName = (s?: string | null) => (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+function matchesApprover(approver: string | null, u: RoleUser) {
+  if (!approver) return false;
+  return approver === u.user_id || (!!u.display_name && normName(approver) === normName(u.display_name));
+}
+
 function Avatar({ u, state }: { u: RoleUser; state: 'approved' | 'rejected' | 'pending' }) {
   return (
     <div className="relative shrink-0" title={u.display_name || ''}>
