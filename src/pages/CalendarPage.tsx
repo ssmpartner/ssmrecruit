@@ -104,19 +104,30 @@ export default function CalendarPage() {
             const dateStr = day ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
             const dayApts = day ? (appointmentsByDate[dateStr] || []) : [];
             const isToday = dateStr === todayStr;
+            const holiday = day ? getHolidayByISO(dateStr) : undefined;
 
             return (
               <div
                 key={i}
                 className={`min-h-[120px] border-b border-r p-1.5 ${
-                  day ? 'bg-card' : 'bg-muted/20'
-                } ${i % 7 === 0 ? '' : ''}`}
+                  day ? (holiday ? 'bg-destructive/5' : 'bg-card') : 'bg-muted/20'
+                }`}
               >
                 {day && (
                   <>
-                    <div className={`text-right mb-1`}>
-                      <span className={`inline-flex items-center justify-center h-7 w-7 text-sm font-medium rounded-full ${
-                        isToday ? 'bg-primary text-primary-foreground' : 'text-foreground'
+                    <div className="flex items-start justify-between gap-1 mb-1">
+                      {holiday ? (
+                        <span
+                          title={holiday.national ? 'Feiertag (ganze Schweiz)' : `Feiertag in: ${(holiday.cantons ?? []).join(', ')}`}
+                          className={`truncate rounded px-1 py-0.5 text-[10px] font-medium ${
+                            holiday.national ? 'bg-destructive/15 text-destructive' : 'bg-warning/15 text-warning'
+                          }`}
+                        >
+                          {holiday.name}
+                        </span>
+                      ) : <span />}
+                      <span className={`inline-flex items-center justify-center h-7 w-7 shrink-0 text-sm font-medium rounded-full ${
+                        isToday ? 'bg-primary text-primary-foreground' : holiday ? 'text-destructive' : 'text-foreground'
                       }`}>
                         {day}
                       </span>
