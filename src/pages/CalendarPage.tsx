@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useLeads } from '@/context/useLeads';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
 import { ChevronLeft, ChevronRight, Phone, Video, Building2, CalendarIcon } from 'lucide-react';
+import { getHolidayByISO, getSwissHolidays } from '@/lib/swiss-holidays';
 
 const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
@@ -103,19 +104,30 @@ export default function CalendarPage() {
             const dateStr = day ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
             const dayApts = day ? (appointmentsByDate[dateStr] || []) : [];
             const isToday = dateStr === todayStr;
+            const holiday = day ? getHolidayByISO(dateStr) : undefined;
 
             return (
               <div
                 key={i}
                 className={`min-h-[120px] border-b border-r p-1.5 ${
-                  day ? 'bg-card' : 'bg-muted/20'
-                } ${i % 7 === 0 ? '' : ''}`}
+                  day ? (holiday ? 'bg-destructive/5' : 'bg-card') : 'bg-muted/20'
+                }`}
               >
                 {day && (
                   <>
-                    <div className={`text-right mb-1`}>
-                      <span className={`inline-flex items-center justify-center h-7 w-7 text-sm font-medium rounded-full ${
-                        isToday ? 'bg-primary text-primary-foreground' : 'text-foreground'
+                    <div className="flex items-start justify-between gap-1 mb-1">
+                      {holiday ? (
+                        <span
+                          title={holiday.national ? 'Feiertag (ganze Schweiz)' : `Feiertag in: ${(holiday.cantons ?? []).join(', ')}`}
+                          className={`truncate rounded px-1 py-0.5 text-[10px] font-medium ${
+                            holiday.national ? 'bg-destructive/15 text-destructive' : 'bg-warning/15 text-warning'
+                          }`}
+                        >
+                          {holiday.name}
+                        </span>
+                      ) : <span />}
+                      <span className={`inline-flex items-center justify-center h-7 w-7 shrink-0 text-sm font-medium rounded-full ${
+                        isToday ? 'bg-primary text-primary-foreground' : holiday ? 'text-destructive' : 'text-foreground'
                       }`}>
                         {day}
                       </span>
@@ -153,6 +165,32 @@ export default function CalendarPage() {
             );
           })}
         </div>
+      </div>
+
+      {/* Feiertage */}
+      <div className="rounded-xl border bg-card p-4 shadow-sm">
+        <h3 className="text-sm font-semibold mb-3">Schweizer Feiertage {year}</h3>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {getSwissHolidays(year).map(h => {
+            const d = new Date(`${h.date}T00:00:00`);
+            return (
+              <div key={h.date + h.name} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs">
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{h.name}</p>
+                  <p className="text-muted-foreground">
+                    {WEEKDAYS[(d.getDay() + 6) % 7]}, {d.getDate()}. {MONTHS[d.getMonth()]}
+                  </p>
+                </div>
+                <span className={`shrink-0 rounded px-1.5 py-0.5 font-medium ${h.national ? 'bg-destructive/15 text-destructive' : 'bg-warning/15 text-warning'}`}>
+                  {h.national ? 'CH' : 'teilweise'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          «CH» gilt in der ganzen Schweiz, «teilweise» nur in einzelnen Kantonen – Details beim Überfahren im Kalender.
+        </p>
       </div>
 
       {/* Summary */}

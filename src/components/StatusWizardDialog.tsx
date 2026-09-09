@@ -8,6 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { isSwissHoliday, getHolidayForDate } from '@/lib/swiss-holidays';
 import {
   Phone, PhoneForwarded, PhoneOff, UserX, Ban, ThumbsDown, Building2,
   CalendarIcon, Clock, AlertTriangle, CheckCircle2
@@ -458,9 +459,20 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar mode="single" selected={aptDate} onSelect={setAptDate}
                           disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                          modifiers={{ holiday: (date: Date) => isSwissHoliday(date) }}
+                          modifiersClassNames={{ holiday: 'text-destructive font-semibold' }}
                           className={cn("p-3 pointer-events-auto")} />
                       </PopoverContent>
                     </Popover>
+                    {(() => {
+                      const hol = aptDate ? getHolidayForDate(aptDate) : undefined;
+                      if (!hol) return null;
+                      return (
+                        <p className="mt-1 text-[11px] text-destructive">
+                          Achtung – Feiertag: «{hol.name}»{hol.national ? ' (ganze Schweiz)' : ' (nur einzelne Kantone)'}
+                        </p>
+                      );
+                    })()}
                   </div>
                   <div>
                     <label className="text-xs font-medium text-muted-foreground">Uhrzeit *</label>
@@ -508,9 +520,20 @@ export default function StatusWizardDialog({ open, onOpenChange, wizardType, lea
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar mode="single" selected={callbackDate} onSelect={setCallbackDate}
                       disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                      modifiers={{ holiday: (date: Date) => isSwissHoliday(date) }}
+                      modifiersClassNames={{ holiday: 'text-destructive font-semibold' }}
                       className={cn("p-3 pointer-events-auto")} />
                   </PopoverContent>
                 </Popover>
+                {(() => {
+                  const hol = callbackDate ? getHolidayForDate(callbackDate) : undefined;
+                  if (!hol) return null;
+                  return (
+                    <p className="mt-1 text-[11px] text-destructive">
+                      Achtung – Feiertag: «{hol.name}»{hol.national ? ' (ganze Schweiz)' : ' (nur einzelne Kantone)'}
+                    </p>
+                  );
+                })()}
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Uhrzeit *</label>
