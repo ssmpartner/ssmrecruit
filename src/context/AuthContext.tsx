@@ -230,6 +230,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    sessionStorage.removeItem(VIEW_AS_KEY);
+    setViewAsRoleState(null);
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
