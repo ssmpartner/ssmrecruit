@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge } from 'lucide-react';
+import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadLifecycle, statusConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
@@ -274,6 +274,53 @@ export default function LeadsTable() {
     return () => { cancelled = true; };
   }, [isHR]);
 
+  // === Insights-R4-Dokument (Controlling & HR): ansehen + herunterladen ===
+  type R4Doc = { id: string; file_name: string; file_path: string };
+  const [r4Docs, setR4Docs] = useState<Map<string, R4Doc>>(new Map());
+  const [r4Busy, setR4Busy] = useState<string | null>(null);
+  const showR4Column = isControlling || isHR;
+
+  useEffect(() => {
+    if (!showR4Column) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('document_uploads')
+        .select('id,lead_id,file_name,file_path,file_type,uploaded_at')
+        .order('uploaded_at', { ascending: false });
+      if (cancelled) return;
+      const map = new Map<string, R4Doc>();
+      for (const row of (data ?? []) as any[]) {
+        const isR4 = (row.file_type || '').toLowerCase() === 'insight_r4' || /insight.*r4/i.test(row.file_name || '');
+        if (isR4 && row.lead_id && row.file_path && !map.has(row.lead_id)) {
+          map.set(row.lead_id, { id: row.id, file_name: row.file_name, file_path: row.file_path });
+        }
+      }
+      setR4Docs(map);
+    })();
+    return () => { cancelled = true; };
+  }, [showR4Column]);
+
+  const viewR4 = useCallback(async (doc: R4Doc) => {
+    setR4Busy(doc.id);
+    const { data, error } = await supabase.storage.from('lead-documents').createSignedUrl(doc.file_path, 3600);
+    setR4Busy(null);
+    if (error || !data?.signedUrl) return;
+    window.open(data.signedUrl, '_blank', 'noopener');
+  }, []);
+
+  const downloadR4 = useCallback(async (doc: R4Doc) => {
+    setR4Busy(doc.id);
+    const { data, error } = await supabase.storage.from('lead-documents').download(doc.file_path);
+    setR4Busy(null);
+    if (error || !data) return;
+    const url = URL.createObjectURL(data);
+    const a = document.createElement('a');
+    a.href = url; a.download = doc.file_name || 'insights-r4.pdf';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }, []);
+
   const hasFilters = statusFilter || sourceFilter || agencyFilter || employeeFilter || cantonFilter || search || dateFrom || dateTo;
 
   const clearFilters = () => {
@@ -504,6 +551,7 @@ export default function LeadsTable() {
                   ) : (
                     <th className="px-5 py-3 font-medium">Kanton</th>
                   )}
+                  {showR4Column && <th className="px-5 py-3 font-medium">Insights R4</th>}
                   <th className="px-5 py-3 font-medium">Quelle</th>
                   <th className="px-5 py-3 font-medium">Status</th>
                   <th className="px-5 py-3 font-medium">Agentur</th>
@@ -515,7 +563,7 @@ export default function LeadsTable() {
               <tbody>
                 {paginatedLeads.length === 0 && (
                   <tr>
-                    <td colSpan={isSuperadmin && !isReviewRole ? 11 : isReviewRole ? 9 : 10} className="px-5 py-12 text-center text-muted-foreground">
+                    <td colSpan={(isSuperadmin && !isReviewRole ? 11 : isReviewRole ? 9 : 10) + (showR4Column ? 1 : 0)} className="px-5 py-12 text-center text-muted-foreground">
                       {activeTab === 'archived' ? 'Keine archivierten Leads vorhanden.' : activeTab === 'deleted' ? 'Keine gelöschten Leads vorhanden.' : activeTab === 'demo' ? 'Keine Demo-/Muster-Leads vorhanden.' : 'Keine Leads gefunden.'}
                     </td>
                   </tr>
@@ -692,6 +740,37 @@ export default function LeadsTable() {
                           <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">{lead.cantonCode}</span>
                         </td>
                       )}
+                      {showR4Column && (() => {
+                        const doc = r4Docs.get(lead.id);
+                        return (
+                          <td className="px-5 py-3" onClick={e => e.stopPropagation()}>
+                            {doc ? (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => viewR4(doc)}
+                                  disabled={r4Busy === doc.id}
+                                  title={`${doc.file_name} ansehen`}
+                                  className="inline-flex items-center gap-1 rounded-md border border-violet-300 bg-violet-50 px-2 py-1 text-[11px] font-medium text-violet-700 hover:bg-violet-100 disabled:opacity-50 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-300"
+                                >
+                                  <Eye className="h-3 w-3" /> Ansehen
+                                </button>
+                                <button
+                                  onClick={() => downloadR4(doc)}
+                                  disabled={r4Busy === doc.id}
+                                  title={`${doc.file_name} herunterladen`}
+                                  className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-[11px] font-medium hover:bg-muted disabled:opacity-50"
+                                >
+                                  <Download className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                <FileText className="h-3 w-3" /> Nicht vorhanden
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })()}
                       <td className="px-5 py-3"><SourceBadge source={lead.source} /></td>
                       <td className="px-5 py-3"><LeadStatusBadge status={lead.status} /></td>
                       <td className="px-5 py-3">
