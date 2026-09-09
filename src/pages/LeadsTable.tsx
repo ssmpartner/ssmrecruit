@@ -169,6 +169,51 @@ export default function LeadsTable() {
     return map;
   }, [leads, isSuperadmin]);
 
+  // === HR-Ansicht: Vertragstermin + Freigaben (Controlling / GL / HR) ===
+  const [hrContractApts, setHrContractApts] = useState<Map<string, { date: string; time: string | null }>>(new Map());
+  const [hrCtrlApprovers, setHrCtrlApprovers] = useState<Map<string, string>>(new Map());
+  const [hrGlApprovals, setHrGlApprovals] = useState<Map<string, { user_id: string; decision: string }[]>>(new Map());
+  const [roleUsers, setRoleUsers] = useState<{ controlling: RoleUser[]; gl: RoleUser[]; hr: RoleUser[] }>({ controlling: [], gl: [], hr: [] });
+
+  useEffect(() => {
+    if (!isHR) return;
+    let cancelled = false;
+    (async () => {
+      const [aptRes, wizRes, mgmtRes, ctrlU, glU, hrU] = await Promise.all([
+        supabase.from('appointments').select('lead_id,date,time,title').eq('title', CONTRACT_APPOINTMENT_TITLE),
+        supabase.from('status_wizard_results').select('lead_id,completed_by,created_at').eq('wizard_type', 'controlling_approval'),
+        supabase.from('lead_management_approvals').select('lead_id,user_id,decision'),
+        supabase.rpc('get_role_users', { _role: 'controlling' }),
+        supabase.rpc('get_role_users', { _role: 'geschaeftsleitung' }),
+        supabase.rpc('get_role_users', { _role: 'hr' }),
+      ]);
+      if (cancelled) return;
+      const apts = new Map<string, { date: string; time: string | null }>();
+      for (const row of (aptRes.data ?? []) as any[]) {
+        if (row.lead_id) apts.set(row.lead_id, { date: row.date, time: row.time });
+      }
+      const ctrl = new Map<string, string>();
+      for (const row of (wizRes.data ?? []) as any[]) {
+        if (row.lead_id && row.completed_by && !ctrl.has(row.lead_id)) ctrl.set(row.lead_id, row.completed_by);
+      }
+      const gl = new Map<string, { user_id: string; decision: string }[]>();
+      for (const row of (mgmtRes.data ?? []) as any[]) {
+        const list = gl.get(row.lead_id) ?? [];
+        list.push({ user_id: row.user_id, decision: row.decision });
+        gl.set(row.lead_id, list);
+      }
+      setHrContractApts(apts);
+      setHrCtrlApprovers(ctrl);
+      setHrGlApprovals(gl);
+      setRoleUsers({
+        controlling: (ctrlU.data as RoleUser[]) ?? [],
+        gl: (glU.data as RoleUser[]) ?? [],
+        hr: (hrU.data as RoleUser[]) ?? [],
+      });
+    })();
+    return () => { cancelled = true; };
+  }, [isHR]);
+
   const hasFilters = statusFilter || sourceFilter || agencyFilter || employeeFilter || cantonFilter || search || dateFrom || dateTo;
 
   const clearFilters = () => {
