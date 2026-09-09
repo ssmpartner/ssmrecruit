@@ -187,11 +187,14 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
       let description: string;
 
       if (action === 'approve') {
-        newStatus = config.approveStatus;
+        // Sonderfall: Kandidat geht nach der Controlling-Freigabe direkt zum HR (ohne GL)
+        const skipGl = wizardType === 'controlling' && directToHr;
+        newStatus = skipGl ? ('hr_processing' as LeadStatus) : config.approveStatus;
         const scoringLabel = SCORING_OPTIONS.find(s => s.value === scoring)?.label || '';
         description = wizardType === 'controlling'
-          ? `Controlling: Selektioniert (${scoringLabel}) → Status: Controlling Approved`
+          ? `Controlling: Selektioniert (${scoringLabel}) → Status: ${skipGl ? 'HR Bearbeitung (Sonderfreigabe ohne GL)' : 'Controlling Approved'}`
           : `${config.label}: Freigegeben → ${statusConfig[newStatus]?.label || newStatus}`;
+
       } else if (action === 'reject' && config.rejectStatus) {
         newStatus = config.rejectStatus;
         description = wizardType === 'controlling'
