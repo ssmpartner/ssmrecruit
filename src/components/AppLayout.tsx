@@ -100,6 +100,34 @@ export default function AppLayout() {
                   <Settings className="mr-2 h-4 w-4" />
                   Einstellungen
                 </DropdownMenuItem>
+                {isRealSuperadmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                      Rollen-Vorschau
+                    </DropdownMenuLabel>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger className="cursor-pointer">
+                        <UserCog className="mr-2 h-4 w-4" />
+                        {viewAsRole
+                          ? PREVIEW_ROLES.find(r => r.role === viewAsRole)?.label ?? viewAsRole
+                          : 'Rolle wechseln'}
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent className="w-60">
+                        <DropdownMenuItem onClick={() => switchRole(null)} className="cursor-pointer">
+                          {!viewAsRole ? <Check className="mr-2 h-4 w-4" /> : <span className="mr-2 h-4 w-4" />}
+                          Superadmin (eigene Rolle)
+                        </DropdownMenuItem>
+                        {PREVIEW_ROLES.map(r => (
+                          <DropdownMenuItem key={r.role} onClick={() => switchRole(r.role)} className="cursor-pointer">
+                            {viewAsRole === r.role ? <Check className="mr-2 h-4 w-4" /> : <span className="mr-2 h-4 w-4" />}
+                            {r.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handlePortalSwitch} className="cursor-pointer">
                   <ExternalLink className="mr-2 h-4 w-4" />
