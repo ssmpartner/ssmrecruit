@@ -929,7 +929,7 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
                                 <Eye className="h-3.5 w-3.5" /> Vorschau
                               </button>
                             )}
-                            {isHR && (
+                            {(isHR || isControlling || isGeschaeftsleitung) && (
                               <button onClick={() => downloadDocument(doc)}
                                 className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted">
                                 <Download className="h-3.5 w-3.5" /> Download
