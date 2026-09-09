@@ -13,10 +13,21 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 
+const PREVIEW_ROLES = [
+  { role: 'teamleiter', label: 'Mitarbeiter (Teamleiter)' },
+  { role: 'controlling', label: 'Controlling' },
+  { role: 'geschaeftsleitung', label: 'Geschäftsleitung' },
+  { role: 'hr', label: 'HR' },
+] as const;
+
 export default function AppLayout() {
-  const { profile, user, signOut } = useAuth();
+  const { profile, user, signOut, isRealSuperadmin, viewAsRole, setViewAsRole } = useAuth();
   const { collapsed } = useSidebarState();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
