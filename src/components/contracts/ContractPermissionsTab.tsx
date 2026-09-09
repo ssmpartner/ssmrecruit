@@ -30,10 +30,15 @@ type Row = {
 const ROLE_DEFAULTS: Record<string, string[]> = {
   hr: ['can_view', 'can_generate', 'can_edit', 'can_finalize', 'can_send'],
   geschaeftsleitung: ['can_view', 'can_generate'],
-  teamleiter: ['can_view', 'can_generate', 'can_edit'],
-  backoffice: ['can_view', 'can_generate', 'can_edit'],
-  agency_manager: ['can_view', 'can_generate', 'can_edit'],
+  teamleiter: ['can_view'],
+  backoffice: ['can_view'],
+  agency_manager: ['can_view'],
+  employee: ['can_view'],
+  analyst: ['can_view'],
 };
+
+// Diese Rollen sind auf reines Ansehen begrenzt (serverseitig erzwungen)
+const VIEW_ONLY_ROLES = ['teamleiter', 'backoffice', 'agency_manager', 'employee', 'analyst'];
 
 export default function ContractPermissionsTab() {
   const [rows, setRows] = useState<Row[]>([]);
@@ -80,7 +85,7 @@ export default function ContractPermissionsTab() {
         <ul className="ml-4 list-disc">
           <li><strong>HR</strong>: Ansehen, Generieren, Bearbeiten, Finalisieren, Versenden</li>
           <li><strong>Geschäftsleitung</strong>: Ansehen, Generieren</li>
-          <li><strong>Recruiter</strong> (Teamleiter, Backoffice, Agency Manager): Ansehen, Generieren, Bearbeiten</li>
+          <li><strong>Recruiter</strong> (Teamleiter, Backoffice, Agency Manager, Mitarbeiter): nur Ansehen – weitere Rechte sind für diese Rollen gesperrt</li>
         </ul>
       </div>
       <div className="rounded-lg border bg-card overflow-x-auto">
@@ -94,7 +99,8 @@ export default function ContractPermissionsTab() {
           <TableBody>
             {loading && <TableRow><TableCell colSpan={PERMS.length + 1} className="text-center py-8 text-muted-foreground">Lädt…</TableCell></TableRow>}
             {rows.map(r => {
-              const defaults = ROLE_DEFAULTS[r.role ?? ''] ?? [];
+               const defaults = ROLE_DEFAULTS[r.role ?? ''] ?? [];
+               const viewOnly = VIEW_ONLY_ROLES.includes(r.role ?? '');
               return (
                 <TableRow key={r.user_id}>
                   <TableCell>
@@ -102,12 +108,13 @@ export default function ContractPermissionsTab() {
                     <div className="text-xs text-muted-foreground">{r.email} · {r.role || 'kein Rolle'}</div>
                   </TableCell>
                   {PERMS.map(p => {
-                    const isDefault = defaults.includes(p.key);
-                    return (
-                      <TableCell key={p.key} className={`text-center ${isDefault ? 'bg-yellow-50 dark:bg-yellow-950/20' : ''}`}>
-                        <Checkbox checked={r.perms[p.key] || isDefault} disabled={isDefault} onCheckedChange={v => toggle(r.user_id, p.key, !!v)} />
-                      </TableCell>
-                    );
+                     const isDefault = defaults.includes(p.key);
+                     const locked = isDefault || (viewOnly && p.key !== 'can_view');
+                     return (
+                       <TableCell key={p.key} className={`text-center ${isDefault ? 'bg-yellow-50 dark:bg-yellow-950/20' : ''}`}>
+                         <Checkbox checked={viewOnly ? p.key === 'can_view' : (r.perms[p.key] || isDefault)} disabled={locked} onCheckedChange={v => toggle(r.user_id, p.key, !!v)} />
+                       </TableCell>
+                     );
                   })}
                 </TableRow>
               );
