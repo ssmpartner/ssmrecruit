@@ -34,6 +34,7 @@ import PendingApprovalsPanel from './PendingApprovalsPanel';
 import AddressAutocomplete, { type AddressSuggestion } from './AddressAutocomplete';
 import { assignableEmployees } from '@/lib/assignable-employees';
 import { useCareerLevels } from '@/hooks/useCareerLevels';
+import { isSwissHoliday, getHolidayForDate } from '@/lib/swiss-holidays';
 
 
 const statusKeys: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired', 'rejected'];
