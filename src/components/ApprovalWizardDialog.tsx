@@ -240,6 +240,10 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
       if (wizardType === 'controlling' && action === 'reject') {
         updateData.lead_lifecycle = 'closed';
       }
+      if (wizardType === 'controlling' && action === 'approve' && directToHr) {
+        updateData.controlling_direct_to_hr = false;
+      }
+
       updateLead(leadId, updateData);
       addActivity(leadId, 'status_change', description);
 
