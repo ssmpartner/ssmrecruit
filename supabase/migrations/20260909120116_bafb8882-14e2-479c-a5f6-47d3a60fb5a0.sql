@@ -1,0 +1,1 @@
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS controlling_direct_to_hr boolean NOT NULL DEFAULT false;

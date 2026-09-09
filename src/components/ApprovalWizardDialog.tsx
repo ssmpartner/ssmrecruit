@@ -94,6 +94,17 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
   const [controllingDecision, setControllingDecision] = useState<string>('—');
 
   const [queryText, setQueryText] = useState('');
+  const [skipGl, setSkipGl] = useState(false);
+
+  useEffect(() => {
+    if (!open || wizardType !== 'controlling') return;
+    (async () => {
+      const { data } = await supabase.from('leads').select('controlling_direct_to_hr').eq('id', leadId).single();
+      setSkipGl(!!data?.controlling_direct_to_hr);
+    })();
+  }, [open, wizardType, leadId]);
+
+
 
   useEffect(() => {
     if (!open || wizardType !== 'management') return;
@@ -151,8 +162,10 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
     }
 
     // Schutz vor versehentlicher Wiederholung einer bereits erledigten Prüfung
+    let directToHr = false;
     if (action !== 'query') {
-      const { data: current } = await supabase.from('leads').select('status').eq('id', leadId).single();
+      const { data: current } = await supabase.from('leads').select('status, controlling_direct_to_hr').eq('id', leadId).single();
+      directToHr = !!current?.controlling_direct_to_hr;
       const currentIdx = PHASE_ORDER.indexOf((current?.status || '') as LeadStatus);
       const triggerIdx = PHASE_ORDER.indexOf(config.triggerStatus);
       if (currentIdx > -1 && triggerIdx > -1 && currentIdx > triggerIdx) {
@@ -165,6 +178,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
         return;
       }
     }
+
 
     setSubmitting(true);
 
@@ -184,11 +198,14 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
       let description: string;
 
       if (action === 'approve') {
-        newStatus = config.approveStatus;
+        // Sonderfall: Kandidat geht nach der Controlling-Freigabe direkt zum HR (ohne GL)
+        const skipGl = wizardType === 'controlling' && directToHr;
+        newStatus = skipGl ? ('hr_processing' as LeadStatus) : config.approveStatus;
         const scoringLabel = SCORING_OPTIONS.find(s => s.value === scoring)?.label || '';
         description = wizardType === 'controlling'
-          ? `Controlling: Selektioniert (${scoringLabel}) → Status: Controlling Approved`
+          ? `Controlling: Selektioniert (${scoringLabel}) → Status: ${skipGl ? 'HR Bearbeitung (Sonderfreigabe ohne GL)' : 'Controlling Approved'}`
           : `${config.label}: Freigegeben → ${statusConfig[newStatus]?.label || newStatus}`;
+
       } else if (action === 'reject' && config.rejectStatus) {
         newStatus = config.rejectStatus;
         description = wizardType === 'controlling'
@@ -234,6 +251,10 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
       if (wizardType === 'controlling' && action === 'reject') {
         updateData.lead_lifecycle = 'closed';
       }
+      if (wizardType === 'controlling' && action === 'approve' && directToHr) {
+        updateData.controlling_direct_to_hr = false;
+      }
+
       updateLead(leadId, updateData);
       addActivity(leadId, 'status_change', description);
 
@@ -279,7 +300,16 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
 
   const renderControllingFields = () => (
     <div className="space-y-4">
+      {skipGl && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            <strong>Sonderfall:</strong> Die frühere Freigabe erfolgte ohne Controlling-Berechtigung. Nach deiner Freigabe geht der Kandidat <strong>direkt an HR</strong> – ohne Geschäftsleitung.
+          </p>
+        </div>
+      )}
       <div className="space-y-2">
+
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prüfpunkte</p>
         {[
           { checked: insightsComplete, set: setInsightsComplete, icon: Brain, color: 'text-violet-600', label: 'Insights abgeschlossen', sub: 'DISC & Motivatoren vollständig' },

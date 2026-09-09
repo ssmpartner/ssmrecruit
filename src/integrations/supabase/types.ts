@@ -3793,6 +3793,7 @@ export type Database = {
           canton_code: string
           city: string
           contract_generation_unlocked: boolean
+          controlling_direct_to_hr: boolean
           created_at: string
           email: string
           employee_id: string
@@ -3833,6 +3834,7 @@ export type Database = {
           canton_code?: string
           city?: string
           contract_generation_unlocked?: boolean
+          controlling_direct_to_hr?: boolean
           created_at?: string
           email: string
           employee_id: string
@@ -3873,6 +3875,7 @@ export type Database = {
           canton_code?: string
           city?: string
           contract_generation_unlocked?: boolean
+          controlling_direct_to_hr?: boolean
           created_at?: string
           email?: string
           employee_id?: string
