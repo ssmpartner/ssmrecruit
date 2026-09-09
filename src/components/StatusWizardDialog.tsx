@@ -8,6 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { isSwissHoliday, getHolidayForDate } from '@/lib/swiss-holidays';
 import {
   Phone, PhoneForwarded, PhoneOff, UserX, Ban, ThumbsDown, Building2,
   CalendarIcon, Clock, AlertTriangle, CheckCircle2
