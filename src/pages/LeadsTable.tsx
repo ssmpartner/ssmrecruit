@@ -499,7 +499,11 @@ export default function LeadsTable() {
                   ) : (
                     <th className="px-5 py-3 font-medium">Ort</th>
                   )}
-                  <th className="px-5 py-3 font-medium">Kanton</th>
+                  {isHR ? (
+                    <th className="px-5 py-3 font-medium">Wunschposition</th>
+                  ) : (
+                    <th className="px-5 py-3 font-medium">Kanton</th>
+                  )}
                   <th className="px-5 py-3 font-medium">Quelle</th>
                   <th className="px-5 py-3 font-medium">Status</th>
                   <th className="px-5 py-3 font-medium">Agentur</th>
@@ -653,9 +657,22 @@ export default function LeadsTable() {
                           </span>
                         </td>
                       )}
-                      <td className="px-5 py-3">
-                        <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">{lead.cantonCode}</span>
-                      </td>
+                      {isHR ? (
+                        <td className="px-5 py-3">
+                          <span className={cn(
+                            'inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium',
+                            lead.position
+                              ? 'bg-primary/10 text-primary'
+                              : 'border border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+                          )}>
+                            {lead.position || 'Keine Angabe'}
+                          </span>
+                        </td>
+                      ) : (
+                        <td className="px-5 py-3">
+                          <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">{lead.cantonCode}</span>
+                        </td>
+                      )}
                       <td className="px-5 py-3"><SourceBadge source={lead.source} /></td>
                       <td className="px-5 py-3"><LeadStatusBadge status={lead.status} /></td>
                       <td className="px-5 py-3">
