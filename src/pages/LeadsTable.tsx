@@ -22,6 +22,39 @@ import { cn } from '@/lib/utils';
 import { detectDuplicates } from '@/lib/duplicate-detection';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+import { supabase } from '@/integrations/supabase/client';
+import { CONTRACT_APPOINTMENT_TITLE } from '@/components/ContractAppointmentPanel';
+
+type RoleUser = { user_id: string; display_name: string | null; avatar_url: string | null };
+
+const initialsOf = (n?: string | null) =>
+  (n || '?').split(/\s+/).map(s => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+
+function ApprovalAvatar({ u, state, roleLabel }: { u: RoleUser; state: 'approved' | 'rejected' | 'pending'; roleLabel: string }) {
+  const ring = state === 'approved' ? 'ring-emerald-500' : state === 'rejected' ? 'ring-destructive' : 'ring-muted';
+  const stateLabel = state === 'approved' ? 'freigegeben' : state === 'rejected' ? 'abgelehnt' : 'ausstehend';
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span onClick={e => e.stopPropagation()} className="relative inline-flex shrink-0">
+            {u.avatar_url ? (
+              <img src={u.avatar_url} alt="" className={cn('h-6 w-6 rounded-full object-cover ring-2', ring, state === 'pending' && 'opacity-50 grayscale')} />
+            ) : (
+              <span className={cn('flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[9px] font-bold text-primary ring-2', ring, state === 'pending' && 'opacity-50 grayscale')}>
+                {initialsOf(u.display_name)}
+              </span>
+            )}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="text-xs">{roleLabel}: {u.display_name || 'Unbenannt'} – {stateLabel}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 type TabKey = 'active' | 'archived' | 'deleted' | 'duplicates' | 'demo';
 type PageSize = 10 | 20 | 30 | 50 | 100 | 'all';
 
