@@ -224,7 +224,7 @@ export default function LeadsTable() {
   }, [leads, isSuperadmin]);
 
   // === HR-Ansicht: Vertragstermin + Freigaben (Controlling / GL / HR) ===
-  const [hrContractApts, setHrContractApts] = useState<Map<string, { date: string; time: string | null }>>(new Map());
+  const [hrContractApts, setHrContractApts] = useState<Map<string, { date: string; time: string | null; proposed?: boolean }>>(new Map());
   const [hrCtrlApprovers, setHrCtrlApprovers] = useState<Map<string, string>>(new Map());
   const [hrGlApprovals, setHrGlApprovals] = useState<Map<string, { user_id: string; decision: string }[]>>(new Map());
   const [roleUsers, setRoleUsers] = useState<{ controlling: RoleUser[]; gl: RoleUser[]; hr: RoleUser[] }>({ controlling: [], gl: [], hr: [] });
@@ -233,8 +233,9 @@ export default function LeadsTable() {
     if (!isHR) return;
     let cancelled = false;
     (async () => {
-      const [aptRes, wizRes, mgmtRes, ctrlU, glU, hrU] = await Promise.all([
+      const [aptRes, sugRes, wizRes, mgmtRes, ctrlU, glU, hrU] = await Promise.all([
         supabase.from('appointments').select('lead_id,date,time,title').eq('title', CONTRACT_APPOINTMENT_TITLE),
+        supabase.from('appointment_suggestions').select('lead_id,suggested_date,suggested_time,status').eq('purpose', 'contract_signing'),
         supabase.from('status_wizard_results').select('lead_id,completed_by,created_at').eq('wizard_type', 'controlling_approval'),
         supabase.from('lead_management_approvals').select('lead_id,user_id,decision'),
         supabase.rpc('get_role_users', { _role: 'controlling' }),
@@ -242,7 +243,12 @@ export default function LeadsTable() {
         supabase.rpc('get_role_users', { _role: 'hr' }),
       ]);
       if (cancelled) return;
-      const apts = new Map<string, { date: string; time: string | null }>();
+      const apts = new Map<string, { date: string; time: string | null; proposed?: boolean }>();
+      for (const row of (sugRes.data ?? []) as any[]) {
+        if (row.lead_id && row.status !== 'rejected' && !apts.has(row.lead_id)) {
+          apts.set(row.lead_id, { date: row.suggested_date, time: row.suggested_time, proposed: true });
+        }
+      }
       for (const row of (aptRes.data ?? []) as any[]) {
         if (row.lead_id) apts.set(row.lead_id, { date: row.date, time: row.time });
       }
@@ -592,10 +598,11 @@ export default function LeadsTable() {
                                 );
                               }
                               return (
-                                <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800">
+                                <span className={cn('inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-semibold', apt.proposed ? 'border-sky-300 bg-sky-50 text-sky-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800')}>
                                   <CalendarIcon className="h-3.5 w-3.5" />
                                   {new Date(apt.date).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                   {apt.time && <span className="font-normal">{apt.time.slice(0, 5)} Uhr</span>}
+                                  {apt.proposed && <span className="font-normal">(Vorschlag)</span>}
                                 </span>
                               );
                             })()}
