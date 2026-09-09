@@ -551,6 +551,7 @@ export default function LeadsTable() {
                   ) : (
                     <th className="px-5 py-3 font-medium">Kanton</th>
                   )}
+                  {showR4Column && <th className="px-5 py-3 font-medium">Insights R4</th>}
                   <th className="px-5 py-3 font-medium">Quelle</th>
                   <th className="px-5 py-3 font-medium">Status</th>
                   <th className="px-5 py-3 font-medium">Agentur</th>
