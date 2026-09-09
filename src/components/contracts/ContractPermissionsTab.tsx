@@ -99,7 +99,8 @@ export default function ContractPermissionsTab() {
           <TableBody>
             {loading && <TableRow><TableCell colSpan={PERMS.length + 1} className="text-center py-8 text-muted-foreground">Lädt…</TableCell></TableRow>}
             {rows.map(r => {
-              const defaults = ROLE_DEFAULTS[r.role ?? ''] ?? [];
+               const defaults = ROLE_DEFAULTS[r.role ?? ''] ?? [];
+               const viewOnly = VIEW_ONLY_ROLES.includes(r.role ?? '');
               return (
                 <TableRow key={r.user_id}>
                   <TableCell>
