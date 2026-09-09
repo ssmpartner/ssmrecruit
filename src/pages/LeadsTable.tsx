@@ -31,7 +31,7 @@ const initialsOf = (n?: string | null) =>
   (n || '?').split(/\s+/).map(s => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 
 function ApprovalAvatar({ u, state, roleLabel }: { u: RoleUser; state: 'approved' | 'rejected' | 'pending'; roleLabel: string }) {
-  const ring = state === 'approved' ? 'ring-emerald-500' : state === 'rejected' ? 'ring-destructive' : 'ring-muted';
+  const ring = state === 'approved' ? 'ring-emerald-500' : state === 'rejected' ? 'ring-destructive' : 'ring-border';
   const stateLabel = state === 'approved' ? 'freigegeben' : state === 'rejected' ? 'abgelehnt' : 'ausstehend';
   return (
     <TooltipProvider>
@@ -39,10 +39,22 @@ function ApprovalAvatar({ u, state, roleLabel }: { u: RoleUser; state: 'approved
         <TooltipTrigger asChild>
           <span onClick={e => e.stopPropagation()} className="relative inline-flex shrink-0">
             {u.avatar_url ? (
-              <img src={u.avatar_url} alt="" className={cn('h-6 w-6 rounded-full object-cover ring-2', ring, state === 'pending' && 'opacity-50 grayscale')} />
+              <img
+                src={u.avatar_url}
+                alt={u.display_name || ''}
+                className={cn('h-8 w-8 rounded-full object-cover ring-2', ring, state === 'pending' && 'opacity-60')}
+              />
             ) : (
-              <span className={cn('flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[9px] font-bold text-primary ring-2', ring, state === 'pending' && 'opacity-50 grayscale')}>
+              <span className={cn('flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary ring-2', ring, state === 'pending' && 'opacity-60')}>
                 {initialsOf(u.display_name)}
+              </span>
+            )}
+            {state !== 'pending' && (
+              <span className={cn(
+                'absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-card text-[8px] font-bold text-white',
+                state === 'approved' ? 'bg-emerald-500' : 'bg-destructive',
+              )}>
+                {state === 'approved' ? '✓' : '✕'}
               </span>
             )}
           </span>
@@ -52,6 +64,15 @@ function ApprovalAvatar({ u, state, roleLabel }: { u: RoleUser; state: 'approved
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
+  );
+}
+
+function ApprovalGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex shrink-0 flex-col items-start gap-1">
+      <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-1.5">{children}</div>
+    </div>
   );
 }
 
@@ -203,7 +224,7 @@ export default function LeadsTable() {
   }, [leads, isSuperadmin]);
 
   // === HR-Ansicht: Vertragstermin + Freigaben (Controlling / GL / HR) ===
-  const [hrContractApts, setHrContractApts] = useState<Map<string, { date: string; time: string | null }>>(new Map());
+  const [hrContractApts, setHrContractApts] = useState<Map<string, { date: string; time: string | null; proposed?: boolean }>>(new Map());
   const [hrCtrlApprovers, setHrCtrlApprovers] = useState<Map<string, string>>(new Map());
   const [hrGlApprovals, setHrGlApprovals] = useState<Map<string, { user_id: string; decision: string }[]>>(new Map());
   const [roleUsers, setRoleUsers] = useState<{ controlling: RoleUser[]; gl: RoleUser[]; hr: RoleUser[] }>({ controlling: [], gl: [], hr: [] });
@@ -212,8 +233,9 @@ export default function LeadsTable() {
     if (!isHR) return;
     let cancelled = false;
     (async () => {
-      const [aptRes, wizRes, mgmtRes, ctrlU, glU, hrU] = await Promise.all([
+      const [aptRes, sugRes, wizRes, mgmtRes, ctrlU, glU, hrU] = await Promise.all([
         supabase.from('appointments').select('lead_id,date,time,title').eq('title', CONTRACT_APPOINTMENT_TITLE),
+        supabase.from('appointment_suggestions').select('lead_id,suggested_date,suggested_time,status').eq('purpose', 'contract_signing'),
         supabase.from('status_wizard_results').select('lead_id,completed_by,created_at').eq('wizard_type', 'controlling_approval'),
         supabase.from('lead_management_approvals').select('lead_id,user_id,decision'),
         supabase.rpc('get_role_users', { _role: 'controlling' }),
@@ -221,7 +243,12 @@ export default function LeadsTable() {
         supabase.rpc('get_role_users', { _role: 'hr' }),
       ]);
       if (cancelled) return;
-      const apts = new Map<string, { date: string; time: string | null }>();
+      const apts = new Map<string, { date: string; time: string | null; proposed?: boolean }>();
+      for (const row of (sugRes.data ?? []) as any[]) {
+        if (row.lead_id && row.status !== 'rejected' && !apts.has(row.lead_id)) {
+          apts.set(row.lead_id, { date: row.suggested_date, time: row.suggested_time, proposed: true });
+        }
+      }
       for (const row of (aptRes.data ?? []) as any[]) {
         if (row.lead_id) apts.set(row.lead_id, { date: row.date, time: row.time });
       }
@@ -560,22 +587,29 @@ export default function LeadsTable() {
                       {!isControlling && !isHR && <td className="px-5 py-3 text-muted-foreground text-xs">{lead.phone}</td>}
                       {isHR ? (
                         <>
-                          <td className="px-5 py-3">
+                          <td className="px-5 py-3 whitespace-nowrap">
                             {(() => {
                               const apt = hrContractApts.get(lead.id);
-                              if (!apt) return <span className="text-xs text-muted-foreground italic">Offen</span>;
+                              if (!apt) {
+                                return (
+                                  <span className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800">
+                                    <CalendarIcon className="h-3 w-3" /> Noch nicht festgelegt
+                                  </span>
+                                );
+                              }
                               return (
-                                <span className="inline-flex items-center gap-1 text-xs font-medium">
-                                  <CalendarIcon className="h-3 w-3 text-muted-foreground" />
-                                  {new Date(apt.date).toLocaleDateString('de-CH')}
-                                  {apt.time && <span className="text-muted-foreground">{apt.time.slice(0, 5)}</span>}
+                                <span className={cn('inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-semibold', apt.proposed ? 'border-sky-300 bg-sky-50 text-sky-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800')}>
+                                  <CalendarIcon className="h-3.5 w-3.5" />
+                                  {new Date(apt.date).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                  {apt.time && <span className="font-normal">{apt.time.slice(0, 5)} Uhr</span>}
+                                  {apt.proposed && <span className="font-normal">(Vorschlag)</span>}
                                 </span>
                               );
                             })()}
                           </td>
                           <td className="px-5 py-3">
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center gap-0.5">
+                            <div className="flex items-start gap-4 whitespace-nowrap">
+                              <ApprovalGroup label="Controlling">
                                 {roleUsers.controlling.map(u => (
                                   <ApprovalAvatar
                                     key={`c-${u.user_id}`}
@@ -584,9 +618,8 @@ export default function LeadsTable() {
                                     state={hrCtrlApprovers.get(lead.id) === u.user_id ? 'approved' : 'pending'}
                                   />
                                 ))}
-                              </div>
-                              <span className="text-muted-foreground/40">|</span>
-                              <div className="flex items-center gap-0.5">
+                              </ApprovalGroup>
+                              <ApprovalGroup label="GL">
                                 {roleUsers.gl.map(u => {
                                   const dec = (hrGlApprovals.get(lead.id) ?? []).find(a => a.user_id === u.user_id);
                                   return (
@@ -598,9 +631,8 @@ export default function LeadsTable() {
                                     />
                                   );
                                 })}
-                              </div>
-                              <span className="text-muted-foreground/40">|</span>
-                              <div className="flex items-center gap-0.5">
+                              </ApprovalGroup>
+                              <ApprovalGroup label="HR">
                                 {roleUsers.hr.map(u => (
                                   <ApprovalAvatar
                                     key={`h-${u.user_id}`}
@@ -609,7 +641,7 @@ export default function LeadsTable() {
                                     state={lead.status === 'hired' ? 'approved' : 'pending'}
                                   />
                                 ))}
-                              </div>
+                              </ApprovalGroup>
                             </div>
                           </td>
                         </>
