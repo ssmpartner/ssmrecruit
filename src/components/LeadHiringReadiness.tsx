@@ -71,6 +71,21 @@ export default function LeadHiringReadiness({ leadId }: Props) {
   const [leadDbAppointments, setLeadDbAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState<string>('');
+  const [demoSimulated, setDemoSimulated] = useState(false);
+  const { plans } = useCareerLevels();
+  const positionOptions = useMemo(() => {
+    const opts: string[] = [];
+    for (const p of plans) {
+      const name = (p.position || '').trim();
+      if (name && !opts.includes(name)) opts.push(name);
+    }
+    if (lead?.position && lead.position.trim() && !opts.includes(lead.position.trim())) {
+      opts.unshift(lead.position.trim());
+    }
+    return opts;
+  }, [plans, lead?.position]);
 
   async function loadAll() {
     const [pRes, dRes, wRes, aRes] = await Promise.all([
