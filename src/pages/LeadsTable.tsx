@@ -22,6 +22,39 @@ import { cn } from '@/lib/utils';
 import { detectDuplicates } from '@/lib/duplicate-detection';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+import { supabase } from '@/integrations/supabase/client';
+import { CONTRACT_APPOINTMENT_TITLE } from '@/components/ContractAppointmentPanel';
+
+type RoleUser = { user_id: string; display_name: string | null; avatar_url: string | null };
+
+const initialsOf = (n?: string | null) =>
+  (n || '?').split(/\s+/).map(s => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+
+function ApprovalAvatar({ u, state, roleLabel }: { u: RoleUser; state: 'approved' | 'rejected' | 'pending'; roleLabel: string }) {
+  const ring = state === 'approved' ? 'ring-emerald-500' : state === 'rejected' ? 'ring-destructive' : 'ring-muted';
+  const stateLabel = state === 'approved' ? 'freigegeben' : state === 'rejected' ? 'abgelehnt' : 'ausstehend';
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span onClick={e => e.stopPropagation()} className="relative inline-flex shrink-0">
+            {u.avatar_url ? (
+              <img src={u.avatar_url} alt="" className={cn('h-6 w-6 rounded-full object-cover ring-2', ring, state === 'pending' && 'opacity-50 grayscale')} />
+            ) : (
+              <span className={cn('flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[9px] font-bold text-primary ring-2', ring, state === 'pending' && 'opacity-50 grayscale')}>
+                {initialsOf(u.display_name)}
+              </span>
+            )}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="text-xs">{roleLabel}: {u.display_name || 'Unbenannt'} – {stateLabel}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 type TabKey = 'active' | 'archived' | 'deleted' | 'duplicates' | 'demo';
 type PageSize = 10 | 20 | 30 | 50 | 100 | 'all';
 
@@ -168,6 +201,51 @@ export default function LeadsTable() {
     }
     return map;
   }, [leads, isSuperadmin]);
+
+  // === HR-Ansicht: Vertragstermin + Freigaben (Controlling / GL / HR) ===
+  const [hrContractApts, setHrContractApts] = useState<Map<string, { date: string; time: string | null }>>(new Map());
+  const [hrCtrlApprovers, setHrCtrlApprovers] = useState<Map<string, string>>(new Map());
+  const [hrGlApprovals, setHrGlApprovals] = useState<Map<string, { user_id: string; decision: string }[]>>(new Map());
+  const [roleUsers, setRoleUsers] = useState<{ controlling: RoleUser[]; gl: RoleUser[]; hr: RoleUser[] }>({ controlling: [], gl: [], hr: [] });
+
+  useEffect(() => {
+    if (!isHR) return;
+    let cancelled = false;
+    (async () => {
+      const [aptRes, wizRes, mgmtRes, ctrlU, glU, hrU] = await Promise.all([
+        supabase.from('appointments').select('lead_id,date,time,title').eq('title', CONTRACT_APPOINTMENT_TITLE),
+        supabase.from('status_wizard_results').select('lead_id,completed_by,created_at').eq('wizard_type', 'controlling_approval'),
+        supabase.from('lead_management_approvals').select('lead_id,user_id,decision'),
+        supabase.rpc('get_role_users', { _role: 'controlling' }),
+        supabase.rpc('get_role_users', { _role: 'geschaeftsleitung' }),
+        supabase.rpc('get_role_users', { _role: 'hr' }),
+      ]);
+      if (cancelled) return;
+      const apts = new Map<string, { date: string; time: string | null }>();
+      for (const row of (aptRes.data ?? []) as any[]) {
+        if (row.lead_id) apts.set(row.lead_id, { date: row.date, time: row.time });
+      }
+      const ctrl = new Map<string, string>();
+      for (const row of (wizRes.data ?? []) as any[]) {
+        if (row.lead_id && row.completed_by && !ctrl.has(row.lead_id)) ctrl.set(row.lead_id, row.completed_by);
+      }
+      const gl = new Map<string, { user_id: string; decision: string }[]>();
+      for (const row of (mgmtRes.data ?? []) as any[]) {
+        const list = gl.get(row.lead_id) ?? [];
+        list.push({ user_id: row.user_id, decision: row.decision });
+        gl.set(row.lead_id, list);
+      }
+      setHrContractApts(apts);
+      setHrCtrlApprovers(ctrl);
+      setHrGlApprovals(gl);
+      setRoleUsers({
+        controlling: (ctrlU.data as RoleUser[]) ?? [],
+        gl: (glU.data as RoleUser[]) ?? [],
+        hr: (hrU.data as RoleUser[]) ?? [],
+      });
+    })();
+    return () => { cancelled = true; };
+  }, [isHR]);
 
   const hasFilters = statusFilter || sourceFilter || agencyFilter || employeeFilter || cantonFilter || search || dateFrom || dateTo;
 
@@ -385,8 +463,15 @@ export default function LeadsTable() {
                     </th>
                   )}
                   <th className="px-5 py-3 font-medium">Name</th>
-                  {!isControlling && <th className="px-5 py-3 font-medium">Telefon</th>}
-                  <th className="px-5 py-3 font-medium">Ort</th>
+                  {!isControlling && !isHR && <th className="px-5 py-3 font-medium">Telefon</th>}
+                  {isHR ? (
+                    <>
+                      <th className="px-5 py-3 font-medium">Vertragstermin</th>
+                      <th className="px-5 py-3 font-medium">Freigaben</th>
+                    </>
+                  ) : (
+                    <th className="px-5 py-3 font-medium">Ort</th>
+                  )}
                   <th className="px-5 py-3 font-medium">Kanton</th>
                   <th className="px-5 py-3 font-medium">Quelle</th>
                   <th className="px-5 py-3 font-medium">Status</th>
@@ -472,13 +557,70 @@ export default function LeadsTable() {
                           })()}
                         </div>
                       </td>
-                      {!isControlling && <td className="px-5 py-3 text-muted-foreground text-xs">{lead.phone}</td>}
-                      <td className="px-5 py-3">
-                        <span className="inline-flex items-center gap-1 text-xs">
-                          <MapPin className="h-3 w-3 text-muted-foreground" />
-                          {lead.plz} {lead.city}
-                        </span>
-                      </td>
+                      {!isControlling && !isHR && <td className="px-5 py-3 text-muted-foreground text-xs">{lead.phone}</td>}
+                      {isHR ? (
+                        <>
+                          <td className="px-5 py-3">
+                            {(() => {
+                              const apt = hrContractApts.get(lead.id);
+                              if (!apt) return <span className="text-xs text-muted-foreground italic">Offen</span>;
+                              return (
+                                <span className="inline-flex items-center gap-1 text-xs font-medium">
+                                  <CalendarIcon className="h-3 w-3 text-muted-foreground" />
+                                  {new Date(apt.date).toLocaleDateString('de-CH')}
+                                  {apt.time && <span className="text-muted-foreground">{apt.time.slice(0, 5)}</span>}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-0.5">
+                                {roleUsers.controlling.map(u => (
+                                  <ApprovalAvatar
+                                    key={`c-${u.user_id}`}
+                                    u={u}
+                                    roleLabel="Controlling"
+                                    state={hrCtrlApprovers.get(lead.id) === u.user_id ? 'approved' : 'pending'}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-muted-foreground/40">|</span>
+                              <div className="flex items-center gap-0.5">
+                                {roleUsers.gl.map(u => {
+                                  const dec = (hrGlApprovals.get(lead.id) ?? []).find(a => a.user_id === u.user_id);
+                                  return (
+                                    <ApprovalAvatar
+                                      key={`g-${u.user_id}`}
+                                      u={u}
+                                      roleLabel="Geschäftsleitung"
+                                      state={dec?.decision === 'approved' ? 'approved' : dec?.decision === 'rejected' ? 'rejected' : 'pending'}
+                                    />
+                                  );
+                                })}
+                              </div>
+                              <span className="text-muted-foreground/40">|</span>
+                              <div className="flex items-center gap-0.5">
+                                {roleUsers.hr.map(u => (
+                                  <ApprovalAvatar
+                                    key={`h-${u.user_id}`}
+                                    u={u}
+                                    roleLabel="HR"
+                                    state={lead.status === 'hired' ? 'approved' : 'pending'}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <td className="px-5 py-3">
+                          <span className="inline-flex items-center gap-1 text-xs">
+                            <MapPin className="h-3 w-3 text-muted-foreground" />
+                            {lead.plz} {lead.city}
+                          </span>
+                        </td>
+                      )}
                       <td className="px-5 py-3">
                         <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">{lead.cantonCode}</span>
                       </td>
