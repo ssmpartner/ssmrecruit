@@ -740,6 +740,37 @@ export default function LeadsTable() {
                           <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">{lead.cantonCode}</span>
                         </td>
                       )}
+                      {showR4Column && (() => {
+                        const doc = r4Docs.get(lead.id);
+                        return (
+                          <td className="px-5 py-3" onClick={e => e.stopPropagation()}>
+                            {doc ? (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => viewR4(doc)}
+                                  disabled={r4Busy === doc.id}
+                                  title={`${doc.file_name} ansehen`}
+                                  className="inline-flex items-center gap-1 rounded-md border border-violet-300 bg-violet-50 px-2 py-1 text-[11px] font-medium text-violet-700 hover:bg-violet-100 disabled:opacity-50 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-300"
+                                >
+                                  <Eye className="h-3 w-3" /> Ansehen
+                                </button>
+                                <button
+                                  onClick={() => downloadR4(doc)}
+                                  disabled={r4Busy === doc.id}
+                                  title={`${doc.file_name} herunterladen`}
+                                  className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-[11px] font-medium hover:bg-muted disabled:opacity-50"
+                                >
+                                  <Download className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                <FileText className="h-3 w-3" /> Nicht vorhanden
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })()}
                       <td className="px-5 py-3"><SourceBadge source={lead.source} /></td>
                       <td className="px-5 py-3"><LeadStatusBadge status={lead.status} /></td>
                       <td className="px-5 py-3">
