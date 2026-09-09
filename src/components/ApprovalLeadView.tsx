@@ -10,6 +10,7 @@ import PersonalityProfile from './PersonalityProfile';
 import LeadHiringReadiness from './LeadHiringReadiness';
 import ManagementApprovalPanel from './ManagementApprovalPanel';
 import PendingApprovalsPanel from './PendingApprovalsPanel';
+import ContractAppointmentPanel from './ContractAppointmentPanel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
