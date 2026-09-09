@@ -48,6 +48,13 @@ const initials = (n?: string | null) =>
 const STATUS_ORDER = ['ready_for_controlling', 'controlling_approved', 'management_review', 'management_approved', 'hr_processing', 'hired'];
 const idxOf = (s: string) => STATUS_ORDER.indexOf(s);
 
+// completed_by kann eine UUID ODER ein Anzeigename sein → beides berücksichtigen
+const normName = (s?: string | null) => (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+function matchesApprover(approver: string | null, u: RoleUser) {
+  if (!approver) return false;
+  return approver === u.user_id || (!!u.display_name && normName(approver) === normName(u.display_name));
+}
+
 function Avatar({ u, state }: { u: RoleUser; state: 'approved' | 'rejected' | 'pending' }) {
   return (
     <div className="relative shrink-0" title={u.display_name || ''}>
@@ -242,7 +249,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
         <div className="flex flex-wrap gap-1.5">
           {controllingUsers.length === 0 && <p className="text-xs text-muted-foreground italic">Keine Controlling-User</p>}
           {controllingUsers.map(u => {
-            const isApprover = controllingApprover === u.user_id;
+            const isApprover = matchesApprover(controllingApprover, u);
             const state: 'approved' | 'pending' = ctrlDone ? (isApprover ? 'approved' : 'pending') : 'pending';
             return (
               <div key={u.user_id} className="flex items-center gap-1.5 rounded-full bg-background border pr-2 pl-0.5 py-0.5">
@@ -268,7 +275,7 @@ export default function PendingApprovalsPanel({ leadId, leadStatus, leadUpdatedA
         )}
         {ctrlDone && controllingApprover && (
           <p className="text-[11px] text-emerald-700 mt-2">
-            Freigegeben durch {controllingUsers.find(u => u.user_id === controllingApprover)?.display_name || '—'}
+            Freigegeben durch {controllingUsers.find(u => matchesApprover(controllingApprover, u))?.display_name || controllingApprover}
           </p>
         )}
       </div>
