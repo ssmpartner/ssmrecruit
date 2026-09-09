@@ -557,13 +557,70 @@ export default function LeadsTable() {
                           })()}
                         </div>
                       </td>
-                      {!isControlling && <td className="px-5 py-3 text-muted-foreground text-xs">{lead.phone}</td>}
-                      <td className="px-5 py-3">
-                        <span className="inline-flex items-center gap-1 text-xs">
-                          <MapPin className="h-3 w-3 text-muted-foreground" />
-                          {lead.plz} {lead.city}
-                        </span>
-                      </td>
+                      {!isControlling && !isHR && <td className="px-5 py-3 text-muted-foreground text-xs">{lead.phone}</td>}
+                      {isHR ? (
+                        <>
+                          <td className="px-5 py-3">
+                            {(() => {
+                              const apt = hrContractApts.get(lead.id);
+                              if (!apt) return <span className="text-xs text-muted-foreground italic">Offen</span>;
+                              return (
+                                <span className="inline-flex items-center gap-1 text-xs font-medium">
+                                  <CalendarIcon className="h-3 w-3 text-muted-foreground" />
+                                  {new Date(apt.date).toLocaleDateString('de-CH')}
+                                  {apt.time && <span className="text-muted-foreground">{apt.time.slice(0, 5)}</span>}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-0.5">
+                                {roleUsers.controlling.map(u => (
+                                  <ApprovalAvatar
+                                    key={`c-${u.user_id}`}
+                                    u={u}
+                                    roleLabel="Controlling"
+                                    state={hrCtrlApprovers.get(lead.id) === u.user_id ? 'approved' : 'pending'}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-muted-foreground/40">|</span>
+                              <div className="flex items-center gap-0.5">
+                                {roleUsers.gl.map(u => {
+                                  const dec = (hrGlApprovals.get(lead.id) ?? []).find(a => a.user_id === u.user_id);
+                                  return (
+                                    <ApprovalAvatar
+                                      key={`g-${u.user_id}`}
+                                      u={u}
+                                      roleLabel="Geschäftsleitung"
+                                      state={dec?.decision === 'approved' ? 'approved' : dec?.decision === 'rejected' ? 'rejected' : 'pending'}
+                                    />
+                                  );
+                                })}
+                              </div>
+                              <span className="text-muted-foreground/40">|</span>
+                              <div className="flex items-center gap-0.5">
+                                {roleUsers.hr.map(u => (
+                                  <ApprovalAvatar
+                                    key={`h-${u.user_id}`}
+                                    u={u}
+                                    roleLabel="HR"
+                                    state={lead.status === 'hired' ? 'approved' : 'pending'}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <td className="px-5 py-3">
+                          <span className="inline-flex items-center gap-1 text-xs">
+                            <MapPin className="h-3 w-3 text-muted-foreground" />
+                            {lead.plz} {lead.city}
+                          </span>
+                        </td>
+                      )}
                       <td className="px-5 py-3">
                         <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">{lead.cantonCode}</span>
                       </td>
