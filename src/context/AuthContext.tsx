@@ -58,6 +58,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [viewAsRoleState, setViewAsRoleState] = useState<AppRole | null>(
+    () => (sessionStorage.getItem(VIEW_AS_KEY) as AppRole | null) || null
+  );
+
+  const isRealSuperadmin = role === 'superadmin';
+  const viewAsRole = isRealSuperadmin ? viewAsRoleState : null;
+  const effectiveRole: AppRole | null = viewAsRole ?? role;
+
+  const setViewAsRole = (r: AppRole | null) => {
+    if (r) sessionStorage.setItem(VIEW_AS_KEY, r);
+    else sessionStorage.removeItem(VIEW_AS_KEY);
+    setViewAsRoleState(r);
+  };
 
   const loadUserData = async (userId: string) => {
     const ROLE_PRIORITY: AppRole[] = ['superadmin', 'admin', 'geschaeftsleitung', 'controlling', 'hr', 'teamleiter', 'agency_manager', 'backoffice'] as AppRole[];
