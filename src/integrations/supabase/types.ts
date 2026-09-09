@@ -1419,34 +1419,58 @@ export type Database = {
       }
       appointment_suggestions: {
         Row: {
+          appointment_title: string | null
+          appointment_type: string
           created_at: string
+          created_by_name: string | null
+          created_by_user_id: string | null
+          duration: number
           id: string
           insights_request_id: string | null
           lead_id: string
+          notes: string | null
+          purpose: string
           responded_at: string | null
           response_note: string | null
+          source: string
           status: string
           suggested_date: string
           suggested_time: string
         }
         Insert: {
+          appointment_title?: string | null
+          appointment_type?: string
           created_at?: string
+          created_by_name?: string | null
+          created_by_user_id?: string | null
+          duration?: number
           id?: string
           insights_request_id?: string | null
           lead_id: string
+          notes?: string | null
+          purpose?: string
           responded_at?: string | null
           response_note?: string | null
+          source?: string
           status?: string
           suggested_date: string
           suggested_time: string
         }
         Update: {
+          appointment_title?: string | null
+          appointment_type?: string
           created_at?: string
+          created_by_name?: string | null
+          created_by_user_id?: string | null
+          duration?: number
           id?: string
           insights_request_id?: string | null
           lead_id?: string
+          notes?: string | null
+          purpose?: string
           responded_at?: string | null
           response_note?: string | null
+          source?: string
           status?: string
           suggested_date?: string
           suggested_time?: string
