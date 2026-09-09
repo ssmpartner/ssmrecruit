@@ -378,17 +378,21 @@ export default function LeadHiringReadiness({ leadId }: Props) {
         })}
       </div>
 
-      {(ready || alreadySubmitted) && (
+      {(readyExceptPosition || alreadySubmitted) && (
         <div className={cn('border-t p-3 flex items-center justify-between gap-3', alreadySubmitted ? 'bg-muted/30' : 'bg-emerald-50/50 dark:bg-emerald-950/20')}>
           <div className="text-xs text-muted-foreground">
             {alreadySubmitted
               ? <>Bereits weitergeleitet · Status: <strong className="text-foreground">{lead && statusConfig[lead.status]?.label}</strong></>
-              : 'Alle Anforderungen erfüllt — Lead an Controlling weiterleiten.'}
+              : demoSimulated
+              ? 'Demo-Kandidat: Weiterleitung wurde simuliert (kein echter Versand).'
+              : ready
+              ? 'Alle Anforderungen erfüllt — Lead an Controlling weiterleiten.'
+              : 'Nur noch die Wunschposition fehlt — im nächsten Schritt auswählbar.'}
           </div>
           <button
             type="button"
-            onClick={handleSubmit}
-            disabled={!ready || submitting || !!alreadySubmitted}
+            onClick={openConfirm}
+            disabled={!readyExceptPosition || submitting || !!alreadySubmitted}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-opacity',
               alreadySubmitted
@@ -401,6 +405,63 @@ export default function LeadHiringReadiness({ leadId }: Props) {
           </button>
         </div>
       )}
+
+      <Dialog open={confirmOpen} onOpenChange={o => !submitting && setConfirmOpen(o)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>An Controlling einreichen</DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                <p>
+                  {lead?.name ? <strong className="text-foreground">{lead.name}</strong> : 'Der Kandidat'} wird an die
+                  Controlling-Abteilung (<strong className="text-foreground">Manuel Gomes</strong>) weitergeleitet.
+                </p>
+                <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="rounded-full border px-2 py-0.5">Controlling</span>
+                  <ArrowRight className="h-3 w-3" />
+                  <span className="rounded-full border px-2 py-0.5">Geschäftsleitung</span>
+                  <ArrowRight className="h-3 w-3" />
+                  <span className="rounded-full border px-2 py-0.5">HR</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Nach der Freigabe durch Controlling geht das Dossier automatisch an die Geschäftsleitung und
+                  anschliessend an das HR.
+                </p>
+                {isDemo && (
+                  <p className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs font-medium text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+                    Demo-Kandidat: Die Weiterleitung wird nur simuliert — es wird nichts wirklich übergeben oder versendet.
+                  </p>
+                )}
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Wunschposition</Label>
+            <Select value={selectedPosition} onValueChange={setSelectedPosition}>
+              <SelectTrigger className={cn(!selectedPosition && 'border-destructive/50')}>
+                <SelectValue placeholder="Wunschposition auswählen" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                {positionOptions.map(p => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {!selectedPosition && (
+              <p className="text-[11px] text-destructive">Pflichtangabe für die Übergabe an Controlling.</p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={submitting}>Abbrechen</Button>
+            <Button onClick={handleSubmit} disabled={submitting || !selectedPosition}>
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {isDemo ? 'Simulieren' : 'Jetzt einreichen'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
