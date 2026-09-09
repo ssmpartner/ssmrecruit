@@ -33,7 +33,16 @@ interface AuthContextType {
   isBackoffice: boolean;
   isAgencyScoped: boolean;
   isReviewRole: boolean;
+  /** Echte Rolle des angemeldeten Kontos (ignoriert die Rollen-Vorschau) */
+  realRole: AppRole | null;
+  /** Nur Superadmin: aktuell simulierte Rolle (null = eigene Rolle) */
+  viewAsRole: AppRole | null;
+  setViewAsRole: (r: AppRole | null) => void;
+  /** true, wenn das Konto wirklich Superadmin ist (auch während einer Rollen-Vorschau) */
+  isRealSuperadmin: boolean;
 }
+
+const VIEW_AS_KEY = 'ssm_view_as_role';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
