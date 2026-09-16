@@ -25,6 +25,8 @@ interface Payload {
   html?: string | null
   trigger_label?: string | null
   triggered_by_user_id?: string | null
+  // Erzwingt: nur der zuständige Mitarbeiter des Leads erhält Glocke + E-Mail
+  only_assigned_employee?: boolean
 }
 
 interface Recipient {
