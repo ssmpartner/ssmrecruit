@@ -233,8 +233,9 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
               entity_id: leadId,
               lead_id: leadId,
               title: `Controlling-Rückfrage: ${leadName}`,
-              description: `${currentUser} (Controlling) hat eine Rückfrage zu "${leadName}": ${queryText || 'Rückfrage vom Controlling'}`,
+              description: `${currentUser} (Controlling) hat eine Rückfrage zu "${leadName}": ${queryText || 'Rückfrage vom Controlling'}\n\nStatus: Controlling-Prüfung (Rückfrage offen) – bitte im System ergänzen und erneut einreichen.`,
               trigger_label: 'Controlling-Rückfrage',
+              only_assigned_employee: true,
             },
           });
         } catch (e) {
