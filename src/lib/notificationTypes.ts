@@ -16,6 +16,7 @@ export const NOTIFICATION_TYPES: { type: string; label: string; group: string }[
   { type: 'lead_ready_for_controlling', label: 'Lead bereit für Controlling-Prüfung', group: 'Freigabe-Prozess' },
   { type: 'lead_controlling_approved', label: 'Controlling freigegeben', group: 'Freigabe-Prozess' },
   { type: 'lead_controlling_rejected', label: 'Controlling abgelehnt', group: 'Freigabe-Prozess' },
+  { type: 'lead_controlling_query', label: 'Controlling-Rückfrage', group: 'Freigabe-Prozess' },
   { type: 'lead_management_approved', label: 'Geschäftsleitung freigegeben', group: 'Freigabe-Prozess' },
   { type: 'lead_management_rejected', label: 'Geschäftsleitung abgelehnt', group: 'Freigabe-Prozess' },
   { type: 'lead_hr_processing', label: 'HR-Bearbeitung gestartet', group: 'Freigabe-Prozess' },
