@@ -93,12 +93,31 @@ Deno.serve(async (req) => {
     triggered_by_user_id: payload.triggered_by_user_id ?? null,
   }
 
+  // 0. Optional: nur zuständiger Mitarbeiter (z.B. Controlling-Rückfrage)
+  let forced: Recipient[] | null = null
+  if (payload.only_assigned_employee && payload.lead_id) {
+    const { data: lead } = await supabase
+      .from('leads').select('employee_id').eq('id', payload.lead_id).maybeSingle()
+    if (lead?.employee_id) {
+      const { data: emp } = await supabase
+        .from('employees').select('user_id,email,name').eq('id', lead.employee_id).maybeSingle()
+      if (emp && (emp.email || emp.user_id)) {
+        forced = [{ user_id: emp.user_id ?? null, email: emp.email ?? '', employee_name: emp.name ?? null }]
+      }
+    }
+    if (!forced) {
+      console.warn('only_assigned_employee: kein zuständiger Mitarbeiter für Lead', payload.lead_id)
+    }
+  }
+
   // 1. In-App Empfänger (Glocke)
-  const { data: inAppRows } = await supabase.rpc('get_notification_recipients', {
-    _notification_type: type,
-    _channel: 'in_app',
-    _lead_id: payload.lead_id ?? null,
-  })
+  const { data: inAppRows } = forced
+    ? { data: forced }
+    : await supabase.rpc('get_notification_recipients', {
+        _notification_type: type,
+        _channel: 'in_app',
+        _lead_id: payload.lead_id ?? null,
+      })
   const inApp = (inAppRows as Recipient[] | null) ?? []
   if (inApp.length > 0) {
     const notifRows = inApp
