@@ -288,12 +288,30 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
           : `Dein Kandidat "${leadName}" wurde vom Controlling abgelehnt.${rejectReason ? ` Begründung: ${rejectReason}` : ''}`)
         : `"${leadName}" – ${action === 'approve' ? 'Freigegeben' : 'Abgelehnt'} von ${currentUser}`;
 
-      await supabase.from('notifications').insert({
-        type: wizardType === 'controlling' ? 'lead_status_change' : 'status_change',
-        title: notifTitle,
-        description: notifDescription,
-        lead_id: leadId,
-      });
+      const notifType = wizardType === 'controlling'
+        ? (action === 'approve' ? 'lead_controlling_approved' : 'lead_controlling_rejected')
+        : 'lead_status_change';
+      try {
+        await supabase.functions.invoke('notify-event', {
+          body: {
+            notification_type: notifType,
+            entity_type: 'lead',
+            entity_id: leadId,
+            lead_id: leadId,
+            title: notifTitle,
+            description: notifDescription,
+            trigger_label: `${config.label} – ${action === 'approve' ? 'Freigabe' : 'Ablehnung'}`,
+          },
+        });
+      } catch (e) {
+        console.error('notify-event (approval) failed:', e);
+        await supabase.from('notifications').insert({
+          type: notifType,
+          title: notifTitle,
+          description: notifDescription,
+          lead_id: leadId,
+        });
+      }
 
       toast({
         title: action === 'approve'
