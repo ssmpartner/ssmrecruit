@@ -224,7 +224,23 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
           lead_status: 'ready_for_controlling',
         });
         addActivity(leadId, 'note', `Controlling-Rückfrage erstellt: ${queryText || 'Rückfrage'}`);
-        toast({ title: '📋 Rückfrage erstellt', description: 'Task wurde dem zuständigen Mitarbeiter zugewiesen.' });
+        // Zuständigen Mitarbeiter aktiv benachrichtigen (Glocke + interne E-Mail)
+        try {
+          await supabase.functions.invoke('notify-event', {
+            body: {
+              notification_type: 'lead_controlling_query',
+              entity_type: 'lead',
+              entity_id: leadId,
+              lead_id: leadId,
+              title: `Controlling-Rückfrage: ${leadName}`,
+              description: `${currentUser} (Controlling) hat eine Rückfrage zu "${leadName}": ${queryText || 'Rückfrage vom Controlling'}`,
+              trigger_label: 'Controlling-Rückfrage',
+            },
+          });
+        } catch (e) {
+          console.error('notify-event (query) failed:', e);
+        }
+        toast({ title: '📋 Rückfrage erstellt', description: 'Der zuständige Mitarbeiter wurde benachrichtigt.' });
         onOpenChange(false);
         resetForm();
         setSubmitting(false);
@@ -272,12 +288,30 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
           : `Dein Kandidat "${leadName}" wurde vom Controlling abgelehnt.${rejectReason ? ` Begründung: ${rejectReason}` : ''}`)
         : `"${leadName}" – ${action === 'approve' ? 'Freigegeben' : 'Abgelehnt'} von ${currentUser}`;
 
-      await supabase.from('notifications').insert({
-        type: wizardType === 'controlling' ? 'lead_status_change' : 'status_change',
-        title: notifTitle,
-        description: notifDescription,
-        lead_id: leadId,
-      });
+      const notifType = wizardType === 'controlling'
+        ? (action === 'approve' ? 'lead_controlling_approved' : 'lead_controlling_rejected')
+        : 'lead_status_change';
+      try {
+        await supabase.functions.invoke('notify-event', {
+          body: {
+            notification_type: notifType,
+            entity_type: 'lead',
+            entity_id: leadId,
+            lead_id: leadId,
+            title: notifTitle,
+            description: notifDescription,
+            trigger_label: `${config.label} – ${action === 'approve' ? 'Freigabe' : 'Ablehnung'}`,
+          },
+        });
+      } catch (e) {
+        console.error('notify-event (approval) failed:', e);
+        await supabase.from('notifications').insert({
+          type: notifType,
+          title: notifTitle,
+          description: notifDescription,
+          lead_id: leadId,
+        });
+      }
 
       toast({
         title: action === 'approve'
