@@ -224,7 +224,23 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
           lead_status: 'ready_for_controlling',
         });
         addActivity(leadId, 'note', `Controlling-Rückfrage erstellt: ${queryText || 'Rückfrage'}`);
-        toast({ title: '📋 Rückfrage erstellt', description: 'Task wurde dem zuständigen Mitarbeiter zugewiesen.' });
+        // Zuständigen Mitarbeiter aktiv benachrichtigen (Glocke + interne E-Mail)
+        try {
+          await supabase.functions.invoke('notify-event', {
+            body: {
+              notification_type: 'lead_controlling_query',
+              entity_type: 'lead',
+              entity_id: leadId,
+              lead_id: leadId,
+              title: `Controlling-Rückfrage: ${leadName}`,
+              description: `${currentUser} (Controlling) hat eine Rückfrage zu "${leadName}": ${queryText || 'Rückfrage vom Controlling'}`,
+              trigger_label: 'Controlling-Rückfrage',
+            },
+          });
+        } catch (e) {
+          console.error('notify-event (query) failed:', e);
+        }
+        toast({ title: '📋 Rückfrage erstellt', description: 'Der zuständige Mitarbeiter wurde benachrichtigt.' });
         onOpenChange(false);
         resetForm();
         setSubmitting(false);
