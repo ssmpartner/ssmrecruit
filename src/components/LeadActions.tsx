@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Archive, RotateCcw, Trash2 } from 'lucide-react';
+import { AlertTriangle, Archive, MoreHorizontal, RotateCcw, Trash2 } from 'lucide-react';
 import { type Lead } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
@@ -13,6 +13,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -67,27 +73,41 @@ export default function LeadActions({ lead }: LeadActionsProps) {
 
   return (
     <>
-      <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-        {lead.lifecycle === 'active' && (
-          <>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setConfirmAction('archive')} title="Archivieren">
-              <Archive className="h-3.5 w-3.5 text-muted-foreground" />
+      <div onClick={e => e.stopPropagation()}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-7 w-7" title="Aktionen" aria-label="Aktionen">
+              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setConfirmAction('delete')} title="Löschen">
-              <Trash2 className="h-3.5 w-3.5 text-destructive" />
-            </Button>
-          </>
-        )}
-        {(lead.lifecycle === 'archived' || lead.lifecycle === 'deleted') && (
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setConfirmAction('restore')} title="Wiederherstellen">
-            <RotateCcw className="h-3.5 w-3.5 text-primary" />
-          </Button>
-        )}
-        {lead.lifecycle === 'archived' && (
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setConfirmAction('delete')} title="Endgültig löschen">
-            <Trash2 className="h-3.5 w-3.5 text-destructive" />
-          </Button>
-        )}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {lead.lifecycle === 'active' && (
+              <>
+                <DropdownMenuItem onClick={() => setConfirmAction('archive')}>
+                  <Archive className="h-3.5 w-3.5 text-muted-foreground" /> Archivieren
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setConfirmAction('delete')} className="text-destructive focus:text-destructive">
+                  <Trash2 className="h-3.5 w-3.5" /> Löschen
+                </DropdownMenuItem>
+              </>
+            )}
+            {lead.lifecycle === 'archived' && (
+              <>
+                <DropdownMenuItem onClick={() => setConfirmAction('restore')}>
+                  <RotateCcw className="h-3.5 w-3.5 text-primary" /> Wiederherstellen
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setConfirmAction('delete')} className="text-destructive focus:text-destructive">
+                  <Trash2 className="h-3.5 w-3.5" /> Endgültig löschen
+                </DropdownMenuItem>
+              </>
+            )}
+            {lead.lifecycle === 'deleted' && (
+              <DropdownMenuItem onClick={() => setConfirmAction('restore')}>
+                <RotateCcw className="h-3.5 w-3.5 text-primary" /> Wiederherstellen
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <AlertDialog open={!!confirmAction} onOpenChange={open => !open && setConfirmAction(null)}>
