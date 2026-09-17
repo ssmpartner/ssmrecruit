@@ -204,6 +204,8 @@ export interface Employee {
   agencyId: string;
   avatar?: string;
   canReceiveLeads?: boolean;
+  userId?: string;
+  source?: 'local' | 'sso';
 }
 
 // Ordered status flow for employees

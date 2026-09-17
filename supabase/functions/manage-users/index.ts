@@ -197,6 +197,67 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "create_employee") {
+      const { email, password, name, role, agency_id, avatar, can_receive_leads } = payload;
+
+      if (!email || !email.includes("@")) throw new Error("Ungültige E-Mail-Adresse");
+      if (!password || password.length < 8) throw new Error("Passwort muss mindestens 8 Zeichen lang sein");
+      if (!name) throw new Error("Name ist erforderlich");
+      if (!agency_id) throw new Error("Agentur ist erforderlich");
+
+      const allRoles = ['superadmin', 'admin', 'backoffice', 'analyst', 'teamleiter', 'controlling', 'geschaeftsleitung', 'hr', 'agency_manager', 'employee'];
+      if (!allRoles.includes(role)) throw new Error("Ungültige Rolle");
+      const adminAllowedRoles = ['controlling', 'geschaeftsleitung', 'hr', 'employee', 'agency_manager'];
+      if (!isSuperadminCaller && !adminAllowedRoles.includes(role)) {
+        throw new Error("Admins dürfen diese Rolle nicht zuweisen");
+      }
+
+      const { data: existingEmp } = await supabaseAdmin
+        .from("employees")
+        .select("id")
+        .ilike("email", email)
+        .maybeSingle();
+      if (existingEmp) throw new Error("Es existiert bereits ein Mitarbeiter mit dieser E-Mail-Adresse");
+
+      const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { display_name: name, avatar_url: avatar || null },
+      });
+      if (createError) throw createError;
+      const userId = userData.user.id;
+
+      await supabaseAdmin
+        .from("user_roles")
+        .upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
+
+      await supabaseAdmin
+        .from("profiles")
+        .upsert({ id: userId, display_name: name, avatar_url: avatar || null });
+
+      const employeeId = `e${Date.now()}`;
+      const { error: empError } = await supabaseAdmin.from("employees").insert({
+        id: employeeId,
+        name,
+        email,
+        role: ['agency_manager', 'admin'].includes(role) ? role : 'employee',
+        agency_id,
+        avatar: avatar || null,
+        user_id: userId,
+        can_receive_leads: can_receive_leads !== false,
+        source: 'local',
+      });
+      if (empError) {
+        await supabaseAdmin.auth.admin.deleteUser(userId);
+        throw empError;
+      }
+
+      return new Response(JSON.stringify({ success: true, user_id: userId, employee_id: employeeId }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     throw new Error("Unbekannte Aktion");
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {

@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import AddEmployeeDialog from '@/components/AddEmployeeDialog';
 
 type SyncItem = { email: string; user_id: string; employee_id: string; role: string; agency_id: string };
 type SyncError = { email: string; message: string };
@@ -21,11 +23,17 @@ type SyncResult = {
 
 export default function Employees() {
   const { employees, agencies, leads, updateEmployee, refreshData } = useLeads() as any;
-  const { isSuperadmin } = useAuth();
+  const { isSuperadmin, role } = useAuth() as any;
+  const canManage = isSuperadmin || role === 'admin';
   const [changingId, setChangingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+  const [tab, setTab] = useState('local');
+  const [addOpen, setAddOpen] = useState(false);
+
+  const localEmployees = employees.filter((e: any) => e.source === 'local');
+  const ssoEmployees = employees.filter((e: any) => e.source !== 'local');
 
   const handleAgencyChange = async (empId: string, newAgencyId: string) => {
     setChangingId(empId);
@@ -75,18 +83,28 @@ export default function Employees() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Mitarbeiter</h1>
-          <p className="text-muted-foreground">Übersicht aller Teammitglieder — Verwaltung erfolgt zentral über das SSM Portal</p>
+          <p className="text-muted-foreground">Eigene Benutzer anlegen oder Konten aus dem SSM Portal synchronisieren</p>
         </div>
-        {isSuperadmin && (
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-          >
-            <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Synchronisiere…' : 'Aus SSM Portal synchronisieren'}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {canManage && (
+            <button
+              onClick={() => setAddOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4" /> Neuer Mitarbeiter
+            </button>
+          )}
+          {isSuperadmin && (
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-60"
+            >
+              <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Synchronisiere…' : 'SSO-Synchronisation'}
+            </button>
+          )}
+        </div>
       </div>
 
       {syncResult && (
@@ -192,13 +210,38 @@ export default function Employees() {
         </div>
       )}
 
-      {employees.length === 0 ? (
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList>
+          <TabsTrigger value="local">Benutzer ({localEmployees.length})</TabsTrigger>
+          <TabsTrigger value="sso">SSO-Sync ({ssoEmployees.length})</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="local" className="mt-4">
+          <p className="mb-3 text-sm text-muted-foreground">In SSM Recruit angelegte Benutzer – Anmeldung mit E-Mail und Passwort.</p>
+          {renderGrid(localEmployees, 'Noch keine eigenen Benutzer angelegt. Mit «Neuer Mitarbeiter» starten.')}
+        </TabsContent>
+
+        <TabsContent value="sso" className="mt-4">
+          <p className="mb-3 text-sm text-muted-foreground">Über das SSM Portal synchronisierte Benutzer – Anmeldung via Single Sign-on.</p>
+          {renderGrid(ssoEmployees, 'Noch keine Mitarbeiter aus dem SSM Portal synchronisiert.')}
+        </TabsContent>
+      </Tabs>
+
+      <AddEmployeeDialog open={addOpen} onOpenChange={setAddOpen} />
+    </div>
+  );
+
+  function renderGrid(list: any[], emptyText: string) {
+    if (list.length === 0) {
+      return (
         <div className="rounded-xl border bg-card p-12 text-center">
-          <p className="text-muted-foreground">Noch keine Mitarbeiter vorhanden. Mitarbeiter werden automatisch beim ersten Login über das SSM Portal angelegt.</p>
+          <p className="text-muted-foreground">{emptyText}</p>
         </div>
-      ) : (
+      );
+    }
+    return (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {employees.map(emp => {
+          {list.map(emp => {
             const agency = agencies.find(a => a.id === emp.agencyId);
             const empLeads = leads.filter(l => l.employeeId === emp.id);
             const initials = emp.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -208,9 +251,13 @@ export default function Employees() {
               <div key={emp.id} className="rounded-xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
-                      {initials}
-                    </div>
+                    {emp.avatar ? (
+                      <img src={emp.avatar} alt={emp.name} className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
+                        {initials}
+                      </div>
+                    )}
                     <div>
                       <h3 className="font-semibold">{emp.name}</h3>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -269,7 +316,6 @@ export default function Employees() {
             );
           })}
         </div>
-      )}
-    </div>
-  );
+    );
+  }
 }

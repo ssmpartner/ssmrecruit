@@ -70,6 +70,8 @@ function dbToEmployee(row: any): Employee {
     agencyId: row.agency_id,
     avatar: row.avatar ?? undefined,
     canReceiveLeads: row.can_receive_leads ?? true,
+    userId: row.user_id ?? undefined,
+    source: (row.source === 'local' ? 'local' : 'sso'),
   };
 }
 
