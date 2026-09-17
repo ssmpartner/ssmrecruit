@@ -14,6 +14,7 @@ import DuplicateLeads from '@/components/DuplicateLeads';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import BulkActionsBar from '@/components/BulkActionsBar';
 import AddressEnrichment from '@/components/AddressEnrichment';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
