@@ -80,7 +80,7 @@ export default function Pipeline() {
 
   // Employees that actually appear in the pipeline (for the filter dropdown)
   const filterEmployees = useMemo(() => {
-    const ids = new Set(leads.filter(l => l.lifecycle !== 'active' && pipelineStatuses.includes(l.status)).map(l => l.employeeId));
+    const ids = new Set(leads.filter(l => l.lifecycle === 'active' && pipelineStatuses.includes(l.status)).map(l => l.employeeId).filter(Boolean));
     return employees.filter(e => ids.has(e.id));
   }, [leads, employees]);
 
