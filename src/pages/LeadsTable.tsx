@@ -107,7 +107,7 @@ export default function LeadsTable() {
   }, [isAgencyScoped, isTeamleiter, myEmployee, employees]);
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
+  const [statusFilter, setStatusFilter] = useState<LeadStatus | 'controlling_query' | ''>('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [agencyFilter, setAgencyFilter] = useState('');
   const [cantonFilter, setCantonFilter] = useState('');
