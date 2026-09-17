@@ -19,6 +19,8 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { type NotificationMethod } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { toast as sonnerToast } from 'sonner';
 
 type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter' | 'controlling' | 'geschaeftsleitung' | 'hr' | 'agency_manager';
 
