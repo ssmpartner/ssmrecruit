@@ -39,7 +39,7 @@ function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed, indent = f
   const link = (
     <NavLink
       to={to}
-      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 overflow-hidden ${
         collapsed ? 'justify-center' : ''
       } ${indent && !collapsed ? 'pl-8' : ''} ${
         isActive
@@ -48,7 +48,7 @@ function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed, indent = f
       }`}
     >
       <Icon className="shrink-0 h-[18px] w-[18px]" />
-      {!collapsed && <span className="text-sm">{label}</span>}
+      {!collapsed && <span className="text-sm whitespace-nowrap truncate">{label}</span>}
     </NavLink>
   );
 
