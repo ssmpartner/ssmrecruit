@@ -150,6 +150,27 @@ export default function LeadsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(20);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
+  const [kanbanStatuses, setKanbanStatuses] = useState<LeadStatus[]>(() => {
+    try {
+      const raw = localStorage.getItem(KANBAN_STATUS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as LeadStatus[];
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed.filter(s => ALL_STATUSES.includes(s));
+      }
+    } catch { /* ignore */ }
+    return DEFAULT_KANBAN_STATUSES;
+  });
+  const toggleKanbanStatus = (status: LeadStatus) => {
+    setKanbanStatuses(prev => {
+      const next = prev.includes(status) ? prev.filter(s => s !== status) : [...ALL_STATUSES.filter(s => prev.includes(s) || s === status)];
+      try { localStorage.setItem(KANBAN_STATUS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+  const setKanbanStatusPreset = (next: LeadStatus[]) => {
+    setKanbanStatuses(next);
+    try { localStorage.setItem(KANBAN_STATUS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  };
 
   const markLeadViewed = useCallback((lead: Parameters<typeof setSelectedLead>[0]) => {
     if (lead && !isSuperadmin && !lead.isRead) {
