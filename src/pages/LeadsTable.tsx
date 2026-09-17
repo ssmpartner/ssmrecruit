@@ -107,7 +107,7 @@ export default function LeadsTable() {
   }, [isAgencyScoped, isTeamleiter, myEmployee, employees]);
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('');
+  const [statusFilter, setStatusFilter] = useState<LeadStatus | 'controlling_query' | ''>('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [agencyFilter, setAgencyFilter] = useState('');
   const [cantonFilter, setCantonFilter] = useState('');
@@ -152,7 +152,7 @@ export default function LeadsTable() {
 
   const filtered = useMemo(() => {
     return lifecycleLeads.filter(l => {
-      if (statusFilter && l.status !== statusFilter) return false;
+      if (statusFilter === 'controlling_query') { if (!l.controllingQueryOpen) return false; } else if (statusFilter && l.status !== statusFilter) return false;
       if (sourceFilter && l.source !== sourceFilter) return false;
       if (agencyFilter && l.agencyId !== agencyFilter) return false;
       if (employeeFilter && l.employeeId !== employeeFilter) return false;
@@ -468,9 +468,10 @@ export default function LeadsTable() {
             />
             {!isReviewRole && (
               <>
-                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | '')} className={selectCls}>
+                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | 'controlling_query' | '')} className={cn(selectCls, statusFilter === 'controlling_query' && 'border-red-300 text-red-700')}>
                   <option value="">Alle Status</option>
                   {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                  <option value="controlling_query">Controlling-Rückfrage</option>
                 </select>
                 <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className={selectCls}>
                   <option value="">Alle Quellen</option>
