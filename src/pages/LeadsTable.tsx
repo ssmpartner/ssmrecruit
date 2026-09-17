@@ -492,7 +492,15 @@ export default function LeadsTable() {
             )}
           </button>
         ))}
-        <div className="ml-auto flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
+        <span className="ml-auto pr-2 text-xs text-muted-foreground whitespace-nowrap">
+          {isReviewRole
+            ? `${filtered.length} Lead${filtered.length !== 1 ? 's' : ''} zur Bearbeitung`
+            : activeTab === 'duplicates' ? 'KI-basierte Duplikat-Erkennung'
+            : activeTab === 'demo' ? `${filtered.length} Demo-/Muster-Lead${filtered.length !== 1 ? 's' : ''}`
+            : `${filtered.length} von ${lifecycleLeads.length} Leads`
+          }
+        </span>
+        <div className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
           <button
             onClick={() => setViewMode('list')}
             title="Listenansicht"
