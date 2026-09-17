@@ -521,6 +521,36 @@ export default function LeadsTable() {
           >
             <KanbanSquare className="h-3.5 w-3.5" /> Kanban
           </button>
+          {viewMode === 'kanban' && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  title="Spalten / Status auswählen"
+                  className="flex items-center rounded-md px-2 py-1.5 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+                >
+                  <Settings2 className="h-3.5 w-3.5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-xs font-semibold">Angezeigte Status</p>
+                  <div className="flex gap-1">
+                    <button onClick={() => setKanbanStatusPreset(ALL_STATUSES)} className="rounded-md border px-2 py-0.5 text-[10px] hover:bg-muted">Alle</button>
+                    <button onClick={() => setKanbanStatusPreset(DEFAULT_KANBAN_STATUSES)} className="rounded-md border px-2 py-0.5 text-[10px] hover:bg-muted">Standard</button>
+                  </div>
+                </div>
+                <div className="max-h-72 space-y-1 overflow-y-auto">
+                  {ALL_STATUSES.map(s => (
+                    <label key={s} className="flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 hover:bg-muted">
+                      <Checkbox checked={kanbanStatuses.includes(s)} onCheckedChange={() => toggleKanbanStatus(s)} />
+                      <span className={cn('h-2.5 w-2.5 shrink-0 rounded-full', KANBAN_THEME[s].dot)} />
+                      <span className="truncate text-xs">{statusConfig[s].label}</span>
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
       </div>
 
