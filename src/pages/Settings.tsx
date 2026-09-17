@@ -2034,7 +2034,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
   return (
     <>
       {/* Webhook endpoint info */}
-      <div className="w-full max-w-[320px] rounded-xl border bg-card p-4 shadow-sm">
+      <div className="w-full max-w-[556px] rounded-xl border bg-card p-4 shadow-sm">
         <div className="flex items-start gap-3">
           <div className="rounded-lg bg-accent p-2"><Globe className="h-4 w-4 text-accent-foreground" /></div>
           <div className="flex-1 min-w-0">
