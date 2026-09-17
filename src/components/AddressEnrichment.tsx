@@ -21,9 +21,12 @@ interface EnrichmentResult {
   details: string;
 }
 
-export default function AddressEnrichment() {
+export default function AddressEnrichment({ open: openProp, onOpenChange }: { open?: boolean; onOpenChange?: (v: boolean) => void } = {}) {
   const { leads, updateLead } = useLeads();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : internalOpen;
+  const setOpen = (v: boolean) => { if (!isControlled) setInternalOpen(v); onOpenChange?.(v); };
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<EnrichmentResult[]>([]);
@@ -160,11 +163,13 @@ export default function AddressEnrichment() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button className="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors">
-          <MapPin className="h-4 w-4" /> Adressen ergänzen
-        </button>
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <button className="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors">
+            <MapPin className="h-4 w-4" /> Adressen ergänzen
+          </button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

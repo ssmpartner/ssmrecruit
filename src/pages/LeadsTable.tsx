@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText, LayoutList, KanbanSquare, Settings2 } from 'lucide-react';
+import { Download, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText, LayoutList, KanbanSquare, Settings2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadLifecycle, statusConfig, sourceConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
@@ -12,6 +12,7 @@ import AddLeadDialog from '@/components/AddLeadDialog';
 import LeadActions from '@/components/LeadActions';
 import DuplicateLeads from '@/components/DuplicateLeads';
 import CsvImportDialog from '@/components/CsvImportDialog';
+import ImportExportDialog from '@/components/ImportExportDialog';
 import BulkActionsBar from '@/components/BulkActionsBar';
 import AddressEnrichment from '@/components/AddressEnrichment';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -150,6 +151,9 @@ export default function LeadsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(20);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
+  const [importExportOpen, setImportExportOpen] = useState(false);
+  const [csvImportOpen, setCsvImportOpen] = useState(false);
+  const [enrichmentOpen, setEnrichmentOpen] = useState(false);
   const [kanbanStatuses, setKanbanStatuses] = useState<LeadStatus[]>(() => {
     try {
       const raw = localStorage.getItem(KANBAN_STATUS_KEY);
@@ -455,14 +459,18 @@ export default function LeadsTable() {
         <div className="flex gap-2">
           {activeTab === 'active' && canManageLeads && (
             <>
-              <CsvImportDialog />
+              <ImportExportDialog
+                open={importExportOpen}
+                onOpenChange={setImportExportOpen}
+                onExport={exportCSV}
+                onOpenImport={() => setCsvImportOpen(true)}
+                onOpenEnrichment={() => setEnrichmentOpen(true)}
+                showExport={isSuperadmin}
+                showEnrichment={isSuperadmin}
+              />
+              <CsvImportDialog open={csvImportOpen} onOpenChange={setCsvImportOpen} />
               {isSuperadmin && (
-                <>
-                  <AddressEnrichment />
-                  <button onClick={exportCSV} className="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors">
-                    <Download className="h-4 w-4" /> Export
-                  </button>
-                </>
+                <AddressEnrichment open={enrichmentOpen} onOpenChange={setEnrichmentOpen} />
               )}
               <AddLeadDialog />
             </>
