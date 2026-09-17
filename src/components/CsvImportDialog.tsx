@@ -94,9 +94,12 @@ function autoMapHeaders(csvHeaders: string[]): Record<number, string> {
   return mapping;
 }
 
-export default function CsvImportDialog() {
+export default function CsvImportDialog({ open: openProp, onOpenChange }: { open?: boolean; onOpenChange?: (v: boolean) => void } = {}) {
   const { addLead, agencies, employees, leads } = useLeads();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : internalOpen;
+  const setOpen = (v: boolean) => { if (!isControlled) setInternalOpen(v); onOpenChange?.(v); };
   const [step, setStep] = useState<'upload' | 'map' | 'preview' | 'importing'>('upload');
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
   const [csvRows, setCsvRows] = useState<string[][]>([]);
