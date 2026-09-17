@@ -2034,14 +2034,14 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
   return (
     <>
       {/* Webhook endpoint info */}
-      <div className="rounded-xl border bg-card p-5 shadow-sm">
+      <div className="w-full max-w-[320px] rounded-xl border bg-card p-4 shadow-sm">
         <div className="flex items-start gap-3">
           <div className="rounded-lg bg-accent p-2"><Globe className="h-4 w-4 text-accent-foreground" /></div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-sm">Ihr Eingangs-Webhook-Endpunkt</h3>
             <p className="text-xs text-muted-foreground mt-1">Verwenden Sie diese URL in Zapier oder Ihrer Werbeplattform, um Leads an SSM Recruit zu senden.</p>
             <div className="mt-3 flex items-center gap-2">
-              <code className="flex-1 rounded-lg bg-secondary px-3 py-2 text-xs font-mono text-secondary-foreground break-all">{window.location.origin}/api/webhook/leads</code>
+              <code className="min-w-0 flex-1 rounded-lg bg-secondary px-3 py-2 text-xs font-mono text-secondary-foreground break-all">{window.location.origin}/api/webhook/leads</code>
               <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/api/webhook/leads`); toast({ title: 'Kopiert', description: 'Webhook-URL in die Zwischenablage kopiert' }); }}
                 className="shrink-0 rounded-lg bg-secondary px-3 py-2 text-xs font-medium hover:bg-muted transition-colors">Kopieren</button>
             </div>
