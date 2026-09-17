@@ -167,9 +167,26 @@ export default function Tasks() {
     toast.success('Aufgabe neu zugewiesen');
   }, []);
 
+  // KI-Vorschlag übernehmen bzw. verwerfen
+  const acceptSuggestion = useCallback(async (taskId: string) => {
+    const { error } = await supabase.from('tasks').update({ source: 'manual' }).eq('id', taskId);
+    if (error) { toast.error('Fehler beim Übernehmen'); return; }
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, source: 'manual' } : t));
+    toast.success('Vorschlag zu «Meine Aufgaben» übernommen');
+  }, []);
+
+  const discardSuggestion = useCallback(async (taskId: string) => {
+    const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+    if (error) { toast.error('Fehler beim Verwerfen'); return; }
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+    toast.success('Vorschlag verworfen');
+  }, []);
+
+  const aiCount = useMemo(() => tasks.filter(t => t.source === 'ai' && (isSuperadmin || t.assigned_to === currentEmployee?.id)).length, [tasks, isSuperadmin, currentEmployee]);
+
   // Filter tasks: Superadmins see all, others see only their own assigned tasks
   const visibleTasks = useMemo(() => {
-    let result = tasks;
+    let result = tasks.filter(t => tab === 'ai' ? t.source === 'ai' : t.source !== 'ai');
     // Non-superadmin: only show tasks assigned to the current employee
     if (!isSuperadmin && currentEmployee) {
       result = result.filter(t => t.assigned_to === currentEmployee.id);
