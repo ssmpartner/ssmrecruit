@@ -39,7 +39,7 @@ function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed, indent = f
   const link = (
     <NavLink
       to={to}
-      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 overflow-hidden ${
         collapsed ? 'justify-center' : ''
       } ${indent && !collapsed ? 'pl-8' : ''} ${
         isActive
@@ -48,7 +48,7 @@ function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed, indent = f
       }`}
     >
       <Icon className="shrink-0 h-[18px] w-[18px]" />
-      {!collapsed && <span className="text-sm">{label}</span>}
+      {!collapsed && <span className="text-sm whitespace-nowrap truncate">{label}</span>}
     </NavLink>
   );
 
@@ -88,12 +88,12 @@ export default function AppSidebar() {
   }) : [];
 
   return (
-    <aside className={`fixed inset-y-0 left-0 z-30 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-64'}`}>
-      <div className={`flex h-16 items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-6'} border-b border-sidebar-border`}>
+    <aside className={`fixed inset-y-0 left-0 z-30 flex flex-col overflow-visible bg-sidebar border-r border-sidebar-border transition-[width] duration-300 ease-in-out ${collapsed ? 'w-[68px]' : 'w-64'}`}>
+      <div className={`flex h-16 items-center overflow-hidden ${collapsed ? 'justify-center px-2' : 'gap-3 px-6'} border-b border-sidebar-border`}>
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sidebar-primary shrink-0">
           <Users className="h-4.5 w-4.5 text-sidebar-primary-foreground" />
         </div>
-        {!collapsed && <span className="text-lg font-bold text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>SSM Recruit</span>}
+        {!collapsed && <span className="text-lg font-bold text-white tracking-tight whitespace-nowrap" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>SSM Recruit</span>}
       </div>
 
       {/* Schwebender Kreis-Toggle an der rechten Kante der Sidebar */}
@@ -111,7 +111,7 @@ export default function AppSidebar() {
       </button>
 
 
-      <nav className="flex-1 space-y-0.5 p-3 overflow-y-auto scrollbar-thin">
+      <nav className="flex-1 space-y-0.5 p-3 overflow-y-auto overflow-x-hidden scrollbar-thin">
         {!roleReady ? (
           Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${collapsed ? 'justify-center' : ''}`}>
@@ -155,7 +155,7 @@ export default function AppSidebar() {
                       }`}
                     >
                       <Bot className="h-[18px] w-[18px] shrink-0" />
-                      <span className="flex-1 text-left">AI Voice Agent</span>
+                      <span className="flex-1 text-left whitespace-nowrap truncate">AI Voice Agent</span>
                       {aiVoiceOpen || isAiVoiceActive ? (
                         <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
                       ) : (
@@ -186,7 +186,7 @@ export default function AppSidebar() {
         )}
       </nav>
 
-      <div className="border-t border-sidebar-border p-3 space-y-0.5">
+      <div className="border-t border-sidebar-border p-3 space-y-0.5 overflow-hidden">
         {bottomItems.map(({ to, icon, label }) => (
           <SidebarNavItem key={to} to={to} icon={icon} label={label} isActive={location.pathname === to} collapsed={collapsed} />
         ))}
