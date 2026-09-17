@@ -2003,12 +2003,12 @@ function IntegrationTile({
         onClick={() => onOpenChange(true)}
         className="group flex h-full flex-col rounded-xl border bg-card p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border disabled:hover:shadow-sm">
         <div className="flex w-full items-start justify-between gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border bg-background p-2">{icon}</div>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-background p-2">{icon}</div>
           <div className="flex flex-wrap items-center justify-end gap-2">{statusSlot}</div>
         </div>
-        <h3 className="mt-4 text-base font-semibold">{name}</h3>
+        <h3 className="mt-3 text-sm font-semibold">{name}</h3>
         <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-        <span className="mt-auto pt-4 inline-flex items-center gap-1 text-xs font-medium text-primary">
+        <span className="mt-auto pt-3 inline-flex items-center gap-1 text-xs font-medium text-primary">
           {disabled ? 'Demnächst verfügbar' : (ctaLabel ?? 'Verbindung einrichten')}
           {!disabled && <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />}
         </span>
