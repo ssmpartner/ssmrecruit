@@ -12,6 +12,7 @@ import { useLeads } from '@/context/useLeads';
 import { statusConfig, getAllowedNextStatuses, type Appointment, type LeadStatus } from '@/lib/mock-data';
 import { lookupPlz, searchPlz, cantons, swissLocations, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
+import ControllingQueryPanel from './ControllingQueryPanel';
 import SourceBadge from './SourceBadge';
 import {
   Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
@@ -423,6 +424,12 @@ export default function LeadDetailSheet() {
 
                 <div className="flex items-center gap-2 shrink-0 mr-8">
                   <LeadStatusBadge status={selectedLead.status} />
+                  {selectedLead.controllingQueryOpen && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-0.5 text-xs font-bold text-destructive">
+                      <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
+                      Controlling-Rückfrage
+                    </span>
+                  )}
                   <SourceBadge source={selectedLead.source} />
                     <span className="hidden xl:inline-flex items-center gap-1 rounded-md bg-muted px-2.5 py-1 text-xs text-muted-foreground">
                      <MapPin className="h-3.5 w-3.5" /> {selectedLead.plz} {selectedLead.city}
@@ -478,8 +485,18 @@ export default function LeadDetailSheet() {
                       </div>
                     </div>
                   ) : (
-                  <div className="p-4 space-y-4">
-                    <LeadActionPanel
+                   <div className="p-4 space-y-4">
+                    {selectedLead.controllingQueryOpen && (
+                      <ControllingQueryPanel
+                        leadId={selectedLead.id}
+                        leadName={selectedLead.name}
+                        queryText={selectedLead.controllingQueryText}
+                        queryBy={selectedLead.controllingQueryBy}
+                        queryAt={selectedLead.controllingQueryAt}
+                        onResolved={() => setSelectedLead({ ...selectedLead, controllingQueryOpen: false })}
+                      />
+                    )}
+                     <LeadActionPanel
                       leadId={selectedLead.id}
                       leadName={selectedLead.name}
                       leadStatus={selectedLead.status as LeadStatus}

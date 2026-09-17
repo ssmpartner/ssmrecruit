@@ -223,6 +223,12 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
           source: 'system',
           lead_status: 'ready_for_controlling',
         });
+        await supabase.from('leads').update({
+          controlling_query_open: true,
+          controlling_query_text: queryText || 'Rückfrage vom Controlling',
+          controlling_query_by: currentUser,
+          controlling_query_at: new Date().toISOString(),
+        }).eq('id', leadId);
         addActivity(leadId, 'note', `Controlling-Rückfrage erstellt: ${queryText || 'Rückfrage'}`);
         // Zuständigen Mitarbeiter aktiv benachrichtigen (Glocke + interne E-Mail)
         try {
@@ -271,6 +277,9 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
       if (wizardType === 'controlling' && action === 'approve' && directToHr) {
         updateData.controlling_direct_to_hr = false;
       }
+
+      // Offene Rückfrage schliessen, sobald ein Entscheid gefällt wurde
+      await supabase.from('leads').update({ controlling_query_open: false }).eq('id', leadId);
 
       updateLead(leadId, updateData);
       addActivity(leadId, 'status_change', description);
