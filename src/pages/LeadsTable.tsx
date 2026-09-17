@@ -152,7 +152,7 @@ export default function LeadsTable() {
 
   const filtered = useMemo(() => {
     return lifecycleLeads.filter(l => {
-      if (statusFilter && l.status !== statusFilter) return false;
+      if (statusFilter === 'controlling_query') { if (!l.controllingQueryOpen) return false; } else if (statusFilter && l.status !== statusFilter) return false;
       if (sourceFilter && l.source !== sourceFilter) return false;
       if (agencyFilter && l.agencyId !== agencyFilter) return false;
       if (employeeFilter && l.employeeId !== employeeFilter) return false;
