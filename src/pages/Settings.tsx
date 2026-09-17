@@ -2055,31 +2055,28 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
       </div>
 
       {/* Integration list */}
-      <div className="space-y-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {integrations.filter((i: any) => i.id !== 'microsoft365').map((integration: any) => {
           const isExpanded = expandedId === integration.id;
           const isComingSoon = integration.id === 'linkedin';
           const BrandIcon = BRAND_ICONS[integration.id];
           return (
-            <div key={integration.id} className="rounded-xl border bg-card shadow-sm overflow-hidden">
-              <button onClick={() => !isComingSoon && setExpandedId(isExpanded ? null : integration.id)}
-                className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors" disabled={isComingSoon}>
-                <div className="flex items-center gap-3">
-                  {BrandIcon ? <BrandIcon className="h-7 w-7" /> : <span className="text-2xl">{integration.icon}</span>}
-                  <div>
-                    <h3 className="font-semibold text-sm">{integration.name}</h3>
-                    <p className="text-xs text-muted-foreground">{integration.description}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {isComingSoon && <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Demnächst</span>}
-                  {integration.connected && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
-                  {!integration.connected && !isComingSoon && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht verbunden</span>}
-                </div>
-              </button>
-
-              {isExpanded && !isComingSoon && (
-                <div className="border-t px-5 py-5 space-y-5">
+            <IntegrationTile
+              key={integration.id}
+              name={integration.name}
+              description={integration.description}
+              disabled={isComingSoon}
+              open={isExpanded && !isComingSoon}
+              onOpenChange={(v) => setExpandedId(v ? integration.id : null)}
+              ctaLabel={integration.connected ? 'Verbindung verwalten' : 'Verbindung einrichten'}
+              icon={BrandIcon ? <BrandIcon className="h-7 w-7" /> : <span className="text-2xl">{integration.icon}</span>}
+              statusSlot={<>
+                {isComingSoon && <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Demnächst</span>}
+                {integration.connected && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
+                {!integration.connected && !isComingSoon && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht verbunden</span>}
+              </>}
+            >
+                <div className="space-y-5">
                   <div>
                     <label className="text-sm font-medium mb-2 block">Verbindungsmethode</label>
                     <div className="flex gap-2">
