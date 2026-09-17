@@ -22,6 +22,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from '@/components/ui/switch';
 import { toast as sonnerToast } from 'sonner';
 import { ZAPIER_EVENTS, loadZapierConfig, clearZapierCache, sendToZapier, type ZapierConfig, type ZapierEvent } from '@/lib/zapier';
+import ms365Logo from '@/assets/integrations/microsoft.svg';
+import livekitLogo from '@/assets/integrations/livekit.svg';
+import zapierLogo from '@/assets/integrations/zapier.svg';
+import abacusLogo from '@/assets/integrations/abacus.svg';
 
 type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter' | 'controlling' | 'geschaeftsleitung' | 'hr' | 'agency_manager';
 
@@ -2190,7 +2194,7 @@ function ZapierIntegrationCard() {
     <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
       <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-accent p-2"><Zap className="h-4 w-4 text-accent-foreground" /></div>
+<div className="rounded-lg border bg-background p-1.5"><img src={zapierLogo} alt="Zapier Logo" className="h-6 w-6" /></div>
           <div>
             <h3 className="font-semibold text-sm">Zapier</h3>
             <p className="text-xs text-muted-foreground">SSM Recruit mit über 6000 Apps verbinden (z. B. Sheets, Slack, CRM)</p>
@@ -2345,7 +2349,7 @@ function Microsoft365IntegrationCard() {
     <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
       <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-accent p-2"><CalendarDays className="h-4 w-4 text-accent-foreground" /></div>
+<div className="rounded-lg border bg-background p-1.5"><img src={ms365Logo} alt="Microsoft 365 Logo" className="h-6 w-6" /></div>
           <div>
             <h3 className="font-semibold text-sm">Microsoft 365</h3>
             <p className="text-xs text-muted-foreground">Kalender-Verfügbarkeiten (Outlook) für Termine – ohne Termininhalte</p>
@@ -2536,7 +2540,7 @@ function LiveKitIntegrationCard() {
     <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
       <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-accent p-2"><Video className="h-4 w-4 text-accent-foreground" /></div>
+<div className="rounded-lg border bg-background p-1.5"><img src={livekitLogo} alt="LiveKit Logo" className="h-6 w-6" /></div>
           <div>
             <h3 className="font-semibold text-sm">LiveKit</h3>
             <p className="text-xs text-muted-foreground">Video- & Audio-Räume in Echtzeit (Interviews, AI Voice Agent)</p>
@@ -2711,7 +2715,7 @@ function AbacusIntegrationCard() {
     <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
       <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-accent p-2"><Building2 className="h-4 w-4 text-accent-foreground" /></div>
+<div className="rounded-lg border bg-background p-1.5"><img src={abacusLogo} alt="Abacus Logo" className="h-6 w-auto min-w-6 max-w-16 object-contain" /></div>
           <div>
             <h3 className="font-semibold text-sm">Abacus</h3>
             <p className="text-xs text-muted-foreground">ERP / Lohn & Personal – Kandidaten und Vertragsdaten übergeben</p>
