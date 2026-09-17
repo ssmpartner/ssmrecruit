@@ -387,7 +387,7 @@ export default function Tasks() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">{lead?.name || leadId}</span>
+                    <span className="font-semibold text-sm">{lead?.name || (leadId ? leadId : 'Ohne Kandidat')}</span>
                     {leadStatus && (
                       <span className={cn('rounded-full border px-2 py-px text-[10px] font-semibold', leadStatus.color)}>{leadStatus.label}</span>
                     )}
