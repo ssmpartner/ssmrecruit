@@ -1035,7 +1035,7 @@ export default function LeadsTable() {
                               {lead.phone && <div className="truncate"><span className="font-medium text-foreground">Tel:</span> {lead.phone}</div>}
                               {lead.email && <div className="truncate"><span className="font-medium text-foreground">E-Mail:</span> {lead.email}</div>}
                               {agency && <div className="truncate"><span className="font-medium text-foreground">Agentur:</span> {agency.name}</div>}
-                              {lead.source && <div className="truncate"><span className="font-medium text-foreground">Quelle:</span> {lead.source}</div>}
+                              {lead.source && <div className="truncate"><span className="font-medium text-foreground">Quelle:</span> {sourceConfig[lead.source]?.label || lead.source}</div>}
                             </div>
                           </div>
                         );
