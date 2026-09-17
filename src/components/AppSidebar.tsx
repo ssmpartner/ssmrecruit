@@ -75,6 +75,9 @@ export default function AppSidebar() {
 
   const roleReady = !loading && role !== null;
   const canSeeAiVoice = roleReady && perms.canAccessModule;
+  const isReviewRole = roleReady && ['controlling', 'geschaeftsleitung', 'hr'].includes(role!);
+  const navLabel = (item: { to: string; label: string }) =>
+    item.to === '/leads' && isReviewRole ? 'Kandidaten' : item.label;
 
   const navItems = roleReady ? allNavItems.filter(item => {
     if (item.roles && !item.roles.includes(role!)) return false;
@@ -122,7 +125,7 @@ export default function AppSidebar() {
         ) : (
           <>
             {navItems.map(({ to, icon, label }) => (
-              <SidebarNavItem key={to} to={to} icon={icon} label={label} isActive={location.pathname === to} collapsed={collapsed} />
+              <SidebarNavItem key={to} to={to} icon={icon} label={navLabel({ to, label })} isActive={location.pathname === to} collapsed={collapsed} />
             ))}
 
             {/* AI Voice Agent – 6 Unterpunkte */}
