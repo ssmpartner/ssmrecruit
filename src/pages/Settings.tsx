@@ -2860,25 +2860,20 @@ function MapboxIntegrationCard({ toast }: { toast: any }) {
   }, []);
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-      <button onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">🗺️</span>
-          <div>
-            <h3 className="font-semibold text-sm">Mapbox</h3>
-            <p className="text-xs text-muted-foreground">Karten-Visualisierung, Geocoding & Adress-Autovervollständigung</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-          {status === 'connected' && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
-          {status === 'disconnected' && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
-        </div>
-      </button>
-
-      {expanded && (
-        <div className="border-t px-5 py-5 space-y-4">
+    <IntegrationTile
+      name="Mapbox"
+      description="Karten-Visualisierung, Geocoding & Adress-Autovervollständigung"
+      open={expanded}
+      onOpenChange={setExpanded}
+      ctaLabel={status === 'connected' ? 'Verbindung verwalten' : 'Verbindung einrichten'}
+      icon={<span className="text-2xl">🗺️</span>}
+      statusSlot={<>
+        {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        {status === 'connected' && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
+        {status === 'disconnected' && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+      </>}
+    >
+        <div className="space-y-4">
           <div className="rounded-lg bg-secondary/50 p-4">
             <h4 className="text-sm font-medium mb-2">Verwendung in SSM Recruit:</h4>
             <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
