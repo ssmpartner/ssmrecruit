@@ -182,6 +182,14 @@ export default function Tasks() {
     toast.success('Vorschlag verworfen');
   }, []);
 
+  // Zuweisbare Personen: eigene Agentur (Superadmin: alle)
+  const assignableForMe = useMemo(() => {
+    const list = assignableEmployees(employees);
+    if (isSuperadmin) return list;
+    if (!currentEmployee) return [];
+    return list.filter(e => e.agencyId === currentEmployee.agencyId);
+  }, [employees, isSuperadmin, currentEmployee]);
+
   const aiCount = useMemo(() => tasks.filter(t => t.source === 'ai' && (isSuperadmin || t.assigned_to === currentEmployee?.id)).length, [tasks, isSuperadmin, currentEmployee]);
 
   // Filter tasks: Superadmins see all, others see only their own assigned tasks
