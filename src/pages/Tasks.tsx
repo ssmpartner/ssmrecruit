@@ -203,7 +203,7 @@ export default function Tasks() {
       if ((so[a.status] ?? 2) !== (so[b.status] ?? 2)) return (so[a.status] ?? 2) - (so[b.status] ?? 2);
       return (po[a.priority] ?? 3) - (po[b.priority] ?? 3);
     });
-  }, [tasks, statusFilter, employeeFilter, priorityFilter, isSuperadmin, currentEmployee]);
+  }, [tasks, tab, statusFilter, employeeFilter, priorityFilter, isSuperadmin, currentEmployee]);
 
   const openCount = visibleTasks.filter(t => t.status === 'open').length;
   const inProgressCount = visibleTasks.filter(t => t.status === 'in_progress').length;
