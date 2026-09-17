@@ -892,6 +892,50 @@ export default function LeadsTable() {
               )}
             </div>
           </div>
+          )}
+
+          {viewMode === 'kanban' && (
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {(Object.keys(statusConfig) as LeadStatus[]).map(status => {
+                const col = filtered.filter(l => l.status === status);
+                const cfg = statusConfig[status];
+                return (
+                  <div key={status} className="w-64 shrink-0 self-start rounded-xl border bg-card shadow-sm">
+                    <div className="flex items-center justify-between border-b px-3 py-2">
+                      <span className="truncate text-xs font-semibold">{cfg.label}</span>
+                      <Badge variant="outline" className="h-5 px-1.5 text-[10px]">{col.length}</Badge>
+                    </div>
+                    <div className="max-h-[60vh] space-y-2 overflow-y-auto p-2">
+                      {col.length === 0 && (
+                        <p className="px-2 py-3 text-center text-[11px] text-muted-foreground">Keine Leads</p>
+                      )}
+                      {col.map(lead => (
+                        <button
+                          key={lead.id}
+                          onClick={() => markLeadViewed(lead)}
+                          className="w-full rounded-lg border bg-background p-2.5 text-left transition-colors hover:bg-secondary"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate text-xs font-medium">{lead.name}</span>
+                            {lead.controllingQueryOpen && (
+                              <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" title="Controlling-Rückfrage offen" />
+                            )}
+                          </div>
+                          {(lead.city || lead.plz) && (
+                            <div className="mt-1 truncate text-[11px] text-muted-foreground">{lead.plz} {lead.city}</div>
+                          )}
+                          <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                            <span className="truncate">{employees.find(e => e.id === lead.employeeId)?.name || '–'}</span>
+                            <span className="shrink-0">{new Date(lead.createdAt).toLocaleDateString('de-CH')}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </>
       )}
 
