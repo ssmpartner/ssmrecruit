@@ -455,14 +455,18 @@ export default function LeadsTable() {
         <div className="flex gap-2">
           {activeTab === 'active' && canManageLeads && (
             <>
-              <CsvImportDialog />
+              <ImportExportDialog
+                open={importExportOpen}
+                onOpenChange={setImportExportOpen}
+                onExport={exportCSV}
+                onOpenImport={() => setCsvImportOpen(true)}
+                onOpenEnrichment={() => setEnrichmentOpen(true)}
+                showExport={isSuperadmin}
+                showEnrichment={isSuperadmin}
+              />
+              <CsvImportDialog open={csvImportOpen} onOpenChange={setCsvImportOpen} />
               {isSuperadmin && (
-                <>
-                  <AddressEnrichment />
-                  <button onClick={exportCSV} className="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors">
-                    <Download className="h-4 w-4" /> Export
-                  </button>
-                </>
+                <AddressEnrichment open={enrichmentOpen} onOpenChange={setEnrichmentOpen} />
               )}
               <AddLeadDialog />
             </>
