@@ -1019,13 +1019,6 @@ export default function LeadsTable() {
                               />
                             </div>
                             <div className="flex items-center gap-2 pr-6">
-                              {agency && (
-                                <span
-                                  className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-black/10"
-                                  style={{ backgroundColor: agency.color }}
-                                  title={agency.name}
-                                />
-                              )}
                               <span className="truncate text-xs font-medium">{lead.name}</span>
                               {lead.controllingQueryOpen && (
                                 <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" title="Controlling-Rückfrage offen" />
@@ -1035,7 +1028,16 @@ export default function LeadsTable() {
                               <div className="mt-1 truncate text-[11px] text-muted-foreground">{lead.plz} {lead.city}</div>
                             )}
                             <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
-                              <span className="truncate">{emp?.name || '–'}</span>
+                              <span className="flex min-w-0 items-center gap-1.5">
+                                {agency && (
+                                  <span
+                                    className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-black/10"
+                                    style={{ backgroundColor: agency.color }}
+                                    title={agency.name}
+                                  />
+                                )}
+                                <span className="truncate">{emp?.name || '–'}</span>
+                              </span>
                               <span className="shrink-0">{new Date(lead.createdAt).toLocaleDateString('de-CH')}</span>
                             </div>
                             <div className="mt-2 hidden space-y-1 border-t pt-2 text-[10px] text-muted-foreground group-hover:block">
