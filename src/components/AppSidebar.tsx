@@ -66,7 +66,7 @@ function SidebarNavItem({ to, icon: Icon, label, isActive, collapsed, indent = f
 export default function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut, role, loading } = useAuth();
+  const { role, loading } = useAuth();
   const { collapsed, toggle } = useSidebarState();
   const perms = useAIVoicePermissions();
 
