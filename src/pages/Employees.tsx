@@ -23,11 +23,17 @@ type SyncResult = {
 
 export default function Employees() {
   const { employees, agencies, leads, updateEmployee, refreshData } = useLeads() as any;
-  const { isSuperadmin } = useAuth();
+  const { isSuperadmin, role } = useAuth() as any;
+  const canManage = isSuperadmin || role === 'admin';
   const [changingId, setChangingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+  const [tab, setTab] = useState('local');
+  const [addOpen, setAddOpen] = useState(false);
+
+  const localEmployees = employees.filter((e: any) => e.source === 'local');
+  const ssoEmployees = employees.filter((e: any) => e.source !== 'local');
 
   const handleAgencyChange = async (empId: string, newAgencyId: string) => {
     setChangingId(empId);
