@@ -3794,6 +3794,10 @@ export type Database = {
           city: string
           contract_generation_unlocked: boolean
           controlling_direct_to_hr: boolean
+          controlling_query_at: string | null
+          controlling_query_by: string | null
+          controlling_query_open: boolean
+          controlling_query_text: string | null
           created_at: string
           email: string
           employee_id: string
@@ -3835,6 +3839,10 @@ export type Database = {
           city?: string
           contract_generation_unlocked?: boolean
           controlling_direct_to_hr?: boolean
+          controlling_query_at?: string | null
+          controlling_query_by?: string | null
+          controlling_query_open?: boolean
+          controlling_query_text?: string | null
           created_at?: string
           email: string
           employee_id: string
@@ -3876,6 +3884,10 @@ export type Database = {
           city?: string
           contract_generation_unlocked?: boolean
           controlling_direct_to_hr?: boolean
+          controlling_query_at?: string | null
+          controlling_query_by?: string | null
+          controlling_query_open?: boolean
+          controlling_query_text?: string | null
           created_at?: string
           email?: string
           employee_id?: string
