@@ -1,18 +1,40 @@
+import { useMemo, useState } from 'react';
 import { useLeads } from '@/context/useLeads';
+import { statusConfig, type LeadStatus } from '@/lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
-import { statusConfig, statusFlow, type LeadStatus } from '@/lib/mock-data';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
-import { User } from 'lucide-react';
+import { Kanban, FilterX } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 // Pipeline shows only: Neue Leads, Kontaktiert, Rückruf (callback mapped to "new" with callback_count > 0)
 // All other statuses (rejected, hired etc.) are auto-removed from pipeline view
 const pipelineStatuses: LeadStatus[] = ['new', 'contacted', 'appointment', 'follow_up', 'hired'];
 
+const DATE_PRESETS = [
+  { value: 'all', label: 'Ganzer Zeitraum' },
+  { value: '7d', label: 'Letzte 7 Tage' },
+  { value: '30d', label: 'Letzte 30 Tage' },
+  { value: '90d', label: 'Letzte 90 Tage' },
+] as const;
+
+type DatePreset = (typeof DATE_PRESETS)[number]['value'];
+
 export default function Pipeline() {
   const { leads, employees, agencies, updateLead, addActivity, setSelectedLead } = useLeads();
   const { isSuperadmin } = useAuth();
+
+  const [employeeFilter, setEmployeeFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<DatePreset>('all');
 
   const moveStatus = (leadId: string, newStatus: LeadStatus, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -24,18 +46,99 @@ export default function Pipeline() {
     addActivity(leadId, 'status_change', `Status geändert: "${oldLabel}" → "${newLabel}"`);
   };
 
+  const hasActiveFilters =
+    employeeFilter !== 'all' || statusFilter !== 'all' || dateFilter !== 'all';
+
+  const resetFilters = () => {
+    setEmployeeFilter('all');
+    setStatusFilter('all');
+    setDateFilter('all');
+  };
+
   // Filter only active leads in pipeline-visible statuses
   // Superadmin sees all leads, other roles see only their assigned leads
-  const pipelineLeads = leads.filter(l => {
-    if (l.lifecycle !== 'active' || !pipelineStatuses.includes(l.status)) return false;
-    return true;
-  });
+  const pipelineLeads = useMemo(() => {
+    const cutoff = (() => {
+      if (dateFilter === 'all') return null;
+      const days = dateFilter === '7d' ? 7 : dateFilter === '30d' ? 30 : 90;
+      const d = new Date();
+      d.setDate(d.getDate() - days);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime();
+    })();
+
+    return leads.filter(l => {
+      if (l.lifecycle !== 'active' || !pipelineStatuses.includes(l.status)) return false;
+      if (employeeFilter !== 'all' && l.employeeId !== employeeFilter) return false;
+      if (statusFilter !== 'all' && l.status !== statusFilter) return false;
+      if (cutoff !== null) {
+        const created = l.createdAt ? new Date(l.createdAt).getTime() : NaN;
+        if (!Number.isNaN(created) && created < cutoff) return false;
+      }
+      return true;
+    });
+  }, [leads, employeeFilter, statusFilter, dateFilter]);
+
+  // Employees that actually appear in the pipeline (for the filter dropdown)
+  const filterEmployees = useMemo(() => {
+    const ids = new Set(leads.filter(l => l.lifecycle === 'active' && pipelineStatuses.includes(l.status)).map(l => l.employeeId).filter(Boolean));
+    return employees.filter(e => ids.has(e.id));
+  }, [leads, employees]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Pipeline</h1>
-        <p className="text-muted-foreground">Aktive Leads im gesamten Prozess: Neu, Kontaktiert, Terminiert, Follow-Up, Eingestellt.</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Kanban className="h-8 w-8 text-primary" strokeWidth={2} />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Pipeline</h1>
+            <p className="text-muted-foreground">Aktive Leads im gesamten Prozess: Neu, Kontaktiert, Terminiert, Follow-Up, Eingestellt.</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
+            <SelectTrigger className="w-[190px]">
+              <SelectValue placeholder="Mitarbeiter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Mitarbeiter</SelectItem>
+              {filterEmployees.map(e => (
+                <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[170px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Status</SelectItem>
+              {pipelineStatuses.map(s => (
+                <SelectItem key={s} value={s}>{statusConfig[s].label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={dateFilter} onValueChange={v => setDateFilter(v as DatePreset)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Zeitraum" />
+            </SelectTrigger>
+            <SelectContent>
+              {DATE_PRESETS.map(p => (
+                <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1.5">
+              <FilterX className="h-4 w-4" />
+              Zurücksetzen
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
