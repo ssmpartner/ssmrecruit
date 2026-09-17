@@ -162,6 +162,7 @@ export default function ApprovalLeadView({ onClose }: { onClose: () => void }) {
     return leads.filter(l =>
       l.lifecycle === 'active'
       && l.status === 'ready_for_controlling'
+      && !l.controllingQueryOpen
       && !myDecidedLeadIds.has(l.id)
     );
   }, [leads, isControlling, isGeschaeftsleitung, isHR, myDecidedLeadIds]);

@@ -193,7 +193,8 @@ export default function LeadsTable() {
 
     // Role-based status filtering for review roles
     if (isControlling) {
-      filtered = filtered.filter(l => l.status === 'ready_for_controlling');
+      // Bei offener Rückfrage liegt der Lead beim Mitarbeiter → nicht in der Controlling-Queue
+      filtered = filtered.filter(l => l.status === 'ready_for_controlling' && !l.controllingQueryOpen);
     } else if (isGeschaeftsleitung) {
       filtered = filtered.filter(l => ['controlling_approved','management_review'].includes(l.status));
     } else if (isHR) {
@@ -413,7 +414,7 @@ export default function LeadsTable() {
   // Role-filtered counts
   const roleFilteredActive = useMemo(() => {
     let items = leads.filter(l => l.lifecycle === 'active');
-    if (isControlling) items = items.filter(l => l.status === 'ready_for_controlling');
+    if (isControlling) items = items.filter(l => l.status === 'ready_for_controlling' && !l.controllingQueryOpen);
     else if (isGeschaeftsleitung) items = items.filter(l => ['controlling_approved','management_review'].includes(l.status));
     else if (isHR) items = items.filter(l => ['management_approved','hr_processing','hr_pending'].includes(l.status));
     return items.length;
