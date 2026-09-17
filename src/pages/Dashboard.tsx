@@ -357,13 +357,21 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Row */}
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-7">
         <MiniStat icon={Users} label="Leads gesamt" value={activeLeads.length} onClick={() => navigate('/leads')} />
         <MiniStat icon={Sparkles} label="Neue Leads" value={newCount} onClick={() => navigate('/leads')} />
         <MiniStat icon={UserCheck} label="Eingestellt" value={hiredCount} />
         <MiniStat icon={Target} label="Konversion" value={`${conversionRate}%`} onClick={() => navigate('/analytics')} />
         <MiniStat icon={ListTodo} label="Offene Tasks" value={openTaskCount} onClick={() => navigate('/tasks')} />
         <MiniStat icon={CalendarDays} label="Anst. Termine" value={upcomingAppointments.length} onClick={() => navigate('/calendar')} />
+        <MiniStat
+          icon={MessageCircleWarning}
+          label="Rückfragen"
+          value={queryCount}
+          color={queryCount > 0 ? 'hsl(var(--destructive))' : undefined}
+          alert={queryCount > 0}
+          onClick={() => navigate('/leads?filter=controlling_query')}
+        />
       </div>
 
       {/* Charts */}
