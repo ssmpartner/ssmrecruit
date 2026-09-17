@@ -44,7 +44,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isControlling) return;
-    supabase.from('leads').select('id').eq('status', 'ready_for_controlling')
+    supabase.from('leads').select('id').eq('status', 'ready_for_controlling').eq('controlling_query_open', false)
       .then(({ data }) => {
         if (data) setControllingLeadIds(new Set(data.map(l => l.id)));
       });
