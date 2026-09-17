@@ -887,16 +887,11 @@ export default function LeadsTable() {
                       })()}
                       <td className="px-5 py-3"><SourceBadge source={lead.source} /></td>
                       <td className="px-5 py-3">
-                        <div className="flex flex-col gap-1">
-                          <LeadStatusBadge status={lead.status} />
-                          {lead.controllingQueryOpen && (
-                            <span className="inline-flex w-fit items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[10px] font-bold text-destructive" title={lead.controllingQueryText || 'Rückfrage vom Controlling'}>
-                              <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
-                              Controlling-Rückfrage
-                            </span>
-                          )}
-                        </div>
+                        <span title={lead.controllingQueryOpen ? (lead.controllingQueryText || 'Rückfrage vom Controlling') : undefined}>
+                          <LeadStatusBadge status={lead.status} queryOpen={lead.controllingQueryOpen} />
+                        </span>
                       </td>
+
                       <td className="px-5 py-3">
                         <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                           <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: agency?.color || '#6B7280' }} />
