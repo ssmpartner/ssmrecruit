@@ -98,4 +98,25 @@
     background: hsl(var(--border));
     border-radius: 9999px;
   }
+
+  .query-badge-blink {
+    animation: query-badge-blink 1.2s ease-in-out infinite;
+  }
+  @keyframes query-badge-blink {
+    0%, 100% {
+      background-color: hsl(var(--destructive) / 0.1);
+      box-shadow: 0 0 0 0 hsl(var(--destructive) / 0.35);
+    }
+    50% {
+      background-color: hsl(var(--destructive) / 0.28);
+      box-shadow: 0 0 0 4px hsl(var(--destructive) / 0.12);
+    }
+  }
+  .query-dot-blink {
+    animation: query-dot-blink 1.2s ease-in-out infinite;
+  }
+  @keyframes query-dot-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+  }
 }
