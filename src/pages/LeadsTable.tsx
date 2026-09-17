@@ -453,6 +453,28 @@ export default function LeadsTable() {
             )}
           </button>
         ))}
+        <div className="ml-auto flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
+          <button
+            onClick={() => setViewMode('list')}
+            title="Listenansicht"
+            className={cn(
+              'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
+              viewMode === 'list' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <LayoutList className="h-3.5 w-3.5" /> Liste
+          </button>
+          <button
+            onClick={() => setViewMode('kanban')}
+            title="Kanban-Ansicht"
+            className={cn(
+              'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
+              viewMode === 'kanban' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <KanbanSquare className="h-3.5 w-3.5" /> Kanban
+          </button>
+        </div>
       </div>
 
       {/* Duplicates Tab */}
@@ -529,6 +551,7 @@ export default function LeadsTable() {
             )}
           </div>
 
+          {viewMode === 'list' && (
           <div className="rounded-xl border bg-card shadow-sm overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
