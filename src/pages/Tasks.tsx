@@ -383,7 +383,7 @@ export default function Tasks() {
             <div className="flex items-center justify-between px-6 py-4 bg-muted/20 border-b">
               <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                  {(lead?.name || '?')[0]}
+                  {(lead?.name || (leadId ? '?' : '–'))[0]}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
