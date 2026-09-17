@@ -144,6 +144,15 @@ export default function Dashboard() {
   const newCount = activeLeads.filter(l => l.status === 'new').length;
   const conversionRate = activeLeads.length > 0 ? ((hiredCount / activeLeads.length) * 100).toFixed(1) : '0';
 
+  // Offene Rückfragen des Controllings für die eigenen Leads
+  const myEmployee = useMemo(() => {
+    const userEmail = (user?.email || '').toLowerCase();
+    return employees.find(e => (e.email || '').toLowerCase() === userEmail);
+  }, [employees, user]);
+  const queryCount = useMemo(() =>
+    activeLeads.filter(l => l.controllingQueryOpen && l.employeeId === myEmployee?.id).length
+  , [activeLeads, myEmployee]);
+
   const displayName = resolveFirstName(profile?.display_name, user?.email, 'User');
 
   // Role-specific leads
