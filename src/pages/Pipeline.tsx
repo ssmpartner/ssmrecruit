@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useLeads } from '@/context/useLeads';
-import { statusConfig, statusFlow, type LeadStatus } from '@/lib/mock-data';
+import { useAuth } from '@/context/AuthContext';
 import LeadStatusBadge from '@/components/LeadStatusBadge';
 import SourceBadge from '@/components/SourceBadge';
 import LeadDetailSheet from '@/components/LeadDetailSheet';
