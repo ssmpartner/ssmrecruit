@@ -278,7 +278,7 @@ export default function LeadsTable() {
   type R4Doc = { id: string; file_name: string; file_path: string };
   const [r4Docs, setR4Docs] = useState<Map<string, R4Doc>>(new Map());
   const [r4Busy, setR4Busy] = useState<string | null>(null);
-  const showR4Column = isControlling || isHR;
+  const showR4Column = isControlling;
 
   useEffect(() => {
     if (!showR4Column) return;
