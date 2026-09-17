@@ -354,11 +354,15 @@ export default function Tasks() {
       {!loading && visibleTasks.length === 0 && (
         <div className="rounded-2xl border bg-card p-12 text-center shadow-sm">
           <Sparkles className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm font-medium mb-1">Keine Aufgaben vorhanden</p>
-          <p className="text-xs text-muted-foreground mb-4">
-            Klicke auf "Tasks generieren" um Aufgaben für deine Leads zu erstellen
+          <p className="text-sm font-medium mb-1">
+            {tab === 'ai' ? 'Keine KI-Vorschläge vorhanden' : 'Keine Aufgaben vorhanden'}
           </p>
-          {(
+          <p className="text-xs text-muted-foreground mb-4">
+            {tab === 'ai'
+              ? 'Lass Vorschläge generieren oder erstelle eine Aufgabe selbst.'
+              : 'Erstelle mit «Neue Aufgabe» eine Aufgabe für dich oder eine Person in deiner Agentur.'}
+          </p>
+          {tab === 'ai' && (
             <Button onClick={generateAllTasks} className="gap-2" disabled={!!generating}>
               <Sparkles className="h-4 w-4" /> Jetzt generieren
             </Button>
