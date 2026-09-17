@@ -53,7 +53,7 @@ export default function ControllingQueryPanel({ leadId, leadName, queryText, que
     <div className="rounded-xl border-2 border-destructive/40 bg-destructive/5 p-3 space-y-2">
       <div className="flex items-center gap-2">
         <AlertCircle className="h-4 w-4 text-destructive" />
-        <h4 className="text-xs font-bold text-destructive">Controlling-Rückfrage – Handlung nötig</h4>
+        <h4 className="text-xs font-bold text-destructive">Rückfrage – Handlung nötig</h4>
       </div>
       <div className="rounded-lg border bg-background p-2.5">
         <span className="mb-1 block text-[11px] text-muted-foreground">
