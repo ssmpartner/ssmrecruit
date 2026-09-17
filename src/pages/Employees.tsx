@@ -192,13 +192,38 @@ export default function Employees() {
         </div>
       )}
 
-      {employees.length === 0 ? (
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList>
+          <TabsTrigger value="local">Benutzer ({localEmployees.length})</TabsTrigger>
+          <TabsTrigger value="sso">SSO-Sync ({ssoEmployees.length})</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="local" className="mt-4">
+          <p className="mb-3 text-sm text-muted-foreground">In SSM Recruit angelegte Benutzer – Anmeldung mit E-Mail und Passwort.</p>
+          {renderGrid(localEmployees, 'Noch keine eigenen Benutzer angelegt. Mit «Neuer Mitarbeiter» starten.')}
+        </TabsContent>
+
+        <TabsContent value="sso" className="mt-4">
+          <p className="mb-3 text-sm text-muted-foreground">Über das SSM Portal synchronisierte Benutzer – Anmeldung via Single Sign-on.</p>
+          {renderGrid(ssoEmployees, 'Noch keine Mitarbeiter aus dem SSM Portal synchronisiert.')}
+        </TabsContent>
+      </Tabs>
+
+      <AddEmployeeDialog open={addOpen} onOpenChange={setAddOpen} />
+    </div>
+  );
+
+  function renderGrid(list: any[], emptyText: string) {
+    if (list.length === 0) {
+      return (
         <div className="rounded-xl border bg-card p-12 text-center">
-          <p className="text-muted-foreground">Noch keine Mitarbeiter vorhanden. Mitarbeiter werden automatisch beim ersten Login über das SSM Portal angelegt.</p>
+          <p className="text-muted-foreground">{emptyText}</p>
         </div>
-      ) : (
+      );
+    }
+    return (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {employees.map(emp => {
+          {list.map(emp => {
             const agency = agencies.find(a => a.id === emp.agencyId);
             const empLeads = leads.filter(l => l.employeeId === emp.id);
             const initials = emp.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
