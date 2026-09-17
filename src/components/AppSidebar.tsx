@@ -87,11 +87,6 @@ export default function AppSidebar() {
     return true;
   }) : [];
 
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/login');
-  };
-
   return (
     <aside className={`fixed inset-y-0 left-0 z-30 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-64'}`}>
       <div className={`flex h-16 items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-6'} border-b border-sidebar-border`}>
@@ -199,18 +194,10 @@ export default function AppSidebar() {
         {collapsed ? (
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-              <button onClick={handleLogout} className="flex w-full items-center justify-center rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200">
-                <LogOut className="h-[18px] w-[18px]" />
-              </button>
+              <div className="h-[2px] w-8 mx-auto mt-2 rounded-full bg-sidebar-accent/50" />
             </TooltipTrigger>
-            <TooltipContent side="right" className="font-medium">Abmelden</TooltipContent>
           </Tooltip>
-        ) : (
-          <button onClick={handleLogout} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-200">
-            <LogOut className="h-[18px] w-[18px]" />
-            Abmelden
-          </button>
-        )}
+        ) : null}
       </div>
     </aside>
   );
