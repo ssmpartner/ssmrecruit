@@ -2001,7 +2001,7 @@ function IntegrationTile({
         type="button"
         disabled={disabled}
         onClick={() => onOpenChange(true)}
-        className="group flex h-full flex-col rounded-2xl border bg-card p-6 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border disabled:hover:shadow-sm">
+        className="group flex h-full flex-col rounded-xl border bg-card p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border disabled:hover:shadow-sm">
         <div className="flex w-full items-start justify-between gap-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border bg-background p-2">{icon}</div>
           <div className="flex flex-wrap items-center justify-end gap-2">{statusSlot}</div>
