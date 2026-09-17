@@ -2002,9 +2002,9 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
 
       {/* Integration list */}
       <div className="space-y-3">
-        {integrations.map((integration: any) => {
+        {integrations.filter((i: any) => i.id !== 'microsoft365').map((integration: any) => {
           const isExpanded = expandedId === integration.id;
-          const isComingSoon = integration.id === 'linkedin' || integration.id === 'microsoft365';
+          const isComingSoon = integration.id === 'linkedin';
           const BrandIcon = BRAND_ICONS[integration.id];
           return (
             <div key={integration.id} className="rounded-xl border bg-card shadow-sm overflow-hidden">
