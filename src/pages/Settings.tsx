@@ -2302,8 +2302,7 @@ function ZapierIntegrationCard() {
           <p className="text-xs text-muted-foreground">Hinweis: Zapier bestätigt den Empfang nicht direkt – prüfe den Zap-Verlauf in Zapier.</p>
           {!isSuperadmin && <p className="text-xs text-muted-foreground">Nur Superadmins können diese Verbindung ändern.</p>}
         </div>
-      )}
-    </div>
+    </IntegrationTile>
   );
 }
 
