@@ -2663,8 +2663,7 @@ function LiveKitIntegrationCard() {
 
           {!isSuperadmin && <p className="text-xs text-muted-foreground">Nur Superadmins können diese Verbindung ändern.</p>}
         </div>
-      )}
-    </div>
+    </IntegrationTile>
   );
 }
 
