@@ -278,6 +278,9 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
         updateData.controlling_direct_to_hr = false;
       }
 
+      // Offene Rückfrage schliessen, sobald ein Entscheid gefällt wurde
+      await supabase.from('leads').update({ controlling_query_open: false }).eq('id', leadId);
+
       updateLead(leadId, updateData);
       addActivity(leadId, 'status_change', description);
 
