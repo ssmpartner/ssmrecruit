@@ -425,7 +425,7 @@ export default function LeadsTable() {
     { key: 'active', label: isControlling ? 'Zu prüfen' : isGeschaeftsleitung ? 'Freigaben offen' : isHR ? 'Onboarding' : 'Aktiv', icon: null, count: activeCount },
     { key: 'archived', label: 'Archiviert', icon: <Archive className="h-3.5 w-3.5" />, count: archivedCount, superadminOnly: true, hideForReview: true },
     { key: 'deleted', label: 'Gelöscht', icon: <Trash2 className="h-3.5 w-3.5" />, count: deletedCount, superadminOnly: true, hideForReview: true },
-    { key: 'duplicates', label: 'Doppelte Leads', icon: <Copy className="h-3.5 w-3.5" />, count: 0, hideForReview: true },
+    { key: 'duplicates', label: 'Duplikate', icon: <Copy className="h-3.5 w-3.5" />, count: 0, hideForReview: true },
     { key: 'demo', label: 'Demo', icon: null, count: demoCount, superadminOnly: true, hideForReview: true },
   ];
 
