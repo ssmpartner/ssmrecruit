@@ -478,7 +478,7 @@ export default function Tasks() {
                           <Select value={task.assigned_to} onValueChange={(v) => reassignTask(task.id, v)}>
                             <SelectTrigger className="h-7 text-xs w-[160px]"><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              {assignableEmployees(employees).map(e => (
+                              {assignableForMe.map(e => (
                                 <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
                               ))}
                             </SelectContent>
