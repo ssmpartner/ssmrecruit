@@ -583,7 +583,7 @@ export default function LeadsTable() {
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | 'controlling_query' | '')} className={cn(selectCls, statusFilter === 'controlling_query' && 'border-red-300 text-red-700')}>
                   <option value="">Alle Status</option>
                   {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                  <option value="controlling_query">Controlling-Rückfrage</option>
+                  <option value="controlling_query">Rückfrage</option>
                 </select>
                 <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className={selectCls}>
                   <option value="">Alle Quellen</option>
@@ -1025,7 +1025,7 @@ export default function LeadsTable() {
                             <div className="flex items-center gap-2 pr-6">
                               <span className="truncate text-xs font-medium">{lead.name}</span>
                               {lead.controllingQueryOpen && (
-                                <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" title="Controlling-Rückfrage offen" />
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" title="Rückfrage offen" />
                               )}
                             </div>
                             {(lead.city || lead.plz) && (
