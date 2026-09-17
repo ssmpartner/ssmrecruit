@@ -11,6 +11,7 @@ import { searchPlz, lookupPlz, swissLocations } from '@/lib/swiss-plz';
 import { type LeadStatus } from '@/lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { assignableEmployees } from '@/lib/assignable-employees';
+import { triggerZapier } from '@/lib/zapier';
 
 const SWISS_PHONE_REGEX = /^\+41\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
