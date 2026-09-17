@@ -255,13 +255,28 @@ export default function Tasks() {
           </p>
         </div>
         <div className="flex gap-2">
-          {(
+          {tab === 'ai' && (
             <Button onClick={generateAllTasks} variant="outline" className="gap-2" disabled={!!generating}>
-              <Sparkles className="h-4 w-4" /> Tasks generieren
+              <Sparkles className="h-4 w-4" /> Vorschläge generieren
             </Button>
           )}
+          <AddTaskDialog currentEmployee={currentEmployee} onCreated={fetchTasks} />
         </div>
       </div>
+
+      {/* Tabs */}
+      <Tabs value={tab} onValueChange={(v) => setTab(v as 'mine' | 'ai')}>
+        <TabsList>
+          <TabsTrigger value="mine">Meine Aufgaben</TabsTrigger>
+          <TabsTrigger value="ai" className="gap-1.5">
+            KI-Vorschläge
+            {aiCount > 0 && (
+              <span className="rounded-full bg-primary/10 px-1.5 text-[10px] font-semibold text-primary">{aiCount}</span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
 
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
