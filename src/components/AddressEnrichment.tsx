@@ -21,7 +21,7 @@ interface EnrichmentResult {
   details: string;
 }
 
-export default function AddressEnrichment() {
+export default function AddressEnrichment({ open: openProp, onOpenChange }: { open?: boolean; onOpenChange?: (v: boolean) => void } = {}) {
   const { leads, updateLead } = useLeads();
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = openProp !== undefined;
