@@ -261,7 +261,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="max-w-3xl space-y-6">
+      <div className={activeTab === 'integrations' ? 'space-y-6' : 'max-w-3xl space-y-6'}>
         {activeTab === 'profile' && <ProfileSettings />}
         {activeTab === 'notifications' && (
           <div className="space-y-8">
@@ -2033,11 +2033,6 @@ function IntegrationTile({
 function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegration, saveIntegration, disconnectIntegration, testWebhook, toast }: any) {
   return (
     <>
-      <div>
-        <h2 className="text-lg font-semibold flex items-center gap-2"><Plug className="h-5 w-5" /> Integrationen</h2>
-        <p className="text-sm text-muted-foreground">Lead-Quellen verbinden und Webhooks konfigurieren.</p>
-      </div>
-
       {/* Webhook endpoint info */}
       <div className="rounded-xl border bg-card p-5 shadow-sm">
         <div className="flex items-start gap-3">
@@ -2055,7 +2050,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
       </div>
 
       {/* Integration list */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {integrations.filter((i: any) => i.id !== 'microsoft365').map((integration: any) => {
           const isExpanded = expandedId === integration.id;
           const isComingSoon = integration.id === 'linkedin';
@@ -2173,7 +2168,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
       <div className="mt-6">
         <h2 className="text-lg font-semibold flex items-center gap-2 mb-1"><MapPin className="h-5 w-5" /> Dienst-Integrationen</h2>
         <p className="text-sm text-muted-foreground mb-4">Externe Dienste für Karten, Geocoding, Video und mehr.</p>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           <MapboxIntegrationCard toast={toast} />
           <Microsoft365IntegrationCard />
           <LiveKitIntegrationCard />
