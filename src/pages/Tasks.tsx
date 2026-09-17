@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 import { assignableEmployees } from '@/lib/assignable-employees';
+import AddTaskDialog from '@/components/AddTaskDialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type Task = Tables<'tasks'>;
 type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -40,6 +42,7 @@ export default function Tasks() {
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [tab, setTab] = useState<'mine' | 'ai'>('mine');
 
   // Match logged-in user to an employee by email
   const currentEmployee = useMemo(() => {
