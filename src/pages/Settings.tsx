@@ -2403,8 +2403,7 @@ function Microsoft365IntegrationCard() {
     >
 
 
-      {expanded && (
-        <div className="border-t px-5 py-5 space-y-4">
+        <div className="space-y-4">
           <div className="rounded-lg bg-secondary/50 p-4">
             <h4 className="text-sm font-medium mb-2">Einsatzbereiche:</h4>
             <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
