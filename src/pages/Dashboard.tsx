@@ -48,12 +48,18 @@ const WeatherIcon = forwardRef<SVGSVGElement, { icon: string }>(({ icon, ...prop
 });
 WeatherIcon.displayName = 'WeatherIcon';
 
-function MiniStat({ icon: Icon, label, value, color, onClick }: { icon: any; label: string; value: number | string; color?: string; onClick?: () => void }) {
+function MiniStat({ icon: Icon, label, value, color, onClick, alert }: { icon: any; label: string; value: number | string; color?: string; onClick?: () => void; alert?: boolean }) {
   return (
     <div
-      className={`flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${onClick ? 'cursor-pointer' : ''}`}
+      className={`relative flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${onClick ? 'cursor-pointer' : ''} ${alert ? 'border-destructive/50' : ''}`}
       onClick={onClick}
     >
+      {alert && (
+        <span className="absolute right-3 top-3 flex h-3 w-3">
+          <span className="kpi-alert-dot absolute inline-flex h-full w-full rounded-full bg-destructive" />
+          <span className="relative inline-flex h-3 w-3 rounded-full bg-destructive" />
+        </span>
+      )}
       <div className="rounded-lg bg-primary/10 p-2.5">
         <Icon className="h-4 w-4 text-primary" />
       </div>
