@@ -2237,25 +2237,21 @@ function ZapierIntegrationCard() {
   };
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-      <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
-        <div className="flex items-center gap-3">
-<div className="rounded-lg border bg-background p-1.5"><img src={zapierLogo} alt="Zapier Logo" className="h-6 w-6" /></div>
-          <div>
-            <h3 className="font-semibold text-sm">Zapier</h3>
-            <p className="text-xs text-muted-foreground">SSM Recruit mit über 6000 Apps verbinden (z. B. Sheets, Slack, CRM)</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {cfg.enabled && configuredCount > 0 && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
-          {configuredCount > 0
-            ? <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> {configuredCount} Zap{configuredCount > 1 ? 's' : ''}</span>
-            : <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
-        </div>
-      </button>
-
-      {expanded && (
-        <div className="border-t px-5 py-5 space-y-4">
+    <IntegrationTile
+      name="Zapier"
+      description="SSM Recruit mit über 6000 Apps verbinden (z. B. Sheets, Slack, CRM)"
+      open={expanded}
+      onOpenChange={setExpanded}
+      ctaLabel={configuredCount > 0 ? 'Verbindung verwalten' : 'Verbindung einrichten'}
+      icon={<img src={zapierLogo} alt="Zapier Logo" className="h-full w-full object-contain" />}
+      statusSlot={<>
+        {cfg.enabled && configuredCount > 0 && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
+        {configuredCount > 0
+          ? <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> {configuredCount} Zap{configuredCount > 1 ? 's' : ''}</span>
+          : <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+      </>}
+    >
+        <div className="space-y-4">
           <div className="rounded-lg bg-secondary/50 p-4">
             <h4 className="text-sm font-medium mb-2">Verbindung einrichten:</h4>
             <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
