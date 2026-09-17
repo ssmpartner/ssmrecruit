@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserCheck, Clock, Target, CalendarDays, ListTodo, Cloud, Sun, CloudRain, CloudSnow, CloudLightning, Cloudy, UserPlus, ClipboardList, Building2, BarChart3, Plus, Sparkles, ChevronDown } from 'lucide-react';
+import { Users, UserCheck, Clock, Target, CalendarDays, ListTodo, Cloud, Sun, CloudRain, CloudSnow, CloudLightning, Cloudy, UserPlus, ClipboardList, Building2, BarChart3, Plus, Sparkles, ChevronDown, MessageCircleWarning } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AddLeadDialog from '@/components/AddLeadDialog';
