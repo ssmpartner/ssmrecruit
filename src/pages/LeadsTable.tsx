@@ -998,8 +998,9 @@ export default function LeadsTable() {
                           <div
                             key={lead.id}
                             onClick={() => markLeadViewed(lead)}
+                            style={{ '--agency': agency?.color || 'var(--primary)' } as React.CSSProperties}
                             className={cn(
-                              'group relative w-full cursor-pointer rounded-lg border bg-background p-2.5 text-left transition-colors hover:bg-secondary/60',
+                              'group relative w-full cursor-pointer rounded-lg border bg-background p-2.5 text-left transition-colors hover:border-[color-mix(in_srgb,var(--agency)_35%,transparent)] hover:bg-[color-mix(in_srgb,var(--agency)_10%,var(--background))]',
                               isSelected && 'border-primary bg-primary/5'
                             )}
                           >
@@ -1018,6 +1019,13 @@ export default function LeadsTable() {
                               />
                             </div>
                             <div className="flex items-center gap-2 pr-6">
+                              {agency && (
+                                <span
+                                  className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-black/10"
+                                  style={{ backgroundColor: agency.color }}
+                                  title={agency.name}
+                                />
+                              )}
                               <span className="truncate text-xs font-medium">{lead.name}</span>
                               {lead.controllingQueryOpen && (
                                 <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" title="Controlling-Rückfrage offen" />
