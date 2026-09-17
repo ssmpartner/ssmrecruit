@@ -1982,6 +1982,54 @@ function WizardPreviewPanel({ toast }: { toast: any }) {
   );
 }
 
+function IntegrationTile({
+  icon, name, description, statusSlot, open, onOpenChange, disabled, ctaLabel, children,
+}: {
+  icon: React.ReactNode;
+  name: string;
+  description: string;
+  statusSlot?: React.ReactNode;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  disabled?: boolean;
+  ctaLabel?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => onOpenChange(true)}
+        className="group flex h-full flex-col rounded-2xl border bg-card p-6 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border disabled:hover:shadow-sm">
+        <div className="flex w-full items-start justify-between gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border bg-background p-2">{icon}</div>
+          <div className="flex flex-wrap items-center justify-end gap-2">{statusSlot}</div>
+        </div>
+        <h3 className="mt-4 text-base font-semibold">{name}</h3>
+        <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+        <span className="mt-auto pt-4 inline-flex items-center gap-1 text-xs font-medium text-primary">
+          {disabled ? 'Demnächst verfügbar' : (ctaLabel ?? 'Verbindung einrichten')}
+          {!disabled && <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />}
+        </span>
+      </button>
+
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background p-1.5">{icon}</span>
+              {name}
+            </SheetTitle>
+            <SheetDescription className="text-left">{description}</SheetDescription>
+          </SheetHeader>
+          <div className="mt-5 space-y-4 pb-10">{children}</div>
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+}
+
 function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegration, saveIntegration, disconnectIntegration, testWebhook, toast }: any) {
   return (
     <>
