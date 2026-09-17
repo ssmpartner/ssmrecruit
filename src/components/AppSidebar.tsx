@@ -8,7 +8,7 @@ import { useAIVoicePermissions } from '@/hooks/useAIVoicePermissions';
 
 const allNavItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: null, excludeRoles: [] as string[] },
-  { to: '/pipeline', icon: Kanban, label: 'Pipeline', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
+  
   { to: '/leads', icon: Contact, label: 'Leads', roles: null, excludeRoles: [] as string[] },
   { to: '/tasks', icon: CheckSquare, label: 'Aufgaben', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
   { to: '/calendar', icon: CalendarDays, label: 'Kalender', roles: null, excludeRoles: ['hr'] as string[] },
