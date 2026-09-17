@@ -468,9 +468,10 @@ export default function LeadsTable() {
             />
             {!isReviewRole && (
               <>
-                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | '')} className={selectCls}>
+                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | 'controlling_query' | '')} className={cn(selectCls, statusFilter === 'controlling_query' && 'border-red-300 text-red-700')}>
                   <option value="">Alle Status</option>
                   {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                  <option value="controlling_query">Controlling-Rückfrage</option>
                 </select>
                 <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className={selectCls}>
                   <option value="">Alle Quellen</option>
