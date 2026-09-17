@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Contact, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, LogOut, ChevronDown, ChevronRight, ChevronLeft, HelpCircle, Bot, Activity, Cog, TrendingUp, BookOpen, FileSearch, MessageSquare, FileSignature } from 'lucide-react';
+import { LayoutDashboard, Users, Contact, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, ChevronDown, ChevronRight, ChevronLeft, HelpCircle, Bot, Activity, Cog, TrendingUp, BookOpen, FileSearch, MessageSquare, FileSignature } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSidebarState } from '@/context/SidebarContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
