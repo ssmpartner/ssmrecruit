@@ -451,14 +451,6 @@ export default function LeadsTable() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
-          <p className="text-muted-foreground">
-            {isReviewRole
-              ? `${filtered.length} Lead${filtered.length !== 1 ? 's' : ''} zur Bearbeitung`
-              : activeTab === 'duplicates' ? 'KI-basierte Duplikat-Erkennung'
-              : activeTab === 'demo' ? `${filtered.length} Demo-/Muster-Lead${filtered.length !== 1 ? 's' : ''}`
-              : `${filtered.length} von ${lifecycleLeads.length} Leads`
-            }
-          </p>
         </div>
         <div className="flex gap-2">
           {activeTab === 'active' && canManageLeads && (
