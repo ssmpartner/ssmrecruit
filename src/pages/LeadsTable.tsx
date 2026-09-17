@@ -973,14 +973,19 @@ export default function LeadsTable() {
 
           {viewMode === 'kanban' && (
             <div className="flex gap-3 overflow-x-auto pb-2">
-              {(Object.keys(statusConfig) as LeadStatus[]).map(status => {
+              {kanbanStatuses.length === 0 && (
+                <p className="py-8 text-sm text-muted-foreground">Keine Status ausgewählt – über das Zahnrad Spalten einblenden.</p>
+              )}
+              {ALL_STATUSES.filter(s => kanbanStatuses.includes(s)).map(status => {
                 const col = filtered.filter(l => l.status === status);
                 const cfg = statusConfig[status];
+                const th = KANBAN_THEME[status];
                 return (
-                  <div key={status} className="w-64 shrink-0 self-start rounded-xl border bg-card shadow-sm">
-                    <div className="flex items-center justify-between border-b px-3 py-2">
-                      <span className="truncate text-xs font-semibold">{cfg.label}</span>
-                      <Badge variant="outline" className="h-5 px-1.5 text-[10px]">{col.length}</Badge>
+                  <div key={status} className={cn('w-64 shrink-0 self-start overflow-hidden rounded-xl border bg-card shadow-sm', th.card)}>
+                    <div className={cn('h-1 w-full', th.accent)} />
+                    <div className={cn('flex items-center justify-between px-3 py-2', th.head)}>
+                      <span className={cn('truncate text-xs font-semibold', th.text)}>{cfg.label}</span>
+                      <span className={cn('flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white', th.accent)}>{col.length}</span>
                     </div>
                     <div className="max-h-[60vh] space-y-2 overflow-y-auto p-2">
                       {col.length === 0 && (
@@ -990,8 +995,9 @@ export default function LeadsTable() {
                         <button
                           key={lead.id}
                           onClick={() => markLeadViewed(lead)}
-                          className="w-full rounded-lg border bg-background p-2.5 text-left transition-colors hover:bg-secondary"
+                          className={cn('relative w-full overflow-hidden rounded-lg border bg-background p-2.5 pl-3 text-left transition-colors hover:bg-secondary', th.card)}
                         >
+                          <span className={cn('absolute inset-y-0 left-0 w-1', th.accent)} />
                           <div className="flex items-center justify-between gap-2">
                             <span className="truncate text-xs font-medium">{lead.name}</span>
                             {lead.controllingQueryOpen && (
