@@ -83,18 +83,28 @@ export default function Employees() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Mitarbeiter</h1>
-          <p className="text-muted-foreground">Übersicht aller Teammitglieder — Verwaltung erfolgt zentral über das SSM Portal</p>
+          <p className="text-muted-foreground">Eigene Benutzer anlegen oder Konten aus dem SSM Portal synchronisieren</p>
         </div>
-        {isSuperadmin && (
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-          >
-            <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Synchronisiere…' : 'Aus SSM Portal synchronisieren'}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {canManage && (
+            <button
+              onClick={() => setAddOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4" /> Neuer Mitarbeiter
+            </button>
+          )}
+          {isSuperadmin && (
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-60"
+            >
+              <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Synchronisiere…' : 'SSO-Synchronisation'}
+            </button>
+          )}
+        </div>
       </div>
 
       {syncResult && (
