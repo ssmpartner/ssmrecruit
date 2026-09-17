@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserCheck, Clock, Target, CalendarDays, ListTodo, Cloud, Sun, CloudRain, CloudSnow, CloudLightning, Cloudy, UserPlus, ClipboardList, Building2, BarChart3, Plus, Sparkles, ChevronDown } from 'lucide-react';
+import { Users, UserCheck, Clock, Target, CalendarDays, ListTodo, Cloud, Sun, CloudRain, CloudSnow, CloudLightning, Cloudy, UserPlus, ClipboardList, Building2, BarChart3, Plus, Sparkles, ChevronDown, MessageCircleWarning } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AddLeadDialog from '@/components/AddLeadDialog';
@@ -48,12 +48,18 @@ const WeatherIcon = forwardRef<SVGSVGElement, { icon: string }>(({ icon, ...prop
 });
 WeatherIcon.displayName = 'WeatherIcon';
 
-function MiniStat({ icon: Icon, label, value, color, onClick }: { icon: any; label: string; value: number | string; color?: string; onClick?: () => void }) {
+function MiniStat({ icon: Icon, label, value, color, onClick, alert }: { icon: any; label: string; value: number | string; color?: string; onClick?: () => void; alert?: boolean }) {
   return (
     <div
-      className={`flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${onClick ? 'cursor-pointer' : ''}`}
+      className={`relative flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${onClick ? 'cursor-pointer' : ''} ${alert ? 'border-destructive/50' : ''}`}
       onClick={onClick}
     >
+      {alert && (
+        <span className="absolute right-3 top-3 flex h-3 w-3">
+          <span className="kpi-alert-dot absolute inline-flex h-full w-full rounded-full bg-destructive" />
+          <span className="relative inline-flex h-3 w-3 rounded-full bg-destructive" />
+        </span>
+      )}
       <div className="rounded-lg bg-primary/10 p-2.5">
         <Icon className="h-4 w-4 text-primary" />
       </div>
@@ -137,6 +143,15 @@ export default function Dashboard() {
   const hiredCount = activeLeads.filter(l => l.status === 'hired').length;
   const newCount = activeLeads.filter(l => l.status === 'new').length;
   const conversionRate = activeLeads.length > 0 ? ((hiredCount / activeLeads.length) * 100).toFixed(1) : '0';
+
+  // Offene Rückfragen des Controllings für die eigenen Leads
+  const myEmployee = useMemo(() => {
+    const userEmail = (user?.email || '').toLowerCase();
+    return employees.find(e => (e.email || '').toLowerCase() === userEmail);
+  }, [employees, user]);
+  const queryCount = useMemo(() =>
+    activeLeads.filter(l => l.controllingQueryOpen && l.employeeId === myEmployee?.id).length
+  , [activeLeads, myEmployee]);
 
   const displayName = resolveFirstName(profile?.display_name, user?.email, 'User');
 
@@ -342,13 +357,21 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Row */}
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-7">
         <MiniStat icon={Users} label="Leads gesamt" value={activeLeads.length} onClick={() => navigate('/leads')} />
         <MiniStat icon={Sparkles} label="Neue Leads" value={newCount} onClick={() => navigate('/leads')} />
         <MiniStat icon={UserCheck} label="Eingestellt" value={hiredCount} />
         <MiniStat icon={Target} label="Konversion" value={`${conversionRate}%`} onClick={() => navigate('/analytics')} />
         <MiniStat icon={ListTodo} label="Offene Tasks" value={openTaskCount} onClick={() => navigate('/tasks')} />
         <MiniStat icon={CalendarDays} label="Anst. Termine" value={upcomingAppointments.length} onClick={() => navigate('/calendar')} />
+        <MiniStat
+          icon={MessageCircleWarning}
+          label="Rückfragen"
+          value={queryCount}
+          color={queryCount > 0 ? 'hsl(var(--destructive))' : undefined}
+          alert={queryCount > 0}
+          onClick={() => navigate('/leads?filter=controlling_query')}
+        />
       </div>
 
       {/* Charts */}
