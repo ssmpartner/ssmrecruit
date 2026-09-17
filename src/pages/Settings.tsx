@@ -21,6 +21,7 @@ import { type NotificationMethod } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast as sonnerToast } from 'sonner';
+import { ZAPIER_EVENTS, loadZapierConfig, clearZapierCache, sendToZapier, type ZapierConfig, type ZapierEvent } from '@/lib/zapier';
 
 type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter' | 'controlling' | 'geschaeftsleitung' | 'hr' | 'agency_manager';
 
@@ -2125,9 +2126,135 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
         <div className="space-y-3">
           <MapboxIntegrationCard toast={toast} />
           <LiveKitIntegrationCard />
+          <ZapierIntegrationCard />
         </div>
       </div>
     </>
+  );
+}
+
+function ZapierIntegrationCard() {
+  const { isSuperadmin } = useAuth();
+  const [expanded, setExpanded] = useState(false);
+  const [cfg, setCfg] = useState<ZapierConfig>({ enabled: false, hooks: {} });
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const v = await loadZapierConfig(true);
+      setCfg({ enabled: v.enabled === true, hooks: v.hooks ?? {} });
+    })();
+  }, []);
+
+  const configuredCount = ZAPIER_EVENTS.filter(e => (cfg.hooks?.[e.key] ?? '').trim().length > 0).length;
+
+  const save = async () => {
+    if (!isSuperadmin) return;
+    setSaving(true);
+    const clean: ZapierConfig = {
+      enabled: cfg.enabled === true,
+      hooks: Object.fromEntries(
+        ZAPIER_EVENTS.map(e => [e.key, (cfg.hooks?.[e.key] ?? '').trim()]).filter(([, v]) => v),
+      ) as ZapierConfig['hooks'],
+    };
+    const { error } = await supabase.from('app_settings').upsert(
+      [{ key: 'zapier_config', value: clean as unknown as never, updated_at: new Date().toISOString() }],
+      { onConflict: 'key' },
+    );
+    setSaving(false);
+    if (error) sonnerToast.error('Konnte Zapier-Einstellungen nicht speichern');
+    else {
+      clearZapierCache();
+      sonnerToast.success('Zapier-Einstellungen gespeichert');
+    }
+  };
+
+  const test = async (key: ZapierEvent) => {
+    const url = (cfg.hooks?.[key] ?? '').trim();
+    if (!url) return;
+    setTesting(key);
+    try {
+      await sendToZapier(url, { event: key, test: true, note: 'Testauslösung aus SSM Recruit' });
+      sonnerToast.success('Test gesendet – prüfe den Zap-Verlauf in Zapier.');
+    } catch {
+      sonnerToast.error('Test konnte nicht gesendet werden.');
+    }
+    setTesting(null);
+  };
+
+  return (
+    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-accent p-2"><Zap className="h-4 w-4 text-accent-foreground" /></div>
+          <div>
+            <h3 className="font-semibold text-sm">Zapier</h3>
+            <p className="text-xs text-muted-foreground">SSM Recruit mit über 6000 Apps verbinden (z. B. Sheets, Slack, CRM)</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {cfg.enabled && configuredCount > 0 && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
+          {configuredCount > 0
+            ? <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> {configuredCount} Zap{configuredCount > 1 ? 's' : ''}</span>
+            : <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="border-t px-5 py-5 space-y-4">
+          <div className="rounded-lg bg-secondary/50 p-4">
+            <h4 className="text-sm font-medium mb-2">Verbindung einrichten:</h4>
+            <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
+              <li>In <a href="https://zapier.com/app/zaps" target="_blank" rel="noreferrer" className="text-primary underline">Zapier</a> einen neuen Zap erstellen</li>
+              <li>Als Auslöser <strong>Webhooks by Zapier → Catch Hook</strong> wählen</li>
+              <li>Die angezeigte Webhook-URL kopieren und unten beim passenden Ereignis einfügen</li>
+              <li>Speichern, «Test senden» klicken und in Zapier die Beispieldaten übernehmen</li>
+            </ol>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+            <div>
+              <span className="text-sm font-medium">Aktiv nutzen</span>
+              <p className="text-xs text-muted-foreground">Solange ausgeschaltet, werden keine Daten an Zapier gesendet.</p>
+            </div>
+            <Switch checked={cfg.enabled === true} disabled={!isSuperadmin}
+              onCheckedChange={(v) => setCfg(c => ({ ...c, enabled: v }))} />
+          </div>
+
+          <div className="space-y-3">
+            {ZAPIER_EVENTS.map(ev => (
+              <div key={ev.key} className="rounded-lg border p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">{ev.label}</p>
+                    <p className="text-xs text-muted-foreground">{ev.description}</p>
+                  </div>
+                  <button onClick={() => test(ev.key)} disabled={!(cfg.hooks?.[ev.key] ?? '').trim() || testing === ev.key}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-secondary disabled:opacity-50 transition-colors">
+                    {testing === ev.key ? <Loader2 className="h-3 w-3 animate-spin" /> : <Zap className="h-3 w-3" />} Test senden
+                  </button>
+                </div>
+                <input value={cfg.hooks?.[ev.key] ?? ''} disabled={!isSuperadmin}
+                  placeholder="https://hooks.zapier.com/hooks/catch/..."
+                  onChange={(e) => setCfg(c => ({ ...c, hooks: { ...(c.hooks ?? {}), [ev.key]: e.target.value } }))}
+                  className="mt-2 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button onClick={save} disabled={!isSuperadmin || saving}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Speichern
+            </button>
+          </div>
+
+          <p className="text-xs text-muted-foreground">Hinweis: Zapier bestätigt den Empfang nicht direkt – prüfe den Zap-Verlauf in Zapier.</p>
+          {!isSuperadmin && <p className="text-xs text-muted-foreground">Nur Superadmins können diese Verbindung ändern.</p>}
+        </div>
+      )}
+    </div>
   );
 }
 

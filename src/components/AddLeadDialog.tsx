@@ -11,6 +11,7 @@ import { searchPlz, lookupPlz, swissLocations } from '@/lib/swiss-plz';
 import { type LeadStatus } from '@/lib/mock-data';
 import { useAuth } from '@/context/AuthContext';
 import { assignableEmployees } from '@/lib/assignable-employees';
+import { triggerZapier } from '@/lib/zapier';
 
 const SWISS_PHONE_REGEX = /^\+41\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
 
@@ -223,6 +224,22 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
       campaign: '',
       lifecycle: 'active',
       birthDate: form.birthDate || undefined,
+    });
+    void triggerZapier('lead_created', {
+      lead: {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        plz: form.plz,
+        city: form.city,
+        canton: form.canton,
+        position: form.position.trim(),
+        source: form.source,
+        status: 'new',
+        agency_id: form.agencyId,
+        employee_id: form.employeeId,
+      },
+      triggered_by: profile?.display_name || 'System',
     });
     // Find the newly created lead ID (latest one)
     setTimeout(() => {
