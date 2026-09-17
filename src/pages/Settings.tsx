@@ -2125,6 +2125,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
         <p className="text-sm text-muted-foreground mb-4">Externe Dienste für Karten, Geocoding, Video und mehr.</p>
         <div className="space-y-3">
           <MapboxIntegrationCard toast={toast} />
+          <Microsoft365IntegrationCard />
           <LiveKitIntegrationCard />
           <ZapierIntegrationCard />
           <AbacusIntegrationCard />
