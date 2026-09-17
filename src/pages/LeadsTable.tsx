@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText, LayoutList, KanbanSquare } from 'lucide-react';
+import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText, LayoutList, KanbanSquare, Settings2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadLifecycle, statusConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
@@ -27,6 +27,32 @@ import { supabase } from '@/integrations/supabase/client';
 import { CONTRACT_APPOINTMENT_TITLE } from '@/components/ContractAppointmentPanel';
 
 type RoleUser = { user_id: string; display_name: string | null; avatar_url: string | null };
+
+// Farbwelt der Kanban-Spalten (analog zur Pipeline-Ansicht)
+const KANBAN_THEME: Record<LeadStatus, { head: string; accent: string; text: string; card: string; dot: string }> = {
+  new:                   { head: 'bg-blue-50 dark:bg-blue-950/40',       accent: 'bg-blue-500',    text: 'text-blue-700 dark:text-blue-300',       card: 'border-blue-200 dark:border-blue-900',       dot: 'bg-blue-500' },
+  contacted:             { head: 'bg-amber-50 dark:bg-amber-950/40',     accent: 'bg-amber-500',   text: 'text-amber-700 dark:text-amber-300',     card: 'border-amber-200 dark:border-amber-900',     dot: 'bg-amber-500' },
+  callback:              { head: 'bg-yellow-50 dark:bg-yellow-950/40',   accent: 'bg-yellow-500',  text: 'text-yellow-700 dark:text-yellow-300',   card: 'border-yellow-200 dark:border-yellow-900',   dot: 'bg-yellow-500' },
+  not_reached:           { head: 'bg-orange-50 dark:bg-orange-950/40',   accent: 'bg-orange-500',  text: 'text-orange-700 dark:text-orange-300',   card: 'border-orange-200 dark:border-orange-900',   dot: 'bg-orange-500' },
+  not_interested:        { head: 'bg-red-50 dark:bg-red-950/40',         accent: 'bg-red-500',     text: 'text-red-700 dark:text-red-300',         card: 'border-red-200 dark:border-red-900',         dot: 'bg-red-500' },
+  no_need:               { head: 'bg-rose-50 dark:bg-rose-950/40',       accent: 'bg-rose-500',    text: 'text-rose-700 dark:text-rose-300',       card: 'border-rose-200 dark:border-rose-900',       dot: 'bg-rose-500' },
+  not_suitable:          { head: 'bg-slate-50 dark:bg-slate-900/60',     accent: 'bg-slate-500',   text: 'text-slate-700 dark:text-slate-300',     card: 'border-slate-200 dark:border-slate-800',     dot: 'bg-slate-500' },
+  internal:              { head: 'bg-indigo-50 dark:bg-indigo-950/40',   accent: 'bg-indigo-500',  text: 'text-indigo-700 dark:text-indigo-300',   card: 'border-indigo-200 dark:border-indigo-900',   dot: 'bg-indigo-500' },
+  appointment:           { head: 'bg-emerald-50 dark:bg-emerald-950/40', accent: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-300', card: 'border-emerald-200 dark:border-emerald-900', dot: 'bg-emerald-500' },
+  follow_up:             { head: 'bg-violet-50 dark:bg-violet-950/40',   accent: 'bg-violet-500',  text: 'text-violet-700 dark:text-violet-300',   card: 'border-violet-200 dark:border-violet-900',   dot: 'bg-violet-500' },
+  ready_for_controlling: { head: 'bg-cyan-50 dark:bg-cyan-950/40',       accent: 'bg-cyan-500',    text: 'text-cyan-700 dark:text-cyan-300',       card: 'border-cyan-200 dark:border-cyan-900',       dot: 'bg-cyan-500' },
+  controlling_approved:  { head: 'bg-cyan-100 dark:bg-cyan-900/50',      accent: 'bg-cyan-600',    text: 'text-cyan-800 dark:text-cyan-200',       card: 'border-cyan-300 dark:border-cyan-800',       dot: 'bg-cyan-600' },
+  management_review:     { head: 'bg-purple-50 dark:bg-purple-950/40',   accent: 'bg-purple-500',  text: 'text-purple-700 dark:text-purple-300',   card: 'border-purple-200 dark:border-purple-900',   dot: 'bg-purple-500' },
+  management_approved:   { head: 'bg-purple-100 dark:bg-purple-900/50',  accent: 'bg-purple-600',  text: 'text-purple-800 dark:text-purple-200',   card: 'border-purple-300 dark:border-purple-800',   dot: 'bg-purple-600' },
+  hr_processing:         { head: 'bg-teal-50 dark:bg-teal-950/40',       accent: 'bg-teal-500',    text: 'text-teal-700 dark:text-teal-300',       card: 'border-teal-200 dark:border-teal-900',       dot: 'bg-teal-500' },
+  hr_pending:            { head: 'bg-amber-100 dark:bg-amber-900/50',    accent: 'bg-amber-600',   text: 'text-amber-800 dark:text-amber-200',     card: 'border-amber-300 dark:border-amber-800',     dot: 'bg-amber-600' },
+  hired:                 { head: 'bg-green-50 dark:bg-green-950/40',     accent: 'bg-green-500',   text: 'text-green-700 dark:text-green-300',     card: 'border-green-200 dark:border-green-900',     dot: 'bg-green-500' },
+  rejected:              { head: 'bg-red-50 dark:bg-red-950/40',        accent: 'bg-destructive', text: 'text-red-700 dark:text-red-300',         card: 'border-red-200 dark:border-red-900',         dot: 'bg-destructive' },
+};
+
+const ALL_STATUSES = Object.keys(statusConfig) as LeadStatus[];
+const KANBAN_STATUS_KEY = 'leads-kanban-statuses';
+const DEFAULT_KANBAN_STATUSES: LeadStatus[] = ['new', 'contacted', 'callback', 'not_reached', 'appointment', 'follow_up', 'ready_for_controlling', 'hr_processing', 'hired'];
 
 const initialsOf = (n?: string | null) =>
   (n || '?').split(/\s+/).map(s => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
@@ -124,6 +150,27 @@ export default function LeadsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(20);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
+  const [kanbanStatuses, setKanbanStatuses] = useState<LeadStatus[]>(() => {
+    try {
+      const raw = localStorage.getItem(KANBAN_STATUS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as LeadStatus[];
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed.filter(s => ALL_STATUSES.includes(s));
+      }
+    } catch { /* ignore */ }
+    return DEFAULT_KANBAN_STATUSES;
+  });
+  const toggleKanbanStatus = (status: LeadStatus) => {
+    setKanbanStatuses(prev => {
+      const next = prev.includes(status) ? prev.filter(s => s !== status) : [...ALL_STATUSES.filter(s => prev.includes(s) || s === status)];
+      try { localStorage.setItem(KANBAN_STATUS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+  const setKanbanStatusPreset = (next: LeadStatus[]) => {
+    setKanbanStatuses(next);
+    try { localStorage.setItem(KANBAN_STATUS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  };
 
   const markLeadViewed = useCallback((lead: Parameters<typeof setSelectedLead>[0]) => {
     if (lead && !isSuperadmin && !lead.isRead) {
@@ -474,6 +521,36 @@ export default function LeadsTable() {
           >
             <KanbanSquare className="h-3.5 w-3.5" /> Kanban
           </button>
+          {viewMode === 'kanban' && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  title="Spalten / Status auswählen"
+                  className="flex items-center rounded-md px-2 py-1.5 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+                >
+                  <Settings2 className="h-3.5 w-3.5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-xs font-semibold">Angezeigte Status</p>
+                  <div className="flex gap-1">
+                    <button onClick={() => setKanbanStatusPreset(ALL_STATUSES)} className="rounded-md border px-2 py-0.5 text-[10px] hover:bg-muted">Alle</button>
+                    <button onClick={() => setKanbanStatusPreset(DEFAULT_KANBAN_STATUSES)} className="rounded-md border px-2 py-0.5 text-[10px] hover:bg-muted">Standard</button>
+                  </div>
+                </div>
+                <div className="max-h-72 space-y-1 overflow-y-auto">
+                  {ALL_STATUSES.map(s => (
+                    <label key={s} className="flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 hover:bg-muted">
+                      <Checkbox checked={kanbanStatuses.includes(s)} onCheckedChange={() => toggleKanbanStatus(s)} />
+                      <span className={cn('h-2.5 w-2.5 shrink-0 rounded-full', KANBAN_THEME[s].dot)} />
+                      <span className="truncate text-xs">{statusConfig[s].label}</span>
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
       </div>
 
@@ -896,14 +973,19 @@ export default function LeadsTable() {
 
           {viewMode === 'kanban' && (
             <div className="flex gap-3 overflow-x-auto pb-2">
-              {(Object.keys(statusConfig) as LeadStatus[]).map(status => {
+              {kanbanStatuses.length === 0 && (
+                <p className="py-8 text-sm text-muted-foreground">Keine Status ausgewählt – über das Zahnrad Spalten einblenden.</p>
+              )}
+              {ALL_STATUSES.filter(s => kanbanStatuses.includes(s)).map(status => {
                 const col = filtered.filter(l => l.status === status);
                 const cfg = statusConfig[status];
+                const th = KANBAN_THEME[status];
                 return (
-                  <div key={status} className="w-64 shrink-0 self-start rounded-xl border bg-card shadow-sm">
-                    <div className="flex items-center justify-between border-b px-3 py-2">
-                      <span className="truncate text-xs font-semibold">{cfg.label}</span>
-                      <Badge variant="outline" className="h-5 px-1.5 text-[10px]">{col.length}</Badge>
+                  <div key={status} className={cn('w-64 shrink-0 self-start overflow-hidden rounded-xl border bg-card shadow-sm', th.card)}>
+                    <div className={cn('h-1 w-full', th.accent)} />
+                    <div className={cn('flex items-center justify-between px-3 py-2', th.head)}>
+                      <span className={cn('truncate text-xs font-semibold', th.text)}>{cfg.label}</span>
+                      <span className={cn('flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white', th.accent)}>{col.length}</span>
                     </div>
                     <div className="max-h-[60vh] space-y-2 overflow-y-auto p-2">
                       {col.length === 0 && (
@@ -913,8 +995,9 @@ export default function LeadsTable() {
                         <button
                           key={lead.id}
                           onClick={() => markLeadViewed(lead)}
-                          className="w-full rounded-lg border bg-background p-2.5 text-left transition-colors hover:bg-secondary"
+                          className={cn('relative w-full overflow-hidden rounded-lg border bg-background p-2.5 pl-3 text-left transition-colors hover:bg-secondary', th.card)}
                         >
+                          <span className={cn('absolute inset-y-0 left-0 w-1', th.accent)} />
                           <div className="flex items-center justify-between gap-2">
                             <span className="truncate text-xs font-medium">{lead.name}</span>
                             {lead.controllingQueryOpen && (
