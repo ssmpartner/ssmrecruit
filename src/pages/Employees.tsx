@@ -233,9 +233,13 @@ export default function Employees() {
               <div key={emp.id} className="rounded-xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
-                      {initials}
-                    </div>
+                    {emp.avatar ? (
+                      <img src={emp.avatar} alt={emp.name} className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
+                        {initials}
+                      </div>
+                    )}
                     <div>
                       <h3 className="font-semibold">{emp.name}</h3>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -294,7 +298,6 @@ export default function Employees() {
             );
           })}
         </div>
-      )}
-    </div>
-  );
+    );
+  }
 }
