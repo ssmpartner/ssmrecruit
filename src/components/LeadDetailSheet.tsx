@@ -12,6 +12,7 @@ import { useLeads } from '@/context/useLeads';
 import { statusConfig, getAllowedNextStatuses, type Appointment, type LeadStatus } from '@/lib/mock-data';
 import { lookupPlz, searchPlz, cantons, swissLocations, type SwissLocation } from '@/lib/swiss-plz';
 import LeadStatusBadge from './LeadStatusBadge';
+import ControllingQueryPanel from './ControllingQueryPanel';
 import SourceBadge from './SourceBadge';
 import {
   Save, Clock, UserCog, Edit3, MessageSquare, ArrowRight, MapPin, User,
@@ -484,8 +485,18 @@ export default function LeadDetailSheet() {
                       </div>
                     </div>
                   ) : (
-                  <div className="p-4 space-y-4">
-                    <LeadActionPanel
+                   <div className="p-4 space-y-4">
+                    {selectedLead.controllingQueryOpen && (
+                      <ControllingQueryPanel
+                        leadId={selectedLead.id}
+                        leadName={selectedLead.name}
+                        queryText={selectedLead.controllingQueryText}
+                        queryBy={selectedLead.controllingQueryBy}
+                        queryAt={selectedLead.controllingQueryAt}
+                        onResolved={() => setSelectedLead({ ...selectedLead, controllingQueryOpen: false })}
+                      />
+                    )}
+                     <LeadActionPanel
                       leadId={selectedLead.id}
                       leadName={selectedLead.name}
                       leadStatus={selectedLead.status as LeadStatus}
