@@ -2915,8 +2915,7 @@ function MapboxIntegrationCard({ toast }: { toast: any }) {
             </div>
           )}
         </div>
-      )}
-    </div>
+    </IntegrationTile>
   );
 }
 
