@@ -261,7 +261,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="max-w-3xl space-y-6">
+      <div className={activeTab === 'integrations' ? 'space-y-6' : 'max-w-3xl space-y-6'}>
         {activeTab === 'profile' && <ProfileSettings />}
         {activeTab === 'notifications' && (
           <div className="space-y-8">
@@ -2033,11 +2033,6 @@ function IntegrationTile({
 function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegration, saveIntegration, disconnectIntegration, testWebhook, toast }: any) {
   return (
     <>
-      <div>
-        <h2 className="text-lg font-semibold flex items-center gap-2"><Plug className="h-5 w-5" /> Integrationen</h2>
-        <p className="text-sm text-muted-foreground">Lead-Quellen verbinden und Webhooks konfigurieren.</p>
-      </div>
-
       {/* Webhook endpoint info */}
       <div className="rounded-xl border bg-card p-5 shadow-sm">
         <div className="flex items-start gap-3">
