@@ -489,7 +489,7 @@ export default function LeadsTable() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Contact className="h-8 w-8 text-primary" strokeWidth={2} />
-          <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{isReviewRole ? 'Kandidaten' : 'Leads'}</h1>
         </div>
         <div className="flex gap-2">
           {activeTab === 'active' && canManageLeads && (
