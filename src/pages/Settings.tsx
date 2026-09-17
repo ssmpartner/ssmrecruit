@@ -19,6 +19,8 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { type NotificationMethod } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { toast as sonnerToast } from 'sonner';
 
 type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter' | 'controlling' | 'geschaeftsleitung' | 'hr' | 'agency_manager';
 
@@ -2116,13 +2118,195 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
         })}
       </div>
 
-      {/* Mapbox Integration */}
+      {/* Service Integrations */}
       <div className="mt-6">
         <h2 className="text-lg font-semibold flex items-center gap-2 mb-1"><MapPin className="h-5 w-5" /> Dienst-Integrationen</h2>
-        <p className="text-sm text-muted-foreground mb-4">Externe Dienste für Karten, Geocoding und mehr.</p>
-        <MapboxIntegrationCard toast={toast} />
+        <p className="text-sm text-muted-foreground mb-4">Externe Dienste für Karten, Geocoding, Video und mehr.</p>
+        <div className="space-y-3">
+          <MapboxIntegrationCard toast={toast} />
+          <LiveKitIntegrationCard />
+        </div>
       </div>
     </>
+  );
+}
+
+interface LiveKitConfig {
+  enabled?: boolean;
+  room_prefix?: string;
+  token_ttl_minutes?: number;
+}
+
+interface LiveKitStatus {
+  configured: boolean;
+  url: string | null;
+  missing: string[];
+  keyPreview: string | null;
+}
+
+function LiveKitIntegrationCard() {
+  const { isSuperadmin } = useAuth();
+  const [expanded, setExpanded] = useState(false);
+  const [status, setStatus] = useState<LiveKitStatus | null>(null);
+  const [checking, setChecking] = useState(true);
+  const [cfg, setCfg] = useState<LiveKitConfig>({ enabled: false, room_prefix: 'ssm', token_ttl_minutes: 60 });
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+
+  const checkStatus = useCallback(async () => {
+    setChecking(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('livekit-token', { body: { action: 'status' } });
+      if (error) throw error;
+      setStatus(data as LiveKitStatus);
+    } catch {
+      setStatus({ configured: false, url: null, missing: ['LIVEKIT_API_KEY', 'LIVEKIT_API_SECRET', 'LIVEKIT_URL'], keyPreview: null });
+    }
+    setChecking(false);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from('app_settings').select('value').eq('key', 'livekit_config').maybeSingle();
+      const v = (data?.value as LiveKitConfig | null) ?? {};
+      setCfg({
+        enabled: v.enabled === true,
+        room_prefix: v.room_prefix || 'ssm',
+        token_ttl_minutes: v.token_ttl_minutes ?? 60,
+      });
+    })();
+    checkStatus();
+  }, [checkStatus]);
+
+  const save = async () => {
+    if (!isSuperadmin) return;
+    setSaving(true);
+    const { error } = await supabase.from('app_settings').upsert(
+      [{ key: 'livekit_config', value: cfg as unknown as never, updated_at: new Date().toISOString() }],
+      { onConflict: 'key' },
+    );
+    setSaving(false);
+    if (error) sonnerToast.error('Konnte LiveKit-Einstellungen nicht speichern');
+    else sonnerToast.success('LiveKit-Einstellungen gespeichert');
+  };
+
+  const testConnection = async () => {
+    setTesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('livekit-token', {
+        body: {
+          action: 'token',
+          room: `${cfg.room_prefix || 'ssm'}-test-${Date.now().toString(36)}`,
+          identity: 'settings-test',
+          name: 'SSM Recruit Test',
+          ttlSeconds: 300,
+        },
+      });
+      if (error || (data as { error?: string })?.error) throw new Error((data as { error?: string })?.error || 'Fehler');
+      sonnerToast.success('Verbindung erfolgreich – Zugangs-Token wurde erstellt.');
+    } catch (e) {
+      sonnerToast.error(`Test fehlgeschlagen: ${(e as Error).message}`);
+    }
+    setTesting(false);
+  };
+
+  const configured = status?.configured === true;
+
+  return (
+    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-accent p-2"><Video className="h-4 w-4 text-accent-foreground" /></div>
+          <div>
+            <h3 className="font-semibold text-sm">LiveKit</h3>
+            <p className="text-xs text-muted-foreground">Video- & Audio-Räume in Echtzeit (Interviews, AI Voice Agent)</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {cfg.enabled && configured && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
+          {checking && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          {!checking && configured && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
+          {!checking && !configured && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="border-t px-5 py-5 space-y-4">
+          <div className="rounded-lg bg-secondary/50 p-4">
+            <h4 className="text-sm font-medium mb-2">Einsatzbereiche:</h4>
+            <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+              <li><strong>Video-Interviews:</strong> BG1/BG2-Gespräche direkt in SSM Recruit</li>
+              <li><strong>AI Voice Agent:</strong> Echtzeit-Audio-Streams für automatisierte Telefonate</li>
+              <li><strong>Aufzeichnungen:</strong> optionale Mitschnitte über LiveKit Egress</li>
+            </ul>
+          </div>
+
+          {!configured && (
+            <div className="rounded-lg bg-secondary/50 p-4">
+              <h4 className="text-sm font-medium mb-2">Verbindung einrichten:</h4>
+              <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
+                <li>Projekt erstellen bei <a href="https://cloud.livekit.io" target="_blank" rel="noreferrer" className="text-primary underline">cloud.livekit.io</a> (oder eigener Server)</li>
+                <li>Unter <strong>Settings → Keys</strong> API Key und Secret erzeugen</li>
+                <li>Folgende Secrets im Projekt hinterlegen: <code className="bg-secondary px-1 rounded">LIVEKIT_URL</code> (z. B. wss://mein-projekt.livekit.cloud), <code className="bg-secondary px-1 rounded">LIVEKIT_API_KEY</code>, <code className="bg-secondary px-1 rounded">LIVEKIT_API_SECRET</code></li>
+                <li>Danach hier auf «Status prüfen» klicken</li>
+              </ol>
+              {status?.missing?.length ? (
+                <p className="text-xs text-amber-700 mt-3 font-medium">Fehlt noch: {status.missing.join(', ')}</p>
+              ) : null}
+            </div>
+          )}
+
+          {configured && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="text-sm font-medium">Server-URL</label>
+                <code className="mt-1 block rounded-lg bg-secondary px-3 py-2 text-xs font-mono break-all">{status?.url}</code>
+              </div>
+              <div>
+                <label className="text-sm font-medium">API Key</label>
+                <code className="mt-1 block rounded-lg bg-secondary px-3 py-2 text-xs font-mono">{status?.keyPreview}</code>
+              </div>
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="flex items-center justify-between rounded-lg border px-3 py-2 sm:col-span-1">
+              <span className="text-sm font-medium">Aktiv nutzen</span>
+              <Switch checked={cfg.enabled === true} disabled={!isSuperadmin || !configured}
+                onCheckedChange={(v) => setCfg(c => ({ ...c, enabled: v }))} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Raum-Präfix</label>
+              <input value={cfg.room_prefix ?? ''} disabled={!isSuperadmin}
+                onChange={(e) => setCfg(c => ({ ...c, room_prefix: e.target.value }))}
+                className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Token-Laufzeit (Minuten)</label>
+              <input type="number" min={5} max={720} value={cfg.token_ttl_minutes ?? 60} disabled={!isSuperadmin}
+                onChange={(e) => setCfg(c => ({ ...c, token_ttl_minutes: Number(e.target.value) }))}
+                className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button onClick={save} disabled={!isSuperadmin || saving}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Speichern
+            </button>
+            <button onClick={checkStatus} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors">
+              <RefreshCw className="h-4 w-4" /> Status prüfen
+            </button>
+            <button onClick={testConnection} disabled={!configured || testing}
+              className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-50 transition-colors">
+              {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />} Verbindung testen
+            </button>
+          </div>
+
+          {!isSuperadmin && <p className="text-xs text-muted-foreground">Nur Superadmins können diese Verbindung ändern.</p>}
+        </div>
+      )}
+    </div>
   );
 }
 
