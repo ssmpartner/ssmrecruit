@@ -432,7 +432,7 @@ export default function LeadsTable() {
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex gap-1 rounded-xl border bg-card p-1 shadow-sm">
+      <div className="flex items-center gap-1 rounded-xl border bg-card p-1 shadow-sm">
         {tabs.filter(tab => (!tab.superadminOnly || isSuperadmin) && (!tab.hideForReview || !isReviewRole)).map(tab => (
           <button
             key={tab.key}
