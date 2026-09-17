@@ -2002,9 +2002,9 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
 
       {/* Integration list */}
       <div className="space-y-3">
-        {integrations.map((integration: any) => {
+        {integrations.filter((i: any) => i.id !== 'microsoft365').map((integration: any) => {
           const isExpanded = expandedId === integration.id;
-          const isComingSoon = integration.id === 'linkedin' || integration.id === 'microsoft365';
+          const isComingSoon = integration.id === 'linkedin';
           const BrandIcon = BRAND_ICONS[integration.id];
           return (
             <div key={integration.id} className="rounded-xl border bg-card shadow-sm overflow-hidden">
@@ -2125,6 +2125,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
         <p className="text-sm text-muted-foreground mb-4">Externe Dienste für Karten, Geocoding, Video und mehr.</p>
         <div className="space-y-3">
           <MapboxIntegrationCard toast={toast} />
+          <Microsoft365IntegrationCard />
           <LiveKitIntegrationCard />
           <ZapierIntegrationCard />
           <AbacusIntegrationCard />
@@ -2253,6 +2254,196 @@ function ZapierIntegrationCard() {
           </div>
 
           <p className="text-xs text-muted-foreground">Hinweis: Zapier bestätigt den Empfang nicht direkt – prüfe den Zap-Verlauf in Zapier.</p>
+          {!isSuperadmin && <p className="text-xs text-muted-foreground">Nur Superadmins können diese Verbindung ändern.</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface Ms365Config {
+  enabled?: boolean;
+  tenant_id?: string;
+  use_availability?: boolean;
+  use_invites?: boolean;
+}
+
+interface Ms365Status {
+  configured: boolean;
+  missing: string[];
+  clientPreview: string | null;
+  tenantId: string | null;
+  activeConnections: number;
+  myConnection: { email?: string; tenant_id?: string; connected_at?: string; last_sync_at?: string; active?: boolean; scopes?: string[] } | null;
+}
+
+function Microsoft365IntegrationCard() {
+  const { isSuperadmin } = useAuth();
+  const [expanded, setExpanded] = useState(false);
+  const [status, setStatus] = useState<Ms365Status | null>(null);
+  const [checking, setChecking] = useState(true);
+  const [cfg, setCfg] = useState<Ms365Config>({ enabled: false, tenant_id: '', use_availability: true, use_invites: false });
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+
+  const checkStatus = useCallback(async () => {
+    setChecking(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ms365-integration', { body: { action: 'status' } });
+      if (error) throw error;
+      setStatus(data as Ms365Status);
+    } catch {
+      setStatus({ configured: false, missing: ['MS_GRAPH_CLIENT_ID', 'MS_GRAPH_CLIENT_SECRET'], clientPreview: null, tenantId: null, activeConnections: 0, myConnection: null });
+    }
+    setChecking(false);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from('app_settings').select('value').eq('key', 'ms365_config').maybeSingle();
+      const v = (data?.value as Ms365Config | null) ?? {};
+      setCfg({
+        enabled: v.enabled === true,
+        tenant_id: v.tenant_id || '',
+        use_availability: v.use_availability !== false,
+        use_invites: v.use_invites === true,
+      });
+    })();
+    checkStatus();
+  }, [checkStatus]);
+
+  const save = async () => {
+    if (!isSuperadmin) return;
+    setSaving(true);
+    const { error } = await supabase.from('app_settings').upsert(
+      [{ key: 'ms365_config', value: cfg as unknown as never, updated_at: new Date().toISOString() }],
+      { onConflict: 'key' },
+    );
+    setSaving(false);
+    if (error) sonnerToast.error('Konnte Microsoft 365-Einstellungen nicht speichern');
+    else sonnerToast.success('Microsoft 365-Einstellungen gespeichert');
+  };
+
+  const testConnection = async () => {
+    setTesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ms365-integration', {
+        body: { action: 'test', tenantId: cfg.tenant_id || undefined },
+      });
+      const res = data as { ok?: boolean; error?: string };
+      if (error || !res?.ok) throw new Error(res?.error || error?.message || 'Fehler');
+      sonnerToast.success('Verbindung erfolgreich – Microsoft hat ein Zugriffs-Token ausgestellt.');
+    } catch (e) {
+      sonnerToast.error(`Test fehlgeschlagen: ${(e as Error).message}`);
+    }
+    setTesting(false);
+  };
+
+  const configured = status?.configured === true;
+
+  return (
+    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-accent p-2"><CalendarDays className="h-4 w-4 text-accent-foreground" /></div>
+          <div>
+            <h3 className="font-semibold text-sm">Microsoft 365</h3>
+            <p className="text-xs text-muted-foreground">Kalender-Verfügbarkeiten (Outlook) für Termine – ohne Termininhalte</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {cfg.enabled && configured && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
+          {checking && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          {!checking && configured && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
+          {!checking && !configured && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="border-t px-5 py-5 space-y-4">
+          <div className="rounded-lg bg-secondary/50 p-4">
+            <h4 className="text-sm font-medium mb-2">Einsatzbereiche:</h4>
+            <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+              <li><strong>Verfügbarkeiten:</strong> freie Zeiten der Mitarbeitenden bei BG1/BG2 und Vertragsunterzeichnung</li>
+              <li><strong>Datenschutz:</strong> nur frei/belegt – keine Betreffe, Teilnehmenden oder Inhalte</li>
+              <li><strong>Anmeldung:</strong> Mitarbeitende verbinden ihren Kalender über die Anmeldung mit Microsoft im SSM Portal</li>
+            </ul>
+          </div>
+
+          {!configured && (
+            <div className="rounded-lg bg-secondary/50 p-4">
+              <h4 className="text-sm font-medium mb-2">Verbindung einrichten:</h4>
+              <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
+                <li>App-Registrierung im <a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" rel="noreferrer" className="text-primary underline">Microsoft Entra Admin Center</a> anlegen</li>
+                <li>Berechtigungen <code className="bg-secondary px-1 rounded">Calendars.ReadBasic</code>, <code className="bg-secondary px-1 rounded">User.Read</code>, <code className="bg-secondary px-1 rounded">offline_access</code> freigeben</li>
+                <li>Unter «Zertifikate &amp; Geheimnisse» ein Client-Secret erzeugen</li>
+                <li>Werte hinterlegen: <code className="bg-secondary px-1 rounded">MS_GRAPH_CLIENT_ID</code>, <code className="bg-secondary px-1 rounded">MS_GRAPH_CLIENT_SECRET</code>, optional <code className="bg-secondary px-1 rounded">MS_GRAPH_TENANT_ID</code></li>
+                <li>Danach hier auf «Status prüfen» klicken</li>
+              </ol>
+              {status?.missing?.length ? (
+                <p className="text-xs text-amber-700 mt-3 font-medium">Fehlt noch: {status.missing.join(', ')}</p>
+              ) : null}
+            </div>
+          )}
+
+          {configured && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="text-sm font-medium">Client-ID</label>
+                <code className="mt-1 block rounded-lg bg-secondary px-3 py-2 text-xs font-mono break-all">{status?.clientPreview}</code>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Verbundene Kalender</label>
+                <code className="mt-1 block rounded-lg bg-secondary px-3 py-2 text-xs font-mono">{status?.activeConnections ?? 0} Mitarbeitende</code>
+              </div>
+            </div>
+          )}
+
+          {status?.myConnection?.email && (
+            <p className="text-xs text-muted-foreground">
+              Dein Kalender: <strong>{status.myConnection.email}</strong>
+              {status.myConnection.last_sync_at ? ` – letzter Abgleich ${new Date(status.myConnection.last_sync_at).toLocaleString('de-CH')}` : ''}
+            </p>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+              <span className="text-sm font-medium">Aktiv nutzen</span>
+              <Switch checked={cfg.enabled === true} disabled={!isSuperadmin || !configured}
+                onCheckedChange={(v) => setCfg(c => ({ ...c, enabled: v }))} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Tenant-ID (optional)</label>
+              <input value={cfg.tenant_id ?? ''} disabled={!isSuperadmin} placeholder={status?.tenantId || 'common'}
+                onChange={(e) => setCfg(c => ({ ...c, tenant_id: e.target.value }))}
+                className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+              <span className="text-sm font-medium">Verfügbarkeiten abfragen</span>
+              <Switch checked={cfg.use_availability !== false} disabled={!isSuperadmin || !configured}
+                onCheckedChange={(v) => setCfg(c => ({ ...c, use_availability: v }))} />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+              <span className="text-sm font-medium">Termineinladungen senden</span>
+              <Switch checked={cfg.use_invites === true} disabled={!isSuperadmin || !configured}
+                onCheckedChange={(v) => setCfg(c => ({ ...c, use_invites: v }))} />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button onClick={save} disabled={!isSuperadmin || saving}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Speichern
+            </button>
+            <button onClick={checkStatus} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors">
+              <RefreshCw className="h-4 w-4" /> Status prüfen
+            </button>
+            <button onClick={testConnection} disabled={!configured || testing}
+              className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-50 transition-colors">
+              {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />} Verbindung testen
+            </button>
+          </div>
+
           {!isSuperadmin && <p className="text-xs text-muted-foreground">Nur Superadmins können diese Verbindung ändern.</p>}
         </div>
       )}
