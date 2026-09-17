@@ -2439,6 +2439,180 @@ function LiveKitIntegrationCard() {
   );
 }
 
+interface AbacusConfig {
+  enabled?: boolean;
+  mandant?: string;
+  sync_hired?: boolean;
+}
+
+interface AbacusStatus {
+  configured: boolean;
+  baseUrl: string | null;
+  mandant: string | null;
+  missing: string[];
+  clientPreview: string | null;
+}
+
+function AbacusIntegrationCard() {
+  const { isSuperadmin } = useAuth();
+  const [expanded, setExpanded] = useState(false);
+  const [status, setStatus] = useState<AbacusStatus | null>(null);
+  const [checking, setChecking] = useState(true);
+  const [cfg, setCfg] = useState<AbacusConfig>({ enabled: false, mandant: '', sync_hired: false });
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+
+  const checkStatus = useCallback(async () => {
+    setChecking(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('abacus-api', { body: { action: 'status' } });
+      if (error) throw error;
+      setStatus(data as AbacusStatus);
+    } catch {
+      setStatus({ configured: false, baseUrl: null, mandant: null, missing: ['ABACUS_BASE_URL', 'ABACUS_CLIENT_ID', 'ABACUS_CLIENT_SECRET'], clientPreview: null });
+    }
+    setChecking(false);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from('app_settings').select('value').eq('key', 'abacus_config').maybeSingle();
+      const v = (data?.value as AbacusConfig | null) ?? {};
+      setCfg({ enabled: v.enabled === true, mandant: v.mandant || '', sync_hired: v.sync_hired === true });
+    })();
+    checkStatus();
+  }, [checkStatus]);
+
+  const save = async () => {
+    if (!isSuperadmin) return;
+    setSaving(true);
+    const { error } = await supabase.from('app_settings').upsert(
+      [{ key: 'abacus_config', value: cfg as unknown as never, updated_at: new Date().toISOString() }],
+      { onConflict: 'key' },
+    );
+    setSaving(false);
+    if (error) sonnerToast.error('Konnte Abacus-Einstellungen nicht speichern');
+    else sonnerToast.success('Abacus-Einstellungen gespeichert');
+  };
+
+  const testConnection = async () => {
+    setTesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('abacus-api', {
+        body: { action: 'test', mandant: cfg.mandant || undefined },
+      });
+      if (error || (data as { error?: string })?.error) throw new Error((data as { error?: string })?.error || 'Fehler');
+      const probe = (data as { probe?: { ok: boolean; status: number } | null })?.probe;
+      if (probe && !probe.ok) {
+        sonnerToast.warning(`Anmeldung erfolgreich, Datenabfrage antwortete mit Status ${probe.status}. Bitte Mandant/Berechtigungen prüfen.`);
+      } else {
+        sonnerToast.success('Verbindung zu Abacus erfolgreich.');
+      }
+    } catch (e) {
+      sonnerToast.error(`Test fehlgeschlagen: ${(e as Error).message}`);
+    }
+    setTesting(false);
+  };
+
+  const configured = status?.configured === true;
+
+  return (
+    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-accent p-2"><Building2 className="h-4 w-4 text-accent-foreground" /></div>
+          <div>
+            <h3 className="font-semibold text-sm">Abacus</h3>
+            <p className="text-xs text-muted-foreground">ERP / Lohn & Personal – Kandidaten und Vertragsdaten übergeben</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {cfg.enabled && configured && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
+          {checking && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          {!checking && configured && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
+          {!checking && !configured && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="border-t px-5 py-5 space-y-4">
+          <div className="rounded-lg bg-secondary/50 p-4">
+            <h4 className="text-sm font-medium mb-2">Einsatzbereiche:</h4>
+            <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+              <li><strong>Eingestellte Kandidaten:</strong> automatisch als Adresse/Mitarbeitende in Abacus anlegen</li>
+              <li><strong>Vertragsdaten:</strong> Position, Eintrittsdatum und Lohnangaben übergeben</li>
+              <li><strong>Dokumente:</strong> Vertrag & Personaldossier an Abacus weiterreichen</li>
+            </ul>
+          </div>
+
+          {!configured && (
+            <div className="rounded-lg bg-secondary/50 p-4">
+              <h4 className="text-sm font-medium mb-2">Verbindung einrichten:</h4>
+              <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
+                <li>In Abacus einen <strong>Service-User</strong> anlegen (Benutzerverwaltung, Programm Q981/Q910) und Client-ID + Client-Secret erzeugen</li>
+                <li>Sicherstellen, dass die Abacus-Installation von aussen erreichbar ist (sonst VPN/Freischaltung nötig)</li>
+                <li>Folgende Zugangsdaten hinterlegen: <code className="bg-secondary px-1 rounded">ABACUS_BASE_URL</code> (z. B. https://abacus.firma.ch), <code className="bg-secondary px-1 rounded">ABACUS_CLIENT_ID</code>, <code className="bg-secondary px-1 rounded">ABACUS_CLIENT_SECRET</code>, optional <code className="bg-secondary px-1 rounded">ABACUS_MANDANT</code></li>
+                <li>Danach hier «Status prüfen» und «Verbindung testen» klicken</li>
+              </ol>
+              {status?.missing?.length ? (
+                <p className="text-xs text-amber-700 mt-3 font-medium">Fehlt noch: {status.missing.join(', ')}</p>
+              ) : null}
+            </div>
+          )}
+
+          {configured && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="text-sm font-medium">Server-URL</label>
+                <code className="mt-1 block rounded-lg bg-secondary px-3 py-2 text-xs font-mono break-all">{status?.baseUrl}</code>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Client-ID</label>
+                <code className="mt-1 block rounded-lg bg-secondary px-3 py-2 text-xs font-mono">{status?.clientPreview}</code>
+              </div>
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+              <span className="text-sm font-medium">Aktiv nutzen</span>
+              <Switch checked={cfg.enabled === true} disabled={!isSuperadmin || !configured}
+                onCheckedChange={(v) => setCfg(c => ({ ...c, enabled: v }))} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Mandant (Nummer)</label>
+              <input value={cfg.mandant ?? ''} disabled={!isSuperadmin} placeholder={status?.mandant ?? 'z. B. 1'}
+                onChange={(e) => setCfg(c => ({ ...c, mandant: e.target.value }))}
+                className="mt-1 h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+              <span className="text-sm font-medium">Eingestellte übergeben</span>
+              <Switch checked={cfg.sync_hired === true} disabled={!isSuperadmin || !configured}
+                onCheckedChange={(v) => setCfg(c => ({ ...c, sync_hired: v }))} />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button onClick={save} disabled={!isSuperadmin || saving}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Speichern
+            </button>
+            <button onClick={checkStatus} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors">
+              <RefreshCw className="h-4 w-4" /> Status prüfen
+            </button>
+            <button onClick={testConnection} disabled={!configured || testing}
+              className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-50 transition-colors">
+              {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />} Verbindung testen
+            </button>
+          </div>
+
+          {!isSuperadmin && <p className="text-xs text-muted-foreground">Nur Superadmins können diese Verbindung ändern.</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MapboxIntegrationCard({ toast }: { toast: any }) {
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState<'loading' | 'connected' | 'disconnected'>('loading');
