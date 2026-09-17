@@ -423,13 +423,8 @@ export default function LeadDetailSheet() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0 mr-8">
-                  <LeadStatusBadge status={selectedLead.status} />
-                  {selectedLead.controllingQueryOpen && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-0.5 text-xs font-bold text-destructive">
-                      <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
-                      Controlling-Rückfrage
-                    </span>
-                  )}
+                  <LeadStatusBadge status={selectedLead.status} queryOpen={selectedLead.controllingQueryOpen} />
+
                   <SourceBadge source={selectedLead.source} />
                     <span className="hidden xl:inline-flex items-center gap-1 rounded-md bg-muted px-2.5 py-1 text-xs text-muted-foreground">
                      <MapPin className="h-3.5 w-3.5" /> {selectedLead.plz} {selectedLead.city}
