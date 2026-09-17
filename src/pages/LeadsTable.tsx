@@ -981,38 +981,65 @@ export default function LeadsTable() {
                 const cfg = statusConfig[status];
                 const th = KANBAN_THEME[status];
                 return (
-                  <div key={status} className={cn('w-64 shrink-0 self-start overflow-hidden rounded-xl border bg-card shadow-sm', th.card)}>
-                    <div className={cn('h-1 w-full', th.accent)} />
-                    <div className={cn('flex items-center justify-between px-3 py-2', th.head)}>
+                  <div key={status} className="w-64 shrink-0 self-start overflow-hidden rounded-xl border bg-card shadow-sm">
+                    <div className="flex items-center justify-between border-b px-3 py-2">
                       <span className={cn('truncate text-xs font-semibold', th.text)}>{cfg.label}</span>
-                      <span className={cn('flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white', th.accent)}>{col.length}</span>
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-[10px] font-bold text-muted-foreground">{col.length}</span>
                     </div>
                     <div className="max-h-[60vh] space-y-2 overflow-y-auto p-2">
                       {col.length === 0 && (
                         <p className="px-2 py-3 text-center text-[11px] text-muted-foreground">Keine Leads</p>
                       )}
-                      {col.map(lead => (
-                        <button
-                          key={lead.id}
-                          onClick={() => markLeadViewed(lead)}
-                          className={cn('relative w-full overflow-hidden rounded-lg border bg-background p-2.5 pl-3 text-left transition-colors hover:bg-secondary', th.card)}
-                        >
-                          <span className={cn('absolute inset-y-0 left-0 w-1', th.accent)} />
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="truncate text-xs font-medium">{lead.name}</span>
-                            {lead.controllingQueryOpen && (
-                              <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" title="Controlling-Rückfrage offen" />
+                      {col.map(lead => {
+                        const isSelected = selectedIds.includes(lead.id);
+                        const emp = employees.find(e => e.id === lead.employeeId);
+                        const agency = agencies.find(a => a.id === lead.agencyId);
+                        return (
+                          <div
+                            key={lead.id}
+                            onClick={() => markLeadViewed(lead)}
+                            className={cn(
+                              'group relative w-full cursor-pointer rounded-lg border bg-background p-2.5 text-left transition-colors hover:bg-secondary/60',
+                              isSelected && 'border-primary bg-primary/5'
                             )}
+                          >
+                            <div
+                              className={cn(
+                                'absolute right-2 top-2 z-10 transition-opacity',
+                                isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                              )}
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={() => toggleSelect(lead.id)}
+                                aria-label={`${lead.name} auswählen`}
+                                className="bg-background"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2 pr-6">
+                              <span className="truncate text-xs font-medium">{lead.name}</span>
+                              {lead.controllingQueryOpen && (
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" title="Controlling-Rückfrage offen" />
+                              )}
+                            </div>
+                            {(lead.city || lead.plz) && (
+                              <div className="mt-1 truncate text-[11px] text-muted-foreground">{lead.plz} {lead.city}</div>
+                            )}
+                            <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                              <span className="truncate">{emp?.name || '–'}</span>
+                              <span className="shrink-0">{new Date(lead.createdAt).toLocaleDateString('de-CH')}</span>
+                            </div>
+                            <div className="mt-2 hidden space-y-1 border-t pt-2 text-[10px] text-muted-foreground group-hover:block">
+                              {lead.position && <div className="truncate"><span className="font-medium text-foreground">Position:</span> {lead.position}</div>}
+                              {lead.phone && <div className="truncate"><span className="font-medium text-foreground">Tel:</span> {lead.phone}</div>}
+                              {lead.email && <div className="truncate"><span className="font-medium text-foreground">E-Mail:</span> {lead.email}</div>}
+                              {agency && <div className="truncate"><span className="font-medium text-foreground">Agentur:</span> {agency.name}</div>}
+                              {lead.source && <div className="truncate"><span className="font-medium text-foreground">Quelle:</span> {lead.source}</div>}
+                            </div>
                           </div>
-                          {(lead.city || lead.plz) && (
-                            <div className="mt-1 truncate text-[11px] text-muted-foreground">{lead.plz} {lead.city}</div>
-                          )}
-                          <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
-                            <span className="truncate">{employees.find(e => e.id === lead.employeeId)?.name || '–'}</span>
-                            <span className="shrink-0">{new Date(lead.createdAt).toLocaleDateString('de-CH')}</span>
-                          </div>
-                        </button>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 );
