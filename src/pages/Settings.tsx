@@ -19,6 +19,8 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { type NotificationMethod } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { ChevronRight } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast as sonnerToast } from 'sonner';
 import { ZAPIER_EVENTS, loadZapierConfig, clearZapierCache, sendToZapier, type ZapierConfig, type ZapierEvent } from '@/lib/zapier';
