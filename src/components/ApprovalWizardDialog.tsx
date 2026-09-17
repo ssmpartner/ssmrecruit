@@ -270,19 +270,35 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
       });
 
       // Update lead – on controlling reject, lock lead for employee (read-only via lifecycle)
-      const updateData: Record<string, any> = { status: newStatus };
+      const dbUpdate: Record<string, any> = { status: newStatus, controlling_query_open: false, updated_at: new Date().toISOString() };
       if (wizardType === 'controlling' && action === 'reject') {
-        updateData.lead_lifecycle = 'closed';
+        dbUpdate.lead_lifecycle = 'closed';
       }
       if (wizardType === 'controlling' && action === 'approve' && directToHr) {
-        updateData.controlling_direct_to_hr = false;
+        dbUpdate.controlling_direct_to_hr = false;
       }
 
-      // Offene Rückfrage schliessen, sobald ein Entscheid gefällt wurde
-      await supabase.from('leads').update({ controlling_query_open: false }).eq('id', leadId);
+      // Statuswechsel serverseitig schreiben und Ergebnis prüfen – sonst bleibt der
+      // Kandidat in der Prüfqueue hängen, obwohl der Entscheid gespeichert wurde.
+      const { data: saved, error: saveError } = await supabase
+        .from('leads')
+        .update(dbUpdate as never)
+        .eq('id', leadId)
+        .select('id, status');
 
-      updateLead(leadId, updateData);
+      if (saveError || !saved || saved.length === 0) {
+        toast({
+          title: 'Status konnte nicht gespeichert werden',
+          description: saveError?.message || 'Die Änderung wurde vom Server abgelehnt (fehlende Berechtigung). Bitte Superadmin informieren.',
+          variant: 'destructive',
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      updateLead(leadId, { status: newStatus });
       addActivity(leadId, 'status_change', description);
+
 
       if (feedback.trim()) {
         addActivity(leadId, 'note', `${config.label} Feedback: ${feedback.trim()}`);
