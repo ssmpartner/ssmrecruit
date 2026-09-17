@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText } from 'lucide-react';
+import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText, LayoutList, KanbanSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadLifecycle, statusConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
@@ -123,6 +123,7 @@ export default function LeadsTable() {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(20);
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
 
   const markLeadViewed = useCallback((lead: Parameters<typeof setSelectedLead>[0]) => {
     if (lead && !isSuperadmin && !lead.isRead) {
@@ -431,7 +432,7 @@ export default function LeadsTable() {
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex gap-1 rounded-xl border bg-card p-1 shadow-sm">
+      <div className="flex items-center gap-1 rounded-xl border bg-card p-1 shadow-sm">
         {tabs.filter(tab => (!tab.superadminOnly || isSuperadmin) && (!tab.hideForReview || !isReviewRole)).map(tab => (
           <button
             key={tab.key}
@@ -452,6 +453,28 @@ export default function LeadsTable() {
             )}
           </button>
         ))}
+        <div className="ml-auto flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
+          <button
+            onClick={() => setViewMode('list')}
+            title="Listenansicht"
+            className={cn(
+              'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
+              viewMode === 'list' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <LayoutList className="h-3.5 w-3.5" /> Liste
+          </button>
+          <button
+            onClick={() => setViewMode('kanban')}
+            title="Kanban-Ansicht"
+            className={cn(
+              'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
+              viewMode === 'kanban' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <KanbanSquare className="h-3.5 w-3.5" /> Kanban
+          </button>
+        </div>
       </div>
 
       {/* Duplicates Tab */}
@@ -528,6 +551,7 @@ export default function LeadsTable() {
             )}
           </div>
 
+          {viewMode === 'list' && (
           <div className="rounded-xl border bg-card shadow-sm overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -868,6 +892,50 @@ export default function LeadsTable() {
               )}
             </div>
           </div>
+          )}
+
+          {viewMode === 'kanban' && (
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {(Object.keys(statusConfig) as LeadStatus[]).map(status => {
+                const col = filtered.filter(l => l.status === status);
+                const cfg = statusConfig[status];
+                return (
+                  <div key={status} className="w-64 shrink-0 self-start rounded-xl border bg-card shadow-sm">
+                    <div className="flex items-center justify-between border-b px-3 py-2">
+                      <span className="truncate text-xs font-semibold">{cfg.label}</span>
+                      <Badge variant="outline" className="h-5 px-1.5 text-[10px]">{col.length}</Badge>
+                    </div>
+                    <div className="max-h-[60vh] space-y-2 overflow-y-auto p-2">
+                      {col.length === 0 && (
+                        <p className="px-2 py-3 text-center text-[11px] text-muted-foreground">Keine Leads</p>
+                      )}
+                      {col.map(lead => (
+                        <button
+                          key={lead.id}
+                          onClick={() => markLeadViewed(lead)}
+                          className="w-full rounded-lg border bg-background p-2.5 text-left transition-colors hover:bg-secondary"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate text-xs font-medium">{lead.name}</span>
+                            {lead.controllingQueryOpen && (
+                              <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" title="Controlling-Rückfrage offen" />
+                            )}
+                          </div>
+                          {(lead.city || lead.plz) && (
+                            <div className="mt-1 truncate text-[11px] text-muted-foreground">{lead.plz} {lead.city}</div>
+                          )}
+                          <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                            <span className="truncate">{employees.find(e => e.id === lead.employeeId)?.name || '–'}</span>
+                            <span className="shrink-0">{new Date(lead.createdAt).toLocaleDateString('de-CH')}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </>
       )}
 
