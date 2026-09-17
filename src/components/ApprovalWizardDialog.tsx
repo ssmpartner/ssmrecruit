@@ -282,7 +282,7 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
       // Kandidat in der Prüfqueue hängen, obwohl der Entscheid gespeichert wurde.
       const { data: saved, error: saveError } = await supabase
         .from('leads')
-        .update(dbUpdate)
+        .update(dbUpdate as never)
         .eq('id', leadId)
         .select('id, status');
 
