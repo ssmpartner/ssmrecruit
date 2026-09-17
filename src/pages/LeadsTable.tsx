@@ -137,6 +137,18 @@ export default function LeadsTable() {
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'controlling_query' | ''>('');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Filter per URL übernehmen (z.B. Rückfragen-Kachel im Dashboard)
+  useEffect(() => {
+    const f = searchParams.get('filter');
+    if (f === 'controlling_query') {
+      setStatusFilter('controlling_query');
+      searchParams.delete('filter');
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [sourceFilter, setSourceFilter] = useState('');
   const [agencyFilter, setAgencyFilter] = useState('');
   const [cantonFilter, setCantonFilter] = useState('');
