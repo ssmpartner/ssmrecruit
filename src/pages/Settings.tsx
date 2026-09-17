@@ -2173,7 +2173,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
       <div className="mt-6">
         <h2 className="text-lg font-semibold flex items-center gap-2 mb-1"><MapPin className="h-5 w-5" /> Dienst-Integrationen</h2>
         <p className="text-sm text-muted-foreground mb-4">Externe Dienste für Karten, Geocoding, Video und mehr.</p>
-        <div className="space-y-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <MapboxIntegrationCard toast={toast} />
           <Microsoft365IntegrationCard />
           <LiveKitIntegrationCard />
