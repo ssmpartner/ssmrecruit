@@ -4297,6 +4297,7 @@ export type Database = {
           agency_id: string
           assigned_to: string
           created_at: string
+          created_by: string | null
           description: string
           due_date: string | null
           id: string
@@ -4312,6 +4313,7 @@ export type Database = {
           agency_id: string
           assigned_to: string
           created_at?: string
+          created_by?: string | null
           description?: string
           due_date?: string | null
           id?: string
@@ -4327,6 +4329,7 @@ export type Database = {
           agency_id?: string
           assigned_to?: string
           created_at?: string
+          created_by?: string | null
           description?: string
           due_date?: string | null
           id?: string

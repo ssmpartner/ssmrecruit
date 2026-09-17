@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 import { assignableEmployees } from '@/lib/assignable-employees';
+import AddTaskDialog from '@/components/AddTaskDialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type Task = Tables<'tasks'>;
 type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -40,6 +42,7 @@ export default function Tasks() {
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [tab, setTab] = useState<'mine' | 'ai'>('mine');
 
   // Match logged-in user to an employee by email
   const currentEmployee = useMemo(() => {
@@ -164,9 +167,34 @@ export default function Tasks() {
     toast.success('Aufgabe neu zugewiesen');
   }, []);
 
+  // KI-Vorschlag übernehmen bzw. verwerfen
+  const acceptSuggestion = useCallback(async (taskId: string) => {
+    const { error } = await supabase.from('tasks').update({ source: 'manual' }).eq('id', taskId);
+    if (error) { toast.error('Fehler beim Übernehmen'); return; }
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, source: 'manual' } : t));
+    toast.success('Vorschlag zu «Meine Aufgaben» übernommen');
+  }, []);
+
+  const discardSuggestion = useCallback(async (taskId: string) => {
+    const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+    if (error) { toast.error('Fehler beim Verwerfen'); return; }
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+    toast.success('Vorschlag verworfen');
+  }, []);
+
+  // Zuweisbare Personen: eigene Agentur (Superadmin: alle)
+  const assignableForMe = useMemo(() => {
+    const list = assignableEmployees(employees);
+    if (isSuperadmin) return list;
+    if (!currentEmployee) return [];
+    return list.filter(e => e.agencyId === currentEmployee.agencyId);
+  }, [employees, isSuperadmin, currentEmployee]);
+
+  const aiCount = useMemo(() => tasks.filter(t => t.source === 'ai' && (isSuperadmin || t.assigned_to === currentEmployee?.id)).length, [tasks, isSuperadmin, currentEmployee]);
+
   // Filter tasks: Superadmins see all, others see only their own assigned tasks
   const visibleTasks = useMemo(() => {
-    let result = tasks;
+    let result = tasks.filter(t => tab === 'ai' ? t.source === 'ai' : t.source !== 'ai');
     // Non-superadmin: only show tasks assigned to the current employee
     if (!isSuperadmin && currentEmployee) {
       result = result.filter(t => t.assigned_to === currentEmployee.id);
@@ -183,7 +211,7 @@ export default function Tasks() {
       if ((so[a.status] ?? 2) !== (so[b.status] ?? 2)) return (so[a.status] ?? 2) - (so[b.status] ?? 2);
       return (po[a.priority] ?? 3) - (po[b.priority] ?? 3);
     });
-  }, [tasks, statusFilter, employeeFilter, priorityFilter, isSuperadmin, currentEmployee]);
+  }, [tasks, tab, statusFilter, employeeFilter, priorityFilter, isSuperadmin, currentEmployee]);
 
   const openCount = visibleTasks.filter(t => t.status === 'open').length;
   const inProgressCount = visibleTasks.filter(t => t.status === 'in_progress').length;
@@ -235,13 +263,28 @@ export default function Tasks() {
           </p>
         </div>
         <div className="flex gap-2">
-          {(
+          {tab === 'ai' && (
             <Button onClick={generateAllTasks} variant="outline" className="gap-2" disabled={!!generating}>
-              <Sparkles className="h-4 w-4" /> Tasks generieren
+              <Sparkles className="h-4 w-4" /> Vorschläge generieren
             </Button>
           )}
+          <AddTaskDialog currentEmployee={currentEmployee} onCreated={fetchTasks} />
         </div>
       </div>
+
+      {/* Tabs */}
+      <Tabs value={tab} onValueChange={(v) => setTab(v as 'mine' | 'ai')}>
+        <TabsList>
+          <TabsTrigger value="mine">Meine Aufgaben</TabsTrigger>
+          <TabsTrigger value="ai" className="gap-1.5">
+            KI-Vorschläge
+            {aiCount > 0 && (
+              <span className="rounded-full bg-primary/10 px-1.5 text-[10px] font-semibold text-primary">{aiCount}</span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
 
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
@@ -319,11 +362,15 @@ export default function Tasks() {
       {!loading && visibleTasks.length === 0 && (
         <div className="rounded-2xl border bg-card p-12 text-center shadow-sm">
           <Sparkles className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm font-medium mb-1">Keine Aufgaben vorhanden</p>
-          <p className="text-xs text-muted-foreground mb-4">
-            Klicke auf "Tasks generieren" um Aufgaben für deine Leads zu erstellen
+          <p className="text-sm font-medium mb-1">
+            {tab === 'ai' ? 'Keine KI-Vorschläge vorhanden' : 'Keine Aufgaben vorhanden'}
           </p>
-          {(
+          <p className="text-xs text-muted-foreground mb-4">
+            {tab === 'ai'
+              ? 'Lass Vorschläge generieren oder erstelle eine Aufgabe selbst.'
+              : 'Erstelle mit «Neue Aufgabe» eine Aufgabe für dich oder eine Person in deiner Agentur.'}
+          </p>
+          {tab === 'ai' && (
             <Button onClick={generateAllTasks} className="gap-2" disabled={!!generating}>
               <Sparkles className="h-4 w-4" /> Jetzt generieren
             </Button>
@@ -344,11 +391,11 @@ export default function Tasks() {
             <div className="flex items-center justify-between px-6 py-4 bg-muted/20 border-b">
               <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                  {(lead?.name || '?')[0]}
+                  {(lead?.name || (leadId ? '?' : '–'))[0]}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">{lead?.name || leadId}</span>
+                    <span className="font-semibold text-sm">{lead?.name || (leadId ? leadId : 'Ohne Kandidat')}</span>
                     {leadStatus && (
                       <span className={cn('rounded-full border px-2 py-px text-[10px] font-semibold', leadStatus.color)}>{leadStatus.label}</span>
                     )}
@@ -358,7 +405,7 @@ export default function Tasks() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {allDone && (
+                {allDone && tab === 'ai' && !!leadId && (
                   <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => generateTasksForLead(leadId)} disabled={generating === leadId}>
                     {generating === leadId ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                     Neue Tasks
@@ -421,13 +468,25 @@ export default function Tasks() {
                         )}
                       </div>
 
+                      {/* KI-Vorschlag: übernehmen / verwerfen */}
+                      {tab === 'ai' && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Button size="sm" className="h-7 gap-1.5 text-xs" onClick={() => acceptSuggestion(task.id)}>
+                            <CheckCircle2 className="h-3 w-3" /> Übernehmen
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => discardSuggestion(task.id)}>
+                            <X className="h-3 w-3" /> Verwerfen
+                          </Button>
+                        </div>
+                      )}
+
                       {/* Reassign */}
-                      {task.status !== 'done' && (
+                      {tab === 'mine' && task.status !== 'done' && (
                         <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Select value={task.assigned_to} onValueChange={(v) => reassignTask(task.id, v)}>
                             <SelectTrigger className="h-7 text-xs w-[160px]"><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              {assignableEmployees(employees).map(e => (
+                              {assignableForMe.map(e => (
                                 <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
                               ))}
                             </SelectContent>
