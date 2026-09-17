@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Kanban, Table, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, LogOut, PanelLeftClose, PanelLeft, HelpCircle, Bot, ChevronDown, ChevronRight, Activity, Cog, TrendingUp, BookOpen, FileSearch, MessageSquare, FileSignature } from 'lucide-react';
+import { LayoutDashboard, Users, Kanban, Contact, Building2, UserCog, BarChart3, Settings, CalendarDays, Workflow, Code2, FileText, CheckSquare, LogOut, PanelLeftClose, PanelLeft, HelpCircle, Bot, ChevronDown, ChevronRight, Activity, Cog, TrendingUp, BookOpen, FileSearch, MessageSquare, FileSignature } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSidebarState } from '@/context/SidebarContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -9,7 +9,7 @@ import { useAIVoicePermissions } from '@/hooks/useAIVoicePermissions';
 const allNavItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: null, excludeRoles: [] as string[] },
   { to: '/pipeline', icon: Kanban, label: 'Pipeline', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
-  { to: '/leads', icon: Table, label: 'Leads', roles: null, excludeRoles: [] as string[] },
+  { to: '/leads', icon: Contact, label: 'Leads', roles: null, excludeRoles: [] as string[] },
   { to: '/tasks', icon: CheckSquare, label: 'Aufgaben', roles: null, excludeRoles: ['controlling', 'geschaeftsleitung', 'hr'] as string[] },
   { to: '/calendar', icon: CalendarDays, label: 'Kalender', roles: null, excludeRoles: ['hr'] as string[] },
   { to: '/agencies', icon: Building2, label: 'Agenturen', roles: ['superadmin', 'admin', 'analyst'] as string[], excludeRoles: [] as string[] },

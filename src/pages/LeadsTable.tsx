@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Download, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText, LayoutList, KanbanSquare, Settings2 } from 'lucide-react';
+import { Download, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText, LayoutList, KanbanSquare, Settings2, Contact } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadLifecycle, statusConfig, sourceConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
@@ -453,7 +453,8 @@ export default function LeadsTable() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex items-center gap-3">
+          <Contact className="h-8 w-8 text-primary" strokeWidth={2} />
           <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
         </div>
         <div className="flex gap-2">
