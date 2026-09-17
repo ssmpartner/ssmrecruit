@@ -119,4 +119,11 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.25; }
   }
+  .kpi-alert-dot {
+    animation: kpi-alert-dot 1.6s ease-in-out infinite;
+  }
+  @keyframes kpi-alert-dot {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 hsl(var(--destructive) / 0.5); }
+    50% { transform: scale(0.8); box-shadow: 0 0 0 6px hsl(var(--destructive) / 0); }
+  }
 }
