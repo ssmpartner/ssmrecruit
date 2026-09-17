@@ -21,6 +21,7 @@ import { type NotificationMethod } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast as sonnerToast } from 'sonner';
+import { ZAPIER_EVENTS, loadZapierConfig, clearZapierCache, sendToZapier, type ZapierConfig, type ZapierEvent } from '@/lib/zapier';
 
 type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleiter' | 'controlling' | 'geschaeftsleitung' | 'hr' | 'agency_manager';
 
