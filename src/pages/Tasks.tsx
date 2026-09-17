@@ -460,8 +460,20 @@ export default function Tasks() {
                         )}
                       </div>
 
+                      {/* KI-Vorschlag: übernehmen / verwerfen */}
+                      {tab === 'ai' && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Button size="sm" className="h-7 gap-1.5 text-xs" onClick={() => acceptSuggestion(task.id)}>
+                            <CheckCircle2 className="h-3 w-3" /> Übernehmen
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => discardSuggestion(task.id)}>
+                            <X className="h-3 w-3" /> Verwerfen
+                          </Button>
+                        </div>
+                      )}
+
                       {/* Reassign */}
-                      {task.status !== 'done' && (
+                      {tab === 'mine' && task.status !== 'done' && (
                         <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Select value={task.assigned_to} onValueChange={(v) => reassignTask(task.id, v)}>
                             <SelectTrigger className="h-7 text-xs w-[160px]"><SelectValue /></SelectTrigger>
