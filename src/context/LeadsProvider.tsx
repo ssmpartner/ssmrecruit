@@ -53,6 +53,10 @@ function dbToLead(row: any): Lead {
     altPhone: row.alt_phone || '',
     birthDate: row.birth_date || '',
     isDemo: row.is_demo ?? false,
+    controllingQueryOpen: row.controlling_query_open ?? false,
+    controllingQueryText: row.controlling_query_text || '',
+    controllingQueryBy: row.controlling_query_by || '',
+    controllingQueryAt: row.controlling_query_at || '',
   };
 
 }

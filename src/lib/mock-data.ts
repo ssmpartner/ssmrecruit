@@ -68,6 +68,10 @@ export interface Lead {
   altPhone?: string;
   birthDate?: string;
   isDemo?: boolean;
+  controllingQueryOpen?: boolean;
+  controllingQueryText?: string;
+  controllingQueryBy?: string;
+  controllingQueryAt?: string;
 
 }
 
