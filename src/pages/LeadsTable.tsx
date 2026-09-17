@@ -14,7 +14,7 @@ import DuplicateLeads from '@/components/DuplicateLeads';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import BulkActionsBar from '@/components/BulkActionsBar';
 import AddressEnrichment from '@/components/AddressEnrichment';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -301,12 +301,14 @@ export default function LeadsTable() {
     return () => { cancelled = true; };
   }, [showR4Column]);
 
+  const [r4Viewer, setR4Viewer] = useState<{ url: string; name: string } | null>(null);
+
   const viewR4 = useCallback(async (doc: R4Doc) => {
     setR4Busy(doc.id);
     const { data, error } = await supabase.storage.from('lead-documents').createSignedUrl(doc.file_path, 3600);
     setR4Busy(null);
     if (error || !data?.signedUrl) return;
-    window.open(data.signedUrl, '_blank', 'noopener');
+    setR4Viewer({ url: data.signedUrl, name: doc.file_name || 'Insights R4' });
   }, []);
 
   const downloadR4 = useCallback(async (doc: R4Doc) => {
@@ -869,6 +871,23 @@ export default function LeadsTable() {
       )}
 
       <LeadDetailSheet />
+
+      <Dialog open={!!r4Viewer} onOpenChange={open => { if (!open) setR4Viewer(null); }}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+          <DialogHeader className="px-5 py-3 border-b shrink-0">
+            <DialogTitle className="text-sm font-semibold truncate pr-8">
+              {r4Viewer?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {r4Viewer && (
+            <iframe
+              src={r4Viewer.url}
+              title={r4Viewer.name}
+              className="flex-1 w-full bg-background"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
