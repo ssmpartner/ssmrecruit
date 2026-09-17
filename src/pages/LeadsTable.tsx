@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Download, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText, LayoutList, KanbanSquare, Settings2, Contact } from 'lucide-react';
+import { Download, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText, LayoutList, KanbanSquare, Settings2, Contact, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadLifecycle, statusConfig, sourceConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
@@ -327,6 +327,26 @@ export default function LeadsTable() {
     })();
     return () => { cancelled = true; };
   }, [isHR]);
+
+  // Controlling-Freigabe (wer hat freigegeben) – für alle Rollen in der Statusspalte sichtbar
+  const [ctrlApprovers, setCtrlApprovers] = useState<Map<string, string>>(new Map());
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('status_wizard_results')
+        .select('lead_id,completed_by,created_at')
+        .eq('wizard_type', 'controlling_approval')
+        .order('created_at', { ascending: false });
+      if (cancelled) return;
+      const m = new Map<string, string>();
+      for (const row of (data ?? []) as any[]) {
+        if (row.lead_id && row.completed_by && !m.has(row.lead_id)) m.set(row.lead_id, row.completed_by);
+      }
+      setCtrlApprovers(m);
+    })();
+    return () => { cancelled = true; };
+  }, [leads.length]);
 
   // === Insights-R4-Dokument (Controlling & HR): ansehen + herunterladen ===
   type R4Doc = { id: string; file_name: string; file_path: string };
