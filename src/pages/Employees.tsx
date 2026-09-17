@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import AddEmployeeDialog from '@/components/AddEmployeeDialog';
 
 type SyncItem = { email: string; user_id: string; employee_id: string; role: string; agency_id: string };
 type SyncError = { email: string; message: string };
