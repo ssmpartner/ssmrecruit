@@ -224,6 +224,22 @@ export default function AddLeadDialog({ open: controlledOpen, onOpenChange: cont
       lifecycle: 'active',
       birthDate: form.birthDate || undefined,
     });
+    void triggerZapier('lead_created', {
+      lead: {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        plz: form.plz,
+        city: form.city,
+        canton: form.canton,
+        position: form.position.trim(),
+        source: form.source,
+        status: 'new',
+        agency_id: form.agencyId,
+        employee_id: form.employeeId,
+      },
+      triggered_by: profile?.display_name || 'System',
+    });
     // Find the newly created lead ID (latest one)
     setTimeout(() => {
       // The lead was just added, grab it from context on next render
