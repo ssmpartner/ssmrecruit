@@ -2164,8 +2164,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+            </IntegrationTile>
           );
         })}
       </div>
