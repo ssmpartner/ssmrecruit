@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText } from 'lucide-react';
+import { Download, Upload, Filter, MapPin, CalendarIcon, X, Archive, Trash2, Copy, ChevronLeft, ChevronRight, GitMerge, Eye, FileText, LayoutList, KanbanSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { type LeadStatus, type LeadLifecycle, statusConfig } from '@/lib/mock-data';
 import { cantons } from '@/lib/swiss-plz';
@@ -123,6 +123,7 @@ export default function LeadsTable() {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(20);
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
 
   const markLeadViewed = useCallback((lead: Parameters<typeof setSelectedLead>[0]) => {
     if (lead && !isSuperadmin && !lead.isRead) {
