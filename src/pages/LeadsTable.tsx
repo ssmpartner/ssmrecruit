@@ -888,9 +888,19 @@ export default function LeadsTable() {
                       })()}
                       <td className="px-5 py-3"><SourceBadge source={lead.source} /></td>
                       <td className="px-5 py-3">
-                        <span title={lead.controllingQueryOpen ? (lead.controllingQueryText || 'Rückfrage vom Controlling') : undefined}>
-                          <LeadStatusBadge status={lead.status} queryOpen={lead.controllingQueryOpen} />
-                        </span>
+                        <div className="flex flex-col items-start gap-1">
+                          <span title={lead.controllingQueryOpen ? (lead.controllingQueryText || 'Rückfrage vom Controlling') : undefined}>
+                            <LeadStatusBadge status={lead.status} queryOpen={lead.controllingQueryOpen} />
+                          </span>
+                          {!lead.controllingQueryOpen && ctrlApprovers.get(lead.id) && (
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700"
+                              title={`Controlling-Freigabe durch ${ctrlApprovers.get(lead.id)}`}
+                            >
+                              <CheckCircle2 className="h-3 w-3" /> {ctrlApprovers.get(lead.id)}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       <td className="px-5 py-3">
