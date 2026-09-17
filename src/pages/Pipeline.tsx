@@ -87,13 +87,10 @@ export default function Pipeline() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Kanban className="h-8 w-8 text-primary" strokeWidth={2} />
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Pipeline</h1>
-            <p className="text-muted-foreground">Aktive Leads im gesamten Prozess: Neu, Kontaktiert, Terminiert, Follow-Up, Eingestellt.</p>
-          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Pipeline</h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
