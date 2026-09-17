@@ -2001,14 +2001,14 @@ function IntegrationTile({
         type="button"
         disabled={disabled}
         onClick={() => onOpenChange(true)}
-        className="group flex h-full flex-col rounded-2xl border bg-card p-6 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border disabled:hover:shadow-sm">
+        className="group flex h-full flex-col rounded-xl border bg-card p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border disabled:hover:shadow-sm">
         <div className="flex w-full items-start justify-between gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border bg-background p-2">{icon}</div>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-background p-2">{icon}</div>
           <div className="flex flex-wrap items-center justify-end gap-2">{statusSlot}</div>
         </div>
-        <h3 className="mt-4 text-base font-semibold">{name}</h3>
+        <h3 className="mt-3 text-sm font-semibold">{name}</h3>
         <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-        <span className="mt-auto pt-4 inline-flex items-center gap-1 text-xs font-medium text-primary">
+        <span className="mt-auto pt-3 inline-flex items-center gap-1 text-xs font-medium text-primary">
           {disabled ? 'Demnächst verfügbar' : (ctaLabel ?? 'Verbindung einrichten')}
           {!disabled && <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />}
         </span>
@@ -2050,7 +2050,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
       </div>
 
       {/* Integration list */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(270px,1fr))]">
         {integrations.filter((i: any) => i.id !== 'microsoft365').map((integration: any) => {
           const isExpanded = expandedId === integration.id;
           const isComingSoon = integration.id === 'linkedin';
@@ -2168,7 +2168,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
       <div className="mt-6">
         <h2 className="text-lg font-semibold flex items-center gap-2 mb-1"><MapPin className="h-5 w-5" /> Dienst-Integrationen</h2>
         <p className="text-sm text-muted-foreground mb-4">Externe Dienste für Karten, Geocoding, Video und mehr.</p>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(270px,1fr))]">
           <MapboxIntegrationCard toast={toast} />
           <Microsoft365IntegrationCard />
           <LiveKitIntegrationCard />
