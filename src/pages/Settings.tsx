@@ -19,6 +19,8 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { type NotificationMethod } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { ChevronRight } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast as sonnerToast } from 'sonner';
 import { ZAPIER_EVENTS, loadZapierConfig, clearZapierCache, sendToZapier, type ZapierConfig, type ZapierEvent } from '@/lib/zapier';
@@ -1980,6 +1982,54 @@ function WizardPreviewPanel({ toast }: { toast: any }) {
   );
 }
 
+function IntegrationTile({
+  icon, name, description, statusSlot, open, onOpenChange, disabled, ctaLabel, children,
+}: {
+  icon: React.ReactNode;
+  name: string;
+  description: string;
+  statusSlot?: React.ReactNode;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  disabled?: boolean;
+  ctaLabel?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => onOpenChange(true)}
+        className="group flex h-full flex-col rounded-2xl border bg-card p-6 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border disabled:hover:shadow-sm">
+        <div className="flex w-full items-start justify-between gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border bg-background p-2">{icon}</div>
+          <div className="flex flex-wrap items-center justify-end gap-2">{statusSlot}</div>
+        </div>
+        <h3 className="mt-4 text-base font-semibold">{name}</h3>
+        <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+        <span className="mt-auto pt-4 inline-flex items-center gap-1 text-xs font-medium text-primary">
+          {disabled ? 'Demnächst verfügbar' : (ctaLabel ?? 'Verbindung einrichten')}
+          {!disabled && <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />}
+        </span>
+      </button>
+
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background p-1.5">{icon}</span>
+              {name}
+            </SheetTitle>
+            <SheetDescription className="text-left">{description}</SheetDescription>
+          </SheetHeader>
+          <div className="mt-5 space-y-4 pb-10">{children}</div>
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+}
+
 function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegration, saveIntegration, disconnectIntegration, testWebhook, toast }: any) {
   return (
     <>
@@ -2005,31 +2055,28 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
       </div>
 
       {/* Integration list */}
-      <div className="space-y-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {integrations.filter((i: any) => i.id !== 'microsoft365').map((integration: any) => {
           const isExpanded = expandedId === integration.id;
           const isComingSoon = integration.id === 'linkedin';
           const BrandIcon = BRAND_ICONS[integration.id];
           return (
-            <div key={integration.id} className="rounded-xl border bg-card shadow-sm overflow-hidden">
-              <button onClick={() => !isComingSoon && setExpandedId(isExpanded ? null : integration.id)}
-                className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors" disabled={isComingSoon}>
-                <div className="flex items-center gap-3">
-                  {BrandIcon ? <BrandIcon className="h-7 w-7" /> : <span className="text-2xl">{integration.icon}</span>}
-                  <div>
-                    <h3 className="font-semibold text-sm">{integration.name}</h3>
-                    <p className="text-xs text-muted-foreground">{integration.description}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {isComingSoon && <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Demnächst</span>}
-                  {integration.connected && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
-                  {!integration.connected && !isComingSoon && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht verbunden</span>}
-                </div>
-              </button>
-
-              {isExpanded && !isComingSoon && (
-                <div className="border-t px-5 py-5 space-y-5">
+            <IntegrationTile
+              key={integration.id}
+              name={integration.name}
+              description={integration.description}
+              disabled={isComingSoon}
+              open={isExpanded && !isComingSoon}
+              onOpenChange={(v) => setExpandedId(v ? integration.id : null)}
+              ctaLabel={integration.connected ? 'Verbindung verwalten' : 'Verbindung einrichten'}
+              icon={BrandIcon ? <BrandIcon className="h-7 w-7" /> : <span className="text-2xl">{integration.icon}</span>}
+              statusSlot={<>
+                {isComingSoon && <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Demnächst</span>}
+                {integration.connected && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
+                {!integration.connected && !isComingSoon && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht verbunden</span>}
+              </>}
+            >
+                <div className="space-y-5">
                   <div>
                     <label className="text-sm font-medium mb-2 block">Verbindungsmethode</label>
                     <div className="flex gap-2">
@@ -2117,8 +2164,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+            </IntegrationTile>
           );
         })}
       </div>
@@ -2127,7 +2173,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
       <div className="mt-6">
         <h2 className="text-lg font-semibold flex items-center gap-2 mb-1"><MapPin className="h-5 w-5" /> Dienst-Integrationen</h2>
         <p className="text-sm text-muted-foreground mb-4">Externe Dienste für Karten, Geocoding, Video und mehr.</p>
-        <div className="space-y-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <MapboxIntegrationCard toast={toast} />
           <Microsoft365IntegrationCard />
           <LiveKitIntegrationCard />
@@ -2191,25 +2237,21 @@ function ZapierIntegrationCard() {
   };
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-      <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
-        <div className="flex items-center gap-3">
-<div className="rounded-lg border bg-background p-1.5"><img src={zapierLogo} alt="Zapier Logo" className="h-6 w-6" /></div>
-          <div>
-            <h3 className="font-semibold text-sm">Zapier</h3>
-            <p className="text-xs text-muted-foreground">SSM Recruit mit über 6000 Apps verbinden (z. B. Sheets, Slack, CRM)</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {cfg.enabled && configuredCount > 0 && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
-          {configuredCount > 0
-            ? <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> {configuredCount} Zap{configuredCount > 1 ? 's' : ''}</span>
-            : <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
-        </div>
-      </button>
-
-      {expanded && (
-        <div className="border-t px-5 py-5 space-y-4">
+    <IntegrationTile
+      name="Zapier"
+      description="SSM Recruit mit über 6000 Apps verbinden (z. B. Sheets, Slack, CRM)"
+      open={expanded}
+      onOpenChange={setExpanded}
+      ctaLabel={configuredCount > 0 ? 'Verbindung verwalten' : 'Verbindung einrichten'}
+      icon={<img src={zapierLogo} alt="Zapier Logo" className="h-full w-full object-contain" />}
+      statusSlot={<>
+        {cfg.enabled && configuredCount > 0 && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
+        {configuredCount > 0
+          ? <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> {configuredCount} Zap{configuredCount > 1 ? 's' : ''}</span>
+          : <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+      </>}
+    >
+        <div className="space-y-4">
           <div className="rounded-lg bg-secondary/50 p-4">
             <h4 className="text-sm font-medium mb-2">Verbindung einrichten:</h4>
             <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
@@ -2260,8 +2302,7 @@ function ZapierIntegrationCard() {
           <p className="text-xs text-muted-foreground">Hinweis: Zapier bestätigt den Empfang nicht direkt – prüfe den Zap-Verlauf in Zapier.</p>
           {!isSuperadmin && <p className="text-xs text-muted-foreground">Nur Superadmins können diese Verbindung ändern.</p>}
         </div>
-      )}
-    </div>
+    </IntegrationTile>
   );
 }
 
@@ -2346,25 +2387,23 @@ function Microsoft365IntegrationCard() {
   const configured = status?.configured === true;
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-      <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
-        <div className="flex items-center gap-3">
-<div className="rounded-lg border bg-background p-1.5"><img src={ms365Logo} alt="Microsoft 365 Logo" className="h-6 w-6" /></div>
-          <div>
-            <h3 className="font-semibold text-sm">Microsoft 365</h3>
-            <p className="text-xs text-muted-foreground">Kalender-Verfügbarkeiten (Outlook) für Termine – ohne Termininhalte</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {cfg.enabled && configured && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
-          {checking && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-          {!checking && configured && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
-          {!checking && !configured && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
-        </div>
-      </button>
+    <IntegrationTile
+      name="Microsoft 365"
+      description="Kalender-Verfügbarkeiten (Outlook) für Termine – ohne Termininhalte"
+      open={expanded}
+      onOpenChange={setExpanded}
+      ctaLabel={configured ? 'Verbindung verwalten' : 'Verbindung einrichten'}
+      icon={<img src={ms365Logo} alt="Microsoft 365 Logo" className="h-full w-full object-contain" />}
+      statusSlot={<>
+        {cfg.enabled && configured && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
+        {checking && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        {!checking && configured && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
+        {!checking && !configured && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+      </>}
+    >
 
-      {expanded && (
-        <div className="border-t px-5 py-5 space-y-4">
+
+        <div className="space-y-4">
           <div className="rounded-lg bg-secondary/50 p-4">
             <h4 className="text-sm font-medium mb-2">Einsatzbereiche:</h4>
             <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
@@ -2450,8 +2489,7 @@ function Microsoft365IntegrationCard() {
 
           {!isSuperadmin && <p className="text-xs text-muted-foreground">Nur Superadmins können diese Verbindung ändern.</p>}
         </div>
-      )}
-    </div>
+    </IntegrationTile>
   );
 }
 
@@ -2537,25 +2575,21 @@ function LiveKitIntegrationCard() {
   const configured = status?.configured === true;
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-      <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
-        <div className="flex items-center gap-3">
-<div className="rounded-lg border bg-background p-1.5"><img src={livekitLogo} alt="LiveKit Logo" className="h-6 w-6" /></div>
-          <div>
-            <h3 className="font-semibold text-sm">LiveKit</h3>
-            <p className="text-xs text-muted-foreground">Video- & Audio-Räume in Echtzeit (Interviews, AI Voice Agent)</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {cfg.enabled && configured && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
-          {checking && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-          {!checking && configured && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
-          {!checking && !configured && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
-        </div>
-      </button>
-
-      {expanded && (
-        <div className="border-t px-5 py-5 space-y-4">
+    <IntegrationTile
+      name="LiveKit"
+      description="Video- & Audio-Räume in Echtzeit (Interviews, AI Voice Agent)"
+      open={expanded}
+      onOpenChange={setExpanded}
+      ctaLabel={configured ? 'Verbindung verwalten' : 'Verbindung einrichten'}
+      icon={<img src={livekitLogo} alt="LiveKit Logo" className="h-full w-full object-contain" />}
+      statusSlot={<>
+        {cfg.enabled && configured && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
+        {checking && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        {!checking && configured && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
+        {!checking && !configured && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+      </>}
+    >
+        <div className="space-y-4">
           <div className="rounded-lg bg-secondary/50 p-4">
             <h4 className="text-sm font-medium mb-2">Einsatzbereiche:</h4>
             <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
@@ -2629,8 +2663,7 @@ function LiveKitIntegrationCard() {
 
           {!isSuperadmin && <p className="text-xs text-muted-foreground">Nur Superadmins können diese Verbindung ändern.</p>}
         </div>
-      )}
-    </div>
+    </IntegrationTile>
   );
 }
 
@@ -2712,25 +2745,21 @@ function AbacusIntegrationCard() {
   const configured = status?.configured === true;
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-      <button onClick={() => setExpanded(!expanded)} className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
-        <div className="flex items-center gap-3">
-<div className="rounded-lg border bg-background p-1.5"><img src={abacusLogo} alt="Abacus Logo" className="h-6 w-auto min-w-6 max-w-16 object-contain" /></div>
-          <div>
-            <h3 className="font-semibold text-sm">Abacus</h3>
-            <p className="text-xs text-muted-foreground">ERP / Lohn & Personal – Kandidaten und Vertragsdaten übergeben</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {cfg.enabled && configured && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
-          {checking && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-          {!checking && configured && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
-          {!checking && !configured && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
-        </div>
-      </button>
-
-      {expanded && (
-        <div className="border-t px-5 py-5 space-y-4">
+    <IntegrationTile
+      name="Abacus"
+      description="ERP / Lohn & Personal – Kandidaten und Vertragsdaten übergeben"
+      open={expanded}
+      onOpenChange={setExpanded}
+      ctaLabel={configured ? 'Verbindung verwalten' : 'Verbindung einrichten'}
+      icon={<img src={abacusLogo} alt="Abacus Logo" className="h-full w-full object-contain" />}
+      statusSlot={<>
+        {cfg.enabled && configured && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Aktiv</span>}
+        {checking && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        {!checking && configured && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
+        {!checking && !configured && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+      </>}
+    >
+        <div className="space-y-4">
           <div className="rounded-lg bg-secondary/50 p-4">
             <h4 className="text-sm font-medium mb-2">Einsatzbereiche:</h4>
             <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
@@ -2803,8 +2832,7 @@ function AbacusIntegrationCard() {
 
           {!isSuperadmin && <p className="text-xs text-muted-foreground">Nur Superadmins können diese Verbindung ändern.</p>}
         </div>
-      )}
-    </div>
+    </IntegrationTile>
   );
 }
 
@@ -2832,25 +2860,20 @@ function MapboxIntegrationCard({ toast }: { toast: any }) {
   }, []);
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-      <button onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">🗺️</span>
-          <div>
-            <h3 className="font-semibold text-sm">Mapbox</h3>
-            <p className="text-xs text-muted-foreground">Karten-Visualisierung, Geocoding & Adress-Autovervollständigung</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-          {status === 'connected' && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
-          {status === 'disconnected' && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
-        </div>
-      </button>
-
-      {expanded && (
-        <div className="border-t px-5 py-5 space-y-4">
+    <IntegrationTile
+      name="Mapbox"
+      description="Karten-Visualisierung, Geocoding & Adress-Autovervollständigung"
+      open={expanded}
+      onOpenChange={setExpanded}
+      ctaLabel={status === 'connected' ? 'Verbindung verwalten' : 'Verbindung einrichten'}
+      icon={<span className="text-2xl">🗺️</span>}
+      statusSlot={<>
+        {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        {status === 'connected' && <span className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success"><CheckCircle2 className="h-3 w-3" /> Verbunden</span>}
+        {status === 'disconnected' && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground"><XCircle className="h-3 w-3" /> Nicht konfiguriert</span>}
+      </>}
+    >
+        <div className="space-y-4">
           <div className="rounded-lg bg-secondary/50 p-4">
             <h4 className="text-sm font-medium mb-2">Verwendung in SSM Recruit:</h4>
             <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
@@ -2892,8 +2915,7 @@ function MapboxIntegrationCard({ toast }: { toast: any }) {
             </div>
           )}
         </div>
-      )}
-    </div>
+    </IntegrationTile>
   );
 }
 
