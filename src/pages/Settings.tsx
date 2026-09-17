@@ -2125,6 +2125,7 @@ function IntegrationsTab({ integrations, expandedId, setExpandedId, updateIntegr
         <div className="space-y-3">
           <MapboxIntegrationCard toast={toast} />
           <LiveKitIntegrationCard />
+          <ZapierIntegrationCard />
         </div>
       </div>
     </>
