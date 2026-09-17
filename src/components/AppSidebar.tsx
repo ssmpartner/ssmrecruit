@@ -191,13 +191,6 @@ export default function AppSidebar() {
           <SidebarNavItem key={to} to={to} icon={icon} label={label} isActive={location.pathname === to} collapsed={collapsed} />
         ))}
 
-        {collapsed ? (
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <div className="h-[2px] w-8 mx-auto mt-2 rounded-full bg-sidebar-accent/50" />
-            </TooltipTrigger>
-          </Tooltip>
-        ) : null}
       </div>
     </aside>
   );
