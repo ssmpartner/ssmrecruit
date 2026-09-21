@@ -274,6 +274,10 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
       if (wizardType === 'controlling' && action === 'reject') {
         dbUpdate.lead_lifecycle = 'closed';
       }
+      // Offene Rückfrage-Aufgaben schliessen – bei einer Entscheidung ist die
+      // Rückfrage erledigt und bleibt nur im Aktivitätsverlauf sichtbar.
+      await supabase.from('tasks').update({ status: 'done' })
+        .eq('lead_id', leadId).eq('status', 'open').like('title', 'Rückfrage (Controlling):%');
       if (wizardType === 'controlling' && action === 'approve' && directToHr) {
         dbUpdate.controlling_direct_to_hr = false;
       }
