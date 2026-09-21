@@ -339,6 +339,8 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
             title: notifTitle,
             description: notifDescription,
             trigger_label: `${config.label} – ${action === 'approve' ? 'Freigabe' : 'Ablehnung'}`,
+            // Ablehnung geht gezielt an den zuständigen Mitarbeiter (Glocke + interne E-Mail)
+            only_assigned_employee: action === 'reject',
           },
         });
       } catch (e) {
