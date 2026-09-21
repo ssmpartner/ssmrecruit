@@ -276,8 +276,13 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
       }
       // Offene Rückfrage-Aufgaben schliessen – bei einer Entscheidung ist die
       // Rückfrage erledigt und bleibt nur im Aktivitätsverlauf sichtbar.
-      await supabase.from('tasks').update({ status: 'done' })
-        .eq('lead_id', leadId).eq('status', 'open').like('title', 'Rückfrage (Controlling):%');
+      const { data: before } = await supabase
+        .from('leads').select('controlling_query_open').eq('id', leadId).maybeSingle();
+      const hadOpenQuery = !!before?.controlling_query_open;
+      if (hadOpenQuery) {
+        await supabase.from('tasks').update({ status: 'done' })
+          .eq('lead_id', leadId).eq('status', 'open').like('title', 'Rückfrage (Controlling):%');
+      }
       if (wizardType === 'controlling' && action === 'approve' && directToHr) {
         dbUpdate.controlling_direct_to_hr = false;
       }
@@ -300,8 +305,11 @@ export default function ApprovalWizardDialog({ open, onOpenChange, wizardType, l
         return;
       }
 
-      updateLead(leadId, { status: newStatus });
+      updateLead(leadId, { status: newStatus, controllingQueryOpen: false });
       addActivity(leadId, 'status_change', description);
+      if (hadOpenQuery) {
+        addActivity(leadId, 'note', `Offene Rückfrage wurde mit der Entscheidung (${action === 'approve' ? 'Freigabe' : 'Ablehnung'}) abgeschlossen.`);
+      }
 
 
       if (feedback.trim()) {
