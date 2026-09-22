@@ -163,7 +163,6 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
         await page.render({ canvasContext: ctx, viewport }).promise;
         if (!cancelled) setLetterheadBg(canvas.toDataURL('image/jpeg', 0.9));
       } catch (e) {
-        console.warn('letterhead-bg', (e as any)?.message, (e as any)?.details, e);
         if (!cancelled) setLetterheadBg(null);
       }
     }
