@@ -142,7 +142,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
       first_name: l.name?.split(' ')[0] || '',
       last_name: l.name?.split(' ').slice(1).join(' ') || '',
       email: l.email, phone: l.phone, address: l.address,
-      zip: l.zip, city: l.city, birth_date: l.birth_date,
+      zip: l.plz, city: l.city, birth_date: l.birth_date,
     };
   }
   function employeeToPerson(e: any): Person {
