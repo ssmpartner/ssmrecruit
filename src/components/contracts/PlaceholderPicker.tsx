@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Braces } from 'lucide-react';
+import { Tag } from 'lucide-react';
 import {
   PLACEHOLDER_GROUPS, type ContractArea, type TargetGroupCode, type PlaceholderMeta,
 } from '@/lib/contract-placeholders';
@@ -12,23 +12,13 @@ import {
 interface Props {
   area: ContractArea;
   targetGroup?: TargetGroupCode;
-  onInsert: (token: string) => void;
+  /** Wird mit dem Platzhalter-Schlüssel aufgerufen (z.B. 'candidate.first_name'). */
+  onInsertKey: (key: string) => void;
 }
 
-export default function PlaceholderPicker({ area, targetGroup, onInsert }: Props) {
+export default function PlaceholderPicker({ area, targetGroup, onInsertKey }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return PLACEHOLDER_GROUPS.map(group => {
-      const placeholders = group.placeholders.filter(p => {
-        if (q && !p.key.toLowerCase().includes(q) && !p.label.toLowerCase().includes(q)) return false;
-        return true;
-      });
-      return { ...group, placeholders };
-    }).filter(g => g.placeholders.length > 0);
-  }, [query]);
 
   function isAllowed(p: PlaceholderMeta) {
     if (p.areaScope && !p.areaScope.includes(area)) return false;
@@ -36,16 +26,25 @@ export default function PlaceholderPicker({ area, targetGroup, onInsert }: Props
     return true;
   }
 
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return PLACEHOLDER_GROUPS.map(group => ({
+      ...group,
+      placeholders: group.placeholders.filter(p => isAllowed(p) && (!q || p.label.toLowerCase().includes(q))),
+    })).filter(g => g.placeholders.length > 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, area, targetGroup]);
+
   function pick(p: PlaceholderMeta) {
-    if (!isAllowed(p)) return;
-    onInsert(`{{${p.key}}}`);
+    onInsertKey(p.key);
+    setOpen(false);
   }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button type="button" variant="outline" size="sm" className="gap-2">
-          <Braces className="h-3.5 w-3.5" />Platzhalter einfügen
+          <Tag className="h-3.5 w-3.5" />Platzhalter einfügen
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-96 p-0" align="end">
@@ -56,6 +55,9 @@ export default function PlaceholderPicker({ area, targetGroup, onInsert }: Props
             onChange={e => setQuery(e.target.value)}
             className="h-8"
           />
+          <p className="text-[11px] text-muted-foreground mt-2">
+            Der Platzhalter wird an der Cursorposition eingesetzt.
+          </p>
         </div>
         <ScrollArea className="h-80">
           <div className="p-3 space-y-4">
@@ -68,25 +70,17 @@ export default function PlaceholderPicker({ area, targetGroup, onInsert }: Props
                   <p className="text-[11px] text-muted-foreground mb-2">{group.description}</p>
                 )}
                 <div className="flex flex-wrap gap-1">
-                  {group.placeholders.map(p => {
-                    const allowed = isAllowed(p);
-                    return (
-                      <button
-                        key={p.key}
-                        type="button"
-                        disabled={!allowed}
-                        onClick={() => pick(p)}
-                        className={`text-left px-2 py-1 rounded border text-xs hover:bg-accent transition ${
-                          allowed ? '' : 'opacity-40 cursor-not-allowed line-through'
-                        }`}
-                        title={`{{${p.key}}}`}
-                      >
-                        <code className="font-mono">{`{{${p.key}}}`}</code>
-                        <span className="ml-1 text-muted-foreground">— {p.label}</span>
-                        {p.required && <Badge variant="outline" className="ml-1 h-4 text-[10px] px-1">Pflicht</Badge>}
-                      </button>
-                    );
-                  })}
+                  {group.placeholders.map(p => (
+                    <button
+                      key={p.key}
+                      type="button"
+                      onClick={() => pick(p)}
+                      className="text-left px-2 py-1 rounded border text-xs hover:bg-accent transition"
+                    >
+                      {p.label}
+                      {p.required && <Badge variant="outline" className="ml-1 h-4 text-[10px] px-1">Pflicht</Badge>}
+                    </button>
+                  ))}
                 </div>
               </div>
             ))}
