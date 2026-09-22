@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Users, LinkIcon, Unlink, ChevronDown, RefreshCw, CheckCircle2, AlertCircle, Plus, Pencil, X } from 'lucide-react';
+import { Mail, Users, UserCog, LinkIcon, Unlink, ChevronDown, RefreshCw, CheckCircle2, AlertCircle, Plus, Pencil, X } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
