@@ -202,7 +202,22 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
         <p className="text-sm text-muted-foreground">
           Vorlagen werden versioniert. Originalfassungen werden beim Bearbeiten archiviert, nicht überschrieben.
         </p>
-        <Button onClick={openNew} className="gap-2"><Plus className="h-4 w-4" />Neue Vorlage</Button>
+        <div className="flex items-center gap-2">
+          <label className="inline-flex">
+            <input
+              type="file"
+              accept=".docx"
+              hidden
+              onChange={e => { const f = e.target.files?.[0]; if (f) importDocx(f); e.currentTarget.value = ''; }}
+            />
+            <Button variant="outline" asChild disabled={importing}>
+              <span className="cursor-pointer gap-2 inline-flex items-center">
+                <Upload className="h-4 w-4" />{importing ? 'Übernehme…' : 'Vertrag hochladen (.docx)'}
+              </span>
+            </Button>
+          </label>
+          <Button onClick={openNew} className="gap-2"><Plus className="h-4 w-4" />Neue Vorlage</Button>
+        </div>
       </div>
 
       <div className="rounded-lg border bg-card">
