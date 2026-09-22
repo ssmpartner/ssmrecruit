@@ -183,6 +183,14 @@ export default function Tasks() {
     toast.success('Vorschlag verworfen');
   }, []);
 
+  // Eigene Aufgabe löschen (Tab «Meine Aufgaben»)
+  const deleteTask = useCallback(async (taskId: string) => {
+    const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+    if (error) { toast.error('Fehler beim Löschen'); return; }
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+    toast.success('Aufgabe gelöscht');
+  }, []);
+
   // Zuweisbare Personen: eigene Agentur (Superadmin: alle)
   const assignableForMe = useMemo(() => {
     const list = assignableEmployees(employees);
