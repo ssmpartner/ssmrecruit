@@ -42,9 +42,9 @@ export default function Agencies() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex items-center gap-3">
+          <Building2 className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold tracking-tight">Agenturen</h1>
-          <p className="text-muted-foreground">Ihre Recruiting-Agenturen verwalten</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
