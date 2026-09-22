@@ -90,16 +90,21 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
         class: 'contract-editor prose prose-sm max-w-none dark:prose-invert focus:outline-none min-h-[420px] px-6 py-5',
       },
     },
-    onUpdate: ({ editor: ed }) => onChange(chipsToTokens(ed.getHTML())),
+    onUpdate: ({ editor: ed }) => {
+      const html = chipsToTokens(ed.getHTML());
+      lastEmitted.current = html;
+      onChange(html);
+    },
   });
 
-  // Externe Inhalte (z.B. nach DOCX-Import oder Vorlagenwechsel) übernehmen
+  // Externe Inhalte (z.B. nach DOCX-Import oder Vorlagenwechsel) übernehmen.
+  // Eigene Tastatureingaben werden übersprungen, damit der Cursor bleibt.
   useEffect(() => {
     if (!editor) return;
-    const current = chipsToTokens(editor.getHTML());
-    if ((value || '') !== current) {
-      editor.commands.setContent(tokensToChips(value || ''), { emitUpdate: false });
-    }
+    const next = value || '';
+    if (next === lastEmitted.current) return;
+    lastEmitted.current = next;
+    editor.commands.setContent(tokensToChips(next), { emitUpdate: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, editor]);
 
