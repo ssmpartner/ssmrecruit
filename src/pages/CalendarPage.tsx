@@ -286,9 +286,9 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex items-center gap-3">
+        <CalendarDays className="h-8 w-8 text-primary" />
         <h1 className="text-2xl font-bold tracking-tight">Kalender</h1>
-        <p className="text-muted-foreground">Terminübersicht aller Leads</p>
       </div>
 
       {/* Controls */}
