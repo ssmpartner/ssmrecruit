@@ -29,16 +29,9 @@ export default function Contracts() {
 
   const header = (
     <div className="flex items-start justify-between gap-3 flex-wrap">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <FileSignature className="h-6 w-6 text-primary" />
-          Verträge
-        </h1>
-        <p className="text-muted-foreground">
-          {view === 'list'
-            ? 'Verträge erstellen, prüfen und herunterladen.'
-            : 'Einrichtung: Vorlagen und Briefpapier verwalten.'}
-        </p>
+      <div className="flex items-center gap-3">
+        <FileSignature className="h-8 w-8 text-primary" />
+        <h1 className="text-2xl font-bold tracking-tight">Verträge</h1>
       </div>
       <div className="flex items-center gap-2">
         {view === 'list' && has('can_generate') && (
