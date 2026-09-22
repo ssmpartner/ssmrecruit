@@ -190,11 +190,11 @@ export default function Tasks() {
     return list.filter(e => e.agencyId === currentEmployee.agencyId);
   }, [employees, isSuperadmin, currentEmployee]);
 
-  const aiCount = useMemo(() => tasks.filter(t => t.source === 'ai' && (isSuperadmin || t.assigned_to === currentEmployee?.id)).length, [tasks, isSuperadmin, currentEmployee]);
+  const aiCount = useMemo(() => tasks.filter(t => t.source !== 'manual' && (isSuperadmin || t.assigned_to === currentEmployee?.id)).length, [tasks, isSuperadmin, currentEmployee]);
 
-  // Filter tasks: Superadmins see all, others see only their own assigned tasks
+  // «Meine Aufgaben»: nur manuell erstellte. «KI-Vorschläge»: alles Generierte (KI + System).
   const visibleTasks = useMemo(() => {
-    let result = tasks.filter(t => tab === 'ai' ? t.source === 'ai' : t.source !== 'ai');
+    let result = tasks.filter(t => tab === 'ai' ? t.source !== 'manual' : t.source === 'manual');
     // Non-superadmin: only show tasks assigned to the current employee
     if (!isSuperadmin && currentEmployee) {
       result = result.filter(t => t.assigned_to === currentEmployee.id);
