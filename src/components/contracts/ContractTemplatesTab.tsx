@@ -150,7 +150,8 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
         const pdfjs: any = await import('pdfjs-dist');
         const worker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
         pdfjs.GlobalWorkerOptions.workerSrc = (worker as any).default;
-        const doc = await pdfjs.getDocument({ url: data.signedUrl }).promise;
+        const bytes = new Uint8Array(await (await fetch(data.signedUrl)).arrayBuffer());
+        const doc = await pdfjs.getDocument({ data: bytes }).promise;
         const page = await doc.getPage(1);
         const viewport = page.getViewport({ scale: 1588 / page.getViewport({ scale: 1 }).width });
         const canvas = document.createElement('canvas');
@@ -162,7 +163,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
         await page.render({ canvasContext: ctx, viewport }).promise;
         if (!cancelled) setLetterheadBg(canvas.toDataURL('image/jpeg', 0.9));
       } catch (e) {
-        console.warn('letterhead-bg', e);
+        console.warn('letterhead-bg', (e as any)?.message, (e as any)?.details, e);
         if (!cancelled) setLetterheadBg(null);
       }
     }
