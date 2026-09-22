@@ -148,7 +148,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
       container.style.color = '#111';
       container.style.fontFamily = "Georgia, 'Times New Roman', serif";
       container.style.fontSize = '11pt';
-      container.innerHTML = previewHtml;
+      container.innerHTML = `<style>table{border-collapse:collapse;width:100%}td,th{border:0;padding:4px 6px;text-align:left}</style>${previewHtml}`;
       document.body.appendChild(container);
       const blob: Blob = await html2pdf()
         .set({
