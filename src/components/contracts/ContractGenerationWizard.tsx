@@ -142,7 +142,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
       first_name: l.name?.split(' ')[0] || '',
       last_name: l.name?.split(' ').slice(1).join(' ') || '',
       email: l.email, phone: l.phone, address: l.address,
-      zip: l.zip, city: l.city, birth_date: l.birth_date,
+      zip: l.plz, city: l.city, birth_date: l.birth_date,
     };
   }
   function employeeToPerson(e: any): Person {
@@ -174,14 +174,14 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
       if (q.length < 2) {
         // Vorschläge: Kandidaten in HR-Bearbeitung
         const { data: leads } = await supabase
-          .from('leads').select('id,name,email,phone,address,zip,city,birth_date')
+          .from('leads').select('id,name,email,phone,address,plz,city,birth_date')
           .eq('status', 'hr_processing').order('name', { ascending: true }).limit(10);
         setResults((leads ?? []).map(leadToPerson));
         setSearching(false);
         return;
       }
       const [{ data: leads }, { data: emps }] = await Promise.all([
-        supabase.from('leads').select('id,name,email,phone,address,zip,city,birth_date')
+        supabase.from('leads').select('id,name,email,phone,address,plz,city,birth_date')
           .eq('status', 'hr_processing')
           .or(`name.ilike.%${q}%,email.ilike.%${q}%`).limit(6),
         supabase.from('employees').select('*')
@@ -492,7 +492,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                       />
-                      {(results.length > 0 || searching) && (
+                      {(
                         <div className="absolute z-10 mt-1 max-h-72 overflow-y-auto w-full rounded border bg-popover shadow-md">
                           {search.trim().length < 2 && !searching && results.length > 0 && (
                             <div className="px-3 py-1.5 text-[11px] text-muted-foreground border-b">Kandidaten in HR-Bearbeitung</div>
@@ -512,7 +512,11 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
                             </button>
                           ))}
                           {!searching && results.length === 0 && (
-                            <div className="p-2 text-xs text-muted-foreground">Keine Treffer.</div>
+                            <div className="p-2 text-xs text-muted-foreground">
+                              {search.trim().length < 2
+                                ? 'Momentan keine Kandidaten vorhanden.'
+                                : 'Keine Treffer.'}
+                            </div>
                           )}
                         </div>
                       )}
