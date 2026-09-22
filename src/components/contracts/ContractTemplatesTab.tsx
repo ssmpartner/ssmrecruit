@@ -435,7 +435,8 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
-            <Button onClick={save}>Speichern</Button>
+            <Button variant="secondary" onClick={() => save(false, 'preview')}>Speichern & Vorschau</Button>
+            <Button onClick={() => save(true)}>Speichern & schliessen</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
