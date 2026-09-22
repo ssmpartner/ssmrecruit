@@ -136,6 +136,38 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
 
   const activeLetterhead = letterheads.find(l => l.id === letterheadId);
 
+  // Briefpapier (erste PDF-Seite) als Bild für die Vorschau rendern
+  useEffect(() => {
+    let cancelled = false;
+    async function render() {
+      if (!activeLetterhead) { setLetterheadBg(null); return; }
+      try {
+        const { data } = await supabase.storage.from('contracts')
+          .createSignedUrl(activeLetterhead.storage_path, 600);
+        if (!data?.signedUrl) { setLetterheadBg(null); return; }
+        const pdfjs: any = await import('pdfjs-dist');
+        const worker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
+        pdfjs.GlobalWorkerOptions.workerSrc = (worker as any).default;
+        const doc = await pdfjs.getDocument({ url: data.signedUrl }).promise;
+        const page = await doc.getPage(1);
+        const viewport = page.getViewport({ scale: 1588 / page.getViewport({ scale: 1 }).width });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+        if (!cancelled) setLetterheadBg(canvas.toDataURL('image/jpeg', 0.9));
+      } catch {
+        if (!cancelled) setLetterheadBg(null);
+      }
+    }
+    render();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLetterhead?.id]);
+
   async function buildPdf() {
     if (!edit.body_html) { toast.error('Noch kein Inhalt vorhanden'); return; }
     setPdfBusy(true);
