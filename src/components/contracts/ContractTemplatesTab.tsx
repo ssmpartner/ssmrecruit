@@ -148,7 +148,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
       container.style.color = '#111';
       container.style.fontFamily = "Georgia, 'Times New Roman', serif";
       container.style.fontSize = '11pt';
-      container.innerHTML = previewHtml;
+      container.innerHTML = `<style>table{border-collapse:collapse;width:100%}td,th{border:0;padding:4px 6px;text-align:left}</style>${previewHtml}`;
       document.body.appendChild(container);
       const blob: Blob = await html2pdf()
         .set({
@@ -408,7 +408,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
                   <div className="contract-page mx-auto min-h-[900px] w-full max-w-[794px] bg-background p-10 shadow-sm">
                     {previewHtml ? (
                       <div
-                        className="prose prose-sm max-w-none [&_table]:border-collapse [&_td]:border [&_td]:p-1.5 [&_th]:border [&_th]:p-1.5"
+                        className="contract-preview prose prose-sm max-w-none [&_table]:border-collapse [&_table]:w-full [&_td]:border-0 [&_td]:p-1.5 [&_th]:border-0 [&_th]:p-1.5 [&_th]:text-left"
                         dangerouslySetInnerHTML={{ __html: previewHtml }}
                       />
                     ) : (
