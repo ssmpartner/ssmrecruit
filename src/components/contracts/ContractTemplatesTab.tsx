@@ -14,6 +14,7 @@ import {
   extractUsedPlaceholders, placeholderLabel, renderSample,
 } from '@/lib/contract-placeholders';
 import ContractRichEditor from './ContractRichEditor';
+import ContractPagePreview from './ContractPagePreview';
 
 type Template = {
   id: string;
@@ -63,6 +64,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
   const [previewMode, setPreviewMode] = useState<'live' | 'pdf'>('live');
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [letterheadBg, setLetterheadBg] = useState<string | null>(null);
 
   async function importDocx(file: File) {
     if (!file.name.toLowerCase().endsWith('.docx')) {
