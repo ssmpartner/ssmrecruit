@@ -187,7 +187,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
     if (data?.signedUrl) window.open(data.signedUrl, '_blank');
   }
 
-  async function save() {
+  async function save(close = true, goToTab?: string) {
     if (!edit.title) { toast.error('Bitte einen Titel vergeben'); return; }
     const user = (await supabase.auth.getUser()).data.user;
     const payload = {
@@ -209,18 +209,28 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
           snapshot: old as any, created_by: user?.id,
         });
       }
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('contract_templates')
         .update({ ...payload, version: (old?.version ?? 1) + 1 })
-        .eq('id', edit.id);
+        .eq('id', edit.id)
+        .select('*')
+        .maybeSingle();
       if (error) { toast.error(error.message); return; }
+      if (!data) { toast.error('Keine Berechtigung zum Speichern dieser Vorlage'); return; }
+      setEdit({ ...(data as Template) });
     } else {
-      const { error } = await supabase.from('contract_templates').insert({ ...payload, created_by: user?.id });
+      const { data, error } = await supabase
+        .from('contract_templates')
+        .insert({ ...payload, created_by: user?.id })
+        .select('*')
+        .single();
       if (error) { toast.error(error.message); return; }
+      setEdit({ ...(data as Template) });
     }
     toast.success('Gespeichert');
-    setOpen(false);
-    load();
+    await load();
+    if (close) setOpen(false);
+    else if (goToTab) { setTab(goToTab); if (goToTab === 'pdf') buildPdf(); }
   }
 
   async function changeStatus(id: string, status: Template['status']) {
