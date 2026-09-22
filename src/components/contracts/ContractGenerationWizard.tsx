@@ -278,8 +278,25 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
         if (data) { tpl = data; break; }
       }
       setTemplate(tpl);
-      setTemplateError(tpl ? null
-        : `Es wurde keine aktive Vorlage gefunden für: Vertragsart „${kindLabel}", Kategorie „${catLabel}", Sprache „${langLabel}" (Bereich: ${area === 'sales' ? 'Vertrieb' : 'Innendienst'}). Bitte unter „Vorlagen" eine entsprechende Vorlage hinterlegen.`);
+      if (tpl) { setTemplateError(null); return; }
+
+      // Hinweis, wenn passende Vorlagen nur als Entwurf vorliegen
+      const { data: drafts } = await supabase.from('contract_templates')
+        .select('title')
+        .eq('status', 'draft').eq('area', area).eq('language', language)
+        .order('updated_at', { ascending: false }).limit(3);
+
+      if (drafts && drafts.length > 0) {
+        setTemplateError(
+          `Die Vorlage „${(drafts[0] as any).title}" ist noch ein Entwurf und wird deshalb nicht verwendet. `
+          + 'Bitte unter „Vorlagen" die Platzhalter setzen und die Vorlage auf „Aktiv" stellen (grünes Häkchen in der Liste).',
+        );
+        return;
+      }
+
+      setTemplateError(
+        `Es wurde keine aktive Vorlage gefunden für: Vertragsart „${kindLabel}", Kategorie „${catLabel}", Sprache „${langLabel}" (Bereich: ${area === 'sales' ? 'Vertrieb' : 'Innendienst'}). Bitte unter „Vorlagen" eine entsprechende Vorlage hinterlegen.`,
+      );
     })();
   }, [setId, language, area, kindCode, kinds]);
 
