@@ -14,6 +14,7 @@ import {
   extractUsedPlaceholders, placeholderLabel, renderSample,
 } from '@/lib/contract-placeholders';
 import ContractRichEditor from './ContractRichEditor';
+import ContractPagePreview from './ContractPagePreview';
 
 type Template = {
   id: string;
@@ -63,6 +64,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
   const [previewMode, setPreviewMode] = useState<'live' | 'pdf'>('live');
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [letterheadBg, setLetterheadBg] = useState<string | null>(null);
 
   async function importDocx(file: File) {
     if (!file.name.toLowerCase().endsWith('.docx')) {
@@ -135,6 +137,39 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
   );
 
   const activeLetterhead = letterheads.find(l => l.id === letterheadId);
+
+  // Briefpapier (erste PDF-Seite) als Bild für die Vorschau rendern
+  useEffect(() => {
+    let cancelled = false;
+    async function render() {
+      if (!activeLetterhead) { setLetterheadBg(null); return; }
+      try {
+        const { data } = await supabase.storage.from('contracts')
+          .createSignedUrl(activeLetterhead.storage_path, 600);
+        if (!data?.signedUrl) { setLetterheadBg(null); return; }
+        const pdfjs: any = await import('pdfjs-dist');
+        const worker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
+        pdfjs.GlobalWorkerOptions.workerSrc = (worker as any).default;
+        const bytes = new Uint8Array(await (await fetch(data.signedUrl)).arrayBuffer());
+        const doc = await pdfjs.getDocument({ data: bytes }).promise;
+        const page = await doc.getPage(1);
+        const viewport = page.getViewport({ scale: 1588 / page.getViewport({ scale: 1 }).width });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        if (!cancelled) setLetterheadBg(canvas.toDataURL('image/jpeg', 0.9));
+      } catch (e) {
+        if (!cancelled) setLetterheadBg(null);
+      }
+    }
+    render();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLetterhead?.id]);
 
   async function buildPdf() {
     if (!edit.body_html) { toast.error('Noch kein Inhalt vorhanden'); return; }
@@ -404,21 +439,18 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
               <div className="min-h-0 flex-1 overflow-auto p-5">
                 {previewMode === 'pdf' && pdfUrl ? (
                   <iframe src={pdfUrl} title="PDF-Vorschau" className="h-full min-h-[600px] w-full rounded border bg-background" />
+                ) : previewHtml ? (
+                  <div className="origin-top scale-[0.62] [transform-origin:top_center] xl:scale-75">
+                    <ContractPagePreview html={previewHtml} backgroundUrl={letterheadBg} />
+                  </div>
                 ) : (
-                  <div className="contract-page mx-auto min-h-[900px] w-full max-w-[794px] bg-background p-10 shadow-sm">
-                    {previewHtml ? (
-                      <div
-                        className="contract-preview prose prose-sm max-w-none [&_table]:border-collapse [&_table]:w-full [&_td]:border-0 [&_td]:p-1.5 [&_th]:border-0 [&_th]:p-1.5 [&_th]:text-left"
-                        dangerouslySetInnerHTML={{ __html: previewHtml }}
-                      />
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Die Vorschau aktualisiert sich direkt beim Bearbeiten.</p>
-                    )}
+                  <div className="mx-auto min-h-[900px] w-full max-w-[794px] bg-background p-10 shadow-sm">
+                    <p className="text-sm text-muted-foreground">Die Vorschau aktualisiert sich direkt beim Bearbeiten.</p>
                   </div>
                 )}
               </div>
               <div className="shrink-0 border-t bg-background px-4 py-2 text-xs text-muted-foreground">
-                Beispielwerte werden automatisch eingesetzt. Änderungen links erscheinen sofort hier.
+                Echte A4-Seiten mit Briefpapier. Beispielwerte werden automatisch eingesetzt, Änderungen links erscheinen sofort hier.
               </div>
             </div>
           </div>
