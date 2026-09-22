@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import {
   CheckSquare, Clock, User, Filter, AlertCircle,
   X, CalendarDays, ArrowRight, CheckCircle2, Sparkles, RefreshCw, Loader2,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -213,6 +214,17 @@ export default function Tasks() {
     });
   }, [tasks, tab, statusFilter, employeeFilter, priorityFilter, isSuperadmin, currentEmployee]);
 
+  // Pagination: 20 Aufgaben pro Seite
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [tab, statusFilter, employeeFilter, priorityFilter]);
+  const totalPages = Math.max(1, Math.ceil(visibleTasks.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pagedTasks = useMemo(
+    () => visibleTasks.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [visibleTasks, safePage],
+  );
+
   const openCount = visibleTasks.filter(t => t.status === 'open').length;
   const inProgressCount = visibleTasks.filter(t => t.status === 'in_progress').length;
   const doneCount = visibleTasks.filter(t => t.status === 'done').length;
@@ -230,16 +242,16 @@ export default function Tasks() {
     return new Date(dueDate) < new Date(new Date().toISOString().split('T')[0]);
   };
 
-  // Group tasks by lead
+  // Group tasks by lead (nur die aktuelle Seite)
   const tasksByLead = useMemo(() => {
     const map = new Map<string, Task[]>();
-    visibleTasks.forEach(t => {
+    pagedTasks.forEach(t => {
       const arr = map.get(t.lead_id) || [];
       arr.push(t);
       map.set(t.lead_id, arr);
     });
     return map;
-  }, [visibleTasks]);
+  }, [pagedTasks]);
 
   if (!profile) return null;
 
@@ -509,6 +521,43 @@ export default function Tasks() {
           </div>
         );
       })}
+
+      {/* Pagination */}
+      {!loading && visibleTasks.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between rounded-2xl border bg-card px-5 py-3 shadow-sm">
+          <p className="text-xs text-muted-foreground">
+            {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, visibleTasks.length)} von {visibleTasks.length} Aufgaben
+          </p>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)} aria-label="Vorherige Seite">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+              .reduce<(number | '…')[]>((acc, p, i, arr) => {
+                if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push('…');
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, i) => p === '…'
+                ? <span key={`gap-${i}`} className="px-1 text-xs text-muted-foreground">…</span>
+                : (
+                  <Button
+                    key={p}
+                    variant={p === safePage ? 'default' : 'ghost'}
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setPage(p as number)}
+                  >
+                    {p}
+                  </Button>
+                ))}
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)} aria-label="Nächste Seite">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
