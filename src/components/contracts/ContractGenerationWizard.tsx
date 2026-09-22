@@ -165,14 +165,24 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
     setSearch(''); setResults([]);
   }
 
-  // Personensuche (Leads + Mitarbeiter)
+  // Personensuche: Kandidaten nur im Status «HR-Bearbeitung» + Mitarbeiter
   useEffect(() => {
-    if (!search || search.trim().length < 2) { setResults([]); return; }
+    if (!open || person) return;
     const q = search.trim();
     setSearching(true);
     const t = setTimeout(async () => {
+      if (q.length < 2) {
+        // Vorschläge: Kandidaten in HR-Bearbeitung
+        const { data: leads } = await supabase
+          .from('leads').select('id,name,email,phone,address,zip,city,birth_date')
+          .eq('status', 'hr_processing').order('name', { ascending: true }).limit(10);
+        setResults((leads ?? []).map(leadToPerson));
+        setSearching(false);
+        return;
+      }
       const [{ data: leads }, { data: emps }] = await Promise.all([
         supabase.from('leads').select('id,name,email,phone,address,zip,city,birth_date')
+          .eq('status', 'hr_processing')
           .or(`name.ilike.%${q}%,email.ilike.%${q}%`).limit(6),
         supabase.from('employees').select('*')
           .or(`name.ilike.%${q}%,email.ilike.%${q}%`).limit(6),
@@ -184,7 +194,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
       setSearching(false);
     }, 300);
     return () => clearTimeout(t);
-  }, [search]);
+  }, [search, open, person]);
 
   // Bereich aus Vertragsart ableiten
   const area: ContractArea = useMemo(() => {
