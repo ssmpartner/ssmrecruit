@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import {
   CheckSquare, Clock, User, Filter, AlertCircle,
   X, CalendarDays, ArrowRight, CheckCircle2, Sparkles, RefreshCw, Loader2,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
