@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Archive, CheckCircle2, AlertTriangle, Library, CircleCheck, CircleDashed } from 'lucide-react';
+import { Plus, Pencil, Archive, CheckCircle2, AlertTriangle, Library, CircleCheck, CircleDashed, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AREA_LABELS, CONTRACT_LANGUAGES, TEMPLATE_STATUS_LABELS,
