@@ -165,14 +165,24 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
     setSearch(''); setResults([]);
   }
 
-  // Personensuche (Leads + Mitarbeiter)
+  // Personensuche: Kandidaten nur im Status «HR-Bearbeitung» + Mitarbeiter
   useEffect(() => {
-    if (!search || search.trim().length < 2) { setResults([]); return; }
+    if (!open || person) return;
     const q = search.trim();
     setSearching(true);
     const t = setTimeout(async () => {
+      if (q.length < 2) {
+        // Vorschläge: Kandidaten in HR-Bearbeitung
+        const { data: leads } = await supabase
+          .from('leads').select('id,name,email,phone,address,zip,city,birth_date')
+          .eq('status', 'hr_processing').order('name', { ascending: true }).limit(10);
+        setResults((leads ?? []).map(leadToPerson));
+        setSearching(false);
+        return;
+      }
       const [{ data: leads }, { data: emps }] = await Promise.all([
         supabase.from('leads').select('id,name,email,phone,address,zip,city,birth_date')
+          .eq('status', 'hr_processing')
           .or(`name.ilike.%${q}%,email.ilike.%${q}%`).limit(6),
         supabase.from('employees').select('*')
           .or(`name.ilike.%${q}%,email.ilike.%${q}%`).limit(6),
@@ -184,7 +194,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
       setSearching(false);
     }, 300);
     return () => clearTimeout(t);
-  }, [search]);
+  }, [search, open, person]);
 
   // Bereich aus Vertragsart ableiten
   const area: ContractArea = useMemo(() => {
@@ -478,12 +488,15 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         className="pl-8"
-                        placeholder="Name oder E-Mail eingeben (Kandidaten und Mitarbeiter)…"
+                        placeholder="Kandidaten in HR-Bearbeitung oder Mitarbeiter suchen…"
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                       />
                       {(results.length > 0 || searching) && (
-                        <div className="absolute z-10 mt-1 w-full rounded border bg-popover shadow-md">
+                        <div className="absolute z-10 mt-1 max-h-72 overflow-y-auto w-full rounded border bg-popover shadow-md">
+                          {search.trim().length < 2 && !searching && results.length > 0 && (
+                            <div className="px-3 py-1.5 text-[11px] text-muted-foreground border-b">Kandidaten in HR-Bearbeitung</div>
+                          )}
                           {searching && <div className="p-2 text-xs text-muted-foreground">Suche…</div>}
                           {results.map(r => (
                             <button
