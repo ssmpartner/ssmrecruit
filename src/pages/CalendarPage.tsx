@@ -4,7 +4,7 @@ import LeadDetailSheet from '@/components/LeadDetailSheet';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  ChevronLeft, ChevronRight, Phone, Video, Building2, CalendarIcon,
+  ChevronLeft, ChevronRight, Phone, Video, Building2, CalendarIcon, CalendarDays,
   Mail, Clock, User, ExternalLink, StickyNote, ArrowUpRight,
 } from 'lucide-react';
 import { getHolidayByISO } from '@/lib/swiss-holidays';
@@ -286,9 +286,9 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex items-center gap-3">
+        <CalendarDays className="h-8 w-8 text-primary" />
         <h1 className="text-2xl font-bold tracking-tight">Kalender</h1>
-        <p className="text-muted-foreground">Terminübersicht aller Leads</p>
       </div>
 
       {/* Controls */}
