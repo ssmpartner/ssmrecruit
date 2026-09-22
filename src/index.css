@@ -127,3 +127,21 @@
     50% { transform: scale(0.8); box-shadow: 0 0 0 6px hsl(var(--destructive) / 0); }
   }
 }
+
+/* Vertragsvorlagen: Platzhalter-Chips im Editor */
+.ph-chip {
+  display: inline-block;
+  padding: 0 0.35rem;
+  margin: 0 0.05rem;
+  border-radius: 0.375rem;
+  border: 1px solid hsl(var(--primary) / 0.35);
+  background: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+  font-size: 0.85em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.contract-editor table { border-collapse: collapse; width: 100%; }
+.contract-editor td, .contract-editor th { border: 1px solid hsl(var(--border)); padding: 0.375rem; }
+.contract-editor .ProseMirror-selectednode.ph-chip { outline: 2px solid hsl(var(--primary)); }
+.contract-page { font-family: Georgia, 'Times New Roman', serif; color: #111; }

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { FileSignature, Download, Pencil, Plus, Unlock } from 'lucide-react';
 import { toast } from 'sonner';
-import ContractGenerationWizard from './ContractGenerationWizard';
+import ContractSimpleWizard from './ContractSimpleWizard';
 import ContractEditorDialog from './ContractEditorDialog';
 import { AREA_LABELS, CONTRACT_STATUS_LABELS } from '@/lib/contract-placeholders';
 
@@ -103,8 +103,8 @@ export default function LeadContractsSection({ leadId, leadName, leadStatus }: P
       )}
 
       {wizard && (
-        <ContractGenerationWizard
-          leadId={leadId} leadName={leadName}
+        <ContractSimpleWizard
+          leadId={leadId}
           open={wizard}
           onClose={() => { setWizard(false); load(); }}
           onCreated={(id) => setEditId(id)}
