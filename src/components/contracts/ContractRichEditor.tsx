@@ -69,6 +69,9 @@ interface Props {
 
 export default function ContractRichEditor({ value, onChange, area, targetGroup }: Props) {
   const initial = useMemo(() => tokensToChips(value), []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Letzter vom Editor selbst gemeldeter Stand – verhindert, dass eigene Eingaben
+  // (z.B. Leerzeilen oder Leerschläge) durch ein Zurücksetzen verloren gehen.
+  const lastEmitted = useRef<string>(value || '');
 
   const editor = useEditor({
     extensions: [
