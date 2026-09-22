@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import {
   CheckSquare, Clock, User, Filter, AlertCircle,
   X, CalendarDays, ArrowRight, CheckCircle2, Sparkles, RefreshCw, Loader2,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -181,6 +181,14 @@ export default function Tasks() {
     if (error) { toast.error('Fehler beim Verwerfen'); return; }
     setTasks(prev => prev.filter(t => t.id !== taskId));
     toast.success('Vorschlag verworfen');
+  }, []);
+
+  // Eigene Aufgabe löschen (Tab «Meine Aufgaben»)
+  const deleteTask = useCallback(async (taskId: string) => {
+    const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+    if (error) { toast.error('Fehler beim Löschen'); return; }
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+    toast.success('Aufgabe gelöscht');
   }, []);
 
   // Zuweisbare Personen: eigene Agentur (Superadmin: alle)
@@ -492,25 +500,37 @@ export default function Tasks() {
                         </div>
                       )}
 
-                      {/* Reassign */}
-                      {tab === 'mine' && task.status !== 'done' && (
+                      {/* Reassign + Löschen */}
+                      {tab === 'mine' && (
                         <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Select value={task.assigned_to} onValueChange={(v) => reassignTask(task.id, v)}>
-                            <SelectTrigger className="h-7 text-xs w-[160px]"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              {assignableForMe.map(e => (
-                                <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Select value={task.status} onValueChange={(v) => updateTaskStatus(task.id, v)}>
-                            <SelectTrigger className="h-7 text-xs w-[130px]"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              {Object.entries(taskStatusConfig).map(([k, v]) => (
-                                <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          {task.status !== 'done' && (
+                            <>
+                              <Select value={task.assigned_to} onValueChange={(v) => reassignTask(task.id, v)}>
+                                <SelectTrigger className="h-7 text-xs w-[160px]"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {assignableForMe.map(e => (
+                                    <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Select value={task.status} onValueChange={(v) => updateTaskStatus(task.id, v)}>
+                                <SelectTrigger className="h-7 text-xs w-[130px]"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(taskStatusConfig).map(([k, v]) => (
+                                    <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 gap-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => deleteTask(task.id)}
+                          >
+                            <Trash2 className="h-3 w-3" /> Löschen
+                          </Button>
                         </div>
                       )}
                     </div>
