@@ -267,20 +267,9 @@ export default function Tasks() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-end justify-between">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="rounded-xl bg-primary/10 p-2.5">
-              <CheckSquare className="h-5 w-5 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight">Aufgaben</h1>
-          </div>
-          <p className="text-sm text-muted-foreground ml-[52px]">
-            {isSuperadmin
-              ? 'Alle Aufgaben · Superadmin-Ansicht'
-              : currentEmployee
-                ? `Meine Aufgaben · ${currentEmployee.name}`
-                : 'Kein Mitarbeiter-Profil zugeordnet'}
-          </p>
+        <div className="flex items-center gap-3">
+          <CheckSquare className="h-8 w-8 text-primary" />
+          <h1 className="text-2xl font-bold tracking-tight">Aufgaben</h1>
         </div>
         <div className="flex gap-2">
           {tab === 'ai' && (
