@@ -145,6 +145,25 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
           />
         </div>
       </div>
+
+      {editor.isActive('table') && (
+        <div className="flex flex-wrap items-center gap-1 border-b bg-muted/20 px-2 py-1.5 text-xs">
+          <span className="mr-1 text-muted-foreground">Tabelle:</span>
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().addRowBefore().run()}>Zeile oben</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().addRowAfter().run()}>Zeile unten</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().deleteRow().run()}>Zeile löschen</Button>
+          <Separator orientation="vertical" className="mx-1 h-5" />
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().addColumnBefore().run()}>Spalte links</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().addColumnAfter().run()}>Spalte rechts</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().deleteColumn().run()}>Spalte löschen</Button>
+          <Separator orientation="vertical" className="mx-1 h-5" />
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().mergeOrSplit().run()}>Zellen verbinden/teilen</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().toggleHeaderRow().run()}>Kopfzeile</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-destructive" onClick={() => editor.chain().focus().deleteTable().run()}>Tabelle löschen</Button>
+          <span className="ml-auto text-muted-foreground">Spaltenbreite: Trennlinie mit der Maus ziehen</span>
+        </div>
+      )}
+
       <div className="bg-white dark:bg-muted/20 max-h-[58vh] overflow-y-auto">
         <EditorContent editor={editor} />
       </div>
