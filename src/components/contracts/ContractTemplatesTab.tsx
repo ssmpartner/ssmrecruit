@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Pencil, Archive, CheckCircle2, Upload, FileText, Eye, FileDown, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -61,7 +60,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<Partial<Template>>(empty);
   const [importing, setImporting] = useState(false);
-  const [tab, setTab] = useState('edit');
+  const [previewMode, setPreviewMode] = useState<'live' | 'pdf'>('live');
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
 
@@ -83,7 +82,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
       if (!html) throw new Error('Keine Textausgabe erhalten');
 
       setEdit({ ...empty, title: file.name.replace(/\.docx$/i, ''), body_html: html });
-      setTab('edit');
+      setPreviewMode('live');
       setOpen(true);
       toast.success('Vertrag übernommen – jetzt Platzhalter einsetzen');
     } catch (e: any) {
@@ -118,17 +117,17 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
   useEffect(() => {
     if (!editTemplateId) return;
     const t = rows.find(r => r.id === editTemplateId);
-    if (t) { setEdit({ ...t }); setTab('edit'); setOpen(true); }
+    if (t) { setEdit({ ...t }); setPreviewMode('live'); setOpen(true); }
     else {
       supabase.from('contract_templates').select('*').eq('id', editTemplateId).single()
-        .then(({ data }) => { if (data) { setEdit({ ...(data as Template) }); setTab('edit'); setOpen(true); } });
+        .then(({ data }) => { if (data) { setEdit({ ...(data as Template) }); setPreviewMode('live'); setOpen(true); } });
     }
     onEditHandled?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editTemplateId]);
 
-  function openNew() { setEdit({ ...empty }); setTab('edit'); setOpen(true); }
-  function openEdit(t: Template) { setEdit({ ...t }); setTab('edit'); setOpen(true); }
+  function openNew() { setEdit({ ...empty }); setPreviewMode('live'); setOpen(true); }
+  function openEdit(t: Template) { setEdit({ ...t }); setPreviewMode('live'); setOpen(true); }
 
   const previewHtml = useMemo(
     () => (edit.body_html ? renderSample(edit.body_html) : ''),
@@ -163,6 +162,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
       document.body.removeChild(container);
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
       setPdfUrl(URL.createObjectURL(blob));
+      setPreviewMode('pdf');
     } catch (e: any) {
       toast.error(e?.message || 'PDF-Vorschau fehlgeschlagen');
     } finally {
@@ -170,14 +170,10 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
     }
   }
 
-  useEffect(() => {
-    if (tab === 'pdf' && !pdfUrl && edit.body_html) buildPdf();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
-
   // Bei Inhaltsänderung alte PDF-Vorschau verwerfen
   useEffect(() => {
     if (pdfUrl) { URL.revokeObjectURL(pdfUrl); setPdfUrl(null); }
+    setPreviewMode('live');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [edit.body_html]);
 
@@ -187,7 +183,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
     if (data?.signedUrl) window.open(data.signedUrl, '_blank');
   }
 
-  async function save(close = true, goToTab?: string) {
+  async function save(close = true) {
     if (!edit.title) { toast.error('Bitte einen Titel vergeben'); return; }
     const user = (await supabase.auth.getUser()).data.user;
     const payload = {
@@ -230,7 +226,6 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
     toast.success('Gespeichert');
     await load();
     if (close) setOpen(false);
-    else if (goToTab) { setTab(goToTab); if (goToTab === 'pdf') buildPdf(); }
   }
 
   async function changeStatus(id: string, status: Template['status']) {
@@ -308,82 +303,63 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-[1200px] w-[95vw] max-h-[94vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="flex h-[94vh] max-h-[94vh] w-[96vw] max-w-[96vw] flex-col gap-0 overflow-hidden p-0">
+          <DialogHeader className="shrink-0 border-b px-5 py-4 pr-12">
             <DialogTitle>{edit.id ? `Vorlage bearbeiten (Version ${edit.version})` : 'Neue Vorlage'}</DialogTitle>
           </DialogHeader>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <div className="col-span-2">
-              <Label>Titel *</Label>
-              <Input value={edit.title || ''} onChange={e => setEdit({ ...edit, title: e.target.value })} />
-            </div>
-            <div>
-              <Label>Vertragsart</Label>
-              <Input value={edit.contract_type || ''} onChange={e => setEdit({ ...edit, contract_type: e.target.value })} />
-            </div>
-            <div>
-              <Label>Bereich</Label>
-              <Select value={edit.area} onValueChange={(v: any) => setEdit({ ...edit, area: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sales">Vertrieb</SelectItem>
-                  <SelectItem value="office">Innendienst</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Sprache</Label>
-              <Select value={edit.language} onValueChange={v => setEdit({ ...edit, language: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CONTRACT_LANGUAGES.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="col-span-2">
-              <Label>Briefpapier</Label>
-              <Select value={letterheadId} onValueChange={setLetterheadId}>
-                <SelectTrigger>
-                  <SelectValue placeholder={letterheads.length ? 'Briefpapier wählen' : 'Noch kein Briefpapier hochgeladen'} />
-                </SelectTrigger>
-                <SelectContent>
-                  {letterheads.map(l => (
-                    <SelectItem key={l.id} value={l.id}>
-                      {l.name}{l.is_default_for_language ? ' (Standard)' : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Status</Label>
-              <Select value={edit.status} onValueChange={(v: any) => setEdit({ ...edit, status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Entwurf</SelectItem>
-                  <SelectItem value="active">Aktiv</SelectItem>
-                  <SelectItem value="archived">Archiviert</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)]">
+            <div className="min-h-0 space-y-4 overflow-y-auto border-r p-5">
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+                <div className="col-span-2">
+                  <Label>Titel *</Label>
+                  <Input value={edit.title || ''} onChange={e => setEdit({ ...edit, title: e.target.value })} />
+                </div>
+                <div className="col-span-2">
+                  <Label>Vertragsart</Label>
+                  <Input value={edit.contract_type || ''} onChange={e => setEdit({ ...edit, contract_type: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Bereich</Label>
+                  <Select value={edit.area} onValueChange={(v: any) => setEdit({ ...edit, area: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sales">Vertrieb</SelectItem>
+                      <SelectItem value="office">Innendienst</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Sprache</Label>
+                  <Select value={edit.language} onValueChange={v => setEdit({ ...edit, language: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CONTRACT_LANGUAGES.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Briefpapier</Label>
+                  <Select value={letterheadId} onValueChange={setLetterheadId}>
+                    <SelectTrigger><SelectValue placeholder={letterheads.length ? 'Briefpapier wählen' : 'Kein Briefpapier'} /></SelectTrigger>
+                    <SelectContent>
+                      {letterheads.map(l => <SelectItem key={l.id} value={l.id}>{l.name}{l.is_default_for_language ? ' (Standard)' : ''}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Status</Label>
+                  <Select value={edit.status} onValueChange={(v: any) => setEdit({ ...edit, status: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Entwurf</SelectItem>
+                      <SelectItem value="active">Aktiv</SelectItem>
+                      <SelectItem value="archived">Archiviert</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-          <Tabs value={tab} onValueChange={setTab} className="mt-2">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <TabsList>
-                <TabsTrigger value="edit" className="gap-1.5"><Pencil className="h-3.5 w-3.5" />Bearbeiten</TabsTrigger>
-                <TabsTrigger value="preview" className="gap-1.5"><Eye className="h-3.5 w-3.5" />Vorschau</TabsTrigger>
-                <TabsTrigger value="pdf" className="gap-1.5"><FileDown className="h-3.5 w-3.5" />PDF-Vorschau</TabsTrigger>
-              </TabsList>
-              {activeLetterhead && (
-                <Button type="button" variant="ghost" size="sm" onClick={openLetterhead} className="gap-1.5 text-muted-foreground">
-                  <FileText className="h-3.5 w-3.5" />Briefpapier ansehen
-                </Button>
-              )}
-            </div>
-
-            <TabsContent value="edit" className="mt-3 space-y-3">
               <ContractRichEditor
                 value={edit.body_html || ''}
                 onChange={html => setEdit(prev => ({ ...prev, body_html: html }))}
@@ -401,52 +377,58 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
                   </div>
                 )}
               </div>
-            </TabsContent>
+            </div>
 
-            <TabsContent value="preview" className="mt-3">
-              <div className="rounded-lg border bg-muted/30 p-6 max-h-[70vh] overflow-y-auto">
-                <div className="mx-auto bg-white shadow-sm" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
-                  {previewHtml ? (
-                    <div
-                      className="contract-page prose prose-sm max-w-none [&_table]:border-collapse [&_td]:border [&_td]:p-1.5 [&_th]:border [&_th]:p-1.5"
-                      dangerouslySetInnerHTML={{ __html: previewHtml }}
-                    />
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Vorschau erscheint, sobald Inhalt vorhanden ist.</p>
+            <div className="flex min-h-0 flex-col bg-muted/30">
+              <div className="flex shrink-0 items-center justify-between gap-2 border-b bg-background px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">{previewMode === 'live' ? 'Live-Vorschau' : 'PDF-Vorschau'}</span>
+                  {previewMode === 'live' && <Badge variant="secondary">Aktuell</Badge>}
+                </div>
+                <div className="flex items-center gap-1">
+                  {previewMode === 'pdf' && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setPreviewMode('live')}>Live-Vorschau</Button>
+                  )}
+                  <Button type="button" variant="outline" size="sm" onClick={buildPdf} disabled={pdfBusy} className="gap-1.5">
+                    {pdfBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
+                    PDF
+                  </Button>
+                  {activeLetterhead && (
+                    <Button type="button" variant="ghost" size="sm" onClick={openLetterhead} title="Briefpapier ansehen">
+                      <FileText className="h-4 w-4" />
+                    </Button>
                   )}
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Die Vorschau zeigt Beispielwerte. Beim Erstellen eines Vertrags werden die echten Daten eingesetzt.
-              </p>
-            </TabsContent>
-
-            <TabsContent value="pdf" className="mt-3 space-y-2">
-              <div className="flex items-center gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={buildPdf} disabled={pdfBusy} className="gap-1.5">
-                  {pdfBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
-                  PDF neu erzeugen
-                </Button>
-                {activeLetterhead && (
-                  <span className="text-xs text-muted-foreground">Briefpapier «{activeLetterhead.name}» wird beim finalen Vertrag hinterlegt.</span>
-                )}
-              </div>
-              <div className="rounded-lg border overflow-hidden bg-muted/30" style={{ height: '70vh' }}>
-                {pdfUrl ? (
-                  <iframe src={pdfUrl} title="PDF-Vorschau" className="w-full h-full" />
+              <div className="min-h-0 flex-1 overflow-auto p-5">
+                {previewMode === 'pdf' && pdfUrl ? (
+                  <iframe src={pdfUrl} title="PDF-Vorschau" className="h-full min-h-[600px] w-full rounded border bg-background" />
                 ) : (
-                  <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                    {pdfBusy ? 'PDF wird erzeugt…' : 'Noch keine PDF-Vorschau.'}
+                  <div className="contract-page mx-auto min-h-[900px] w-full max-w-[794px] bg-background p-10 shadow-sm">
+                    {previewHtml ? (
+                      <div
+                        className="prose prose-sm max-w-none [&_table]:border-collapse [&_td]:border [&_td]:p-1.5 [&_th]:border [&_th]:p-1.5"
+                        dangerouslySetInnerHTML={{ __html: previewHtml }}
+                      />
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Die Vorschau aktualisiert sich direkt beim Bearbeiten.</p>
+                    )}
                   </div>
                 )}
               </div>
-            </TabsContent>
-          </Tabs>
+              <div className="shrink-0 border-t bg-background px-4 py-2 text-xs text-muted-foreground">
+                Beispielwerte werden automatisch eingesetzt. Änderungen links erscheinen sofort hier.
+              </div>
+            </div>
+          </div>
 
-          <DialogFooter>
+          <DialogFooter className="shrink-0 border-t bg-background px-5 py-3 sm:justify-between">
             <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
-            <Button variant="secondary" onClick={() => save(false, 'preview')}>Speichern & Vorschau</Button>
-            <Button onClick={() => save(true)}>Speichern & schliessen</Button>
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" onClick={() => save(false)}>Speichern</Button>
+              <Button onClick={() => save(true)}>Speichern & schliessen</Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
