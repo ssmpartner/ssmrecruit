@@ -52,7 +52,41 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<Partial<Template>>(empty);
+  const [importing, setImporting] = useState(false);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
+
+  /** Bestehenden Vertrag (.docx) hochladen: Text/Formatierung wird uebernommen,
+   *  Platzhalter setzt der Nutzer anschliessend im Editor. */
+  async function importDocx(file: File) {
+    if (!file.name.toLowerCase().endsWith('.docx')) {
+      toast.error('Bitte eine Word-Datei (.docx) hochladen');
+      return;
+    }
+    setImporting(true);
+    try {
+      const path = `template-imports/${Date.now()}_${file.name.replace(/[^\w.\-]+/g, '_')}`;
+      const { error: upErr } = await supabase.storage.from('contracts').upload(path, file, { upsert: false });
+      if (upErr) throw new Error(upErr.message);
+
+      const { data, error } = await supabase.functions.invoke('docx-to-html', { body: { path } });
+      if (error) throw new Error(error.message);
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const html = (data as any)?.html;
+      if (!html) throw new Error('Keine Textausgabe erhalten');
+
+      setEdit({
+        ...empty,
+        title: file.name.replace(/\.docx$/i, ''),
+        body_html: html,
+      });
+      setOpen(true);
+      toast.success('Vertrag übernommen – jetzt Platzhalter einsetzen');
+    } catch (e: any) {
+      toast.error(e?.message || 'Import fehlgeschlagen');
+    } finally {
+      setImporting(false);
+    }
+  }
 
   function insertAtCursor(token: string) {
     const ta = bodyRef.current;
