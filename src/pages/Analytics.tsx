@@ -88,14 +88,9 @@ export default function Analytics() {
     <div className="space-y-5 print:space-y-4">
       {/* Header */}
       <div className="flex items-end justify-between print:hidden">
-        <div>
-          <div className="flex items-center gap-2.5 mb-0.5">
-            <div className="rounded-xl bg-primary/10 p-2">
-              <Activity className="h-4 w-4 text-primary" />
-            </div>
-            <h1 className="text-xl font-bold tracking-tight">Analytics</h1>
-          </div>
-          <p className="text-xs text-muted-foreground ml-[44px]">Kennzahlen, Trends und Auswertungen</p>
+        <div className="flex items-center gap-3">
+          <BarChart3 className="h-8 w-8 text-primary" />
+          <h1 className="text-2xl font-bold tracking-tight">Statistik</h1>
         </div>
         <div className="flex items-center gap-3">
           <ExportActions filtered={filtered} agencies={agencies} employees={employees} leadSources={leadSources} activeTab={activeTab} />
