@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Users, LinkIcon, Unlink, ChevronDown, RefreshCw, CheckCircle2, AlertCircle, Plus, Pencil, X } from 'lucide-react';
+import { Mail, Users, UserCog, LinkIcon, Unlink, ChevronDown, RefreshCw, CheckCircle2, AlertCircle, Plus, Pencil, X } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -81,9 +81,9 @@ export default function Employees() {
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-3">
+          <UserCog className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold tracking-tight">Mitarbeiter</h1>
-          <p className="text-muted-foreground">Eigene Benutzer anlegen oder Konten aus dem SSM Portal synchronisieren</p>
         </div>
         <div className="flex items-center gap-2">
           {canManage && (
