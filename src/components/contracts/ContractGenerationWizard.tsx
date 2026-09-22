@@ -174,14 +174,14 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
       if (q.length < 2) {
         // Vorschläge: Kandidaten in HR-Bearbeitung
         const { data: leads } = await supabase
-          .from('leads').select('id,name,email,phone,address,zip,city,birth_date')
+          .from('leads').select('id,name,email,phone,address,plz,city,birth_date')
           .eq('status', 'hr_processing').order('name', { ascending: true }).limit(10);
         setResults((leads ?? []).map(leadToPerson));
         setSearching(false);
         return;
       }
       const [{ data: leads }, { data: emps }] = await Promise.all([
-        supabase.from('leads').select('id,name,email,phone,address,zip,city,birth_date')
+        supabase.from('leads').select('id,name,email,phone,address,plz,city,birth_date')
           .eq('status', 'hr_processing')
           .or(`name.ilike.%${q}%,email.ilike.%${q}%`).limit(6),
         supabase.from('employees').select('*')
