@@ -512,7 +512,11 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
                             </button>
                           ))}
                           {!searching && results.length === 0 && (
-                            <div className="p-2 text-xs text-muted-foreground">Keine Treffer.</div>
+                            <div className="p-2 text-xs text-muted-foreground">
+                              {search.trim().length < 2
+                                ? 'Momentan keine Kandidaten vorhanden.'
+                                : 'Keine Treffer.'}
+                            </div>
                           )}
                         </div>
                       )}
