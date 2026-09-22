@@ -492,7 +492,7 @@ export default function ContractGenerationWizard({ leadId, leadName, open, onClo
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                       />
-                      {(results.length > 0 || searching) && (
+                      {true && (
                         <div className="absolute z-10 mt-1 max-h-72 overflow-y-auto w-full rounded border bg-popover shadow-md">
                           {search.trim().length < 2 && !searching && results.length > 0 && (
                             <div className="px-3 py-1.5 text-[11px] text-muted-foreground border-b">Kandidaten in HR-Bearbeitung</div>
