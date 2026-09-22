@@ -408,7 +408,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
                   <div className="contract-page mx-auto min-h-[900px] w-full max-w-[794px] bg-background p-10 shadow-sm">
                     {previewHtml ? (
                       <div
-                        className="prose prose-sm max-w-none [&_table]:border-collapse [&_td]:border [&_td]:p-1.5 [&_th]:border [&_th]:p-1.5"
+                        className="contract-preview prose prose-sm max-w-none [&_table]:border-collapse [&_table]:w-full [&_td]:border-0 [&_td]:p-1.5 [&_th]:border-0 [&_th]:p-1.5 [&_th]:text-left"
                         dangerouslySetInnerHTML={{ __html: previewHtml }}
                       />
                     ) : (
