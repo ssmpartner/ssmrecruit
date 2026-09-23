@@ -791,7 +791,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     }
     return leadsNoDemo;
 
-  }, [leads, employees, role, isSuperadmin, user]);
+  }, [leads, employees, agencies, role, isSuperadmin, user]);
 
   return (
     <LeadsContext.Provider
