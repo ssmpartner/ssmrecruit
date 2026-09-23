@@ -4597,6 +4597,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_my_agency: { Args: { _agency_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
