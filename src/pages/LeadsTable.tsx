@@ -15,6 +15,7 @@ import DuplicateLeads from '@/components/DuplicateLeads';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import ImportExportDialog from '@/components/ImportExportDialog';
 import BulkActionsBar from '@/components/BulkActionsBar';
+import MultiSelectFilter from '@/components/MultiSelectFilter';
 import AddressEnrichment from '@/components/AddressEnrichment';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -140,26 +141,27 @@ export default function LeadsTable() {
   }, [isAgencyScoped, isTeamleiter, myEmployee, employees, myAgencyIds]);
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<LeadStatus | 'controlling_query' | ''>('');
+  // Alle Filter erlauben Mehrfachauswahl
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Filter per URL übernehmen (z.B. Rückfragen-Kachel im Dashboard)
   useEffect(() => {
     const f = searchParams.get('filter');
     if (f === 'controlling_query') {
-      setStatusFilter('controlling_query');
+      setStatusFilter(['controlling_query']);
       searchParams.delete('filter');
       setSearchParams(searchParams, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const [sourceFilter, setSourceFilter] = useState('');
-  const [agencyFilter, setAgencyFilter] = useState('');
-  const [cantonFilter, setCantonFilter] = useState('');
-  const [employeeFilter, setEmployeeFilter] = useState('');
-  // Mitarbeiterliste zusätzlich auf die gewählte Agentur einschränken
+  const [sourceFilter, setSourceFilter] = useState<string[]>([]);
+  const [agencyFilter, setAgencyFilter] = useState<string[]>([]);
+  const [cantonFilter, setCantonFilter] = useState<string[]>([]);
+  const [employeeFilter, setEmployeeFilter] = useState<string[]>([]);
+  // Mitarbeiterliste zusätzlich auf die gewählten Agenturen einschränken
   const employeeOptions = useMemo(
-    () => (agencyFilter ? visibleEmployees.filter(e => e.agencyId === agencyFilter) : visibleEmployees),
+    () => (agencyFilter.length > 0 ? visibleEmployees.filter(e => agencyFilter.includes(e.agencyId)) : visibleEmployees),
     [visibleEmployees, agencyFilter],
   );
   const [search, setSearch] = useState('');
@@ -223,11 +225,14 @@ export default function LeadsTable() {
 
   const filtered = useMemo(() => {
     return lifecycleLeads.filter(l => {
-      if (statusFilter === 'controlling_query') { if (!l.controllingQueryOpen) return false; } else if (statusFilter && l.status !== statusFilter) return false;
-      if (sourceFilter && l.source !== sourceFilter) return false;
-      if (agencyFilter && l.agencyId !== agencyFilter) return false;
-      if (employeeFilter && l.employeeId !== employeeFilter) return false;
-      if (cantonFilter && l.cantonCode !== cantonFilter) return false;
+      if (statusFilter.length > 0) {
+        const matchesStatus = statusFilter.some(f => f === 'controlling_query' ? !!l.controllingQueryOpen : l.status === f);
+        if (!matchesStatus) return false;
+      }
+      if (sourceFilter.length > 0 && !sourceFilter.includes(l.source)) return false;
+      if (agencyFilter.length > 0 && !agencyFilter.includes(l.agencyId)) return false;
+      if (employeeFilter.length > 0 && !employeeFilter.includes(l.employeeId)) return false;
+      if (cantonFilter.length > 0 && !cantonFilter.includes(l.cantonCode ?? '')) return false;
       if (dateFrom) {
         const created = new Date(l.createdAt);
         if (created < new Date(dateFrom.setHours(0, 0, 0, 0))) return false;
@@ -414,10 +419,10 @@ export default function LeadsTable() {
     URL.revokeObjectURL(url);
   }, []);
 
-  const hasFilters = statusFilter || sourceFilter || agencyFilter || employeeFilter || cantonFilter || search || dateFrom || dateTo;
+  const hasFilters = statusFilter.length > 0 || sourceFilter.length > 0 || agencyFilter.length > 0 || employeeFilter.length > 0 || cantonFilter.length > 0 || !!search || !!dateFrom || !!dateTo;
 
   const clearFilters = () => {
-    setStatusFilter(''); setSourceFilter(''); setAgencyFilter(''); setEmployeeFilter(''); setCantonFilter(''); setSearch(''); setDateFrom(undefined); setDateTo(undefined);
+    setStatusFilter([]); setSourceFilter([]); setAgencyFilter([]); setEmployeeFilter([]); setCantonFilter([]); setSearch(''); setDateFrom(undefined); setDateTo(undefined);
   };
 
   const toggleSelect = useCallback((id: string) => {
@@ -618,29 +623,45 @@ export default function LeadsTable() {
             />
             {!isReviewRole && (
               <>
-                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | 'controlling_query' | '')} className={cn(selectCls, statusFilter === 'controlling_query' && 'border-red-300 text-red-700')}>
-                  <option value="">Alle Status</option>
-                  {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                  <option value="controlling_query">Rückfrage</option>
-                </select>
-                <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className={selectCls}>
-                  <option value="">Alle Quellen</option>
-                  {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                </select>
+                <MultiSelectFilter
+                  allLabel="Alle Status"
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  highlight={statusFilter.includes('controlling_query')}
+                  options={[
+                    ...Object.entries(statusConfig).map(([k, v]) => ({ value: k, label: v.label })),
+                    { value: 'controlling_query', label: 'Rückfrage' },
+                  ]}
+                />
+                <MultiSelectFilter
+                  allLabel="Alle Quellen"
+                  value={sourceFilter}
+                  onChange={setSourceFilter}
+                  options={leadSources.map(s => ({ value: s.id, label: s.label }))}
+                />
                 {!isRestricted && (
-                  <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className={selectCls}>
-                    <option value="">Alle Agenturen</option>
-                    {visibleAgencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                  </select>
+                  <MultiSelectFilter
+                    allLabel="Alle Agenturen"
+                    value={agencyFilter}
+                    onChange={setAgencyFilter}
+                    searchable
+                    options={visibleAgencies.map(a => ({ value: a.id, label: a.name }))}
+                  />
                 )}
-                <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
-                  <option value="">{isTeamleiter ? 'Nur ich' : isAgencyScoped ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
-                  {employeeOptions.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                </select>
-                <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>
-                  <option value="">Alle Kantone</option>
-                  {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
-                </select>
+                <MultiSelectFilter
+                  allLabel={isTeamleiter ? 'Nur ich' : isAgencyScoped ? 'Mein Team' : 'Alle Mitarbeiter'}
+                  value={employeeFilter}
+                  onChange={setEmployeeFilter}
+                  searchable
+                  options={employeeOptions.map(e => ({ value: e.id, label: e.name }))}
+                />
+                <MultiSelectFilter
+                  allLabel="Alle Kantone"
+                  value={cantonFilter}
+                  onChange={setCantonFilter}
+                  searchable
+                  options={cantons.map(c => ({ value: c.code, label: `${c.name} (${c.code})` }))}
+                />
               </>
             )}
 
