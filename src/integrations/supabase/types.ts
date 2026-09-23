@@ -61,6 +61,7 @@ export type Database = {
           language: string
           latitude: number | null
           longitude: number | null
+          manager_employee_id: string | null
           monthly_lead_quota: number | null
           name: string
           plz: string
@@ -79,6 +80,7 @@ export type Database = {
           language?: string
           latitude?: number | null
           longitude?: number | null
+          manager_employee_id?: string | null
           monthly_lead_quota?: number | null
           name: string
           plz?: string
@@ -97,6 +99,7 @@ export type Database = {
           language?: string
           latitude?: number | null
           longitude?: number | null
+          manager_employee_id?: string | null
           monthly_lead_quota?: number | null
           name?: string
           plz?: string
@@ -104,7 +107,15 @@ export type Database = {
           region?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "agencies_manager_employee_id_fkey"
+            columns: ["manager_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ai_agent_deployments: {
         Row: {
