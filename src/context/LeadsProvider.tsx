@@ -780,7 +780,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     // Agency Manager & Backoffice: see all leads of their agency
     if (role === 'agency_manager' || role === 'backoffice') {
       if (!myEmployee) return [];
-      return leadsNoDemo.filter(l => l.agencyId === myEmployee.agencyId);
+      // Eigene Agentur + alle Agenturen, die diese Person als Agenturleiter führt
+      const myAgencyIds = new Set<string>([myEmployee.agencyId, ...agencies.filter(a => a.managerEmployeeId === myEmployee.id).map(a => a.id)]);
+      return leadsNoDemo.filter(l => myAgencyIds.has(l.agencyId));
     }
     // Teamleiter: see ONLY leads personally assigned to them
     if (role === 'teamleiter') {
