@@ -7,9 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, Save, Palette, Navigation, Loader2 } from 'lucide-react';
+import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, UserPlus, UserMinus, Save, Palette, Navigation, Loader2 } from 'lucide-react';
 import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, AGENCY_COLORS, type Agency } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -21,6 +22,8 @@ interface AgencyDetailSheetProps {
 
 export default function AgencyDetailSheet({ agency, open, onOpenChange }: AgencyDetailSheetProps) {
   const { updateAgency, employees, leads, updateEmployee, agencies } = useLeads();
+  const { isSuperadmin, role } = useAuth();
+  const canManageEmployees = isSuperadmin || role === 'admin';
   const [form, setForm] = useState({
     name: '',
     contactEmail: '',
@@ -38,6 +41,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
     managerEmployeeId: '' as string,
   });
   const [dirty, setDirty] = useState(false);
+  const [addEmployeeId, setAddEmployeeId] = useState('');
   const [geocoding, setGeocoding] = useState(false);
 
   useEffect(() => {
@@ -98,6 +102,12 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
   const agencyEmployees = employees.filter(e => e.agencyId === agency.id);
   const agencyLeads = leads.filter(l => l.agencyId === agency.id);
   const hired = agencyLeads.filter(l => l.status === 'hired').length;
+  const otherEmployees = employees
+    .filter(e => e.agencyId !== agency.id)
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const fallbackAgency = agencies.find(a => a.name === 'Hauptsitz' && a.id !== agency.id)
+    ?? agencies.find(a => a.id !== agency.id)
+    ?? null;
   const otherLedAgencies = form.managerEmployeeId
     ? agencies.filter(a => a.id !== agency.id && a.managerEmployeeId === form.managerEmployeeId)
     : [];
@@ -431,14 +441,55 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
           <Separator />
 
           {/* Employees list */}
-          {agencyEmployees.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Mitarbeiter</h3>
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+              Mitarbeiter ({agencyEmployees.length})
+            </h3>
+
+            {canManageEmployees && (
+              <div className="flex items-end gap-2">
+                <div className="flex-1 space-y-1.5">
+                  <Label htmlFor="add-employee" className="text-xs">Mitarbeiter hinzufügen</Label>
+                  <select
+                    id="add-employee"
+                    value={addEmployeeId}
+                    onChange={e => setAddEmployeeId(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <option value="">— Mitarbeiter auswählen —</option>
+                    {otherEmployees.map(emp => (
+                      <option key={emp.id} value={emp.id}>
+                        {emp.name} ({agencies.find(a => a.id === emp.agencyId)?.name ?? 'ohne Agentur'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Button
+                  onClick={async () => {
+                    const emp = employees.find(e => e.id === addEmployeeId);
+                    if (!emp) return;
+                    await updateEmployee(emp.id, { agencyId: agency.id });
+                    setAddEmployeeId('');
+                    toast.success(`${emp.name} ist jetzt in ${agency.name}`);
+                  }}
+                  disabled={!addEmployeeId}
+                  className="gap-2"
+                >
+                  <UserPlus className="h-4 w-4" /> Hinzufügen
+                </Button>
+              </div>
+            )}
+
+            {agencyEmployees.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Dieser Agentur sind noch keine Mitarbeiter zugewiesen.</p>
+            ) : (
               <div className="space-y-2">
                 {agencyEmployees.map(emp => (
                   <div key={emp.id} className="flex items-center gap-3 rounded-lg border p-3">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                      {emp.name.split(' ').map(n => n[0]).join('')}
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary overflow-hidden shrink-0">
+                      {emp.avatar
+                        ? <img src={emp.avatar} alt={emp.name} className="h-full w-full object-cover" />
+                        : emp.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{emp.name}</p>
@@ -456,12 +507,33 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
                         </Label>
                       </div>
                       <Badge variant="secondary" className="text-xs">{emp.role}</Badge>
+                      {canManageEmployees && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          title={fallbackAgency ? `Aus Agentur entfernen (wechselt zu ${fallbackAgency.name})` : 'Keine andere Agentur vorhanden'}
+                          disabled={!fallbackAgency}
+                          onClick={async () => {
+                            if (!fallbackAgency) return;
+                            await updateEmployee(emp.id, { agencyId: fallbackAgency.id });
+                            if (agency.managerEmployeeId === emp.id) {
+                              await updateAgency(agency.id, { managerEmployeeId: null });
+                              setForm(p => ({ ...p, managerEmployeeId: '' }));
+                            }
+                            toast.success(`${emp.name} wurde entfernt und zu ${fallbackAgency.name} verschoben`);
+                          }}
+                        >
+                          <UserMinus className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
+
 
           {/* Save button */}
           <Button onClick={handleSave} disabled={!dirty} className="w-full gap-2" size="lg">
