@@ -4,9 +4,63 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.62.0';
+const APP_VERSION = '2.70.0';
 
 const versionHistory = [
+  { version: '2.70.0', date: '23.09.2026', changes: [
+    'Leads-Filter mit Mehrfachauswahl: Status, Quelle, Agentur, Mitarbeiter und Kanton lassen sich gleichzeitig mehrfach auswählen – mit Suchfeld, «Alle wählen» und «Auswahl leeren»',
+    'Farben in den Filter-Dropdowns: Status erscheint als farbiges Etikett, Quelle, Agentur und Mitarbeiter mit farbigem Punkt (Agenturfarbe) – auch im geschlossenen Feld',
+    'Agenturleiter: Zuständige Leitung pro Agentur auswählbar, eine Person kann mehrere Agenturen führen («Leitet zusätzlich: …») und sieht Leads sowie Statistik aller geleiteten Agenturen',
+    'Mitarbeiter-Verwaltung direkt in der Agentur: Personen hinzufügen (Agenturwechsel) oder entfernen (zurück zum Hauptsitz) – nur für Superadmin und Admin',
+  ]},
+  { version: '2.69.0', date: '22.09.2026', changes: [
+    'Verträge-Modul vereinfacht: Einrichtung zeigt nur noch «Vorlagen» und «Briefpapier»',
+    'Neuer Vertrag in 3 Schritten: Person wählen (nur Kandidaten in HR-Bearbeitung), Angaben und Vorlage, Vorschau – Personalien und zuständige Führungskraft werden automatisch übernommen',
+    'Karrierestufe wird erkannt: Fixlohn, Spesen, Score-Punkte sowie Monats- und Jahreslohn kommen automatisch aus dem hinterlegten Karriereplan, fehlende Werte werden markiert',
+    'Echter Text-Editor für Vorlagen mit Formatierung, Tabellen-Leiste (Zeilen/Spalten, Zellen verbinden, Kopfzeile) und verstellbaren Spaltenbreiten',
+    'Platzhalter mit Klartext-Namen («Kandidat-Vorname», «Führungskraft-Vorname», «Karrierestufe-Fixlohn») als farbige Chips, frei im Text platzierbar',
+    'Bearbeiten links, Live-Vorschau rechts: echte A4-Seiten mit Briefpapier als Hintergrund, Seitenzahlen, erhaltene Leerzeilen, Tabellen ohne Linien – plus PDF-Vorschau',
+    'Bestehende Verträge als Word-Datei (.docx) hochladen: Text, Überschriften, Listen und Tabellen werden übernommen',
+    'Hinweis beim Erstellen, wenn eine Vorlage noch auf «Entwurf» steht und darum nicht verwendet wird',
+  ]},
+  { version: '2.68.0', date: '19.09.2026', changes: [
+    'Aufgaben: Jeder Mitarbeiter kann eigene Aufgaben erstellen und Personen der eigenen Agentur zuweisen (Titel, Beschreibung, Priorität, Fälligkeit, optional Kandidat)',
+    'Aufteilung in «Meine Aufgaben» (selbst erstellt oder übernommen) und «KI-Vorschläge» (generierte Aufgaben, übernehmen oder verwerfen)',
+    'Blättern mit 20 Aufgaben pro Seite inklusive Anzeige «1–20 von X» – Tab- oder Filterwechsel springt auf Seite 1',
+    'Eigene Aufgaben können gelöscht werden, auch bereits erledigte',
+  ]},
+  { version: '2.67.0', date: '17.09.2026', changes: [
+    'Rückfragen sichtbar gemacht: Ein einziges rotes, blinkendes Status-Kennzeichen «Rückfrage» ersetzt die doppelte Anzeige – in Liste, Filter und Detailfenster',
+    'Rückfrage-Fenster mit Kommentar des Controllings und Knopf «Ergänzt – erneut zur Prüfung»',
+    'Dashboard-Kachel «Rückfragen» mit Anzahl und pulsierendem roten Punkt, Klick öffnet den Rückfragen-Filter',
+    'Kandidaten mit offener Rückfrage verschwinden aus allen Controlling-Ansichten und erscheinen erst nach erneuter Einreichung wieder',
+    'Ablehnung schliesst eine offene Rückfrage automatisch (nur noch im Aktivitätsverlauf) und informiert die zuständige Person per Glocke und E-Mail',
+  ]},
+  { version: '2.66.0', date: '15.09.2026', changes: [
+    'Leads-Seite mit Umschalter «Liste / Kanban»: farbige Spaltentitel je Status, Zahnrad zur Auswahl sichtbarer Status, neutrale Karten',
+    'Kanban-Karten zeigen beim Daraufzeigen Position, Telefon, E-Mail, Agentur und Quelle, färben sich in der Agenturfarbe und lassen sich markieren',
+    'Aktionen in der Listenansicht als Drei-Punkte-Menü (Archivieren, Löschen, Wiederherstellen)',
+    'Zähler «X von Y Leads» neben dem Umschalter, Tab «Doppelte Leads» heisst jetzt «Duplikate»',
+    'Export und Import als ein Icon-Knopf mit Modal (CSV-Export, CSV-Import, Adressen ergänzen)',
+    'Für Controlling, Geschäftsleitung und HR heisst der Bereich «Kandidaten» statt «Leads»',
+  ]},
+  { version: '2.65.0', date: '12.09.2026', changes: [
+    'Seitenleiste: schwebender Kreis-Knopf an der Kante zum Ein- und Ausklappen, Anzeigefehler beim Animieren behoben, «Abmelden» nur noch im Profil-Menü',
+    'Einheitliche Seitentitel mit dem jeweiligen Symbol aus der Seitenleiste (Kalender, Agenturen, Mitarbeiter, Statistik, Aufgaben, Verträge, Leads) ohne Untertitel',
+    'Filterleiste auf «Pipeline» mit Mitarbeiter, Status und Zeitraum; «Pipeline» aus der Seitenleiste entfernt',
+  ]},
+  { version: '2.64.0', date: '11.09.2026', changes: [
+    'Neue Mitarbeiter direkt in Recruit anlegen: E-Mail, Passwort, Profilfoto, Rolle, Agentur und «Leads erhalten» – mit Tabs «Benutzer» und «SSO-Sync»',
+    'Profilfotos werden in den Mitarbeiterkarten angezeigt',
+    'Pflichtdokumente: Lebenslauf, B-Formular und Krankenkassekarte müssen vorliegen, sonst ist das Absenden gesperrt',
+  ]},
+  { version: '2.63.0', date: '10.09.2026', changes: [
+    'Neue Integrationen: LiveKit, Zapier, Abacus und Microsoft 365 als echte Konnektoren mit Originallogos und Statusanzeige',
+    'Integrationen als kompakte Kacheln, die sich beim Klicken in einem Seiten-Modal öffnen; Eingangs-Webhook links hervorgehoben',
+    'Einstellungen als Kachel-Übersicht, jeder Punkt öffnet eine eigene Seite mit Zurück-Link',
+    'Controlling: Dokumente («Insights R4») öffnen in einem Modal statt in einem neuen Browserfenster; Spalte im HR-Bereich entfernt',
+    'Benachrichtigungen bei Rückfragen, Ablehnungen und Freigaben des Controllings gehen gezielt an die zuständige Person (Glocke und E-Mail)',
+  ]},
   { version: '2.62.0', date: '09.09.2026', changes: [
     'Controlling-Freigabe technisch abgesichert: Nur Rolle Controlling (aktuell Manuel Gomes) und Superadmin können freigeben – Datenbank-Trigger blockieren Statuswechsel auf «Controlling freigegeben» und Freigabe-Einträge unberechtigter Benutzer',
     'Freigabe-Optionen sind für nicht zuständige Rollen komplett unsichtbar (nicht mehr im DOM) – stattdessen neutraler Hinweis zum aktuellen Prozessstand, keine Umgehungsmöglichkeit',
