@@ -20,7 +20,7 @@ interface AgencyDetailSheetProps {
 }
 
 export default function AgencyDetailSheet({ agency, open, onOpenChange }: AgencyDetailSheetProps) {
-  const { updateAgency, employees, leads, updateEmployee } = useLeads();
+  const { updateAgency, employees, leads, updateEmployee, agencies } = useLeads();
   const [form, setForm] = useState({
     name: '',
     contactEmail: '',
@@ -223,6 +223,35 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
               ))}
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="agency-manager" className="flex items-center gap-1.5">
+              <UserCheck className="h-3.5 w-3.5" /> Zuständiger Agenturleiter
+            </Label>
+            <select
+              id="agency-manager"
+              value={form.managerEmployeeId}
+              onChange={e => update('managerEmployeeId', e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">— Kein Agenturleiter —</option>
+              {[...employees].sort((a, b) => a.name.localeCompare(b.name)).map(emp => (
+                <option key={emp.id} value={emp.id}>
+                  {emp.name}{emp.agencyId !== agency.id ? ` (${agencies.find(a => a.id === emp.agencyId)?.name ?? 'andere Agentur'})` : ''}
+                </option>
+              ))}
+            </select>
+            {form.managerEmployeeId && otherLedAgencies.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Leitet zusätzlich: {otherLedAgencies.map(a => a.name).join(', ')}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Ein Agenturleiter kann mehreren Agenturen zugewiesen werden.
+            </p>
+          </div>
+
+
 
           <Separator />
 
