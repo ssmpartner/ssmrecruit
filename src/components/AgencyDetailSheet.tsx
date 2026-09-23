@@ -20,7 +20,7 @@ interface AgencyDetailSheetProps {
 }
 
 export default function AgencyDetailSheet({ agency, open, onOpenChange }: AgencyDetailSheetProps) {
-  const { updateAgency, employees, leads, updateEmployee } = useLeads();
+  const { updateAgency, employees, leads, updateEmployee, agencies } = useLeads();
   const [form, setForm] = useState({
     name: '',
     contactEmail: '',
@@ -35,6 +35,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
     longitude: null as number | null,
     radiusKm: 30,
     monthlyLeadQuota: null as number | null,
+    managerEmployeeId: '' as string,
   });
   const [dirty, setDirty] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
@@ -55,6 +56,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
         longitude: agency.longitude ?? null,
         radiusKm: agency.radiusKm ?? 30,
         monthlyLeadQuota: agency.monthlyLeadQuota ?? null,
+        managerEmployeeId: agency.managerEmployeeId ?? '',
       });
       setDirty(false);
     }
@@ -96,6 +98,9 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
   const agencyEmployees = employees.filter(e => e.agencyId === agency.id);
   const agencyLeads = leads.filter(l => l.agencyId === agency.id);
   const hired = agencyLeads.filter(l => l.status === 'hired').length;
+  const otherLedAgencies = form.managerEmployeeId
+    ? agencies.filter(a => a.id !== agency.id && a.managerEmployeeId === form.managerEmployeeId)
+    : [];
 
   const update = (key: string, value: any) => {
     setForm(p => ({ ...p, [key]: value }));
@@ -143,6 +148,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
       longitude: lng,
       radiusKm: form.radiusKm,
       monthlyLeadQuota: form.monthlyLeadQuota,
+      managerEmployeeId: form.managerEmployeeId || null,
     });
     setDirty(false);
     toast.success('Agentur erfolgreich aktualisiert');
@@ -220,6 +226,35 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
               ))}
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="agency-manager" className="flex items-center gap-1.5">
+              <UserCheck className="h-3.5 w-3.5" /> Zuständiger Agenturleiter
+            </Label>
+            <select
+              id="agency-manager"
+              value={form.managerEmployeeId}
+              onChange={e => update('managerEmployeeId', e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">— Kein Agenturleiter —</option>
+              {[...employees].sort((a, b) => a.name.localeCompare(b.name)).map(emp => (
+                <option key={emp.id} value={emp.id}>
+                  {emp.name}{emp.agencyId !== agency.id ? ` (${agencies.find(a => a.id === emp.agencyId)?.name ?? 'andere Agentur'})` : ''}
+                </option>
+              ))}
+            </select>
+            {form.managerEmployeeId && otherLedAgencies.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Leitet zusätzlich: {otherLedAgencies.map(a => a.name).join(', ')}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Ein Agenturleiter kann mehreren Agenturen zugewiesen werden.
+            </p>
+          </div>
+
+
 
           <Separator />
 

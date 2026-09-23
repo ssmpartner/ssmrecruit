@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, Plus, Globe, MapPin, Languages } from 'lucide-react';
+import { Building2, Plus, Globe, MapPin, Languages, UserCheck } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, AGENCY_COLORS, type Agency } from '@/lib/mock-data';
@@ -168,6 +168,11 @@ export default function Agencies() {
                   {agency.language && (
                     <Badge variant="secondary" className="text-xs gap-1">
                       <Languages className="h-3 w-3" /> {langLabel(agency.language)}
+                    </Badge>
+                  )}
+                  {agency.managerEmployeeId && (
+                    <Badge variant="secondary" className="text-xs gap-1">
+                      <UserCheck className="h-3 w-3" /> {employees.find(e => e.id === agency.managerEmployeeId)?.name ?? 'Agenturleiter'}
                     </Badge>
                   )}
                   {agency.allowedCantons.length > 0 && (

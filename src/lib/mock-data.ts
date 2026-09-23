@@ -165,6 +165,7 @@ export interface Agency {
   longitude: number | null;
   radiusKm: number;
   monthlyLeadQuota: number | null;
+  managerEmployeeId?: string | null;
 }
 
 export const AGENCY_COLORS = [

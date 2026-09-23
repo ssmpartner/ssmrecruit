@@ -91,6 +91,7 @@ function dbToAgency(row: any): Agency {
     longitude: row.longitude ?? null,
     radiusKm: row.radius_km ?? 30,
     monthlyLeadQuota: row.monthly_lead_quota ?? null,
+    managerEmployeeId: row.manager_employee_id ?? null,
   };
 }
 
@@ -691,6 +692,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     if (updates.longitude !== undefined) dbUpdates.longitude = updates.longitude;
     if (updates.radiusKm !== undefined) dbUpdates.radius_km = updates.radiusKm;
     if (updates.monthlyLeadQuota !== undefined) dbUpdates.monthly_lead_quota = updates.monthlyLeadQuota;
+    if (updates.managerEmployeeId !== undefined) dbUpdates.manager_employee_id = updates.managerEmployeeId || null;
     await supabase.from('agencies').update(dbUpdates as any).eq('id', id);
   }, []);
 
