@@ -170,6 +170,11 @@ export default function Agencies() {
                       <Languages className="h-3 w-3" /> {langLabel(agency.language)}
                     </Badge>
                   )}
+                  {agency.managerEmployeeId && (
+                    <Badge variant="secondary" className="text-xs gap-1">
+                      <UserCheck className="h-3 w-3" /> {employees.find(e => e.id === agency.managerEmployeeId)?.name ?? 'Agenturleiter'}
+                    </Badge>
+                  )}
                   {agency.allowedCantons.length > 0 && (
                     <Badge variant="secondary" className="text-xs gap-1">
                       <Globe className="h-3 w-3" /> {agency.allowedCantons.length} Kantone
