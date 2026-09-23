@@ -224,11 +224,14 @@ export default function LeadsTable() {
 
   const filtered = useMemo(() => {
     return lifecycleLeads.filter(l => {
-      if (statusFilter === 'controlling_query') { if (!l.controllingQueryOpen) return false; } else if (statusFilter && l.status !== statusFilter) return false;
-      if (sourceFilter && l.source !== sourceFilter) return false;
-      if (agencyFilter && l.agencyId !== agencyFilter) return false;
-      if (employeeFilter && l.employeeId !== employeeFilter) return false;
-      if (cantonFilter && l.cantonCode !== cantonFilter) return false;
+      if (statusFilter.length > 0) {
+        const matchesStatus = statusFilter.some(f => f === 'controlling_query' ? !!l.controllingQueryOpen : l.status === f);
+        if (!matchesStatus) return false;
+      }
+      if (sourceFilter.length > 0 && !sourceFilter.includes(l.source)) return false;
+      if (agencyFilter.length > 0 && !agencyFilter.includes(l.agencyId)) return false;
+      if (employeeFilter.length > 0 && !employeeFilter.includes(l.employeeId)) return false;
+      if (cantonFilter.length > 0 && !cantonFilter.includes(l.cantonCode ?? '')) return false;
       if (dateFrom) {
         const created = new Date(l.createdAt);
         if (created < new Date(dateFrom.setHours(0, 0, 0, 0))) return false;
@@ -415,10 +418,10 @@ export default function LeadsTable() {
     URL.revokeObjectURL(url);
   }, []);
 
-  const hasFilters = statusFilter || sourceFilter || agencyFilter || employeeFilter || cantonFilter || search || dateFrom || dateTo;
+  const hasFilters = statusFilter.length > 0 || sourceFilter.length > 0 || agencyFilter.length > 0 || employeeFilter.length > 0 || cantonFilter.length > 0 || !!search || !!dateFrom || !!dateTo;
 
   const clearFilters = () => {
-    setStatusFilter(''); setSourceFilter(''); setAgencyFilter(''); setEmployeeFilter(''); setCantonFilter(''); setSearch(''); setDateFrom(undefined); setDateTo(undefined);
+    setStatusFilter([]); setSourceFilter([]); setAgencyFilter([]); setEmployeeFilter([]); setCantonFilter([]); setSearch(''); setDateFrom(undefined); setDateTo(undefined);
   };
 
   const toggleSelect = useCallback((id: string) => {
