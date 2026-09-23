@@ -91,6 +91,7 @@ function dbToAgency(row: any): Agency {
     longitude: row.longitude ?? null,
     radiusKm: row.radius_km ?? 30,
     monthlyLeadQuota: row.monthly_lead_quota ?? null,
+    managerEmployeeId: row.manager_employee_id ?? null,
   };
 }
 
