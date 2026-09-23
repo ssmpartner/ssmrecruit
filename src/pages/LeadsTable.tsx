@@ -128,12 +128,16 @@ export default function LeadsTable() {
     return employees.find(e => (e.email || '').toLowerCase() === userEmail);
   }, [employees, user]);
   const isRestricted = isAgencyScoped || isTeamleiter;
-  const visibleAgencies = useMemo(() => isRestricted && myEmployee ? agencies.filter(a => a.id === myEmployee.agencyId) : agencies, [isRestricted, myEmployee, agencies]);
+  const myAgencyIds = useMemo(() => {
+    if (!myEmployee) return [] as string[];
+    return Array.from(new Set([myEmployee.agencyId, ...agencies.filter(a => a.managerEmployeeId === myEmployee.id).map(a => a.id)]));
+  }, [myEmployee, agencies]);
+  const visibleAgencies = useMemo(() => isRestricted && myEmployee ? agencies.filter(a => myAgencyIds.includes(a.id)) : agencies, [isRestricted, myEmployee, agencies, myAgencyIds]);
   const visibleEmployees = useMemo(() => {
     if (isTeamleiter && myEmployee) return employees.filter(e => e.id === myEmployee.id);
-    if (isAgencyScoped && myEmployee) return employees.filter(e => e.agencyId === myEmployee.agencyId);
+    if (isAgencyScoped && myEmployee) return employees.filter(e => myAgencyIds.includes(e.agencyId));
     return employees;
-  }, [isAgencyScoped, isTeamleiter, myEmployee, employees]);
+  }, [isAgencyScoped, isTeamleiter, myEmployee, employees, myAgencyIds]);
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'controlling_query' | ''>('');

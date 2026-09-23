@@ -43,6 +43,13 @@
       "when": 1790159679556,
       "tag": "0005_add_agency_manager",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790160441924,
+      "tag": "0006_agency_manager_multi_agency_scope",
+      "breakpoints": true
     }
   ]
 }
