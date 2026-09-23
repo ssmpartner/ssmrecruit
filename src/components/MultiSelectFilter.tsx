@@ -39,6 +39,8 @@ export default function MultiSelectFilter({ allLabel, options, value, onChange, 
     onChange(value.includes(v) ? value.filter(x => x !== v) : [...value, v]);
   };
 
+  const single = value.length === 1 ? options.find(o => o.value === value[0]) : undefined;
+
   const label = value.length === 0
     ? allLabel
     : value.length === 1
