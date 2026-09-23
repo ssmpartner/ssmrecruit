@@ -140,26 +140,27 @@ export default function LeadsTable() {
   }, [isAgencyScoped, isTeamleiter, myEmployee, employees, myAgencyIds]);
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<LeadStatus | 'controlling_query' | ''>('');
+  // Alle Filter erlauben Mehrfachauswahl
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Filter per URL übernehmen (z.B. Rückfragen-Kachel im Dashboard)
   useEffect(() => {
     const f = searchParams.get('filter');
     if (f === 'controlling_query') {
-      setStatusFilter('controlling_query');
+      setStatusFilter(['controlling_query']);
       searchParams.delete('filter');
       setSearchParams(searchParams, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const [sourceFilter, setSourceFilter] = useState('');
-  const [agencyFilter, setAgencyFilter] = useState('');
-  const [cantonFilter, setCantonFilter] = useState('');
-  const [employeeFilter, setEmployeeFilter] = useState('');
-  // Mitarbeiterliste zusätzlich auf die gewählte Agentur einschränken
+  const [sourceFilter, setSourceFilter] = useState<string[]>([]);
+  const [agencyFilter, setAgencyFilter] = useState<string[]>([]);
+  const [cantonFilter, setCantonFilter] = useState<string[]>([]);
+  const [employeeFilter, setEmployeeFilter] = useState<string[]>([]);
+  // Mitarbeiterliste zusätzlich auf die gewählten Agenturen einschränken
   const employeeOptions = useMemo(
-    () => (agencyFilter ? visibleEmployees.filter(e => e.agencyId === agencyFilter) : visibleEmployees),
+    () => (agencyFilter.length > 0 ? visibleEmployees.filter(e => agencyFilter.includes(e.agencyId)) : visibleEmployees),
     [visibleEmployees, agencyFilter],
   );
   const [search, setSearch] = useState('');
