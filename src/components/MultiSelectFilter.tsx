@@ -57,7 +57,14 @@ export default function MultiSelectFilter({ allLabel, options, value, onChange, 
             className,
           )}
         >
-          <span className="truncate">{label}</span>
+          {single?.dotColor && (
+            <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: single.dotColor }} />
+          )}
+          {single?.badgeClass ? (
+            <span className={cn('truncate rounded-md px-1.5 py-0.5 text-xs font-medium', single.badgeClass)}>{label}</span>
+          ) : (
+            <span className="truncate">{label}</span>
+          )}
           {value.length > 1 && (
             <span className="rounded-full bg-primary/10 px-1.5 text-[10px] font-semibold text-primary">{value.length}</span>
           )}
