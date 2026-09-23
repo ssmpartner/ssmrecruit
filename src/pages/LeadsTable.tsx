@@ -15,6 +15,7 @@ import DuplicateLeads from '@/components/DuplicateLeads';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import ImportExportDialog from '@/components/ImportExportDialog';
 import BulkActionsBar from '@/components/BulkActionsBar';
+import MultiSelectFilter from '@/components/MultiSelectFilter';
 import AddressEnrichment from '@/components/AddressEnrichment';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -622,29 +623,45 @@ export default function LeadsTable() {
             />
             {!isReviewRole && (
               <>
-                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as LeadStatus | 'controlling_query' | '')} className={cn(selectCls, statusFilter === 'controlling_query' && 'border-red-300 text-red-700')}>
-                  <option value="">Alle Status</option>
-                  {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                  <option value="controlling_query">Rückfrage</option>
-                </select>
-                <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className={selectCls}>
-                  <option value="">Alle Quellen</option>
-                  {leadSources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                </select>
+                <MultiSelectFilter
+                  allLabel="Alle Status"
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  highlight={statusFilter.includes('controlling_query')}
+                  options={[
+                    ...Object.entries(statusConfig).map(([k, v]) => ({ value: k, label: v.label })),
+                    { value: 'controlling_query', label: 'Rückfrage' },
+                  ]}
+                />
+                <MultiSelectFilter
+                  allLabel="Alle Quellen"
+                  value={sourceFilter}
+                  onChange={setSourceFilter}
+                  options={leadSources.map(s => ({ value: s.id, label: s.label }))}
+                />
                 {!isRestricted && (
-                  <select value={agencyFilter} onChange={e => setAgencyFilter(e.target.value)} className={selectCls}>
-                    <option value="">Alle Agenturen</option>
-                    {visibleAgencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                  </select>
+                  <MultiSelectFilter
+                    allLabel="Alle Agenturen"
+                    value={agencyFilter}
+                    onChange={setAgencyFilter}
+                    searchable
+                    options={visibleAgencies.map(a => ({ value: a.id, label: a.name }))}
+                  />
                 )}
-                <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className={selectCls}>
-                  <option value="">{isTeamleiter ? 'Nur ich' : isAgencyScoped ? 'Mein Team' : 'Alle Mitarbeiter'}</option>
-                  {employeeOptions.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                </select>
-                <select value={cantonFilter} onChange={e => setCantonFilter(e.target.value)} className={selectCls}>
-                  <option value="">Alle Kantone</option>
-                  {cantons.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
-                </select>
+                <MultiSelectFilter
+                  allLabel={isTeamleiter ? 'Nur ich' : isAgencyScoped ? 'Mein Team' : 'Alle Mitarbeiter'}
+                  value={employeeFilter}
+                  onChange={setEmployeeFilter}
+                  searchable
+                  options={employeeOptions.map(e => ({ value: e.id, label: e.name }))}
+                />
+                <MultiSelectFilter
+                  allLabel="Alle Kantone"
+                  value={cantonFilter}
+                  onChange={setCantonFilter}
+                  searchable
+                  options={cantons.map(c => ({ value: c.code, label: `${c.name} (${c.code})` }))}
+                />
               </>
             )}
 
