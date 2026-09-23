@@ -98,6 +98,9 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
   const agencyEmployees = employees.filter(e => e.agencyId === agency.id);
   const agencyLeads = leads.filter(l => l.agencyId === agency.id);
   const hired = agencyLeads.filter(l => l.status === 'hired').length;
+  const otherLedAgencies = form.managerEmployeeId
+    ? agencies.filter(a => a.id !== agency.id && a.managerEmployeeId === form.managerEmployeeId)
+    : [];
 
   const update = (key: string, value: any) => {
     setForm(p => ({ ...p, [key]: value }));
