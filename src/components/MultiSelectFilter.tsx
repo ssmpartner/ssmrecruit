@@ -3,7 +3,14 @@ import { Check, ChevronDown, Search, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-export type MultiOption = { value: string; label: string };
+export type MultiOption = {
+  value: string;
+  label: string;
+  /** Tailwind-Klassen für ein farbiges Badge (z.B. Status) */
+  badgeClass?: string;
+  /** Hex-Farbe für einen farbigen Punkt (z.B. Agentur/Quelle) */
+  dotColor?: string;
+};
 
 interface Props {
   /** Text, wenn nichts ausgewählt ist, z.B. «Alle Kantone» */
