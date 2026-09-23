@@ -92,7 +92,14 @@ export default function MultiSelectFilter({ allLabel, options, value, onChange, 
                 <span className={cn('flex h-4 w-4 items-center justify-center rounded border', active ? 'border-primary bg-primary text-primary-foreground' : 'border-input')}>
                   {active && <Check className="h-3 w-3" />}
                 </span>
-                <span className="truncate">{o.label}</span>
+                {o.dotColor && (
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: o.dotColor }} />
+                )}
+                {o.badgeClass ? (
+                  <span className={cn('truncate rounded-md px-1.5 py-0.5 text-xs font-medium', o.badgeClass)}>{o.label}</span>
+                ) : (
+                  <span className="truncate">{o.label}</span>
+                )}
               </button>
             );
           })}
