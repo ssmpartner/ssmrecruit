@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, UserPlus, UserMinus, Save, Palette, Navigation, Loader2 } from 'lucide-react';
 import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, AGENCY_COLORS, type Agency } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -21,6 +22,8 @@ interface AgencyDetailSheetProps {
 
 export default function AgencyDetailSheet({ agency, open, onOpenChange }: AgencyDetailSheetProps) {
   const { updateAgency, employees, leads, updateEmployee, agencies } = useLeads();
+  const { isSuperadmin, role } = useAuth();
+  const canManageEmployees = isSuperadmin || role === 'admin';
   const [form, setForm] = useState({
     name: '',
     contactEmail: '',
@@ -38,6 +41,7 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
     managerEmployeeId: '' as string,
   });
   const [dirty, setDirty] = useState(false);
+  const [addEmployeeId, setAddEmployeeId] = useState('');
   const [geocoding, setGeocoding] = useState(false);
 
   useEffect(() => {
