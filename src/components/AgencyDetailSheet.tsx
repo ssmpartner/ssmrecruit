@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, Save, Palette, Navigation, Loader2 } from 'lucide-react';
+import { Building2, Mail, MapPin, Languages, Globe, Users, UserCheck, UserPlus, UserMinus, Save, Palette, Navigation, Loader2 } from 'lucide-react';
 import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, AGENCY_COLORS, type Agency } from '@/lib/mock-data';
 import { useLeads } from '@/context/useLeads';
 import { toast } from 'sonner';
@@ -98,6 +98,12 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
   const agencyEmployees = employees.filter(e => e.agencyId === agency.id);
   const agencyLeads = leads.filter(l => l.agencyId === agency.id);
   const hired = agencyLeads.filter(l => l.status === 'hired').length;
+  const otherEmployees = employees
+    .filter(e => e.agencyId !== agency.id)
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const fallbackAgency = agencies.find(a => a.name === 'Hauptsitz' && a.id !== agency.id)
+    ?? agencies.find(a => a.id !== agency.id)
+    ?? null;
   const otherLedAgencies = form.managerEmployeeId
     ? agencies.filter(a => a.id !== agency.id && a.managerEmployeeId === form.managerEmployeeId)
     : [];
