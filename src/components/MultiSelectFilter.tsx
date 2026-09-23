@@ -3,7 +3,14 @@ import { Check, ChevronDown, Search, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-export type MultiOption = { value: string; label: string };
+export type MultiOption = {
+  value: string;
+  label: string;
+  /** Tailwind-Klassen für ein farbiges Badge (z.B. Status) */
+  badgeClass?: string;
+  /** Hex-Farbe für einen farbigen Punkt (z.B. Agentur/Quelle) */
+  dotColor?: string;
+};
 
 interface Props {
   /** Text, wenn nichts ausgewählt ist, z.B. «Alle Kantone» */
@@ -32,6 +39,8 @@ export default function MultiSelectFilter({ allLabel, options, value, onChange, 
     onChange(value.includes(v) ? value.filter(x => x !== v) : [...value, v]);
   };
 
+  const single = value.length === 1 ? options.find(o => o.value === value[0]) : undefined;
+
   const label = value.length === 0
     ? allLabel
     : value.length === 1
@@ -50,7 +59,14 @@ export default function MultiSelectFilter({ allLabel, options, value, onChange, 
             className,
           )}
         >
-          <span className="truncate">{label}</span>
+          {single?.dotColor && (
+            <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: single.dotColor }} />
+          )}
+          {single?.badgeClass ? (
+            <span className={cn('truncate rounded-md px-1.5 py-0.5 text-xs font-medium', single.badgeClass)}>{label}</span>
+          ) : (
+            <span className="truncate">{label}</span>
+          )}
           {value.length > 1 && (
             <span className="rounded-full bg-primary/10 px-1.5 text-[10px] font-semibold text-primary">{value.length}</span>
           )}
@@ -85,7 +101,14 @@ export default function MultiSelectFilter({ allLabel, options, value, onChange, 
                 <span className={cn('flex h-4 w-4 items-center justify-center rounded border', active ? 'border-primary bg-primary text-primary-foreground' : 'border-input')}>
                   {active && <Check className="h-3 w-3" />}
                 </span>
-                <span className="truncate">{o.label}</span>
+                {o.dotColor && (
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: o.dotColor }} />
+                )}
+                {o.badgeClass ? (
+                  <span className={cn('truncate rounded-md px-1.5 py-0.5 text-xs font-medium', o.badgeClass)}>{o.label}</span>
+                ) : (
+                  <span className="truncate">{o.label}</span>
+                )}
               </button>
             );
           })}

@@ -629,15 +629,15 @@ export default function LeadsTable() {
                   onChange={setStatusFilter}
                   highlight={statusFilter.includes('controlling_query')}
                   options={[
-                    ...Object.entries(statusConfig).map(([k, v]) => ({ value: k, label: v.label })),
-                    { value: 'controlling_query', label: 'Rückfrage' },
+                    ...Object.entries(statusConfig).map(([k, v]) => ({ value: k, label: v.label, badgeClass: v.color })),
+                    { value: 'controlling_query', label: 'Rückfrage', badgeClass: 'bg-red-50 text-red-700 border border-red-200' },
                   ]}
                 />
                 <MultiSelectFilter
                   allLabel="Alle Quellen"
                   value={sourceFilter}
                   onChange={setSourceFilter}
-                  options={leadSources.map(s => ({ value: s.id, label: s.label }))}
+                  options={leadSources.map(s => ({ value: s.id, label: s.label, dotColor: s.color }))}
                 />
                 {!isRestricted && (
                   <MultiSelectFilter
@@ -645,7 +645,7 @@ export default function LeadsTable() {
                     value={agencyFilter}
                     onChange={setAgencyFilter}
                     searchable
-                    options={visibleAgencies.map(a => ({ value: a.id, label: a.name }))}
+                    options={visibleAgencies.map(a => ({ value: a.id, label: a.name, dotColor: a.color }))}
                   />
                 )}
                 <MultiSelectFilter
@@ -653,7 +653,7 @@ export default function LeadsTable() {
                   value={employeeFilter}
                   onChange={setEmployeeFilter}
                   searchable
-                  options={employeeOptions.map(e => ({ value: e.id, label: e.name }))}
+                  options={employeeOptions.map(e => ({ value: e.id, label: e.name, dotColor: agencies.find(a => a.id === e.agencyId)?.color }))}
                 />
                 <MultiSelectFilter
                   allLabel="Alle Kantone"
