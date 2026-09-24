@@ -15,6 +15,7 @@ import {
 } from '@/lib/contract-placeholders';
 import ContractRichEditor from './ContractRichEditor';
 import { docxToHtml } from '@/lib/docx-to-html';
+import { convertBracketPlaceholders } from '@/lib/contract-placeholders';
 import ContractPagePreview from './ContractPagePreview';
 
 type Template = {
@@ -76,13 +77,15 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
     setImporting(true);
     try {
       // Formatgetreue Umwandlung direkt im Browser
-      const html = await docxToHtml(file);
-      if (!html) throw new Error('Keine Textausgabe erhalten');
+      const raw = await docxToHtml(file);
+      if (!raw) throw new Error('Keine Textausgabe erhalten');
+      const { html, found, unknown } = convertBracketPlaceholders(raw);
 
       setEdit({ ...empty, title: file.name.replace(/\.docx$/i, ''), body_html: html });
       setPreviewMode('live');
       setOpen(true);
-      toast.success('Vertrag übernommen – jetzt Platzhalter einsetzen');
+      toast.success(found ? `Vertrag übernommen – ${found} Platzhalter aus Word erkannt` : 'Vertrag übernommen – jetzt Platzhalter einsetzen');
+      if (unknown.length) toast.warning(`Nicht erkannt: ${unknown.slice(0, 5).map(u => `[${u}]`).join(', ')}${unknown.length > 5 ? ' …' : ''}`, { duration: 10000 });
     } catch (e: any) {
       toast.error(e?.message || 'Import fehlgeschlagen');
     } finally {

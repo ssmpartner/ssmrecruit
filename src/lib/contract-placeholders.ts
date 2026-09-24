@@ -356,3 +356,23 @@ export const AREA_LABELS: Record<ContractArea, string> = {
   sales: 'Vertrieb',
   office: 'Innendienst',
 };
+
+/**
+ * Wandelt in Word geschriebene Platzhalter wie [Kandidat-Vorname] in echte
+ * Platzhalter um. Word teilt Text oft in mehrere Formatierungsstücke – Tags
+ * innerhalb der Klammern werden deshalb ignoriert.
+ */
+export function convertBracketPlaceholders(html: string): { html: string; found: number; unknown: string[] } {
+  const norm = (s: string) => s.toLowerCase().replace(/&nbsp;|\u00a0/g, ' ').replace(/[\s_–—-]+/g, '-').trim();
+  const byLabel = new Map<string, string>();
+  ALL_PLACEHOLDERS.forEach(p => { byLabel.set(norm(p.label), p.key); byLabel.set(norm(p.key), p.key); });
+  let found = 0; const unknown: string[] = [];
+  const out = (html || '').replace(/\[((?:<[^>]+>|[^\]\[<]){2,120})\]/g, (m, inner) => {
+    const label = inner.replace(/<[^>]+>/g, '').trim();
+    const key = byLabel.get(norm(label));
+    if (!key) { if (label.length <= 40) unknown.push(label); return m; }
+    found++;
+    return `{{${key}}}`;
+  });
+  return { html: out, found, unknown: Array.from(new Set(unknown)) };
+}

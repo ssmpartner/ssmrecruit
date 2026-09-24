@@ -134,7 +134,7 @@ export async function docxToHtml(file: File | ArrayBuffer): Promise<string> {
   const runStyle = (r: Props) => {
     const css: string[] = [];
     if (r.sz) css.push(`font-size:${parseInt(r.sz, 10) / 2}pt`);
-    if (r.font) css.push(`font-family:'${r.font}'`);
+    if (r.font) css.push(`font-family:'${r.font}',${/grotesk|light|book|heavy/i.test(r.font) ? "'Helvetica Neue',Arial" : 'Arial'},sans-serif`);
     if (r.color) css.push(`color:#${r.color}`);
     if (r.caps) css.push('text-transform:uppercase');
     return css.join(';');
@@ -153,12 +153,16 @@ export async function docxToHtml(file: File | ArrayBuffer): Promise<string> {
   };
 
   // Liefert HTML eines Absatzes; Seitenumbrüche teilen den Absatz
+  let tblCtx: { p: Props; r: Props } | null = null;
   const renderParagraph = (p: Element): string => {
     const pPr = kid(p, 'pPr');
     const styleId = val(kid(pPr, 'pStyle')) ?? (defaultParaStyle ? val(defaultParaStyle, 'styleId') : null);
     const st = resolveStyle(styleId);
-    const pp = readPPr(pPr, { ...defP, ...st.p });
-    const baseR = { ...defR, ...st.r };
+    const explicitStyle = !!val(kid(pPr, 'pStyle'));
+    const pp = readPPr(pPr, explicitStyle ? { ...defP, ...(tblCtx?.p ?? {}), ...st.p } : { ...defP, ...st.p, ...(tblCtx?.p ?? {}) });
+    const baseR = explicitStyle ? { ...defR, ...(tblCtx?.r ?? {}), ...st.r } : { ...defR, ...st.r, ...(tblCtx?.r ?? {}) };
+    // Absatzmarke (leerer Absatz) nimmt die Schriftgrösse der Absatzmarke
+    const markR = readRPr(kid(pPr, 'rPr'), { ...baseR });
     const parts: string[] = [];
     let cur = '';
     const walk = (el: Element) => {
@@ -219,12 +223,16 @@ export async function docxToHtml(file: File | ArrayBuffer): Promise<string> {
       if (h === '__PB__') { out.push('<div data-page-break="true"></div>'); return; }
       if (!h && parts.length > 1 && i > 0) return; // leerer Rest nach Umbruch
       const content = (i === 0 ? prefix : '') + h;
-      out.push(`<${tag}${alignAttr}>${content}</${tag}>`);
+      const attr = !content && markR.sz ? alignAttr.replace(/"$/, `;font-size:${parseInt(markR.sz, 10) / 2}pt"`) : alignAttr;
+      out.push(`<${tag}${attr}>${content}</${tag}>`);
     });
     return out.join('');
   };
 
   const renderTable = (tbl: Element): string => {
+    const prevCtx = tblCtx;
+    const ts = resolveStyle(val(kid(kid(tbl, 'tblPr'), 'tblStyle')));
+    tblCtx = { p: ts.p, r: ts.r };
     const grid = kids(kid(tbl, 'tblGrid'), 'gridCol').map(g => Math.round(parseInt(val(g, 'w') || '0', 10) / 15));
     let html = '<table><tbody>';
     for (const tr of kids(tbl, 'tr')) {
@@ -242,6 +250,7 @@ export async function docxToHtml(file: File | ArrayBuffer): Promise<string> {
       }
       html += '</tr>';
     }
+    tblCtx = prevCtx;
     return html + '</tbody></table>';
   };
 
