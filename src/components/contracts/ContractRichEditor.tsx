@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { useEditor, EditorContent, Node, mergeAttributes } from '@tiptap/react';
+import { useEditor, EditorContent, Node, Extension, mergeAttributes } from '@tiptap/react';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
@@ -62,6 +64,81 @@ const PageBreakNode = Node.create({
   },
 });
 
+// A4 bei 96 dpi, Ränder identisch zur Vorschau
+const PAGE_H = 1123, PAD_TOP = 110, PAD_BOTTOM = 90, PAGE_GAP = 28;
+const USABLE = PAGE_H - PAD_TOP - PAD_BOTTOM;
+const paginationKey = new PluginKey<{ breaks: { pos: number; rest: number; page: number }[]; deco: DecorationSet }>('a4Pagination');
+
+function gapWidget(rest: number, page: number) {
+  const el = document.createElement('div');
+  el.className = 'a4-page-gap';
+  el.contentEditable = 'false';
+  el.style.height = `${rest + PAD_BOTTOM + PAGE_GAP + PAD_TOP}px`;
+  el.innerHTML = `<div class="a4-gap-band" style="top:${rest + PAD_BOTTOM}px;height:${PAGE_GAP}px"><span>Seite ${page}</span></div>`;
+  return el;
+}
+
+/** Zeigt echte A4-Seiten im Editor: Blöcke, die über das Seitenende laufen, rutschen auf die nächste Seite. */
+const A4Pagination = Extension.create({
+  name: 'a4Pagination',
+  addProseMirrorPlugins() {
+    return [new Plugin({
+      key: paginationKey,
+      state: {
+        init: () => ({ breaks: [], deco: DecorationSet.empty }),
+        apply(tr, prev) {
+          const meta = tr.getMeta(paginationKey);
+          if (meta) {
+            return {
+              breaks: meta,
+              deco: DecorationSet.create(tr.doc, meta.map((b: any) =>
+                Decoration.widget(b.pos, () => gapWidget(b.rest, b.page), { side: -1, key: `gap-${b.pos}-${b.rest}`, ignoreSelection: true }))),
+            };
+          }
+          return { breaks: prev.breaks, deco: prev.deco.map(tr.mapping, tr.doc) };
+        },
+      },
+      props: { decorations: (state) => paginationKey.getState(state)?.deco },
+      view: (view) => {
+        let raf = 0;
+        const measure = () => {
+          cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(() => {
+            const root = view.dom as HTMLElement;
+            const rootTop = root.getBoundingClientRect().top;
+            const gaps = Array.from(root.querySelectorAll<HTMLElement>(':scope > .a4-page-gap'))
+              .map(g => ({ top: g.getBoundingClientRect().top, h: g.offsetHeight }));
+            const breaks: { pos: number; rest: number; page: number }[] = [];
+            let shift = 0; let forceNext = false;
+            view.state.doc.forEach((node, offset) => {
+              const dom = view.nodeDOM(offset) as HTMLElement | null;
+              if (!dom || !(dom instanceof HTMLElement)) return;
+              const r = dom.getBoundingClientRect();
+              const before = gaps.filter(g => g.top < r.top).reduce((a, g) => a + g.h, 0);
+              const natural = r.top - rootTop - before - PAD_TOP;
+              let y = natural + shift;
+              const inPage = ((y % USABLE) + USABLE) % USABLE;
+              const overflow = inPage + r.height > USABLE && r.height <= USABLE && inPage > 0;
+              if ((forceNext && inPage > 0) || overflow) {
+                const rest = USABLE - inPage;
+                shift += rest; y += rest;
+                breaks.push({ pos: offset, rest, page: Math.round(y / USABLE) + 1 });
+              }
+              forceNext = node.type.name === 'pageBreak';
+            });
+            const cur = paginationKey.getState(view.state)?.breaks ?? [];
+            if (JSON.stringify(cur) !== JSON.stringify(breaks)) {
+              view.dispatch(view.state.tr.setMeta(paginationKey, breaks).setMeta('addToHistory', false));
+            }
+          });
+        };
+        measure();
+        return { update: (_v, prevState) => { if (prevState.doc !== view.state.doc || !paginationKey.getState(view.state)?.breaks.length) measure(); }, destroy: () => cancelAnimationFrame(raf) };
+      },
+    })];
+  },
+});
+
 /** {{key}} → Chip-Markup für den Editor. */
 export function tokensToChips(html: string): string {
   return (html || '').replace(/\{\{\s*([a-z0-9_.]+)\s*\}\}/gi,
@@ -98,6 +175,7 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
       TableCell,
       PlaceholderNode,
       PageBreakNode,
+      A4Pagination,
     ],
     content: initial,
     editorProps: {

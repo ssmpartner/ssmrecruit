@@ -27,16 +27,28 @@ export default function ContractPagePreview({
     const el = measureRef.current;
     if (!el) return;
     const update = () => {
-      // Manuelle Seitenumbrüche: Abstand bis zum nächsten Seitenanfang auffüllen
-      const breaks = Array.from(el.querySelectorAll<HTMLElement>('[data-page-break]'));
-      breaks.forEach(b => { b.style.height = '0px'; b.style.margin = '0'; b.style.border = '0'; });
-      const base = el.getBoundingClientRect().top;
-      for (const b of breaks) {
-        const y = b.getBoundingClientRect().top - base;
-        const rest = usable - (y % usable);
-        b.style.height = `${rest >= usable ? 0 : rest}px`;
+      // Gleiche Seitenlogik wie im Editor: Blöcke nicht zerschneiden, Umbrüche erzwingen
+      const inner = el.firstElementChild as HTMLElement | null;
+      el.querySelectorAll('[data-a4-spacer]').forEach(n => n.remove());
+      el.querySelectorAll<HTMLElement>('[data-page-break]').forEach(b => { b.style.height = '0px'; b.style.margin = '0'; b.style.border = '0'; });
+      if (inner) {
+        const base = inner.getBoundingClientRect().top;
+        let shift = 0; let force = false;
+        for (const child of Array.from(inner.children) as HTMLElement[]) {
+          const r = child.getBoundingClientRect();
+          const y = r.top - base; // enthält bereits eingefügte Abstände
+          const inPage = y % usable;
+          if ((force && inPage > 0) || (inPage > 0 && inPage + r.height > usable && r.height <= usable)) {
+            const sp = document.createElement('div');
+            sp.setAttribute('data-a4-spacer', '');
+            sp.style.height = `${usable - inPage}px`;
+            child.before(sp);
+            shift += usable - inPage;
+          }
+          force = child.hasAttribute('data-page-break');
+        }
       }
-      setLaidOut(el.innerHTML);
+      setLaidOut((el.firstElementChild as HTMLElement | null)?.innerHTML ?? html);
       setContentHeight(el.scrollHeight);
     };
     update();
