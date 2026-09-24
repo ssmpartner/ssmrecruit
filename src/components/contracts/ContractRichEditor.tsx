@@ -204,11 +204,11 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
         addAttributes() {
           return {
             ...this.parent?.(),
-            minHeight: {
+            rowHeight: {
               default: null,
               parseHTML: element => element.style.minHeight || null,
-              renderHTML: attributes => attributes.minHeight
-                ? { style: `min-height:${attributes.minHeight}` }
+              renderHTML: attributes => attributes.rowHeight
+                ? { style: `height:${attributes.rowHeight}` }
                 : {},
             },
           };
@@ -266,9 +266,9 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
     for (let depth = $from.depth; depth > 0; depth -= 1) {
       const node = $from.node(depth);
       if (node.type.name !== 'tableRow') continue;
-      const current = parseInt(String(node.attrs.minHeight || '36'), 10) || 36;
+      const current = parseInt(String(node.attrs.rowHeight || '36'), 10) || 36;
       const next = Math.max(24, Math.min(300, current + delta));
-      dispatch(state.tr.setNodeMarkup($from.before(depth), undefined, { ...node.attrs, minHeight: `${next}px` }));
+      dispatch(state.tr.setNodeMarkup($from.before(depth), undefined, { ...node.attrs, rowHeight: `${next}px` }));
       return;
     }
   };
