@@ -167,16 +167,6 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
   // Letzter vom Editor selbst gemeldeter Stand – verhindert, dass eigene Eingaben
   // (z.B. Leerzeilen oder Leerschläge) durch ein Zurücksetzen verloren gehen.
   const lastEmitted = useRef<string>(value || '');
-  // A4-Blatt auf die verfügbare Breite skalieren, damit die ganze Seite sichtbar ist
-  const frameRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  useEffect(() => {
-    const el = frameRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setScale(Math.min(1, (el.clientWidth - 32) / 794)));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [editor]);
 
   const editor = useEditor({
     extensions: [
@@ -203,6 +193,17 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
       onChange(html);
     },
   });
+
+  // A4-Blatt auf die verfügbare Breite skalieren, damit die ganze Seite sichtbar ist
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setScale(Math.min(1, (el.clientWidth - 32) / 794)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [editor]);
 
   // Externe Inhalte (z.B. nach DOCX-Import oder Vorlagenwechsel) übernehmen.
   // Eigene Tastatureingaben werden übersprungen, damit der Cursor bleibt.
