@@ -158,8 +158,9 @@ export async function docxToHtml(file: File | ArrayBuffer): Promise<string> {
     const pPr = kid(p, 'pPr');
     const styleId = val(kid(pPr, 'pStyle')) ?? (defaultParaStyle ? val(defaultParaStyle, 'styleId') : null);
     const st = resolveStyle(styleId);
-    const pp = readPPr(pPr, { ...defP, ...(tblCtx?.p ?? {}), ...st.p });
-    const baseR = { ...defR, ...(tblCtx?.r ?? {}), ...st.r };
+    const explicitStyle = !!val(kid(pPr, 'pStyle'));
+    const pp = readPPr(pPr, explicitStyle ? { ...defP, ...(tblCtx?.p ?? {}), ...st.p } : { ...defP, ...st.p, ...(tblCtx?.p ?? {}) });
+    const baseR = explicitStyle ? { ...defR, ...(tblCtx?.r ?? {}), ...st.r } : { ...defR, ...st.r, ...(tblCtx?.r ?? {}) };
     // Absatzmarke (leerer Absatz) nimmt die Schriftgrösse der Absatzmarke
     const markR = readRPr(kid(pPr, 'rPr'), { ...baseR });
     const parts: string[] = [];
@@ -222,7 +223,8 @@ export async function docxToHtml(file: File | ArrayBuffer): Promise<string> {
       if (h === '__PB__') { out.push('<div data-page-break="true"></div>'); return; }
       if (!h && parts.length > 1 && i > 0) return; // leerer Rest nach Umbruch
       const content = (i === 0 ? prefix : '') + h;
-      out.push(`<${tag}${alignAttr}>${content}</${tag}>`);
+      const attr = !content && markR.sz ? alignAttr.replace(/"$/, `;font-size:${parseInt(markR.sz, 10) / 2}pt"`) : alignAttr;
+      out.push(`<${tag}${attr}>${content}</${tag}>`);
     });
     return out.join('');
   };
