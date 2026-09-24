@@ -98,8 +98,10 @@ export default function ContractPagePreview({
               />
             )}
             <div
-              className="absolute overflow-hidden"
+              className="absolute"
               style={{
+                // nur oben/unten abschneiden – hängende Nummern (1., A.) links bleiben sichtbar
+                clipPath: `inset(0 -${padding.right}px 0 -${padding.left}px)`,
                 top: padding.top,
                 left: padding.left,
                 width: innerWidth,
