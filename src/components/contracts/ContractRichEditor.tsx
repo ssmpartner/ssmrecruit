@@ -149,14 +149,13 @@ const A4Pagination = Extension.create({
               if (offset > 0 && ((forceNext && inPage > 0.5) || overflow)) {
                 const rest = USABLE - inPage;
                 const extra = Math.round(rest + PAD_BOTTOM + PAGE_GAP + PAD_TOP);
-                shift += extra - PAD_BOTTOM - PAGE_GAP - PAD_TOP + (PAD_BOTTOM + PAGE_GAP + PAD_TOP);
+                shift += rest;
                 y += rest;
                 breaks.push({ pos: offset, extra });
               }
               lastBottom = y + height;
               forceNext = node.type.name === 'pageBreak';
             });
-            // shift enthält pro Umbruch rest + Seitenlücke; Seitenanzahl aus Endposition
             const pages = Math.max(1, Math.ceil((lastBottom + 1) / USABLE));
             root.style.minHeight = `${pages * PAGE_H + (pages - 1) * PAGE_GAP}px`;
             const cur = paginationKey.getState(view.state);
