@@ -89,35 +89,36 @@ const PageBreakNode = Node.create({
 // A4 bei 96 dpi, Ränder identisch zur Vorschau
 const PAGE_H = 1123, PAD_TOP = 110, PAD_BOTTOM = 90, PAGE_GAP = 28;
 const USABLE = PAGE_H - PAD_TOP - PAD_BOTTOM;
-const paginationKey = new PluginKey<{ breaks: { pos: number; rest: number; page: number }[]; deco: DecorationSet }>('a4Pagination');
+type PgBreak = { pos: number; extra: number };
+const paginationKey = new PluginKey<{ breaks: PgBreak[]; pages: number; deco: DecorationSet }>('a4Pagination');
 
-function gapWidget(rest: number, page: number) {
-  const el = document.createElement('div');
-  el.className = 'a4-page-gap';
-  el.contentEditable = 'false';
-  el.style.height = `${rest + PAD_BOTTOM + PAGE_GAP + PAD_TOP}px`;
-  el.innerHTML = `<div class="a4-gap-band" style="top:${rest + PAD_BOTTOM}px;height:${PAGE_GAP}px"><span>Seite ${page}</span></div>`;
-  return el;
-}
-
-/** Zeigt echte A4-Seiten im Editor: Blöcke, die über das Seitenende laufen, rutschen auf die nächste Seite. */
+/**
+ * Zeigt echte A4-Seiten im Editor. Es werden KEINE Elemente in den Text
+ * eingefügt (damit Cursor, Tippen, Löschen frei wie in Word funktionieren):
+ * Der erste Block einer neuen Seite erhält nur einen oberen Innenabstand,
+ * die grauen Seitenlücken werden als Hintergrund gezeichnet.
+ */
 const A4Pagination = Extension.create({
   name: 'a4Pagination',
   addProseMirrorPlugins() {
     return [new Plugin({
       key: paginationKey,
       state: {
-        init: () => ({ breaks: [], deco: DecorationSet.empty }),
+        init: () => ({ breaks: [], pages: 1, deco: DecorationSet.empty }),
         apply(tr, prev) {
-          const meta = tr.getMeta(paginationKey);
+          const meta = tr.getMeta(paginationKey) as { breaks: PgBreak[]; pages: number } | undefined;
           if (meta) {
             return {
-              breaks: meta,
-              deco: DecorationSet.create(tr.doc, meta.map((b: any) =>
-                Decoration.widget(b.pos, () => gapWidget(b.rest, b.page), { side: -1, key: `gap-${b.pos}-${b.rest}`, ignoreSelection: true }))),
+              ...meta,
+              deco: DecorationSet.create(tr.doc, meta.breaks.map(b => {
+                const node = tr.doc.nodeAt(b.pos);
+                return Decoration.node(b.pos, b.pos + (node?.nodeSize ?? 1), {
+                  style: `padding-top:${b.extra}px`, 'data-pg-extra': String(b.extra),
+                });
+              })),
             };
           }
-          return { breaks: prev.breaks, deco: prev.deco.map(tr.mapping, tr.doc) };
+          return { breaks: prev.breaks.map(b => ({ ...b, pos: tr.mapping.map(b.pos) })), pages: prev.pages, deco: prev.deco.map(tr.mapping, tr.doc) };
         },
       },
       props: { decorations: (state) => paginationKey.getState(state)?.deco },
@@ -128,40 +129,43 @@ const A4Pagination = Extension.create({
           raf = requestAnimationFrame(() => {
             const root = view.dom as HTMLElement;
             const rootRect = root.getBoundingClientRect();
-            const z = root.offsetHeight ? rootRect.height / root.offsetHeight : 1; // Zoom-Faktor
-            const rootTop = rootRect.top;
-            const gaps = Array.from(root.querySelectorAll<HTMLElement>(':scope > .a4-page-gap'))
-              .map(g => ({ top: g.getBoundingClientRect().top, h: g.offsetHeight }));
-            const rh = (el: HTMLElement) => el.getBoundingClientRect().height / z;
-            const breaks: { pos: number; rest: number; page: number }[] = [];
-            let shift = 0; let forceNext = false;
+            const z = root.offsetHeight ? rootRect.height / root.offsetHeight : 1;
+            const breaks: PgBreak[] = [];
+            let removed = 0; // bisher eingefügte Abstände (aus aktueller Darstellung)
+            let shift = 0;   // neu berechnete Abstände
+            let forceNext = false;
+            let lastBottom = 0;
             view.state.doc.forEach((node, offset) => {
               const dom = view.nodeDOM(offset) as HTMLElement | null;
               if (!dom || !(dom instanceof HTMLElement)) return;
               const r = dom.getBoundingClientRect();
-              const before = gaps.filter(g => g.top < r.top).reduce((a, g) => a + g.h, 0);
-              const natural = (r.top - rootTop) / z - before - PAD_TOP;
-              const height = rh(dom);
+              const ownExtra = Number(dom.getAttribute('data-pg-extra') || 0);
+              const natural = (r.top - rootRect.top) / z - removed - PAD_TOP;
+              removed += ownExtra;
+              const height = r.height / z - ownExtra;
               let y = natural + shift;
               const inPage = ((y % USABLE) + USABLE) % USABLE;
-              const overflow = inPage + height > USABLE && height <= USABLE && inPage > 0;
-              // Am Dokumentanfang darf nie eine automatische Seitenlücke
-              // entstehen – sonst erscheint Seite 1 vollständig leer.
-              if (offset > 0 && ((forceNext && inPage > 0) || overflow)) {
+              const overflow = inPage + height > USABLE && height <= USABLE && inPage > 0.5;
+              if (offset > 0 && ((forceNext && inPage > 0.5) || overflow)) {
                 const rest = USABLE - inPage;
-                shift += rest; y += rest;
-                breaks.push({ pos: offset, rest, page: Math.round(y / USABLE) + 1 });
+                const extra = Math.round(rest + PAD_BOTTOM + PAGE_GAP + PAD_TOP);
+                shift += rest;
+                y += rest;
+                breaks.push({ pos: offset, extra });
               }
+              lastBottom = y + height;
               forceNext = node.type.name === 'pageBreak';
             });
-            const cur = paginationKey.getState(view.state)?.breaks ?? [];
-            if (JSON.stringify(cur) !== JSON.stringify(breaks)) {
-              view.dispatch(view.state.tr.setMeta(paginationKey, breaks).setMeta('addToHistory', false));
+            const pages = Math.max(1, Math.ceil((lastBottom + 1) / USABLE));
+            root.style.minHeight = `${pages * PAGE_H + (pages - 1) * PAGE_GAP}px`;
+            const cur = paginationKey.getState(view.state);
+            if (JSON.stringify(cur?.breaks ?? []) !== JSON.stringify(breaks) || cur?.pages !== pages) {
+              view.dispatch(view.state.tr.setMeta(paginationKey, { breaks, pages }).setMeta('addToHistory', false));
             }
           });
         };
         measure();
-        return { update: (_v, prevState) => { if (prevState.doc !== view.state.doc || !paginationKey.getState(view.state)?.breaks.length) measure(); }, destroy: () => cancelAnimationFrame(raf) };
+        return { update: (_v, prevState) => { if (prevState.doc !== view.state.doc) measure(); }, destroy: () => cancelAnimationFrame(raf) };
       },
     })];
   },
