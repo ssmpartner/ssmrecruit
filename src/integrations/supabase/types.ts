@@ -2512,6 +2512,7 @@ export type Database = {
           contract_type: string
           created_at: string
           created_by: string | null
+          doc_kind: string
           docx_storage_path: string | null
           id: string
           kind_code: string | null
@@ -2537,6 +2538,7 @@ export type Database = {
           contract_type: string
           created_at?: string
           created_by?: string | null
+          doc_kind?: string
           docx_storage_path?: string | null
           id?: string
           kind_code?: string | null
@@ -2562,6 +2564,7 @@ export type Database = {
           contract_type?: string
           created_at?: string
           created_by?: string | null
+          doc_kind?: string
           docx_storage_path?: string | null
           id?: string
           kind_code?: string | null

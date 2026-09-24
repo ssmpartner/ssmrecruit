@@ -50,6 +50,13 @@
       "when": 1790160441924,
       "tag": "0006_agency_manager_multi_agency_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790251052752,
+      "tag": "0007_contract_templates_doc_kind",
+      "breakpoints": true
     }
   ]
 }
