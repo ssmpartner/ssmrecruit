@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useEditor, EditorContent, Node, Extension, mergeAttributes } from '@tiptap/react';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
@@ -105,9 +105,12 @@ const A4Pagination = Extension.create({
           cancelAnimationFrame(raf);
           raf = requestAnimationFrame(() => {
             const root = view.dom as HTMLElement;
-            const rootTop = root.getBoundingClientRect().top;
+            const rootRect = root.getBoundingClientRect();
+            const z = root.offsetHeight ? rootRect.height / root.offsetHeight : 1; // Zoom-Faktor
+            const rootTop = rootRect.top;
             const gaps = Array.from(root.querySelectorAll<HTMLElement>(':scope > .a4-page-gap'))
               .map(g => ({ top: g.getBoundingClientRect().top, h: g.offsetHeight }));
+            const rh = (el: HTMLElement) => el.getBoundingClientRect().height / z;
             const breaks: { pos: number; rest: number; page: number }[] = [];
             let shift = 0; let forceNext = false;
             view.state.doc.forEach((node, offset) => {
@@ -115,10 +118,11 @@ const A4Pagination = Extension.create({
               if (!dom || !(dom instanceof HTMLElement)) return;
               const r = dom.getBoundingClientRect();
               const before = gaps.filter(g => g.top < r.top).reduce((a, g) => a + g.h, 0);
-              const natural = r.top - rootTop - before - PAD_TOP;
+              const natural = (r.top - rootTop) / z - before - PAD_TOP;
+              const height = rh(dom);
               let y = natural + shift;
               const inPage = ((y % USABLE) + USABLE) % USABLE;
-              const overflow = inPage + r.height > USABLE && r.height <= USABLE && inPage > 0;
+              const overflow = inPage + height > USABLE && height <= USABLE && inPage > 0;
               if ((forceNext && inPage > 0) || overflow) {
                 const rest = USABLE - inPage;
                 shift += rest; y += rest;
@@ -190,6 +194,17 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
     },
   });
 
+  // A4-Blatt auf die verfügbare Breite skalieren, damit die ganze Seite sichtbar ist
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setScale(Math.min(1, (el.clientWidth - 32) / 794)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [editor]);
+
   // Externe Inhalte (z.B. nach DOCX-Import oder Vorlagenwechsel) übernehmen.
   // Eigene Tastatureingaben werden übersprungen, damit der Cursor bleibt.
   useEffect(() => {
@@ -258,8 +273,8 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
         </div>
       )}
 
-      <div className="bg-muted/60 max-h-[58vh] overflow-auto py-6 px-4">
-        <EditorContent editor={editor} className="mx-auto w-fit" />
+      <div ref={frameRef} className="bg-muted/60 py-6 px-4 overflow-hidden">
+        <EditorContent editor={editor} className="mx-auto w-fit" style={{ zoom: scale } as React.CSSProperties} />
       </div>
     </div>
   );
