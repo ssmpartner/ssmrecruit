@@ -255,5 +255,10 @@ export async function docxToHtml(file: File | ArrayBuffer): Promise<string> {
     }
   };
   if (body) walkBody(body);
-  return blocks.join('\n');
+  // Ein Seitenumbruch vor dem allerersten Inhalt erzeugt im Editor eine leere
+  // Startseite. Word speichert diesen teilweise am ersten Absatz der Datei.
+  return blocks.join('\n').replace(
+    /^(?:(?:\s*<p[^>]*>(?:\s|<br\s*\/?\s*>)*<\/p>)*)\s*<div data-page-break="true"><\/div>\s*/i,
+    '',
+  );
 }

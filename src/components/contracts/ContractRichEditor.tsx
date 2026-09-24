@@ -145,7 +145,9 @@ const A4Pagination = Extension.create({
               let y = natural + shift;
               const inPage = ((y % USABLE) + USABLE) % USABLE;
               const overflow = inPage + height > USABLE && height <= USABLE && inPage > 0;
-              if ((forceNext && inPage > 0) || overflow) {
+              // Am Dokumentanfang darf nie eine automatische Seitenlücke
+              // entstehen – sonst erscheint Seite 1 vollständig leer.
+              if (offset > 0 && ((forceNext && inPage > 0) || overflow)) {
                 const rest = USABLE - inPage;
                 shift += rest; y += rest;
                 breaks.push({ pos: offset, rest, page: Math.round(y / USABLE) + 1 });
@@ -167,7 +169,11 @@ const A4Pagination = Extension.create({
 
 /** {{key}} → Chip-Markup für den Editor. */
 export function tokensToChips(html: string): string {
-  return (html || '').replace(/\{\{\s*([a-z0-9_.]+)\s*\}\}/gi,
+  const withoutEmptyFirstPage = (html || '').replace(
+    /^(?:(?:\s*<p[^>]*>(?:\s|<br\s*\/?\s*>)*<\/p>)*)\s*<div[^>]*data-page-break(?:="true")?[^>]*><\/div>\s*/i,
+    '',
+  );
+  return withoutEmptyFirstPage.replace(/\{\{\s*([a-z0-9_.]+)\s*\}\}/gi,
     (_m, key) => `<span data-placeholder="${key}"></span>`);
 }
 
@@ -186,6 +192,7 @@ interface Props {
 
 export default function ContractRichEditor({ value, onChange, area, targetGroup }: Props) {
   const initial = useMemo(() => tokensToChips(value), []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [, refreshToolbar] = useState(0);
   // Letzter vom Editor selbst gemeldeter Stand – verhindert, dass eigene Eingaben
   // (z.B. Leerzeilen oder Leerschläge) durch ein Zurücksetzen verloren gehen.
   const lastEmitted = useRef<string>(value || '');
@@ -195,8 +202,21 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
       StarterKit,
       Underline,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Table.configure({ resizable: true }),
-      TableRow,
+      Table.configure({ resizable: false }),
+      TableRow.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            rowHeight: {
+              default: null,
+              parseHTML: element => element.style.minHeight || null,
+              renderHTML: attributes => attributes.rowHeight
+                ? { style: `height:${attributes.rowHeight}` }
+                : {},
+            },
+          };
+        },
+      }),
       TableHeader,
       TableCell,
       PlaceholderNode,
@@ -216,6 +236,7 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
       lastEmitted.current = html;
       onChange(html);
     },
+    onSelectionUpdate: () => refreshToolbar(value => value + 1),
   });
 
   // A4-Blatt auf die verfügbare Breite skalieren, damit die ganze Seite sichtbar ist
@@ -243,6 +264,18 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
   if (!editor) return <div className="rounded-lg border min-h-[420px]" />;
 
   const tb = (active: boolean) => (active ? 'bg-accent text-accent-foreground' : '');
+  const changeRowHeight = (delta: number) => {
+    const { state, dispatch } = editor.view;
+    const { $from } = state.selection;
+    for (let depth = $from.depth; depth > 0; depth -= 1) {
+      const node = $from.node(depth);
+      if (node.type.name !== 'tableRow') continue;
+      const current = parseInt(String(node.attrs.rowHeight || '36'), 10) || 36;
+      const next = Math.max(24, Math.min(300, current + delta));
+      dispatch(state.tr.setNodeMarkup($from.before(depth), undefined, { ...node.attrs, rowHeight: `${next}px` }));
+      return;
+    }
+  };
 
   return (
     <div className="rounded-lg border bg-card overflow-hidden">
@@ -284,6 +317,8 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
           <span className="mr-1 text-muted-foreground">Tabelle:</span>
           <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().addRowBefore().run()}>Zeile oben</Button>
           <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().addRowAfter().run()}>Zeile unten</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => changeRowHeight(12)}>Zeile höher</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => changeRowHeight(-12)}>Zeile niedriger</Button>
           <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().deleteRow().run()}>Zeile löschen</Button>
           <Separator orientation="vertical" className="mx-1 h-5" />
           <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().addColumnBefore().run()}>Spalte links</Button>
@@ -293,7 +328,7 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
           <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().mergeOrSplit().run()}>Zellen verbinden/teilen</Button>
           <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={() => editor.chain().focus().toggleHeaderRow().run()}>Kopfzeile</Button>
           <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-destructive" onClick={() => editor.chain().focus().deleteTable().run()}>Tabelle löschen</Button>
-          <span className="ml-auto text-muted-foreground">Spaltenbreite: Trennlinie mit der Maus ziehen</span>
+          <span className="ml-auto text-muted-foreground">Die Tabelle bleibt innerhalb der A4-Seite.</span>
         </div>
       )}
 
