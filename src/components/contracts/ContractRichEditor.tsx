@@ -145,7 +145,9 @@ const A4Pagination = Extension.create({
               let y = natural + shift;
               const inPage = ((y % USABLE) + USABLE) % USABLE;
               const overflow = inPage + height > USABLE && height <= USABLE && inPage > 0;
-              if ((forceNext && inPage > 0) || overflow) {
+              // Am Dokumentanfang darf nie eine automatische Seitenlücke
+              // entstehen – sonst erscheint Seite 1 vollständig leer.
+              if (offset > 0 && ((forceNext && inPage > 0) || overflow)) {
                 const rest = USABLE - inPage;
                 shift += rest; y += rest;
                 breaks.push({ pos: offset, rest, page: Math.round(y / USABLE) + 1 });
@@ -190,6 +192,7 @@ interface Props {
 
 export default function ContractRichEditor({ value, onChange, area, targetGroup }: Props) {
   const initial = useMemo(() => tokensToChips(value), []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [, refreshToolbar] = useState(0);
   // Letzter vom Editor selbst gemeldeter Stand – verhindert, dass eigene Eingaben
   // (z.B. Leerzeilen oder Leerschläge) durch ein Zurücksetzen verloren gehen.
   const lastEmitted = useRef<string>(value || '');
@@ -233,6 +236,7 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
       lastEmitted.current = html;
       onChange(html);
     },
+    onSelectionUpdate: () => refreshToolbar(value => value + 1),
   });
 
   // A4-Blatt auf die verfügbare Breite skalieren, damit die ganze Seite sichtbar ist
