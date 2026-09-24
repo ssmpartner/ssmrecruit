@@ -167,7 +167,11 @@ const A4Pagination = Extension.create({
 
 /** {{key}} → Chip-Markup für den Editor. */
 export function tokensToChips(html: string): string {
-  return (html || '').replace(/\{\{\s*([a-z0-9_.]+)\s*\}\}/gi,
+  const withoutEmptyFirstPage = (html || '').replace(
+    /^(?:(?:\s*<p[^>]*>(?:\s|<br\s*\/?\s*>)*<\/p>)*)\s*<div[^>]*data-page-break(?:="true")?[^>]*><\/div>\s*/i,
+    '',
+  );
+  return withoutEmptyFirstPage.replace(/\{\{\s*([a-z0-9_.]+)\s*\}\}/gi,
     (_m, key) => `<span data-placeholder="${key}"></span>`);
 }
 
