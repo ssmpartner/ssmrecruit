@@ -199,7 +199,8 @@ export async function docxToHtml(file: File | ArrayBuffer): Promise<string> {
     let indOverride: Props = {};
     if (pp.numId && pp.numId !== '0') {
       const lab = listLabel(pp.numId, pp.ilvl || '0');
-      if (lab) { prefix = esc(lab.label) + '\t'; indOverride = lab.ind; }
+      // Nummer im gleichen Stil wie der Absatztext (Absatzmarke), nicht im Formatvorlagen-Stil
+      if (lab) { prefix = wrapRun(esc(lab.label), markR) + '\t'; indOverride = lab.ind; }
     }
     const P = { ...pp, ...Object.fromEntries(Object.entries(indOverride).filter(([k]) => k.startsWith('ind') || k === 'hanging' || k === 'firstLine')), ...(pPr && kid(pPr, 'ind') ? readPPr(pPr) : {}) };
 

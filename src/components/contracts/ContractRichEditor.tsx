@@ -110,10 +110,14 @@ const A4Pagination = Extension.create({
           if (meta) {
             return {
               ...meta,
-              deco: DecorationSet.create(tr.doc, meta.breaks.map(b => {
+              deco: DecorationSet.create(tr.doc, meta.breaks.map((b, i) => {
                 const node = tr.doc.nodeAt(b.pos);
+                const rest = b.extra - PAD_BOTTOM - PAGE_GAP - PAD_TOP;
                 return Decoration.node(b.pos, b.pos + (node?.nodeSize ?? 1), {
-                  style: `padding-top:${b.extra}px`, 'data-pg-extra': String(b.extra),
+                  class: 'pg-break',
+                  style: `padding-top:${b.extra}px;--pg-gap-top:${rest + PAD_BOTTOM}px`,
+                  'data-pg-extra': String(b.extra),
+                  'data-pg-label': `Seite ${i + 2}`,
                 });
               })),
             };

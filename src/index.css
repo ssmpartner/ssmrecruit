@@ -182,8 +182,19 @@
 .contract-editor .a4-gap-band span { font-size: 0.65rem; color: hsl(var(--muted-foreground)); letter-spacing: 0.05em; }
 .contract-editor.contract-a4-sheet {
   box-shadow: none;
-  background: repeating-linear-gradient(to bottom, #fff 0 1123px, hsl(var(--muted)) 1123px 1151px) !important;
+  background: #fff !important;
   outline: 1px solid hsl(0 0% 0% / 0.08);
+}
+/* Seitenlücke wird direkt am ersten Block der neuen Seite gezeichnet – bleibt so immer passend zum Text */
+.contract-editor.contract-a4-sheet > .pg-break { position: relative; }
+.contract-editor.contract-a4-sheet > .pg-break::before {
+  content: attr(data-pg-label);
+  position: absolute; left: -80px; width: 794px; top: var(--pg-gap-top); height: 28px;
+  background: hsl(var(--muted));
+  box-shadow: inset 0 6px 6px -6px hsl(0 0% 0% / 0.25), inset 0 -6px 6px -6px hsl(0 0% 0% / 0.25);
+  display: flex; align-items: center; justify-content: center;
+  font: 500 10px/1 sans-serif; letter-spacing: 0.05em; color: hsl(var(--muted-foreground));
+  text-indent: 0; pointer-events: none; user-select: none;
 }
 .contract-editor.contract-a4-sheet > * { box-sizing: content-box; }
 .contract-editor.contract-a4-sheet > * { max-width: 100%; }
