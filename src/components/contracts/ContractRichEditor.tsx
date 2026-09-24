@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, Undo2, Redo2,
   AlignLeft, AlignCenter, AlignRight, Heading1, Heading2, Heading3, Table as TableIcon,
-  Minus, Quote, Pilcrow,
+  Minus, Quote, Pilcrow, FileDown,
 } from 'lucide-react';
 import PlaceholderPicker from './PlaceholderPicker';
 import { placeholderLabel, type ContractArea, type TargetGroupCode } from '@/lib/contract-placeholders';
@@ -45,6 +45,20 @@ const PlaceholderNode = Node.create({
   },
   renderText({ node }) {
     return `{{${node.attrs.key}}}`;
+  },
+});
+
+/** Manueller Seitenumbruch (A4). */
+const PageBreakNode = Node.create({
+  name: 'pageBreak',
+  group: 'block',
+  atom: true,
+  selectable: true,
+  parseHTML() {
+    return [{ tag: 'div[data-page-break]' }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['div', mergeAttributes(HTMLAttributes, { 'data-page-break': 'true', class: 'page-break' })];
   },
 });
 
@@ -83,11 +97,12 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
       TableHeader,
       TableCell,
       PlaceholderNode,
+      PageBreakNode,
     ],
     content: initial,
     editorProps: {
       attributes: {
-        class: 'contract-editor prose prose-sm max-w-none dark:prose-invert focus:outline-none min-h-[420px] px-6 py-5',
+        class: 'contract-editor prose prose-sm max-w-none dark:prose-invert focus:outline-none contract-a4-sheet',
       },
     },
     onUpdate: ({ editor: ed }) => {
@@ -137,6 +152,7 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
         <Button type="button" size="icon" variant="ghost" className={`h-8 w-8 ${tb(editor.isActive({ textAlign: 'right' }))}`} onClick={() => editor.chain().focus().setTextAlign('right').run()} title="Rechtsbündig"><AlignRight className="h-4 w-4" /></Button>
         <Separator orientation="vertical" className="mx-1 h-6" />
         <Button type="button" size="icon" variant="ghost" className="h-8 w-8" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Tabelle einfügen"><TableIcon className="h-4 w-4" /></Button>
+        <Button type="button" size="icon" variant="ghost" className="h-8 w-8" onClick={() => editor.chain().focus().insertContent({ type: 'pageBreak' }).run()} title="Seitenumbruch einfügen"><FileDown className="h-4 w-4" /></Button>
         <div className="ml-auto">
           <PlaceholderPicker
             area={area}
@@ -164,8 +180,8 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
         </div>
       )}
 
-      <div className="bg-white dark:bg-muted/20 max-h-[58vh] overflow-y-auto">
-        <EditorContent editor={editor} />
+      <div className="bg-muted/60 max-h-[58vh] overflow-auto py-6 px-4">
+        <EditorContent editor={editor} className="mx-auto w-fit" />
       </div>
     </div>
   );
