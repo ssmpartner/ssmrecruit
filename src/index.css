@@ -156,3 +156,24 @@
 .contract-editor.resize-cursor { cursor: col-resize; }
 .contract-editor p { white-space: pre-wrap; }
 .contract-page { font-family: Georgia, 'Times New Roman', serif; color: #111; }
+/* Vertragseditor als echte A4-Seite (794×1123 px, Ränder wie Vorschau) */
+.contract-editor.contract-a4-sheet {
+  width: 794px;
+  min-height: 1123px;
+  padding: 110px 80px 90px 80px;
+  color: #111;
+  box-shadow: 0 1px 3px hsl(0 0% 0% / 0.15), 0 0 0 1px hsl(0 0% 0% / 0.08);
+  /* gestrichelte Linie = automatischer Seitenwechsel (alle 923 px Inhaltshöhe) */
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 922px, hsl(var(--primary) / 0.45) 922px 923px) content-box,
+    #fff;
+}
+.contract-editor .page-break {
+  position: relative; height: 0; margin: 1.25rem 0; border-top: 2px dashed hsl(var(--primary) / 0.5);
+}
+.contract-editor .page-break::after {
+  content: 'Seitenumbruch'; position: absolute; left: 50%; top: -0.7rem; transform: translateX(-50%);
+  background: #fff; padding: 0 0.5rem; font-size: 0.7rem; color: hsl(var(--primary));
+}
+.contract-editor .page-break.ProseMirror-selectednode { border-top-color: hsl(var(--primary)); }
+.page-break { page-break-after: always; break-after: page; }

@@ -18,6 +18,7 @@ export default function ContractPagePreview({
 }: Props) {
   const measureRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState(0);
+  const [laidOut, setLaidOut] = useState(html);
 
   const usable = A4_H - padding.top - padding.bottom;
   const innerWidth = A4_W - padding.left - padding.right;
@@ -25,12 +26,24 @@ export default function ContractPagePreview({
   useLayoutEffect(() => {
     const el = measureRef.current;
     if (!el) return;
-    const update = () => setContentHeight(el.scrollHeight);
+    const update = () => {
+      // Manuelle Seitenumbrüche: Abstand bis zum nächsten Seitenanfang auffüllen
+      const breaks = Array.from(el.querySelectorAll<HTMLElement>('[data-page-break]'));
+      breaks.forEach(b => { b.style.height = '0px'; b.style.margin = '0'; b.style.border = '0'; });
+      const base = el.getBoundingClientRect().top;
+      for (const b of breaks) {
+        const y = b.getBoundingClientRect().top - base;
+        const rest = usable - (y % usable);
+        b.style.height = `${rest >= usable ? 0 : rest}px`;
+      }
+      setLaidOut(el.innerHTML);
+      setContentHeight(el.scrollHeight);
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [html]);
+  }, [html, usable]);
 
   // Bilder/Fonts können die Höhe nachträglich ändern
   useEffect(() => {
@@ -84,7 +97,7 @@ export default function ContractPagePreview({
               <div
                 className={contentClass}
                 style={{ transform: `translateY(-${i * usable}px)`, color: '#111' }}
-                dangerouslySetInnerHTML={{ __html: html }}
+                dangerouslySetInnerHTML={{ __html: laidOut }}
               />
             </div>
           </div>
