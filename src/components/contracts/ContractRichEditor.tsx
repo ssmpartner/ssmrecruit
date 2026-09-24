@@ -9,6 +9,28 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
+import { TextStyle } from '@tiptap/extension-text-style';
+
+/** Übernimmt Inline-Formatierungen aus Word (Abstände, Einzüge, Schrift) unverändert. */
+const PreserveStyle = Extension.create({
+  name: 'preserveStyle',
+  addGlobalAttributes() {
+    return [{
+      types: ['paragraph', 'heading', 'tableCell', 'tableHeader', 'textStyle'],
+      attributes: {
+        style: {
+          default: null,
+          parseHTML: (el: HTMLElement) => {
+            const st = (el.getAttribute('style') || '').split(';').map(x => x.trim())
+              .filter(x => x && !/^text-align\s*:/i.test(x)).join(';');
+            return st || null;
+          },
+          renderHTML: (attrs: Record<string, any>) => (attrs.style ? { style: attrs.style } : {}),
+        },
+      },
+    }];
+  },
+});
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -179,6 +201,8 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
       TableCell,
       PlaceholderNode,
       PageBreakNode,
+      TextStyle,
+      PreserveStyle,
       A4Pagination,
     ],
     content: initial,
