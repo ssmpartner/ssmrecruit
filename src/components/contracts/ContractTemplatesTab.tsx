@@ -14,6 +14,7 @@ import {
   extractUsedPlaceholders, placeholderLabel, renderSample,
 } from '@/lib/contract-placeholders';
 import ContractRichEditor from './ContractRichEditor';
+import { docxToHtml } from '@/lib/docx-to-html';
 import ContractPagePreview from './ContractPagePreview';
 
 type Template = {
@@ -74,14 +75,8 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
     }
     setImporting(true);
     try {
-      const path = `template-imports/${Date.now()}_${file.name.replace(/[^\w.\-]+/g, '_')}`;
-      const { error: upErr } = await supabase.storage.from('contracts').upload(path, file, { upsert: false });
-      if (upErr) throw new Error(upErr.message);
-
-      const { data, error } = await supabase.functions.invoke('docx-to-html', { body: { path } });
-      if (error) throw new Error(error.message);
-      if ((data as any)?.error) throw new Error((data as any).error);
-      const html = (data as any)?.html;
+      // Formatgetreue Umwandlung direkt im Browser
+      const html = await docxToHtml(file);
       if (!html) throw new Error('Keine Textausgabe erhalten');
 
       setEdit({ ...empty, title: file.name.replace(/\.docx$/i, ''), body_html: html });
