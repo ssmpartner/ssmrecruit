@@ -20,6 +20,7 @@ type Template = {
   id: string;
   title: string;
   contract_type: string;
+  doc_kind?: 'contract' | 'annex';
   area: 'sales' | 'office';
   position: string | null;
   level: string | null;
@@ -43,7 +44,7 @@ type Letterhead = {
 };
 
 const empty: Partial<Template> = {
-  title: '', contract_type: 'Arbeitsvertrag', area: 'sales',
+  title: '', contract_type: 'Arbeitsvertrag', doc_kind: 'contract', area: 'sales',
   position: '', level: '', language: 'de',
   careerplan_linked: false, careerplan_level: null, status: 'draft', body_html: '',
 };
@@ -222,7 +223,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
     if (!edit.title) { toast.error('Bitte einen Titel vergeben'); return; }
     const user = (await supabase.auth.getUser()).data.user;
     const payload = {
-      title: edit.title, contract_type: edit.contract_type || 'Arbeitsvertrag',
+      title: edit.title, contract_type: edit.contract_type || 'Arbeitsvertrag', doc_kind: edit.doc_kind || 'contract',
       area: edit.area || 'sales', position: edit.position || null, level: edit.level || null,
       language: edit.language || 'de',
       careerplan_linked: (edit.area || 'sales') === 'sales',
@@ -310,7 +311,7 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
             {rows.map(t => (
               <TableRow key={t.id}>
                 <TableCell className="font-medium">
-                  <div className="flex items-center gap-1.5"><FileText className="h-3.5 w-3.5 text-muted-foreground" />{t.title}</div>
+                  <div className="flex items-center gap-1.5"><FileText className="h-3.5 w-3.5 text-muted-foreground" />{t.title}<Badge variant="outline" className="ml-1 text-[10px]">{t.doc_kind === 'annex' ? 'Anhang' : 'Vertrag'}</Badge></div>
                 </TableCell>
                 <TableCell><Badge variant={t.area === 'sales' ? 'default' : 'secondary'}>{AREA_LABELS[t.area]}</Badge></TableCell>
                 <TableCell className="uppercase text-xs">{t.language}</TableCell>
@@ -350,7 +351,17 @@ export default function ContractTemplatesTab({ editTemplateId, onEditHandled }: 
                   <Label>Titel *</Label>
                   <Input value={edit.title || ''} onChange={e => setEdit({ ...edit, title: e.target.value })} />
                 </div>
-                <div className="col-span-2">
+                <div>
+                  <Label>Dokumentart</Label>
+                  <Select value={edit.doc_kind || 'contract'} onValueChange={(v: any) => setEdit({ ...edit, doc_kind: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="contract">Vertrag</SelectItem>
+                      <SelectItem value="annex">Anhang</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <Label>Vertragsart</Label>
                   <Input value={edit.contract_type || ''} onChange={e => setEdit({ ...edit, contract_type: e.target.value })} />
                 </div>
