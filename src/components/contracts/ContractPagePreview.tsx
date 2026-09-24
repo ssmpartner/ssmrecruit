@@ -28,7 +28,7 @@ export default function ContractPagePreview({
     if (!el) return;
     const update = () => {
       // Gleiche Seitenlogik wie im Editor: Blöcke nicht zerschneiden, Umbrüche erzwingen
-      const inner = el.firstElementChild as HTMLElement | null;
+      const inner: HTMLElement | null = el;
       el.querySelectorAll('[data-a4-spacer]').forEach(n => n.remove());
       el.querySelectorAll<HTMLElement>('[data-page-break]').forEach(b => { b.style.height = '0px'; b.style.margin = '0'; b.style.border = '0'; });
       if (inner) {
@@ -48,7 +48,7 @@ export default function ContractPagePreview({
           force = child.hasAttribute('data-page-break');
         }
       }
-      setLaidOut((el.firstElementChild as HTMLElement | null)?.innerHTML ?? html);
+      setLaidOut(el.innerHTML);
       setContentHeight(el.scrollHeight);
     };
     update();
