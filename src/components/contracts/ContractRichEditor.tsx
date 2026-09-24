@@ -176,7 +176,7 @@ export default function ContractRichEditor({ value, onChange, area, targetGroup 
     const ro = new ResizeObserver(() => setScale(Math.min(1, (el.clientWidth - 32) / 794)));
     ro.observe(el);
     return () => ro.disconnect();
-  });
+  }, [editor]);
 
   const editor = useEditor({
     extensions: [
