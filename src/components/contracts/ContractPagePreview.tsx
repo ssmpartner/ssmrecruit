@@ -27,26 +27,47 @@ export default function ContractPagePreview({
     const el = measureRef.current;
     if (!el) return;
     const update = () => {
-      // Gleiche Seitenlogik wie im Editor: Blöcke nicht zerschneiden, Umbrüche erzwingen
-      const inner: HTMLElement | null = el;
+      // Blöcke nicht zerschneiden; zu grosse Tabellen/Listen zeilenweise umbrechen
       el.querySelectorAll('[data-a4-spacer]').forEach(n => n.remove());
+      el.querySelectorAll<HTMLElement>('[data-a4-shift]').forEach(n => { n.style.marginTop = n.dataset.a4Shift === 'none' ? '' : n.dataset.a4Shift!; n.removeAttribute('data-a4-shift'); });
       el.querySelectorAll<HTMLElement>('[data-page-break]').forEach(b => { b.style.height = '0px'; b.style.margin = '0'; b.style.border = '0'; });
-      if (inner) {
-        const base = inner.getBoundingClientRect().top;
-        let shift = 0; let force = false;
-        for (const child of Array.from(inner.children) as HTMLElement[]) {
-          const r = child.getBoundingClientRect();
-          const y = r.top - base; // enthält bereits eingefügte Abstände
-          const inPage = y % usable;
-          if ((force && inPage > 0) || (inPage > 0 && inPage + r.height > usable && r.height <= usable)) {
+      const base = el.getBoundingClientRect().top;
+      const SAFE = 6;
+      const units: HTMLElement[] = [];
+      const collect = (node: HTMLElement) => {
+        const h = node.getBoundingClientRect().height;
+        const rows = node.querySelectorAll<HTMLElement>(':scope > tbody > tr, :scope > thead > tr, :scope > tr, :scope > table > tbody > tr, :scope > li');
+        if (h > usable - SAFE && rows.length > 1) rows.forEach(r => units.push(r));
+        else units.push(node);
+      };
+      (Array.from(el.children) as HTMLElement[]).forEach(collect);
+      let force = false;
+      for (const u of units) {
+        const r = u.getBoundingClientRect();
+        const y = r.top - base;
+        const inPage = y % usable;
+        const overflow = inPage > 0 && inPage + r.height > usable - SAFE && r.height <= usable;
+        if ((force && inPage > 0) || overflow) {
+          const gap = usable - inPage;
+          if (u.tagName === 'TR') {
+            const sp = document.createElement('tr');
+            sp.setAttribute('data-a4-spacer', '');
+            const td = document.createElement('td');
+            td.colSpan = 50;
+            td.style.cssText = `height:${gap}px;padding:0;border:0`;
+            sp.appendChild(td);
+            u.before(sp);
+          } else if (u.tagName === 'LI') {
+            u.dataset.a4Shift = u.style.marginTop || 'none';
+            u.style.marginTop = `${gap}px`;
+          } else {
             const sp = document.createElement('div');
             sp.setAttribute('data-a4-spacer', '');
-            sp.style.height = `${usable - inPage}px`;
-            child.before(sp);
-            shift += usable - inPage;
+            sp.style.height = `${gap}px`;
+            u.before(sp);
           }
-          force = child.hasAttribute('data-page-break');
         }
+        force = u.hasAttribute('data-page-break');
       }
       setLaidOut(el.innerHTML);
       setContentHeight(el.scrollHeight);
