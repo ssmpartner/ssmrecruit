@@ -950,14 +950,6 @@ export default function LeadsTable() {
                           <span title={lead.controllingQueryOpen ? (lead.controllingQueryText || 'Rückfrage vom Controlling') : undefined}>
                             <LeadStatusBadge status={lead.status} queryOpen={lead.controllingQueryOpen} />
                           </span>
-                          {!lead.controllingQueryOpen && ctrlApprovers.get(lead.id) && (
-                            <span
-                              className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700"
-                              title={`Controlling-Freigabe durch ${ctrlApprovers.get(lead.id)}`}
-                            >
-                              <CheckCircle2 className="h-3 w-3" /> {ctrlApprovers.get(lead.id)}
-                            </span>
-                          )}
                         </div>
                       </td>
 
