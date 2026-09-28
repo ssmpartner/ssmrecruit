@@ -217,7 +217,7 @@ export default function LeadsTable() {
     } else if (isGeschaeftsleitung) {
       filtered = filtered.filter(l => ['controlling_approved','management_review'].includes(l.status));
     } else if (isHR) {
-      filtered = filtered.filter(l => ['management_approved','hr_processing','hr_pending'].includes(l.status));
+      filtered = filtered.filter(l => ['management_approved','hr_processing','hr_pending','hired'].includes(l.status));
     }
 
     return filtered;
@@ -458,7 +458,7 @@ export default function LeadsTable() {
     let items = leads.filter(l => l.lifecycle === 'active');
     if (isControlling) items = items.filter(l => l.status === 'ready_for_controlling' && !l.controllingQueryOpen);
     else if (isGeschaeftsleitung) items = items.filter(l => ['controlling_approved','management_review'].includes(l.status));
-    else if (isHR) items = items.filter(l => ['management_approved','hr_processing','hr_pending'].includes(l.status));
+    else if (isHR) items = items.filter(l => ['management_approved','hr_processing','hr_pending','hired'].includes(l.status));
     return items.length;
   }, [leads, isControlling, isGeschaeftsleitung, isHR]);
 
@@ -621,14 +621,18 @@ export default function LeadsTable() {
               placeholder="Name, E-Mail, Ort oder PLZ..."
               className="h-9 w-56 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
-            {!isReviewRole && (
+            {(
               <>
                 <MultiSelectFilter
                   allLabel="Alle Status"
                   value={statusFilter}
                   onChange={setStatusFilter}
                   highlight={statusFilter.includes('controlling_query')}
-                  options={[
+                  options={isReviewRole
+                    ? Object.entries(statusConfig)
+                        .filter(([k]) => Array.from(new Set(lifecycleLeads.map(l => l.status))).includes(k as LeadStatus))
+                        .map(([k, v]) => ({ value: k, label: v.label, badgeClass: v.color }))
+                    : [
                     ...Object.entries(statusConfig).map(([k, v]) => ({ value: k, label: v.label, badgeClass: v.color })),
                     { value: 'controlling_query', label: 'Rückfrage', badgeClass: 'bg-red-50 text-red-700 border border-red-200' },
                   ]}
