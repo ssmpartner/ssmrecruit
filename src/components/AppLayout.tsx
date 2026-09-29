@@ -52,7 +52,7 @@ export default function AppLayout() {
     .slice(0, 2);
 
   const handlePortalSwitch = () => {
-    window.open('https://ssmpartner.ch', '_blank');
+    window.open('https://ssmpartner.ch/portal', '_blank', 'noopener,noreferrer');
   };
 
   const handleLogout = async () => {
