@@ -88,7 +88,8 @@ export default function PersonnelFormPage() {
     }
     return BASE_STEPS;
   })();
-  const currentStep = steps[stepIdx];
+  const currentStep = steps[Math.min(stepIdx, steps.length - 1)] ?? steps[0];
+  const uuid = () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
   // ---- Load token + prefill -----------------------------------------------
   useEffect(() => {
@@ -191,9 +192,11 @@ export default function PersonnelFormPage() {
       return;
     }
 
-    const { data: res, error: fnErr } = await supabase.functions.invoke('submit-employment-personnel', {
-      body: { personnel_token: token, data },
-    });
+    let res: unknown = null; let fnErr: unknown = null;
+    try {
+      const r = await supabase.functions.invoke('submit-employment-personnel', { body: { personnel_token: token, data } });
+      res = r.data; fnErr = r.error;
+    } catch (e) { fnErr = e; }
     if (fnErr || !(res as { ok?: boolean } | null)?.ok) {
       setPageError('Ihre Angaben konnten leider nicht gespeichert werden. Bitte versuchen Sie es in einem Moment erneut.');
       setPhase('ready');
@@ -234,7 +237,7 @@ export default function PersonnelFormPage() {
     }
     setPhase('submitting');
     setPageError('');
-
+    try {
     // Upload each file
     let allOk = true;
     for (let i = 0; i < files.length; i++) {
@@ -242,7 +245,7 @@ export default function PersonnelFormPage() {
       setFiles(prev => prev.map((f, idx) => idx === i ? { ...f, uploading: true } : f));
       const file = files[i].file;
       const ext = file.name.split('.').pop() || 'bin';
-      const filePath = `${info.lead_id}/${crypto.randomUUID()}.${ext}`;
+      const filePath = `${info.lead_id}/${uuid()}.${ext}`;
       const { error: uploadErr } = await supabase.storage.from('lead-documents').upload(filePath, file);
       if (uploadErr) {
         setFiles(prev => prev.map((f, idx) => idx === i ? { ...f, uploading: false, error: 'Upload fehlgeschlagen' } : f));
@@ -268,11 +271,16 @@ export default function PersonnelFormPage() {
       body: { kind: 'document_request', token: docRequest.token },
     });
     await supabase.from('activities').insert({
-      id: crypto.randomUUID(), lead_id: info.lead_id, type: 'edit',
+      id: uuid(), lead_id: info.lead_id, type: 'edit',
       description: `${files.length} Dokument(e) vom Kandidaten hochgeladen`,
       user: info.lead_name ? `${info.lead_name} (Kandidat)` : 'Kandidat',
     });
 
+    } catch {
+      setPhase('ready');
+      setPageError('Beim Hochladen ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.');
+      return;
+    }
     // Now persist personnel + mark complete
     await submitPersonnelAndFinish();
   };
