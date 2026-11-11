@@ -1,0 +1,1 @@
+- Open job positions for /bewerbung are read live from the SSM Partner website DB via the separate read-only client in src/integrations/ssm-partner/client.ts — keeps the website CMS as single source; never write through it.

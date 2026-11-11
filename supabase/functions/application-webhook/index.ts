@@ -367,7 +367,7 @@ serve(async (req) => {
               status: 'new',
               agency_id: assignAgencyId,
               employee_id: assignEmployeeId,
-              notes: duplicateNote + `Bewerbung eingegangen via Website-Formular`,
+              notes: duplicateNote + `Bewerbung eingegangen via Website-Formular` + (customFields['job_position_title'] ? ` – Stelle: ${customFields['job_position_title']} (ID: ${customFields['job_position_id'] || '-'})` : ' – Spontanbewerbung'),
               position: candidate.salutation,
             });
 
@@ -375,7 +375,7 @@ serve(async (req) => {
               id: crypto.randomUUID(),
               lead_id: leadId,
               type: 'status_change',
-              description: `Bewerbung automatisch via Website-Formular importiert`,
+              description: `Bewerbung automatisch via Website-Formular importiert` + (customFields['job_position_title'] ? ` – Stelle: ${customFields['job_position_title']}` : ''),
               user: 'System',
             });
 

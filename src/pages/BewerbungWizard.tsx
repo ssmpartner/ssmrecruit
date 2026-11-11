@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CheckCircle2, Loader2, AlertCircle, Upload, X, File, ChevronRight, ChevronLeft, Briefcase, TrendingUp, ArrowRight, Info } from 'lucide-react';
 import bewerbungHero from '@/assets/bewerbung-hero.jpg';
+import { fetchActiveJobPositions, jobArea, type JobPosition } from '@/integrations/ssm-partner/client';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -54,6 +55,8 @@ export default function BewerbungWizard() {
   const [applicationType, setApplicationType] = useState<ApplicationType>('');
   const [operationsChoice, setOperationsChoice] = useState<OperationsChoice>('');
   const [educationStatus, setEducationStatus] = useState<EducationStatus>('');
+  const [jobPositions, setJobPositions] = useState<JobPosition[]>([]);
+  const [selectedJobId, setSelectedJobId] = useState('');
 
   // Step 2: Personal
   const [form, setForm] = useState({
@@ -87,6 +90,11 @@ export default function BewerbungWizard() {
   const captchaCorrect = captchaA + captchaB;
 
   // Load config from wizards table
+  // Load open positions from SSM Partner website (fresh on every open; failure = free application)
+  useEffect(() => {
+    fetchActiveJobPositions().then(setJobPositions).catch(e => console.error('Job positions load error:', e));
+  }, []);
+
   useEffect(() => {
     async function load() {
       try {
@@ -117,6 +125,13 @@ export default function BewerbungWizard() {
     load();
   }, []);
 
+  const areaJobs = useMemo(
+    () => (applicationType ? jobPositions.filter(j => jobArea(j.department) === applicationType) : []),
+    [jobPositions, applicationType],
+  );
+  const selectedJob = areaJobs.find(j => j.id === selectedJobId) || null;
+  const operationsHasJobs = applicationType === 'operations' && (config.operations_open || areaJobs.length > 0);
+
   const isFinanzcoach = applicationType === 'finanzcoach' ||
     (applicationType === 'operations' && operationsChoice === 'finanzcoach_switch');
 
@@ -144,7 +159,7 @@ export default function BewerbungWizard() {
     const errs: Record<string, string> = {};
     if (s === 0) {
       if (!applicationType) errs.applicationType = 'Bitte wähle eine Option';
-      if (applicationType === 'operations' && !config.operations_open && !operationsChoice) errs.operationsChoice = 'Bitte wähle eine Option';
+      if (applicationType === 'operations' && !operationsHasJobs && !operationsChoice) errs.operationsChoice = 'Bitte wähle eine Option';
       if (applicationType === 'operations' && operationsChoice === 'exit') return false;
       if (isFinanzcoach && !educationStatus) errs.educationStatus = 'Bitte wähle eine Option';
     }
@@ -217,6 +232,10 @@ export default function BewerbungWizard() {
       formData.append('consent_visana', consents.visana);
       formData.append('captcha_valid', 'true');
       formData.append('form_source', 'bewerbung_wizard');
+      if (selectedJob && !(applicationType === 'operations' && operationsChoice === 'finanzcoach_switch')) {
+        formData.append('job_position_id', selectedJob.id);
+        formData.append('job_position_title', selectedJob.title.trim());
+      }
 
       // Files
       if (cvFile) formData.append('cv', cvFile);
@@ -338,14 +357,14 @@ export default function BewerbungWizard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <OptionCard
               selected={applicationType === 'operations'}
-              onClick={() => { setApplicationType('operations'); setOperationsChoice(''); setEducationStatus(''); }}
+              onClick={() => { setApplicationType('operations'); setOperationsChoice(''); setEducationStatus(''); setSelectedJobId(''); }}
               icon={<Briefcase className="h-6 w-6" />}
               title="Operations / Innendienst"
               description="Verwaltung, Organisation und Backoffice"
             />
             <OptionCard
               selected={applicationType === 'finanzcoach'}
-              onClick={() => { setApplicationType('finanzcoach'); setOperationsChoice(''); setEducationStatus(''); }}
+              onClick={() => { setApplicationType('finanzcoach'); setOperationsChoice(''); setEducationStatus(''); setSelectedJobId(''); }}
               icon={<TrendingUp className="h-6 w-6" />}
               title="Finanzcoach / Aussendienst"
               description="Beratung, Kundenkontakt und Vertrieb"
@@ -353,8 +372,27 @@ export default function BewerbungWizard() {
           </div>
           {fieldErrors.applicationType && <p className="text-xs text-destructive">{fieldErrors.applicationType}</p>}
 
+          {/* Open positions from SSM Partner website */}
+          {applicationType && areaJobs.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-foreground text-sm">Offene Stellen</h4>
+              <div className="grid grid-cols-1 gap-3">
+                {areaJobs.map(job => (
+                  <button key={job.id} type="button" onClick={() => setSelectedJobId(selectedJobId === job.id ? '' : job.id)}
+                    className={`text-left p-3 rounded-lg border transition-colors ${
+                      selectedJobId === job.id ? 'bg-primary/5 border-primary' : 'border-border hover:bg-muted'
+                    }`}>
+                    <p className="text-sm font-medium">{job.title.trim()}</p>
+                    <p className="text-xs text-muted-foreground">{[job.location, job.workload].filter(Boolean).join(' · ')}</p>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">Ohne Auswahl wird deine Bewerbung als Spontanbewerbung erfasst.</p>
+            </div>
+          )}
+
           {/* Operations: No open positions */}
-          {applicationType === 'operations' && !config.operations_open && (
+          {applicationType === 'operations' && !operationsHasJobs && (
             <div className="bg-warning/10 border border-warning/20 rounded-xl p-5 space-y-4">
               <div className="flex items-start gap-3">
                 <Info className="h-5 w-5 text-warning mt-0.5 shrink-0" />
