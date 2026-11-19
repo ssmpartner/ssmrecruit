@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Building2, Plus, Globe, MapPin, Languages, UserCheck } from 'lucide-react';
 import { useLeads } from '@/context/useLeads';
+import { useAuth } from '@/context/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { SWISS_CANTONS, AGENCY_LANGUAGES, AGENCY_REGIONS, AGENCY_COLORS, type Agency } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +9,7 @@ import AgencyDetailSheet from '@/components/AgencyDetailSheet';
 
 export default function Agencies() {
   const { agencies, employees, leads, addAgency } = useLeads();
+  const { isSuperadmin } = useAuth();
   const [open, setOpen] = useState(false);
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
   const defaultForm = {
@@ -46,6 +48,7 @@ export default function Agencies() {
           <Building2 className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold tracking-tight">Agenturen</h1>
         </div>
+        {isSuperadmin && (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
@@ -127,6 +130,7 @@ export default function Agencies() {
             </div>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

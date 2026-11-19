@@ -24,7 +24,7 @@ type SyncResult = {
 export default function Employees() {
   const { employees, agencies, leads, updateEmployee, refreshData } = useLeads() as any;
   const { isSuperadmin, role } = useAuth() as any;
-  const canManage = isSuperadmin || role === 'admin';
+  const canManage = !!isSuperadmin;
   const [changingId, setChangingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);

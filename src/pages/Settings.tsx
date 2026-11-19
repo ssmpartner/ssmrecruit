@@ -1,3 +1,7 @@
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useRoleModules } from '@/hooks/useRoleModules';
+import { CONFIGURABLE_MODULES, CONFIGURABLE_ROLES, defaultModuleAccess, type RoleModuleOverrides } from '@/lib/role-modules';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Globe, Zap, Key, CheckCircle2, XCircle, Save, ExternalLink, UserPlus, Shield, Trash2, Mail, MessageSquare, Phone, Video, Clock, Monitor, Mic, MicOff, VideoOff, Camera, ScreenShare, MessageCircle, LayoutGrid, Bell, Send, Settings2, Link2, Brain, RefreshCw, FileText, Lock, Users, CalendarDays, Plug, Copy, Code2, ChevronDown, ChevronLeft, LogOut, Loader2, Tag, Plus, Pencil, GripVertical, ClipboardList, Target, Wand2, MapPin, X, Download, Building2, Image, KeyRound, ShieldCheck } from 'lucide-react';
@@ -33,7 +37,7 @@ type SystemRole = 'superadmin' | 'admin' | 'backoffice' | 'analyst' | 'teamleite
 
 const roleConfig: Record<SystemRole, { label: string; color: string; description: string }> = {
   superadmin: { label: 'Superadmin', color: 'bg-destructive text-destructive-foreground', description: 'Vollzugriff – kann alles verwalten inkl. Benutzer & Einstellungen' },
-  admin: { label: 'Admin', color: 'bg-primary text-primary-foreground', description: 'Kann Leads, Mitarbeiter & Agenturen verwalten und Controlling/GL/HR-Rollen zuweisen' },
+  admin: { label: 'Admin', color: 'bg-primary text-primary-foreground', description: 'Sieht alle Funktionen – ohne Benutzerverwaltung und ohne Agenturen/Mitarbeiter verwalten' },
   teamleiter: { label: 'Teamleiter', color: 'bg-emerald-600 text-white', description: 'Eigene Leads bearbeiten, Pipeline, Aufgaben, Kalender & Statistik' },
   agency_manager: { label: 'Agenturleiter', color: 'bg-teal-600 text-white', description: 'Sieht alle Leads seiner Agentur und kann innerhalb der Agentur zuweisen' },
   backoffice: { label: 'Backoffice', color: 'bg-warning text-warning-foreground', description: 'Kann Leads bearbeiten, zuweisen und Status ändern' },
@@ -73,7 +77,7 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'profile' | 'notifications' | 'news' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'career' | 'contract_permissions' | 'users' | 'email' | 'integrations' | 'api';
+type SettingsTab = 'profile' | 'notifications' | 'news' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'career' | 'contract_permissions' | 'users' | 'role_modules' | 'email' | 'integrations' | 'api';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
   { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name & Profildaten' },
@@ -86,6 +90,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[
   { id: 'career', label: 'SSM Karriereplan', icon: Target, desc: 'Karrierepfade & Stufen verwalten' },
   { id: 'contract_permissions', label: 'Vertrags-Berechtigungen', icon: ShieldCheck, desc: 'Wer darf Verträge sehen, erstellen, freigeben' },
   { id: 'users', label: 'Systembenutzer & Rollen', icon: Users, desc: 'Benutzer hinzufügen, Rollen & Passwörter verwalten' },
+  { id: 'role_modules', label: 'Module pro Rolle', icon: LayoutGrid, desc: 'Festlegen, welche Bereiche jede Rolle sieht' },
   { id: 'email', label: 'E-Mail Automationen', icon: Mail, desc: 'Templates & Regeln verwalten' },
   { id: 'integrations', label: 'Integrationen', icon: Plug, desc: 'Lead-Quellen & Webhooks' },
   { id: 'api', label: 'API-Schlüssel', icon: Key, desc: 'API-Keys generieren & verwalten' },
@@ -262,7 +267,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className={activeTab === 'integrations' ? 'space-y-6' : 'max-w-3xl space-y-6'}>
+      <div className={(activeTab === 'integrations' || activeTab === 'role_modules') ? 'space-y-6' : 'max-w-3xl space-y-6'}>
         {activeTab === 'profile' && <ProfileSettings />}
         {activeTab === 'notifications' && (
           <div className="space-y-8">
@@ -279,6 +284,7 @@ export default function Settings() {
         {activeTab === 'career' && <CareerPlansTab />}
         {activeTab === 'contract_permissions' && isSuperadmin && <ContractPermissionsTab />}
         {activeTab === 'users' && isSuperadmin && <UsersTab isSuperadmin={isSuperadmin} />}
+        {activeTab === 'role_modules' && isSuperadmin && <RoleModulesTab />}
         {activeTab === 'news' && <NewsBannerTab />}
         {activeTab === 'email' && <EmailSettingsTab />}
         {activeTab === 'integrations' && (
@@ -367,6 +373,62 @@ function NotificationsTab({ notifPrefs, updateNotifPrefs, toast }: any) {
           checked={notifPrefs.automationTriggered} onChange={(v: boolean) => { updateNotifPrefs({ automationTriggered: v }); toast({ title: 'Gespeichert' }); }} />
       </div>
     </>
+  );
+}
+
+function RoleModulesTab() {
+  const { toast } = useToast();
+  const { overrides, loading, save } = useRoleModules();
+  const [draft, setDraft] = useState<RoleModuleOverrides>({});
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { if (overrides) setDraft(JSON.parse(JSON.stringify(overrides))); }, [overrides]);
+  const isOn = (role: string, path: string) => draft[role]?.[path] ?? defaultModuleAccess(path, role);
+  const toggle = (role: string, path: string) => {
+    setDraft(prev => {
+      const next = { ...prev, [role]: { ...(prev[role] || {}) } };
+      const value = !isOn(role, path);
+      if (value === defaultModuleAccess(path, role)) delete next[role][path];
+      else next[role][path] = value;
+      return next;
+    });
+  };
+  const handleSave = async () => {
+    setSaving(true);
+    try { await save(draft); toast({ title: 'Gespeichert', description: 'Module pro Rolle wurden aktualisiert.' }); }
+    catch { toast({ title: 'Fehler', description: 'Konnte nicht gespeichert werden.', variant: 'destructive' }); }
+    setSaving(false);
+  };
+  if (loading) return <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">Häkchen setzen oder entfernen, um Bereiche im Menü einer Rolle ein- oder auszublenden. Superadmins sehen immer alles. Dashboard und Einstellungen bleiben für alle sichtbar.</p>
+      <div className="overflow-x-auto rounded-xl border bg-card">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b bg-muted/40">
+              <th className="px-3 py-2 text-left font-medium">Modul</th>
+              {CONFIGURABLE_ROLES.map(r => <th key={r.role} className="px-2 py-2 text-center font-medium whitespace-nowrap">{r.label}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {CONFIGURABLE_MODULES.map(m => (
+              <tr key={m.path} className="border-b last:border-0">
+                <td className="px-3 py-2 font-medium whitespace-nowrap">{m.label}</td>
+                {CONFIGURABLE_ROLES.map(r => (
+                  <td key={r.role} className="px-2 py-2 text-center">
+                    <Checkbox checked={isOn(r.role, m.path)} onCheckedChange={() => toggle(r.role, m.path)} aria-label={`${m.label} für ${r.label}`} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={() => setDraft({})}>Standard wiederherstellen</Button>
+        <Button onClick={handleSave} disabled={saving} className="gap-2">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Speichern</Button>
+      </div>
+    </div>
   );
 }
 

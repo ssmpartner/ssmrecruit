@@ -23,7 +23,7 @@ interface AgencyDetailSheetProps {
 export default function AgencyDetailSheet({ agency, open, onOpenChange }: AgencyDetailSheetProps) {
   const { updateAgency, employees, leads, updateEmployee, agencies } = useLeads();
   const { isSuperadmin, role } = useAuth();
-  const canManageEmployees = isSuperadmin || role === 'admin';
+  const canManageEmployees = isSuperadmin;
   const [form, setForm] = useState({
     name: '',
     contactEmail: '',
@@ -536,9 +536,11 @@ export default function AgencyDetailSheet({ agency, open, onOpenChange }: Agency
 
 
           {/* Save button */}
+          {isSuperadmin && (
           <Button onClick={handleSave} disabled={!dirty} className="w-full gap-2" size="lg">
             <Save className="h-4 w-4" /> Änderungen speichern
           </Button>
+          )}
         </div>
       </SheetContent>
     </Sheet>

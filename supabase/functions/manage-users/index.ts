@@ -40,8 +40,8 @@ Deno.serve(async (req) => {
       .eq("user_id", callerId)
       .single();
 
-    if (callerRole?.role !== "superadmin" && callerRole?.role !== "admin") {
-      throw new Error("Nur Superadmins und Admins können Benutzer verwalten");
+    if (callerRole?.role !== "superadmin") {
+      throw new Error("Nur Superadmins können Benutzer verwalten");
     }
 
     const isSuperadminCaller = callerRole?.role === "superadmin";

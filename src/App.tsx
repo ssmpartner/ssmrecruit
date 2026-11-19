@@ -1,3 +1,5 @@
+import { useRoleModules } from '@/hooks/useRoleModules';
+import { getModuleOverride } from '@/lib/role-modules';
 import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
@@ -85,6 +87,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function RoleRouteGuard({ children }: { children: React.ReactNode }) {
   const { role, isSuperadmin } = useAuth();
   const location = useLocation();
+  const { overrides } = useRoleModules();
+  const moduleOverride = getModuleOverride(overrides, role, location.pathname);
+  if (moduleOverride === false) return <Navigate to="/" replace />;
+  if (moduleOverride === true) return <>{children}</>;
   if (SUPERADMIN_ONLY_PREFIXES.some(p => location.pathname.startsWith(p)) && !isSuperadmin) {
     return <Navigate to="/" replace />;
   }

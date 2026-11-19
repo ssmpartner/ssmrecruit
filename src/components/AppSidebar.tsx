@@ -5,6 +5,8 @@ import { useSidebarState } from '@/context/SidebarContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useState } from 'react';
 import { useAIVoicePermissions } from '@/hooks/useAIVoicePermissions';
+import { useRoleModules } from '@/hooks/useRoleModules';
+import { resolveModuleAccess } from '@/lib/role-modules';
 
 const allNavItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: null, excludeRoles: [] as string[] },
@@ -69,6 +71,7 @@ export default function AppSidebar() {
   const { role, loading } = useAuth();
   const { collapsed, toggle } = useSidebarState();
   const perms = useAIVoicePermissions();
+  const { overrides } = useRoleModules();
 
   const isAiVoiceActive = location.pathname.startsWith('/ai-voice');
   const [aiVoiceOpen, setAiVoiceOpen] = useState(isAiVoiceActive);
@@ -80,14 +83,12 @@ export default function AppSidebar() {
     item.to === '/leads' && isReviewRole ? 'Kandidaten' : item.label;
 
   const navItems = roleReady ? allNavItems.filter(item => {
-    if (item.roles && !item.roles.includes(role!)) return false;
-    if (item.excludeRoles.length > 0 && item.excludeRoles.includes(role!)) return false;
-    return true;
+    const base = !(item.roles && !item.roles.includes(role!)) && !(item.excludeRoles.length > 0 && item.excludeRoles.includes(role!));
+    return resolveModuleAccess(overrides, role, item.to, base);
   }) : [];
   const bottomItems = roleReady ? allBottomItems.filter(item => {
-    if (item.roles && !item.roles.includes(role!)) return false;
-    if (item.excludeRoles.length > 0 && item.excludeRoles.includes(role!)) return false;
-    return true;
+    const base = !(item.roles && !item.roles.includes(role!)) && !(item.excludeRoles.length > 0 && item.excludeRoles.includes(role!));
+    return resolveModuleAccess(overrides, role, item.to, base);
   }) : [];
 
   return (
