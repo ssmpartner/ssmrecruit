@@ -73,7 +73,7 @@ function ToggleRow({ label, description, checked, onChange, icon }: { label: str
   );
 }
 
-type SettingsTab = 'profile' | 'notifications' | 'news' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'career' | 'contract_permissions' | 'email' | 'integrations' | 'api';
+type SettingsTab = 'profile' | 'notifications' | 'news' | 'sources' | 'appointments' | 'insights' | 'wizards' | 'career' | 'contract_permissions' | 'users' | 'email' | 'integrations' | 'api';
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[] = [
   { id: 'profile', label: 'Mein Profil', icon: Shield, desc: 'Name & Profildaten' },
@@ -85,6 +85,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Bell; desc: string }[
   { id: 'wizards', label: 'Wizards', icon: Wand2, desc: 'Wizard-Abläufe verwalten' },
   { id: 'career', label: 'SSM Karriereplan', icon: Target, desc: 'Karrierepfade & Stufen verwalten' },
   { id: 'contract_permissions', label: 'Vertrags-Berechtigungen', icon: ShieldCheck, desc: 'Wer darf Verträge sehen, erstellen, freigeben' },
+  { id: 'users', label: 'Systembenutzer & Rollen', icon: Users, desc: 'Benutzer hinzufügen, Rollen & Passwörter verwalten' },
   { id: 'email', label: 'E-Mail Automationen', icon: Mail, desc: 'Templates & Regeln verwalten' },
   { id: 'integrations', label: 'Integrationen', icon: Plug, desc: 'Lead-Quellen & Webhooks' },
   { id: 'api', label: 'API-Schlüssel', icon: Key, desc: 'API-Keys generieren & verwalten' },
@@ -277,6 +278,7 @@ export default function Settings() {
         {activeTab === 'wizards' && <WizardsTab />}
         {activeTab === 'career' && <CareerPlansTab />}
         {activeTab === 'contract_permissions' && isSuperadmin && <ContractPermissionsTab />}
+        {activeTab === 'users' && isSuperadmin && <UsersTab isSuperadmin={isSuperadmin} />}
         {activeTab === 'news' && <NewsBannerTab />}
         {activeTab === 'email' && <EmailSettingsTab />}
         {activeTab === 'integrations' && (
