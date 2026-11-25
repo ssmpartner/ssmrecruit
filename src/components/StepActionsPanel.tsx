@@ -63,7 +63,8 @@ export default function StepActionsPanel({
   };
 
   // Step 1: New Lead
-  if (leadStatus === 'new') {
+  if (leadStatus === 'new' || leadStatus === 'not_reached' || leadStatus === 'callback') {
+    const isRetry = leadStatus !== 'new';
     return (
       <>
         <div className="space-y-3">
@@ -71,10 +72,10 @@ export default function StepActionsPanel({
             <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
               <span className="text-xs font-bold text-blue-700">1</span>
             </div>
-            <h4 className="text-sm font-semibold">Erstkontakt durchführen</h4>
+            <h4 className="text-sm font-semibold">{isRetry ? (leadStatus === 'callback' ? 'Rückruf durchführen' : 'Erneuter Kontaktversuch') : 'Erstkontakt durchführen'}</h4>
           </div>
           <p className="text-xs text-muted-foreground">
-            Prüfen Sie die Lead-Daten und führen Sie den Erstkontakt durch. Jede Aktion öffnet einen Wizard.
+            {isRetry ? 'Der Lead kann jederzeit weiterbearbeitet werden – z.B. wenn der Kandidat zurückruft.' : 'Prüfen Sie die Lead-Daten und führen Sie den Erstkontakt durch. Jede Aktion öffnet einen Wizard.'}
           </p>
           
           <div className="space-y-2">
