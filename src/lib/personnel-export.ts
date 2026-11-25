@@ -74,6 +74,7 @@ export function downloadPersonnelCsv(data: PersonnelData, leadName: string): voi
   const kinder = data.kinder ?? [];
   kinder.forEach((k, i) => {
     rows.push([`Kind ${i + 1}: Vorname`, fmt(k.vorname)]);
+    rows.push([`Kind ${i + 1}: Nachname`, fmt(k.nachname)]);
     rows.push([`Kind ${i + 1}: Geburtsdatum`, fmt(k.geburtsdatum)]);
     rows.push([`Kind ${i + 1}: In Ausbildung`, k.inAusbildung ? 'Ja' : 'Nein']);
   });
@@ -113,9 +114,9 @@ export function openPersonnelPdf(data: PersonnelData, leadName: string, leadMeta
     <section>
       <h2>Kinder – Details</h2>
       <table>
-        <thead><tr><th>#</th><th>Vorname</th><th>Geburtsdatum</th><th>In Ausbildung</th></tr></thead>
+        <thead><tr><th>#</th><th>Vorname</th><th>Nachname</th><th>Geburtsdatum</th><th>In Ausbildung</th></tr></thead>
         <tbody>
-          ${kinder.map((k, i) => `<tr><td>${i + 1}</td><td>${esc(fmt(k.vorname))}</td><td>${esc(fmt(k.geburtsdatum))}</td><td>${k.inAusbildung ? 'Ja' : 'Nein'}</td></tr>`).join('')}
+          ${kinder.map((k, i) => `<tr><td>${i + 1}</td><td>${esc(fmt(k.vorname))}</td><td>${esc(fmt(k.nachname))}</td><td>${esc(fmt(k.geburtsdatum))}</td><td>${k.inAusbildung ? 'Ja' : 'Nein'}</td></tr>`).join('')}
         </tbody>
       </table>
     </section>`;

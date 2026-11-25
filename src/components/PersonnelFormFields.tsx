@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 
 export interface ChildEntry {
   vorname: string;
+  nachname?: string;
   geburtsdatum: string;
   inAusbildung: boolean;
 }
@@ -88,6 +89,7 @@ export function validatePersonnel(data: PersonnelData): Record<string, string> {
     if (kinder.length < n) errors.kinder = `Bitte ${n} Kind(er) erfassen`;
     kinder.forEach((k, i) => {
       if (!k.vorname?.trim()) errors[`kinder.${i}.vorname`] = 'Pflichtfeld';
+      if (!k.nachname?.trim()) errors[`kinder.${i}.nachname`] = 'Pflichtfeld';
       if (!k.geburtsdatum) errors[`kinder.${i}.geburtsdatum`] = 'Pflichtfeld';
     });
   }
@@ -115,7 +117,7 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
     onChange({ ...data, kinder: next });
   };
   const addChild = () =>
-    onChange({ ...data, kinder: [...(data.kinder ?? []), { vorname: '', geburtsdatum: '', inAusbildung: false }] });
+    onChange({ ...data, kinder: [...(data.kinder ?? []), { vorname: '', nachname: '', geburtsdatum: '', inAusbildung: false }] });
   const removeChild = (idx: number) =>
     onChange({ ...data, kinder: (data.kinder ?? []).filter((_, i) => i !== idx) });
 
@@ -258,8 +260,9 @@ export default function PersonnelFormFields({ data, onChange, errors = {}, disab
           </Field>
           {errors.kinder && <p className="text-xs text-destructive">{errors.kinder}</p>}
           {(data.kinder ?? []).map((k, idx) => (
-            <div key={idx} className="grid grid-cols-[1fr_1fr_auto_auto] gap-2 items-end">
-              <Field label={`Vorname ${idx + 1} *`} error={errors[`kinder.${idx}.vorname`]}><input className={inputCls(`kinder.${idx}.vorname`)} value={k.vorname} onChange={e => updateChild(idx, { vorname: e.target.value })} /></Field>
+            <div key={idx} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto_auto] gap-2 items-end">
+              <Field label={`Kind ${idx + 1}: Vorname *`} error={errors[`kinder.${idx}.vorname`]}><input className={inputCls(`kinder.${idx}.vorname`)} value={k.vorname} onChange={e => updateChild(idx, { vorname: e.target.value })} placeholder="nur Vorname" /></Field>
+              <Field label="Nachname *" error={errors[`kinder.${idx}.nachname`]}><input className={inputCls(`kinder.${idx}.nachname`)} value={k.nachname ?? ''} onChange={e => updateChild(idx, { nachname: e.target.value })} placeholder="nur Nachname" /></Field>
               <Field label="Geburtsdatum *" error={errors[`kinder.${idx}.geburtsdatum`]}><input type="date" className={inputCls(`kinder.${idx}.geburtsdatum`)} value={k.geburtsdatum} onChange={e => updateChild(idx, { geburtsdatum: e.target.value })} /></Field>
               <label className="flex items-center gap-2 h-10 px-2 text-sm">
                 <input type="checkbox" checked={k.inAusbildung} onChange={e => updateChild(idx, { inAusbildung: e.target.checked })} />
