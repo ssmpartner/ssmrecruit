@@ -14,6 +14,7 @@ import LeadActions from '@/components/LeadActions';
 import DuplicateLeads from '@/components/DuplicateLeads';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import ImportExportDialog from '@/components/ImportExportDialog';
+import { canExportLeads } from '@/lib/lead-export';
 import BulkActionsBar from '@/components/BulkActionsBar';
 import MultiSelectFilter from '@/components/MultiSelectFilter';
 import AddressEnrichment from '@/components/AddressEnrichment';
@@ -509,7 +510,7 @@ export default function LeadsTable() {
                 onExport={exportCSV}
                 onOpenImport={() => setCsvImportOpen(true)}
                 onOpenEnrichment={() => setEnrichmentOpen(true)}
-                showExport={isSuperadmin}
+                showExport={canExportLeads(role)}
                 showEnrichment={isSuperadmin}
               />
               <CsvImportDialog open={csvImportOpen} onOpenChange={setCsvImportOpen} />

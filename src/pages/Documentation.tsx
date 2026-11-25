@@ -4,9 +4,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AIVoiceDocsSection = lazy(() => import('@/components/ai-voice/AIVoiceDocsSection'));
 
-const APP_VERSION = '2.70.0';
+const APP_VERSION = '2.71.0';
 
 const versionHistory = [
+  { version: '2.71.0', date: '25.11.2026', changes: [
+    'Leads-Export ist ausschliesslich Superadmins vorbehalten: CSV-Export in der Leads-Liste und CSV-/PDF-Export in der Statistik sind für alle anderen Rollen ausgeblendet',
+    'Admin ohne Benutzer- und Agenturverwaltung: Benutzer anlegen, ändern oder löschen ist gesperrt, bei Agenturen und Mitarbeitern bleibt die Ansicht',
+    'Einstellung «Module pro Rolle»: Superadmins legen pro Rolle fest, welche Bereiche im Menü sichtbar sind – ausgeblendete Bereiche sind auch über direkte Links gesperrt',
+    'Nicht erreicht / Rückruf: Leads bleiben jederzeit weiterbearbeitbar, die Kontakt-Ergebnisse erscheinen wieder in der Aktionsleiste',
+    'Personalblatt: Kinder erfassen Vor- und Nachname in zwei getrennten Pflichtfeldern, Nachname erscheint in PDF und CSV',
+  ]},
   { version: '2.70.0', date: '23.09.2026', changes: [
     'Leads-Filter mit Mehrfachauswahl: Status, Quelle, Agentur, Mitarbeiter und Kanton lassen sich gleichzeitig mehrfach auswählen – mit Suchfeld, «Alle wählen» und «Auswahl leeren»',
     'Farben in den Filter-Dropdowns: Status erscheint als farbiges Etikett, Quelle, Agentur und Mitarbeiter mit farbigem Punkt (Agenturfarbe) – auch im geschlossenen Feld',
@@ -656,7 +663,7 @@ const techStack = [
 
 const roles = [
   { role: 'Superadmin', color: 'bg-destructive/10 text-destructive', permissions: ['Vollzugriff auf alle Module', 'Rollen zuweisen (über SSM Portal)', 'Integrationen konfigurieren', 'CSV-Export', 'Leads dauerhaft löschen', 'Mehrfachauswahl & Bulk-Zuweisung', 'App-Einstellungen ändern', 'Mitarbeiter Agentur-Zuweisung'] },
-  { role: 'Admin', color: 'bg-primary/10 text-primary', permissions: ['Lead-Management (CRUD)', 'Mitarbeiter & Agenturen verwalten', 'Termine & Kalender', 'Analytics einsehen', 'Aufgaben verwalten'] },
+  { role: 'Admin', color: 'bg-primary/10 text-primary', permissions: ['Lead-Management (CRUD)', 'Termine & Kalender', 'Analytics einsehen', 'Aufgaben verwalten', 'Kein CSV-Export von Leads', 'Keine Benutzer-, Agentur- und Mitarbeiterverwaltung'] },
   { role: 'Teamleiter', color: 'bg-emerald-600/10 text-emerald-600', permissions: ['Eigene Leads einsehen & bearbeiten', 'Pipeline-Ansicht', 'Aufgaben verwalten', 'Kalender & Termine', 'Statistik einsehen', 'Eigenes Profil bearbeiten'] },
   { role: 'Backoffice', color: 'bg-accent/50 text-accent-foreground', permissions: ['Leads einsehen & bearbeiten', 'Termine erstellen', 'Aufgaben bearbeiten', 'CSV-Import'] },
   { role: 'Analyst', color: 'bg-muted text-muted-foreground', permissions: ['Dashboard & Analytics (nur lesen)', 'Lead-Daten einsehen', 'Berichte exportieren'] },

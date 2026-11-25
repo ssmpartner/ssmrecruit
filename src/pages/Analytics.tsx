@@ -15,10 +15,11 @@ import ManagementTab from '@/components/analytics/ManagementTab';
 import FlowAnalysisTab from '@/components/analytics/FlowAnalysisTab';
 import MapTab from '@/components/analytics/MapTab';
 import ExportActions from '@/components/analytics/ExportActions';
+import { canExportLeads } from '@/lib/lead-export';
 
 export default function Analytics() {
   const { leads: scopedLeads, allLeads, agencies, employees, leadSources, activities } = useLeads();
-  const { isAgencyManager, isAgencyScoped, isTeamleiter, isControlling, isGeschaeftsleitung, isSuperadmin, isAdmin, user } = useAuth();
+  const { isAgencyManager, isAgencyScoped, isTeamleiter, isControlling, isGeschaeftsleitung, isSuperadmin, isAdmin, role, user } = useAuth();
   // Controlling, Geschäftsleitung, Superadmin & Admin always see the full structure across all agencies.
   const leads = (isControlling || isGeschaeftsleitung || isSuperadmin || isAdmin) ? allLeads : scopedLeads;
 
@@ -97,7 +98,9 @@ export default function Analytics() {
           <h1 className="text-2xl font-bold tracking-tight">Statistik</h1>
         </div>
         <div className="flex items-center gap-3">
-          <ExportActions filtered={filtered} agencies={agencies} employees={employees} leadSources={leadSources} activeTab={activeTab} />
+          {canExportLeads(role) && (
+            <ExportActions filtered={filtered} agencies={agencies} employees={employees} leadSources={leadSources} activeTab={activeTab} />
+          )}
           <span className="text-[10px] text-muted-foreground">{filtered.length}/{leads.length} Leads</span>
         </div>
       </div>
