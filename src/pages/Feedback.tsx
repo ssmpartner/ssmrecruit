@@ -91,6 +91,26 @@ export default function Feedback() {
   const [uploadingNew, setUploadingNew] = useState(false);
   const [uploadingComment, setUploadingComment] = useState<Record<string, boolean>>({});
   const [lightbox, setLightbox] = useState<Attachment | null>(null);
+  // Bucket is private: resolve storage paths to signed URLs (1h)
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+  const attachmentPath = (a: Attachment): string | null => {
+    if (a.path) return a.path;
+    const m = a.url?.match(/\/feedback-attachments\/([^?]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
+  };
+  const resolveUrl = (a: Attachment) => {
+    const p = attachmentPath(a);
+    return (p && signedUrls[p]) || a.url;
+  };
+  const signAttachments = useCallback(async (items: Attachment[]) => {
+    const paths = Array.from(new Set(items.map(attachmentPath).filter((p): p is string => !!p)));
+    if (paths.length === 0) return;
+    const { data } = await supabase.storage.from('feedback-attachments').createSignedUrls(paths, 3600);
+    const map: Record<string, string> = {};
+    (data ?? []).forEach(d => { if (d.path && d.signedUrl) map[d.path] = d.signedUrl; });
+    setSignedUrls(prev => ({ ...prev, ...map }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [deleteTarget, setDeleteTarget] = useState<Feedback | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -106,8 +126,9 @@ export default function Feedback() {
       const path = `${user?.id ?? 'anon'}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage.from('feedback-attachments').upload(path, file, { contentType: file.type });
       if (error) { toast.error(`Upload fehlgeschlagen: ${file.name}`); continue; }
-      const { data } = supabase.storage.from('feedback-attachments').getPublicUrl(path);
-      results.push({ path, url: data.publicUrl, name: file.name, type: file.type });
+      const { data } = await supabase.storage.from('feedback-attachments').createSignedUrl(path, 3600);
+      if (data?.signedUrl) setSignedUrls(prev => ({ ...prev, [path]: data.signedUrl }));
+      results.push({ path, url: data?.signedUrl ?? '', name: file.name, type: file.type });
     }
     return results;
   }
@@ -134,7 +155,11 @@ export default function Feedback() {
     });
     setComments(grouped);
     setLoading(false);
-  }, []);
+    void signAttachments([
+      ...((fb as Feedback[]) ?? []).flatMap(f => f.attachments ?? []),
+      ...((cm as Comment[]) ?? []).flatMap(c => c.attachments ?? []),
+    ]);
+  }, [signAttachments]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -220,11 +245,11 @@ export default function Feedback() {
           return (
             <div key={i} className="relative group border rounded-md overflow-hidden bg-muted/30">
               {isImg ? (
-                <button type="button" onClick={() => setLightbox(a)} className="block">
-                  <img src={a.url} alt={a.name} className="h-20 w-20 object-cover" />
+                <button type="button" onClick={() => setLightbox({ ...a, url: resolveUrl(a) })} className="block">
+                  <img src={resolveUrl(a)} alt={a.name} className="h-20 w-20 object-cover" />
                 </button>
               ) : (
-                <a href={a.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 px-2 py-2 text-xs">
+                <a href={resolveUrl(a)} target="_blank" rel="noreferrer" className="flex items-center gap-1 px-2 py-2 text-xs">
                   <Paperclip className="h-3 w-3" />{a.name}
                 </a>
               )}

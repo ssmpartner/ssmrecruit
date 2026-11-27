@@ -64,6 +64,13 @@
       "when": 1795790591625,
       "tag": "0008_lock_personnel_requests_anon",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795790722583,
+      "tag": "0009_harden_personnel_and_feedback_storage",
+      "breakpoints": true
     }
   ]
 }

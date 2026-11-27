@@ -13,6 +13,8 @@ import { resolveFirstName } from '@/lib/display-name';
 import { statusConfig } from '@/lib/mock-data';
 import NewsBanner from '@/components/NewsBanner';
 import { supabase } from '@/integrations/supabase/client';
+import { countUnprocessedLeads } from '@/lib/lead-stats';
+import { Inbox } from 'lucide-react';
 
 const PIE_COLORS = ['hsl(168, 17%, 23%)', 'hsl(162, 17%, 50%)', 'hsl(67, 16%, 66%)', 'hsl(38, 80%, 50%)', 'hsl(200, 70%, 50%)', 'hsl(162, 40%, 42%)', 'hsl(0, 65%, 51%)'];
 
@@ -142,6 +144,7 @@ export default function Dashboard() {
 
   const hiredCount = activeLeads.filter(l => l.status === 'hired').length;
   const newCount = activeLeads.filter(l => l.status === 'new').length;
+  const unprocessed = useMemo(() => countUnprocessedLeads(activeLeads), [activeLeads]);
   const conversionRate = activeLeads.length > 0 ? ((hiredCount / activeLeads.length) * 100).toFixed(1) : '0';
 
   // Offene Rückfragen des Controllings für die eigenen Leads
@@ -373,6 +376,20 @@ export default function Dashboard() {
           onClick={() => navigate('/leads?filter=controlling_query')}
         />
       </div>
+
+      <button
+        type="button"
+        onClick={() => navigate('/leads?filter=new')}
+        className="w-full flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border bg-card px-4 py-3 text-left shadow-sm hover:bg-muted/40 transition"
+      >
+        <Inbox className="h-5 w-5 text-primary" />
+        <span className="font-semibold">Unbearbeitete Leads</span>
+        <span className="text-2xl font-bold">{unprocessed.total.toLocaleString('de-CH')}</span>
+        <span className={unprocessed.olderThan7Days > 0 ? 'rounded-full bg-destructive/10 px-2 py-0.5 text-sm font-medium text-destructive' : 'text-sm text-muted-foreground'}>
+          davon {unprocessed.olderThan7Days.toLocaleString('de-CH')} älter als 7 Tage
+        </span>
+        <span className="ml-auto text-sm font-medium text-primary">Anzeigen →</span>
+      </button>
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">

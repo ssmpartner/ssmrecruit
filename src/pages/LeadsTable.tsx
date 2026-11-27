@@ -149,8 +149,8 @@ export default function LeadsTable() {
   // Filter per URL übernehmen (z.B. Rückfragen-Kachel im Dashboard)
   useEffect(() => {
     const f = searchParams.get('filter');
-    if (f === 'controlling_query') {
-      setStatusFilter(['controlling_query']);
+    if (f === 'controlling_query' || f === 'new') {
+      setStatusFilter([f]);
       searchParams.delete('filter');
       setSearchParams(searchParams, { replace: true });
     }

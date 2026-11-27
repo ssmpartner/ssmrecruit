@@ -13,6 +13,7 @@ import AppLayout from "./components/AppLayout";
 import { SidebarProvider } from "./context/SidebarContext";
 import { Loader2 } from "lucide-react";
 import Login from "./pages/Login";
+import { isReviewRouteAllowed } from '@/lib/route-access';
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Pipeline = lazy(() => import("./pages/Pipeline"));
@@ -59,11 +60,6 @@ function FullScreenLoader() {
   return <div className="flex min-h-screen items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 }
 
-const REVIEW_ROLE_ALLOWED: Record<string, string[]> = {
-  controlling: ['/', '/leads', '/calendar', '/analytics', '/settings', '/help', '/feedback'],
-  geschaeftsleitung: ['/', '/leads', '/calendar', '/analytics', '/settings', '/help', '/feedback'],
-  hr: ['/', '/leads', '/calendar', '/analytics', '/settings', '/help', '/feedback', '/contracts'],
-};
 
 // Routes blocked for backoffice role (agency-scoped users)
 const BACKOFFICE_BLOCKED_PREFIXES = ['/agencies', '/employees', '/processes', '/documentation', '/api-docs'];
@@ -97,8 +93,7 @@ function RoleRouteGuard({ children }: { children: React.ReactNode }) {
   if (role === 'backoffice' && BACKOFFICE_BLOCKED_PREFIXES.some(p => location.pathname.startsWith(p))) {
     return <Navigate to="/" replace />;
   }
-  const allowed = role ? REVIEW_ROLE_ALLOWED[role] : null;
-  if (allowed && !allowed.includes(location.pathname)) {
+  if (!isReviewRouteAllowed(role, location.pathname)) {
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;
