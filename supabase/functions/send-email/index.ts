@@ -20,6 +20,18 @@ const DEFAULT_FROM = 'SSM Recruit <noreply@send.ssmpartner.ch>'
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
+// Only allow sender addresses of ssmpartner.ch / send.ssmpartner.ch
+function safeFrom(from?: string): string {
+  if (!from) return DEFAULT_FROM
+  const m = from.match(/<([^>]+)>/)
+  const addr = (m ? m[1] : from).trim().toLowerCase()
+  const domain = addr.split('@')[1] ?? ''
+  if (/^[^@\s]+@[^@\s]+$/.test(addr) && (domain === 'ssmpartner.ch' || domain === 'send.ssmpartner.ch')) {
+    return from
+  }
+  return DEFAULT_FROM
+}
+
 interface SendEmailBody {
   to: string | string[]
   subject: string
@@ -36,6 +48,37 @@ interface SendEmailBody {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
+  }
+
+  // --- Caller authentication: service role OR signed-in user with a role ---
+  const authHeader = req.headers.get('Authorization') ?? ''
+  if (!authHeader.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+  const callerToken = authHeader.slice(7).trim()
+  if (callerToken !== SERVICE_KEY) {
+    const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+    const { data: claimsData, error: claimsErr } = await admin.auth.getClaims(callerToken)
+    const claims = claimsData?.claims as Record<string, unknown> | undefined
+    let allowed = false
+    if (!claimsErr && claims) {
+      if (claims.role === 'service_role') {
+        allowed = true
+      } else if (typeof claims.sub === 'string') {
+        const { data: roleRow } = await admin
+          .from('user_roles').select('role').eq('user_id', claims.sub).limit(1).maybeSingle()
+        allowed = !!roleRow
+      }
+    }
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
   }
 
   const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
@@ -97,7 +140,7 @@ Deno.serve(async (req) => {
   }
 
   const payload = {
-    from: body.from || DEFAULT_FROM,
+    from: safeFrom(body.from),
     to: Array.isArray(body.to) ? body.to : [body.to],
     subject: body.subject,
     html: body.html,

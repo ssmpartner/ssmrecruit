@@ -57,6 +57,13 @@
       "when": 1790251052752,
       "tag": "0007_contract_templates_doc_kind",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795790591625,
+      "tag": "0008_lock_personnel_requests_anon",
+      "breakpoints": true
     }
   ]
 }

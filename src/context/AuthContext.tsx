@@ -200,13 +200,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (!isCredErr) return { error: firstAttempt.error };
 
-        // Preview only: dev-login bypass for whitelisted dev emails.
+        // Preview only: dev-login creates a whitelisted dev user ONCE if it does
+        // not exist yet. It never changes the password of an existing user (409).
         // We intentionally do NOT call sso-proxy here — central SSO rejections
         // surface as a 400 runtime error in preview.
         try {
           const devRes = await supabase.functions.invoke('dev-login', {
             body: { email, password },
           });
+          // 409 = user already exists → wrong password, no reset possible here
           if (devRes.error || (devRes.data as any)?.error) {
             return { error: firstAttempt.error };
           }

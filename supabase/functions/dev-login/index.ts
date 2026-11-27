@@ -46,32 +46,25 @@ Deno.serve(async (req) => {
     const { data: list } = await supabase.auth.admin.listUsers();
     const existing = list?.users?.find((u) => u.email?.toLowerCase() === normalizedEmail);
 
-    let userId: string | null = null;
-    if (!existing) {
-      const { data: created, error: createErr } = await supabase.auth.admin.createUser({
-        email: normalizedEmail,
-        password,
-        email_confirm: true,
-        user_metadata: { display_name: display_name || normalizedEmail },
+    // Never touch existing accounts (no password reset via this function).
+    if (existing) {
+      return new Response(JSON.stringify({ error: 'User existiert bereits' }), {
+        status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
-      if (createErr) {
-        return new Response(JSON.stringify({ error: 'User konnte nicht erstellt werden: ' + createErr.message }), {
-          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      userId = created.user?.id || null;
-    } else {
-      const { error: updErr } = await supabase.auth.admin.updateUserById(existing.id, {
-        password,
-        email_confirm: true,
-      });
-      if (updErr) {
-        return new Response(JSON.stringify({ error: 'Passwort konnte nicht gesetzt werden: ' + updErr.message }), {
-          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      userId = existing.id;
     }
+
+    const { data: created, error: createErr } = await supabase.auth.admin.createUser({
+      email: normalizedEmail,
+      password,
+      email_confirm: true,
+      user_metadata: { display_name: display_name || normalizedEmail },
+    });
+    if (createErr) {
+      return new Response(JSON.stringify({ error: 'User konnte nicht erstellt werden: ' + createErr.message }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const userId: string | null = created.user?.id || null;
 
     if (userId) {
       await supabase.from('profiles').upsert({
